@@ -179,34 +179,24 @@ export function TicketsPage() {
   useGSAP(() => {
     if (loading) return;
 
-    // Intro animation for header and tabs
-    gsap.from('.tickets-header > *', {
-      y: -20,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.1,
-      ease: 'power3.out'
-    });
+    // Intro animation for header and tabs using fromTo to avoid React 18 Strict Mode opacity 0 bugs
+    gsap.fromTo('.tickets-header > *', 
+      { y: -20, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out', clearProps: 'all' }
+    );
 
-    gsap.from('.tabs-container', {
-      scale: 0.98,
-      opacity: 0,
-      duration: 0.6,
-      ease: 'power2.out',
-      delay: 0.2
-    });
+    gsap.fromTo('.tabs-container', 
+      { scale: 0.98, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.2, clearProps: 'all' }
+    );
 
     // Staggered entrance for tickets
     const cards = gsap.utils.toArray('.ticket-card');
     if (cards.length > 0) {
-      gsap.from(cards, {
-        y: 20,
-        opacity: 0,
-        stagger: 0.08,
-        duration: 0.7,
-        ease: 'power2.out',
-        clearProps: 'all'
-      });
+      gsap.fromTo(cards, 
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, stagger: 0.08, duration: 0.7, ease: 'power2.out', clearProps: 'all' }
+      );
     }
   }, { scope: containerRef, dependencies: [tab, loading, displayed.length] });
 

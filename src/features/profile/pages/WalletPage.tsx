@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { Button } from '@/shared/ui/Button';
@@ -8,15 +8,19 @@ import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInterac
 import { toast } from 'sonner';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { TopUpModal } from '../components/TopUpModal';
+import { doc, updateDoc, increment } from 'firebase/firestore';
+import { db } from '@/shared/config/firebase';
 
 export function WalletPage() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   
   const transactions = [
     { id: 1, type: 'prize', amount: 15.00, desc: 'Premio Bonoloto', date: 'Hoy, 10:30' },
     { id: 2, type: 'bet', amount: -2.50, desc: 'Apuesta Euromillones', date: 'Ayer, 18:45' },
-    { id: 3, type: 'deposit', amount: 20.00, desc: 'Recarga Tarjeta ****1234', date: '12 Abr, 09:15' },
+    { id: 3, type: 'deposit', amount: 20.00, desc: 'Recarga Apple Pay', date: '12 Abr, 09:15' },
   ];
 
   useGSAP(() => {
@@ -39,6 +43,14 @@ export function WalletPage() {
     });
   }, { scope: containerRef });
 
+  const handleTopUpSuccess = async (amount: number) => {
+    if (!user) return;
+    await updateDoc(doc(db, 'users', user.uid), {
+      balance: increment(amount)
+    });
+    // Visualmente GSAP podría animar el número, pero al estar linkeado al context de React, reaccionará muy bien.
+  };
+
   return (
     <div className="flex flex-col min-h-full bg-background pb-28" ref={containerRef}>
       <ProfileSubHeader title="Mi Saldo" />
@@ -58,7 +70,7 @@ export function WalletPage() {
             <div className="mt-8 flex gap-3">
               <PremiumTouchInteraction scale={0.96} className="flex-1">
                 <Button 
-                  onClick={() => toast.info('Pasarela de recarga próximamente')}
+                  onClick={() => setIsTopUpOpen(true)}
                   className="w-full bg-manises-gold text-manises-blue hover:bg-white font-bold rounded-xl h-12 shadow-lg transition-colors"
                 >
                   <Plus className="w-5 h-5 mr-1" /> Recargar
@@ -112,6 +124,13 @@ export function WalletPage() {
         </section>
 
       </div>
+
+      <TopUpModal 
+        isOpen={isTopUpOpen}
+        onClose={() => setIsTopUpOpen(false)}
+        onSuccess={handleTopUpSuccess}
+        currentBalance={profile?.balance ?? 0}
+      />
     </div>
   );
 }

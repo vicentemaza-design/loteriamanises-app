@@ -18,7 +18,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
 // Assets
-import headerWinner from '@/assets/images/header_winner.jpg';
+import adminManises from '@/assets/images/administracion_manises.webp';
 import joySecondary from '@/assets/images/joy_secondary.png';
 import primitivaJoy from '@/assets/images/primitiva_joy.png';
 
@@ -209,7 +209,7 @@ export function GamesPage() {
       <section className="px-5">
         <div className="banner-info relative h-44 rounded-3xl overflow-hidden shadow-2xl bg-manises-blue">
           <img
-            src={headerWinner}
+            src={adminManises}
             alt="Administración Manises"
             className="absolute inset-0 w-full h-full object-cover opacity-60 transition-transform duration-1000 hover:scale-105"
           />
