@@ -30,7 +30,7 @@ export function Header() {
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-manises-blue shadow-lg border-b border-white/10">
+    <header className="sticky top-0 z-40 w-full bg-manises-blue shadow-lg border-b border-white/10 pt-safe">
       <div className="flex items-center justify-between h-16 px-5 max-w-7xl mx-auto">
         {/* Logo + Brand */}
         <div className="flex items-center gap-4 min-w-0" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>

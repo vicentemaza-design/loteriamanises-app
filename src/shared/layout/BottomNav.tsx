@@ -17,13 +17,11 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 px-3"
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 10px)' }}
+      className="fixed bottom-0 left-0 right-0 z-50 pb-safe bg-[linear-gradient(180deg,#112240_0%,#0A192F_100%)] border-t border-white/10 shadow-[0_-10px_40px_rgba(10,25,47,0.4)]"
       role="navigation"
       aria-label="Navegación principal"
     >
-      <div className="relative mx-auto max-w-screen-sm overflow-hidden rounded-[1.6rem] border border-white/8 bg-[linear-gradient(180deg,#112240_0%,#0A192F_100%)] shadow-[0_18px_40px_rgba(10,25,47,0.34)]">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/14" />
+      <div className="relative mx-auto max-w-screen-sm">
         <div className="pointer-events-none absolute inset-x-10 top-0 h-10 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.10)_0,_rgba(255,255,255,0)_72%)]" />
         <div className="flex justify-around items-stretch h-16 px-1">
         {navItems.map(({ icon: Icon, label, path }) => {
