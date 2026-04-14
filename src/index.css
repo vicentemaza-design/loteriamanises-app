@@ -1,0 +1,404 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ===================================================
+   DESIGN SYSTEM — LOTERÍA MANISES
+   Tokens consistentes para toda la app
+   =================================================== */
+
+@theme inline {
+  /* Fuente */
+  --font-heading: var(--font-sans);
+  --font-sans: 'Geist Variable', sans-serif;
+
+  /* Colores Sidebar (Shadcn compat) */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  /* Colores Chart */
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  /* Colores de UI */
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+
+  /* ===== SISTEMA DE RADIOS CONSISTENTE ===== */
+  /* Usad SOLO estos valores en toda la app */
+  --radius-xs:  0.375rem;   /* 6px  — chips pequeños, indicadores */
+  --radius-sm:  0.5rem;     /* 8px  — buttons, inputs */
+  --radius-md:  0.75rem;    /* 12px — cards pequeñas */
+  --radius-lg:  1rem;       /* 16px — cards normales */
+  --radius-xl:  1.25rem;    /* 20px — cards destacadas */
+  --radius-2xl: 1.5rem;     /* 24px — modals, paneles grandes */
+  --radius-pill: 9999px;    /* pills, badges */
+  --radius: 0.75rem;        /* default shadcn compat */
+
+  /* ===== IDENTIDAD MANISES ===== */
+  --color-manises-blue:      #0A192F;
+  --color-manises-blue-mid:  #112240;
+  --color-manises-blue-soft: #1E3A5F;
+  --color-manises-gold:      #F5C518;
+  --color-manises-gold-dark: #D4A017;
+  --color-manises-gold-soft: #FFF3C4;
+  --color-surface:           #F7F8FA;
+  --color-surface-2:         #ECEEF2;
+  --color-surface-3:         #E4E9F1;
+  --color-surface-tint:      #FDFDFE;
+}
+
+/* ===== MODO CLARO (default) ===== */
+:root {
+  --background:            #F7F8FA;
+  --foreground:            #0A192F;
+  --card:                  #FFFFFF;
+  --card-foreground:       #0A192F;
+  --popover:               #FFFFFF;
+  --popover-foreground:    #0A192F;
+  --primary:               #0A192F;
+  --primary-foreground:    #FFFFFF;
+  --secondary:             #F5C518;
+  --secondary-foreground:  #0A192F;
+  --muted:                 #ECEEF2;
+  --muted-foreground:      #6B7280;
+  --accent:                #F5C518;
+  --accent-foreground:     #0A192F;
+  --destructive:           #DC2626;
+  --border:                #E5E7EB;
+  --input:                 #E5E7EB;
+  --ring:                  #0A192F;
+  --chart-1:               #2563eb;
+  --chart-2:               #16a34a;
+  --chart-3:               #0891b2;
+  --chart-4:               #ea580c;
+  --chart-5:               #7c3aed;
+  --sidebar:               #FFFFFF;
+  --sidebar-foreground:    #0A192F;
+  --sidebar-primary:       #0A192F;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent:        #F7F8FA;
+  --sidebar-accent-foreground: #0A192F;
+  --sidebar-border:        #E5E7EB;
+  --sidebar-ring:          #0A192F;
+  --neo-shadow-raised:     -10px -10px 24px rgba(255,255,255,0.9), 12px 14px 28px rgba(145, 163, 184, 0.22);
+  --neo-shadow-soft:       -6px -6px 14px rgba(255,255,255,0.82), 8px 10px 18px rgba(148, 163, 184, 0.18);
+  --neo-shadow-pressed:    inset 3px 3px 8px rgba(154, 169, 189, 0.16), inset -3px -3px 8px rgba(255,255,255,0.72);
+  --shell-gradient:        linear-gradient(180deg, #F6F8FB 0%, #EEF2F7 100%);
+  --shell-overlay:         radial-gradient(circle at top left, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 34%), radial-gradient(circle at bottom right, rgba(212,160,23,0.08) 0%, rgba(212,160,23,0) 30%);
+  --panel-gradient:        linear-gradient(145deg, #FBFCFE 0%, #EDF2F7 100%);
+}
+
+/* ===== MODO OSCURO (mantiene identidad Manises) ===== */
+.dark {
+  --background:            #070F1E;
+  --foreground:            #E8EDF4;
+  --card:                  #0D1B2E;
+  --card-foreground:       #E8EDF4;
+  --popover:               #0D1B2E;
+  --popover-foreground:    #E8EDF4;
+  --primary:               #F5C518;   /* gold en dark */
+  --primary-foreground:    #0A192F;
+  --secondary:             #1E3A5F;
+  --secondary-foreground:  #E8EDF4;
+  --muted:                 #112240;
+  --muted-foreground:      #8BA3C0;
+  --accent:                #F5C518;
+  --accent-foreground:     #0A192F;
+  --destructive:           #EF4444;
+  --border:                rgba(255,255,255,0.08);
+  --input:                 rgba(255,255,255,0.10);
+  --ring:                  #F5C518;
+  --chart-1:               #3b82f6;
+  --chart-2:               #22c55e;
+  --chart-3:               #06b6d4;
+  --chart-4:               #f97316;
+  --chart-5:               #a855f7;
+  --sidebar:               #0D1B2E;
+  --sidebar-foreground:    #E8EDF4;
+  --sidebar-primary:       #F5C518;
+  --sidebar-primary-foreground: #0A192F;
+  --sidebar-accent:        #112240;
+  --sidebar-accent-foreground: #E8EDF4;
+  --sidebar-border:        rgba(255,255,255,0.08);
+  --sidebar-ring:          #F5C518;
+  --neo-shadow-raised:     -10px -10px 24px rgba(23, 35, 55, 0.42), 12px 14px 28px rgba(2, 8, 18, 0.5);
+  --neo-shadow-soft:       -6px -6px 14px rgba(19, 29, 46, 0.4), 8px 10px 18px rgba(2, 8, 18, 0.38);
+  --neo-shadow-pressed:    inset 3px 3px 8px rgba(1, 7, 18, 0.32), inset -3px -3px 8px rgba(26, 41, 64, 0.42);
+  --shell-gradient:        linear-gradient(180deg, #091221 0%, #0D182B 100%);
+  --shell-overlay:         radial-gradient(circle at top left, rgba(245,197,24,0.08) 0%, rgba(245,197,24,0) 30%), radial-gradient(circle at bottom right, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 24%);
+  --panel-gradient:        linear-gradient(145deg, #11203A 0%, #0A1629 100%);
+}
+
+/* ===================================================
+   UTILIDADES CUSTOM
+   =================================================== */
+@layer utilities {
+  /* Glassmorphism */
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/15 shadow-lg;
+  }
+  .glass-dark {
+    background-color: rgba(10, 25, 47, 0.85);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  .glass-card {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+
+  /* Sombras premium */
+  .shadow-manises {
+    box-shadow: 0 4px 24px rgba(10, 25, 47, 0.15), 0 1px 4px rgba(10, 25, 47, 0.08);
+  }
+  .shadow-gold {
+    box-shadow: 0 4px 20px rgba(245, 197, 24, 0.35);
+  }
+  .shadow-inner-soft {
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
+  }
+
+  /* Glow effects */
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(245, 197, 24, 0.4), 0 0 40px rgba(245, 197, 24, 0.15);
+  }
+  .glow-blue {
+    box-shadow: 0 0 20px rgba(10, 25, 47, 0.25);
+  }
+
+  /* Safe area padding (móvil nativo) */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .px-safe {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  /* Dynamic viewport */
+  .min-h-dvh { min-height: 100dvh; }
+  .h-dvh     { height: 100dvh; }
+
+  /* Gradientes de marca */
+  .gradient-manises {
+    background: linear-gradient(135deg, #0A192F 0%, #1E3A5F 100%);
+  }
+  .gradient-gold {
+    background: linear-gradient(135deg, #F5C518 0%, #D4A017 100%);
+  }
+
+  .app-shell {
+    background: var(--shell-gradient);
+    position: relative;
+  }
+
+  .app-shell::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--shell-overlay);
+    pointer-events: none;
+  }
+
+  .surface-neo {
+    background: var(--panel-gradient);
+    border: 1px solid rgba(255,255,255,0.45);
+    box-shadow: var(--neo-shadow-raised);
+  }
+
+  .surface-neo-soft {
+    background: linear-gradient(145deg, color-mix(in srgb, var(--card) 94%, white 6%) 0%, color-mix(in srgb, var(--muted) 86%, white 14%) 100%);
+    border: 1px solid rgba(255,255,255,0.5);
+    box-shadow: var(--neo-shadow-soft);
+  }
+
+  .surface-neo-pressed {
+    background: linear-gradient(145deg, color-mix(in srgb, var(--muted) 92%, white 8%) 0%, color-mix(in srgb, var(--card) 88%, black 4%) 100%);
+    border: 1px solid rgba(255,255,255,0.4);
+    box-shadow: var(--neo-shadow-pressed);
+  }
+
+  .surface-tint {
+    background:
+      radial-gradient(circle at top left, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0) 34%),
+      linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.04) 100%);
+  }
+
+  .section-wash {
+    background:
+      radial-gradient(circle at top right, rgba(245,197,24,0.08) 0%, rgba(245,197,24,0) 36%),
+      radial-gradient(circle at bottom left, rgba(30,58,95,0.06) 0%, rgba(30,58,95,0) 38%);
+  }
+
+  /* Texto con gradiente */
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #F5C518, #D4A017);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Scrollbar invisible pero funcional */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Truncate multilínea */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Animaciones Laguinda Style */
+  @keyframes scan-move {
+    0% { transform: translateY(-100%); }
+    50% { transform: translateY(100%); }
+    100% { transform: translateY(-100%); }
+  }
+  .animate-scan-move {
+    animation: scan-move 2s ease-in-out infinite;
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .animate-spin-slow {
+    animation: spin-slow 12s linear infinite;
+  }
+
+  /* Estilos Premium v2 */
+  .glass-heavy {
+    @apply bg-white/20 backdrop-blur-2xl border border-white/30 shadow-2xl;
+  }
+  
+  .banner-overlay {
+    background: linear-gradient(to top, rgba(10, 25, 47, 0.95) 0%, rgba(10, 25, 47, 0.4) 40%, rgba(10, 25, 47, 0) 100%);
+  }
+
+  .text-shadow-premium {
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  }
+}
+
+/* ===================================================
+   BASE — Reset mobile-first
+   =================================================== */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+
+  html {
+    @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  html, body {
+    @apply overflow-x-hidden;
+    overscroll-behavior-y: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    /* Permite selección de texto en contenido informativo */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* El texto informativo sí puede seleccionarse */
+  p, span, h1, h2, h3, h4, h5, h6, label, li {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  #root {
+    height: 100dvh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    background-image:
+      radial-gradient(circle at top left, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 26%),
+      radial-gradient(circle at bottom right, rgba(245,197,24,0.09) 0%, rgba(245,197,24,0) 22%);
+  }
+
+  /* Animación de entrada suave para página */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up {
+    animation: fadeUp 0.35s ease-out both;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-md);
+  }
+
+  /* Botones y inputs — sin tap highlight */
+  button, a, input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Focus visible accesible */
+  :focus-visible {
+    outline: 2px solid var(--color-manises-gold);
+    outline-offset: 2px;
+  }
+}
