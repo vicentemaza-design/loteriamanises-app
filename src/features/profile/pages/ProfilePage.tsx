@@ -100,7 +100,7 @@ export function ProfilePage() {
   ];
 
   return (
-    <div className="flex flex-col gap-5 p-4 bg-background min-h-full">
+    <div className="flex flex-col gap-5 p-4 bg-background min-h-dvh">
 
       {/* ---- Hero de usuario ---- */}
       <motion.div

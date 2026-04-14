@@ -274,9 +274,8 @@ export function GamePlayPage() {
         )}
       </AnimatePresence>
 
-      {/* ---- Header del juego ---- */}
       <div
-        className="sticky top-0 z-40 text-white"
+        className="sticky top-0 z-40 text-white pt-safe shadow-lg"
         style={{ background: `linear-gradient(135deg, ${game.color}, ${game.colorEnd ?? game.color})` }}
       >
         <div className="flex items-center justify-between px-3 py-3">
@@ -675,7 +674,7 @@ export function GamePlayPage() {
       </div>
 
       {/* ---- Barra de confirmación ---- */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 px-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}>
+      <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-safe">
         <div className="flex items-center justify-between rounded-[1.8rem] bg-white/95 backdrop-blur-xl border border-gray-100 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] px-5 py-3 gap-4">
           <div>
             <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">

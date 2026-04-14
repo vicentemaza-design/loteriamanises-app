@@ -155,7 +155,7 @@ export function GamesPage() {
   }, { scope: containerRef });
 
   return (
-    <div className="flex flex-col gap-6 pb-28 bg-background min-h-full overflow-x-hidden" ref={containerRef}>
+    <div className="flex flex-col gap-6 pb-28 bg-background min-h-dvh overflow-x-hidden" ref={containerRef}>
 
       {/* ── Sorteos de Hoy ──────────────────────────────────── */}
       <section className="px-5 pt-4 space-y-3">

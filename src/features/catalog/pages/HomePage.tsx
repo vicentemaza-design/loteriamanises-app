@@ -248,7 +248,7 @@ export function HomePage() {
   }, { scope: containerRef });
 
   return (
-    <div className="flex flex-col gap-6 pb-28 bg-background min-h-full overflow-x-hidden" ref={containerRef}>
+    <div className="flex flex-col gap-6 pb-28 bg-background min-h-dvh overflow-x-hidden" ref={containerRef}>
 
       {/* ── Greeting ────────────────────────────────────────────── */}
       {profile && (

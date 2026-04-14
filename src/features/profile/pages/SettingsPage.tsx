@@ -46,7 +46,7 @@ export function SettingsPage() {
   }, { scope: containerRef });
 
   return (
-    <div className="flex flex-col min-h-full bg-background pb-28" ref={containerRef}>
+    <div className="flex flex-col min-h-dvh bg-background pb-28" ref={containerRef}>
       <ProfileSubHeader title="Preferencias" />
       
       <div className="p-5 flex flex-col gap-6">

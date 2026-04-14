@@ -163,7 +163,7 @@ export function ResultsPage() {
   }, [activeFilter, filtered.length]);
 
   return (
-    <div className="relative min-h-full overflow-x-hidden bg-background pb-28">
+    <div className="relative min-h-dvh overflow-x-hidden bg-background pb-28">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-[radial-gradient(circle_at_top,_rgba(10,25,47,0.10)_0,_rgba(10,25,47,0)_72%)]" />
       <div className="pointer-events-none absolute inset-x-0 top-10 h-32 bg-[radial-gradient(circle_at_top,_rgba(227,182,87,0.12)_0,_rgba(227,182,87,0)_70%)]" />
 

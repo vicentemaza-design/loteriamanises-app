@@ -86,7 +86,7 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-full bg-manises-blue relative overflow-hidden">
+    <div className="flex flex-col w-full flex-1 min-h-dvh bg-manises-blue relative overflow-hidden">
       {/* Background Decor (Same as Login for consistency) */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.img
