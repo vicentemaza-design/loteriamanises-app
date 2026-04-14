@@ -48,7 +48,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-full bg-manises-blue relative overflow-hidden">
+    <div className="flex flex-col min-h-[100dvh] bg-manises-blue relative overflow-hidden">
       {/* Decoración de fondo */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.img
