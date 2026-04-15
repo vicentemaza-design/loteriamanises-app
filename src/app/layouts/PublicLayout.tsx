@@ -12,7 +12,9 @@ export function PublicLayout() {
     <div className="app-shell min-h-dvh font-sans text-manises-blue flex flex-col overflow-hidden">
       <main className="flex-1 w-full relative overflow-y-auto overflow-x-hidden scroll-smooth">
         <div className="absolute inset-0 section-wash pointer-events-none" />
-        <Outlet />
+        <div className="relative w-full min-h-full">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

@@ -11,10 +11,13 @@ import {
   HelpCircle,
   LogOut,
   ChevronRight,
-  CalendarDays,
-  Trophy,
+  Heart,
+  RefreshCcw,
+  Landmark,
+  Building2,
   Lock,
   Unlock,
+  ArrowLeftRight,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { formatCurrency } from '@/shared/lib/utils';
@@ -73,6 +76,16 @@ export function ProfilePage() {
       ],
     },
     {
+      title: 'Premium Demo',
+      items: [
+        { icon: Heart,          label: 'Jugadas favoritas',    detail: null, color: 'text-rose-600', bg: 'bg-rose-50', onClick: () => navigate('/profile/favorites') },
+        { icon: RefreshCcw,     label: 'Mis abonos',           detail: null, color: 'text-amber-600', bg: 'bg-amber-50', onClick: () => navigate('/profile/subscriptions') },
+        { icon: ArrowLeftRight, label: 'Movimientos',          detail: null, color: 'text-cyan-700', bg: 'bg-cyan-50', onClick: () => navigate('/profile/movements') },
+        { icon: Landmark,       label: 'Cobrar premios',       detail: null, color: 'text-emerald-700', bg: 'bg-emerald-50', onClick: () => navigate('/profile/withdrawals') },
+        { icon: Building2,      label: 'Empresas y colectivos',detail: null, color: 'text-indigo-700', bg: 'bg-indigo-50', onClick: () => navigate('/profile/companies') },
+      ],
+    },
+    {
       title: 'Seguridad y Privacidad',
       items: [
         { 
@@ -94,7 +107,7 @@ export function ProfilePage() {
       title: 'Ajustes',
       items: [
         { icon: Settings,    label: 'Preferencias',      detail: null, color: 'text-gray-600',    bg: 'bg-gray-100', onClick: () => navigate('/profile/settings') },
-        { icon: HelpCircle,  label: 'Ayuda y soporte',   detail: null, color: 'text-orange-500',  bg: 'bg-orange-50', onClick: () => toast.info('Soporte 24/7 disponible en web.') },
+        { icon: HelpCircle,  label: 'Ayuda y soporte',   detail: null, color: 'text-orange-500',  bg: 'bg-orange-50', onClick: () => navigate('/profile/help') },
       ],
     },
   ];

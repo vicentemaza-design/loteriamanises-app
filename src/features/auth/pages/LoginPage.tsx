@@ -26,6 +26,18 @@ const TRUST_BADGES = [
   { icon: BadgePercent,label: '0 Comisiones' },
 ];
 
+const authContainer = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.12, delayChildren: 0.1 },
+  },
+};
+
+const authItem = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0 },
+};
+
 export function LoginPage() {
   const { signInWithGoogle, signInDemo } = useAuth();
   const navigate = useNavigate();
@@ -48,9 +60,9 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col w-full flex-1 min-h-dvh bg-manises-blue relative overflow-x-hidden overflow-y-auto">
+    <div className="relative flex min-h-full w-full flex-1 flex-col overflow-x-hidden overflow-y-auto bg-manises-blue">
       {/* Decoración de fondo */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="fixed inset-0 pointer-events-none">
         <motion.img
           src={authBackground}
           alt=""
@@ -141,22 +153,26 @@ export function LoginPage() {
       </div>
 
       {/* Contenido */}
-      <div className="relative z-10 flex min-h-dvh flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.75rem)] gap-6">
+      <motion.div
+        variants={authContainer}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 flex min-h-full flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.75rem)] gap-6"
+      >
 
         {/* Brand */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
+          variants={authItem}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
           className="mt-2 flex flex-col items-center gap-3"
         >
           {/* Logo Real */}
           <motion.img
             src="/assets/branding/logo-white.png"
             alt="Lotería Manises"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 0.1 }}
+            initial={{ scale: 0.72, opacity: 0, y: -10 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 180, damping: 16, delay: 0.18 }}
             className="h-14 w-auto max-w-[200px] object-contain"
           />
 
@@ -170,13 +186,23 @@ export function LoginPage() {
 
         {/* Formulario */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, ease: 'easeOut', delay: 0.15 }}
+          variants={authItem}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
           className="w-full max-w-sm shrink-0"
         >
           {/* Card */}
-          <div className="bg-white/6 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 shadow-[0_8px_40px_rgba(0,0,0,0.35)]">
+          <motion.div
+            animate={{
+              y: [0, -4, 0],
+              boxShadow: [
+                '0 18px 42px rgba(0,0,0,0.28)',
+                '0 26px 56px rgba(0,0,0,0.38)',
+                '0 18px 42px rgba(0,0,0,0.28)',
+              ],
+            }}
+            transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
+            className="bg-white/6 backdrop-blur-2xl border border-white/10 rounded-2xl p-6"
+          >
 
             {/* Google — método principal */}
             <Button
@@ -241,7 +267,7 @@ export function LoginPage() {
                 Crea tu cuenta
               </button>
             </p>
-          </div>
+          </motion.div>
 
           {/* DEMO MODE — acceso rápido sin Firebase */}
           <div className="mt-4 border border-white/8 rounded-xl overflow-hidden">
@@ -258,16 +284,20 @@ export function LoginPage() {
 
         {/* Trust badges */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
+          variants={authItem}
+          transition={{ duration: 0.55, ease: 'easeOut' }}
           className="mt-auto flex items-center justify-center gap-5 pt-2"
         >
           {TRUST_BADGES.map(({ icon: Icon, label }) => (
-            <div key={label} className="flex flex-col items-center gap-1 text-white/40">
+            <motion.div
+              key={label}
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 3.8, repeat: Infinity, delay: Math.random() * 0.4, ease: 'easeInOut' }}
+              className="flex flex-col items-center gap-1 text-white/40"
+            >
               <Icon className="w-4 h-4" aria-hidden="true" />
               <span className="text-[9px] font-semibold uppercase tracking-widest text-center">{label}</span>
-            </div>
+            </motion.div>
           ))}
         </motion.div>
 
@@ -277,7 +307,7 @@ export function LoginPage() {
           <span className="underline cursor-pointer">Términos y Condiciones</span>.
           Juega con responsabilidad. +18. DGOJ.
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

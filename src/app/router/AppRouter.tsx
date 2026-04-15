@@ -15,6 +15,12 @@ import { AccountPage } from '@/features/profile/pages/AccountPage';
 import { PaymentsPage } from '@/features/profile/pages/PaymentsPage';
 import { WalletPage } from '@/features/profile/pages/WalletPage';
 import { SettingsPage } from '@/features/profile/pages/SettingsPage';
+import { FavoritesPage } from '@/features/profile/pages/FavoritesPage';
+import { SubscriptionsPage } from '@/features/profile/pages/SubscriptionsPage';
+import { MovementsPage } from '@/features/profile/pages/MovementsPage';
+import { WithdrawalsPage } from '@/features/profile/pages/WithdrawalsPage';
+import { HelpSupportPage } from '@/features/profile/pages/HelpSupportPage';
+import { CompaniesPage } from '@/features/profile/pages/CompaniesPage';
 
 export function AppRouter() {
   return (
@@ -36,6 +42,12 @@ export function AppRouter() {
           <Route path="/profile/account" element={<AccountPage />} />
           <Route path="/profile/payments" element={<PaymentsPage />} />
           <Route path="/profile/wallet" element={<WalletPage />} />
+          <Route path="/profile/favorites" element={<FavoritesPage />} />
+          <Route path="/profile/subscriptions" element={<SubscriptionsPage />} />
+          <Route path="/profile/movements" element={<MovementsPage />} />
+          <Route path="/profile/withdrawals" element={<WithdrawalsPage />} />
+          <Route path="/profile/help" element={<HelpSupportPage />} />
+          <Route path="/profile/companies" element={<CompaniesPage />} />
           <Route path="/profile/settings" element={<SettingsPage />} />
         </Route>
       </Route>

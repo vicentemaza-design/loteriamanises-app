@@ -38,6 +38,18 @@ const TRUST_BADGES = [
   { icon: BadgePercent,label: '0 Comisiones' },
 ];
 
+const authContainer = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.11, delayChildren: 0.08 },
+  },
+};
+
+const authItem = {
+  hidden: { opacity: 0, y: 22 },
+  visible: { opacity: 1, y: 0 },
+};
+
 type RegisterStep = 'access' | 'compliance' | 'verification';
 
 export function RegisterPage() {
@@ -86,9 +98,9 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="flex flex-col w-full flex-1 min-h-dvh bg-manises-blue relative overflow-x-hidden overflow-y-auto">
+    <div className="relative flex min-h-full w-full flex-1 flex-col overflow-x-hidden overflow-y-auto bg-manises-blue">
       {/* Background Decor (Same as Login for consistency) */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="fixed inset-0 pointer-events-none">
         <motion.img
           src={authBackground}
           alt=""
@@ -133,12 +145,18 @@ export function RegisterPage() {
         />
       </div>
 
-      <div className="relative z-10 flex min-h-dvh flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.75rem)] gap-5">
+      <motion.div
+        variants={authContainer}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 flex min-h-full flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.75rem)] gap-5"
+      >
         
         {/* Back Button */}
         <motion.button
-          initial={{ opacity: 0, x: -10 }}
+          initial={{ opacity: 0, x: -14 }}
           animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.45, ease: 'easeOut' }}
           onClick={() => navigate('/login')}
           className="absolute left-6 top-[calc(env(safe-area-inset-top,0px)+0.75rem)] flex items-center gap-2 text-white/50 hover:text-white transition-colors"
         >
@@ -148,29 +166,47 @@ export function RegisterPage() {
 
         {/* Brand */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          variants={authItem}
+          transition={{ duration: 0.58, ease: 'easeOut' }}
           className="mt-10 flex flex-col items-center gap-2"
         >
-          <img src="/assets/branding/logo-white.png" alt="Lotería Manises" className="h-10 w-auto" />
+          <motion.img
+            src="/assets/branding/logo-white.png"
+            alt="Lotería Manises"
+            initial={{ opacity: 0, scale: 0.75, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 170, damping: 15, delay: 0.18 }}
+            className="h-10 w-auto"
+          />
           <p className="text-manises-gold text-[9px] font-black uppercase tracking-[0.4em]">Administración nº 3</p>
         </motion.div>
 
         {/* Header Text */}
-        <div className="text-center space-y-1">
+        <motion.div variants={authItem} transition={{ duration: 0.52, ease: 'easeOut' }} className="text-center space-y-1">
           <h1 className="text-white text-2xl font-black tracking-tight">Crea tu cuenta</h1>
           <p className="text-white/40 text-xs font-medium">
             Registro seguro para jugadores mayores de 18 años
           </p>
-        </div>
+        </motion.div>
 
         {/* Form Card */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+          variants={authItem}
+          transition={{ duration: 0.72, ease: 'easeOut' }}
           className="w-full max-w-sm shrink-0"
         >
-          <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-7 shadow-2xl">
+          <motion.div
+            animate={{
+              y: [0, -4, 0],
+              boxShadow: [
+                '0 18px 44px rgba(0,0,0,0.28)',
+                '0 26px 60px rgba(0,0,0,0.38)',
+                '0 18px 44px rgba(0,0,0,0.28)',
+              ],
+            }}
+            transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
+            className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-7"
+          >
             <div className="flex items-center justify-between mb-5 px-1">
               {[
                 { key: 'access', label: 'Acceso' },
@@ -380,24 +416,29 @@ export function RegisterPage() {
                 Identifícate
               </button>
             </p>
-          </div>
+          </motion.div>
         </motion.div>
 
         {/* Trust Badges */}
-        <div className="mt-auto flex justify-center gap-6 pt-2">
+        <motion.div variants={authItem} transition={{ duration: 0.55, ease: 'easeOut' }} className="mt-auto flex justify-center gap-6 pt-2">
           {TRUST_BADGES.map(({ icon: Icon, label }) => (
-            <div key={label} className="flex flex-col items-center gap-1.5 opacity-30">
+            <motion.div
+              key={label}
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 3.8, repeat: Infinity, delay: 0.15, ease: 'easeInOut' }}
+              className="flex flex-col items-center gap-1.5 opacity-30"
+            >
               <Icon className="w-4 h-4 text-white" />
               <span className="text-[8px] font-black text-white uppercase tracking-widest">{label}</span>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Legal */}
         <p className="text-[9px] text-white/20 text-center font-medium max-w-[240px] leading-relaxed">
           Uso exclusivo para mayores de <span className="text-white/40">18 años</span>. Se requiere verificación de identidad para retirar premios y cumplir normativa de juego responsable.
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

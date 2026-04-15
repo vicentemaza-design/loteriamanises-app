@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { Button } from '@/shared/ui/Button';
 import { formatCurrency } from '@/shared/lib/utils';
-import { ArrowDownLeft, ArrowUpRight, Plus, Trophy } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Landmark, Plus, Trophy } from 'lucide-react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { toast } from 'sonner';
 import gsap from 'gsap';
@@ -11,9 +12,11 @@ import { useGSAP } from '@gsap/react';
 import { TopUpModal } from '../components/TopUpModal';
 import { doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '@/shared/config/firebase';
+import { PremiumActionRow } from '../components/PremiumActionRow';
 
 export function WalletPage() {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   
@@ -120,6 +123,24 @@ export function WalletPage() {
                 </div>
               </PremiumTouchInteraction>
             ))}
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <h3 className="text-xs font-black text-manises-blue uppercase tracking-widest pl-1">Operativa premium</h3>
+          <div className="flex flex-col gap-3">
+            <PremiumActionRow
+              icon={ArrowDownLeft}
+              title="Ver todos los movimientos"
+              description="Timeline completo de recargas, jugadas y premios."
+              onClick={() => navigate('/profile/movements')}
+            />
+            <PremiumActionRow
+              icon={Landmark}
+              title="Gestionar cobro de premios"
+              description="Estado documental, IBAN y retiradas disponibles."
+              onClick={() => navigate('/profile/withdrawals')}
+            />
           </div>
         </section>
 
