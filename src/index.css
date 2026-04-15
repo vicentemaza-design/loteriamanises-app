@@ -201,6 +201,9 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+  .pb-nav-safe {
+    padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+  }
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
   }
@@ -210,8 +213,16 @@
   }
 
   /* Dynamic viewport */
-  .min-h-dvh { min-height: 100dvh; }
-  .h-dvh     { height: 100dvh; }
+  .min-h-dvh {
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+  .h-dvh {
+    height: 100vh;
+    height: 100svh;
+    height: 100dvh;
+  }
 
   /* Gradientes de marca */
   .gradient-manises {

@@ -86,7 +86,7 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="flex flex-col w-full flex-1 min-h-dvh bg-manises-blue relative overflow-hidden">
+    <div className="flex flex-col w-full flex-1 min-h-dvh bg-manises-blue relative overflow-x-hidden overflow-y-auto">
       {/* Background Decor (Same as Login for consistency) */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.img
@@ -133,14 +133,14 @@ export function RegisterPage() {
         />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-6 py-10 gap-6">
+      <div className="relative z-10 flex min-h-dvh flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.75rem)] gap-5">
         
         {/* Back Button */}
         <motion.button
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           onClick={() => navigate('/login')}
-          className="absolute top-8 left-6 flex items-center gap-2 text-white/50 hover:text-white transition-colors"
+          className="absolute left-6 top-[calc(env(safe-area-inset-top,0px)+0.75rem)] flex items-center gap-2 text-white/50 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-xs font-bold uppercase tracking-widest">Volver</span>
@@ -150,7 +150,7 @@ export function RegisterPage() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center gap-2"
+          className="mt-10 flex flex-col items-center gap-2"
         >
           <img src="/assets/branding/logo-white.png" alt="Lotería Manises" className="h-10 w-auto" />
           <p className="text-manises-gold text-[9px] font-black uppercase tracking-[0.4em]">Administración nº 3</p>
@@ -168,7 +168,7 @@ export function RegisterPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-sm"
+          className="w-full max-w-sm shrink-0"
         >
           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-7 shadow-2xl">
             <div className="flex items-center justify-between mb-5 px-1">
@@ -384,7 +384,7 @@ export function RegisterPage() {
         </motion.div>
 
         {/* Trust Badges */}
-        <div className="flex justify-center gap-6 mt-2">
+        <div className="mt-auto flex justify-center gap-6 pt-2">
           {TRUST_BADGES.map(({ icon: Icon, label }) => (
             <div key={label} className="flex flex-col items-center gap-1.5 opacity-30">
               <Icon className="w-4 h-4 text-white" />

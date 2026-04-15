@@ -38,7 +38,7 @@ export function PaymentsPage() {
   }, { scope: containerRef });
 
   return (
-    <div className="flex flex-col min-h-dvh bg-background pb-28" ref={containerRef}>
+    <div className="flex min-h-full flex-col bg-background pb-nav-safe" ref={containerRef}>
       <ProfileSubHeader title="Métodos de Pago" />
       
       <div className="p-5 flex flex-col gap-6">

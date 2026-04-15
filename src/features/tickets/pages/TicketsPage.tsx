@@ -209,7 +209,7 @@ export function TicketsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 pb-28 bg-background min-h-dvh overflow-x-hidden" ref={containerRef}>
+    <div className="flex min-h-full flex-col gap-4 overflow-x-hidden bg-background pb-nav-safe" ref={containerRef}>
       {/* Search & Intro */}
       <section className="px-5 pt-4 space-y-4 tickets-header">
         <div className="flex items-center justify-between">

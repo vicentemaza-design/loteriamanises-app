@@ -48,7 +48,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col w-full flex-1 min-h-[100dvh] bg-manises-blue relative overflow-hidden">
+    <div className="flex flex-col w-full flex-1 min-h-dvh bg-manises-blue relative overflow-x-hidden overflow-y-auto">
       {/* Decoración de fondo */}
       <div className="absolute inset-0 pointer-events-none">
         <motion.img
@@ -141,14 +141,14 @@ export function LoginPage() {
       </div>
 
       {/* Contenido */}
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-6 py-10 gap-8">
+      <div className="relative z-10 flex min-h-dvh flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.75rem)] gap-6">
 
         {/* Brand */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="flex flex-col items-center gap-3"
+          className="mt-2 flex flex-col items-center gap-3"
         >
           {/* Logo Real */}
           <motion.img
@@ -173,7 +173,7 @@ export function LoginPage() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: 'easeOut', delay: 0.15 }}
-          className="w-full max-w-sm"
+          className="w-full max-w-sm shrink-0"
         >
           {/* Card */}
           <div className="bg-white/6 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 shadow-[0_8px_40px_rgba(0,0,0,0.35)]">
@@ -261,7 +261,7 @@ export function LoginPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className="flex items-center justify-center gap-5"
+          className="mt-auto flex items-center justify-center gap-5 pt-2"
         >
           {TRUST_BADGES.map(({ icon: Icon, label }) => (
             <div key={label} className="flex flex-col items-center gap-1 text-white/40">
