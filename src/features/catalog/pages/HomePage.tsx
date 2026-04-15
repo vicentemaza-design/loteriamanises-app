@@ -215,7 +215,7 @@ function PremiumEditorialCard({
   image: string;
   imageAlt: string;
   onClick: () => void;
-  accent?: 'gold' | 'blue';
+  accent?: 'gold' | 'blue' | 'indigo';
   icon: typeof BriefcaseBusiness;
   stats: string[];
 }) {
@@ -223,13 +223,25 @@ function PremiumEditorialCard({
     accent === 'gold'
       ? {
           badge: 'bg-manises-gold text-manises-blue',
-          cta: 'bg-manises-gold text-manises-blue hover:bg-white',
-          glow: 'rgba(245,197,24,0.18)',
+          cta: 'bg-manises-gold/90 text-manises-blue backdrop-blur-md border border-white/20',
+          glow: 'rgba(245,197,24,0.12)',
+          border: 'border-manises-gold/20',
+          overlay: 'bg-[linear-gradient(135deg,rgba(10,25,47,0.85)_0%,rgba(10,25,47,0.65)_50%,rgba(212,160,23,0.1)_100%)]'
+        }
+      : accent === 'blue'
+      ? {
+          badge: 'bg-sky-500/20 text-sky-100 border border-sky-400/30',
+          cta: 'bg-white/10 text-white backdrop-blur-md border border-white/20',
+          glow: 'rgba(56,189,248,0.12)',
+          border: 'border-sky-400/20',
+          overlay: 'bg-[linear-gradient(135deg,rgba(8,22,41,0.9)_0%,rgba(10,25,47,0.75)_40%,rgba(17,34,64,0.25)_100%)]'
         }
       : {
-          badge: 'bg-sky-400/18 text-sky-100 border border-sky-200/20',
-          cta: 'bg-white text-manises-blue hover:bg-sky-100',
-          glow: 'rgba(56,189,248,0.18)',
+          badge: 'bg-indigo-500/20 text-indigo-100 border border-indigo-400/30',
+          cta: 'bg-indigo-500 text-white',
+          glow: 'rgba(99,102,241,0.12)',
+          border: 'border-indigo-400/20',
+          overlay: 'bg-[linear-gradient(135deg,rgba(49,46,129,0.95)_0%,rgba(67,56,202,0.75)_40%,rgba(99,102,241,0.3)_100%)]'
         };
 
   return (
@@ -237,71 +249,75 @@ function PremiumEditorialCard({
       <button
         type="button"
         onClick={onClick}
-        className="premium-editorial-card group relative overflow-hidden rounded-[2rem] border border-white/70 text-left shadow-[0_22px_55px_rgba(10,25,47,0.16)]"
+        className={`premium-editorial-card group relative overflow-hidden rounded-[2.25rem] border ${accentClasses.border} text-left shadow-[0_22px_65px_-12px_rgba(0,0,0,0.4)] transition-all duration-500`}
       >
         <div className="absolute inset-0">
           <img
             src={image}
             alt={imageAlt}
-            className="h-full w-full object-cover transition-transform duration-[1600ms] group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-[2000ms] group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(8,22,41,0.92)_0%,rgba(10,25,47,0.78)_40%,rgba(17,34,64,0.48)_100%)]" />
+          <div className={`absolute inset-0 ${accentClasses.overlay}`} />
           <div
             className="absolute inset-0"
             style={{
-              background: `radial-gradient(circle at 82% 18%, ${accentClasses.glow} 0%, rgba(255,255,255,0) 38%)`,
+              background: `radial-gradient(circle at 82% 18%, ${accentClasses.glow} 0%, rgba(255,255,255,0) 45%)`,
             }}
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0)_28%,rgba(255,255,255,0.04)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_28%,rgba(255,255,255,0.02)_100%)]" />
         </div>
 
-        <div className="relative grid min-h-[280px] grid-cols-1 gap-5 p-5 text-white md:min-h-[240px]">
-          <div className="flex flex-col gap-4">
+        <div className="relative flex min-h-[300px] flex-col justify-between p-7 text-white md:min-h-[260px]">
+          <div className="space-y-5">
             <div className="flex items-center justify-between gap-3">
-              <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] shadow-lg ${accentClasses.badge}`}>
+              <span className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[9px] font-extrabold uppercase tracking-[0.2em] backdrop-blur-md shadow-inner ${accentClasses.badge}`}>
                 <Icon className="h-3.5 w-3.5" />
                 {badge}
               </span>
-              <div className="hidden items-center gap-2 rounded-full border border-white/12 bg-white/8 px-3 py-1.5 backdrop-blur-md md:flex">
-                <BadgeCheck className="h-3.5 w-3.5 text-white/70" />
-                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/72">
+              <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-md md:flex">
+                <BadgeCheck className="h-3.5 w-3.5 text-white/50" />
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-white/60">
                   Gestion premium
                 </span>
               </div>
             </div>
 
-            <div className="max-w-[18rem] space-y-2">
-              <h3 className="text-[1.7rem] font-black leading-[1.02] tracking-tight text-white text-shadow-premium">
+            <div className="max-w-[19rem] space-y-3">
+              <h3 className="text-[1.8rem] font-extrabold leading-[1.05] tracking-tight text-white drop-shadow-sm">
                 {title}
               </h3>
-              <p className="text-[13px] font-medium leading-relaxed text-white/75">
+              <p className="text-[13px] font-medium leading-relaxed text-white/70">
                 {description}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="flex flex-wrap gap-2">
               {stats.map((item) => (
                 <div
                   key={item}
-                  className="rounded-2xl border border-white/12 bg-white/8 px-3 py-2.5 backdrop-blur-md"
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-lg"
                 >
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/72">{item}</p>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/80">{item}</p>
                 </div>
               ))}
             </div>
+          </div>
 
-            <div>
-              <span className={`inline-flex h-12 items-center gap-2 rounded-2xl px-5 text-sm font-black shadow-xl transition-all ${accentClasses.cta}`}>
-                {cta}
-                <ArrowRight className="h-4 w-4" />
-              </span>
-            </div>
+          <div className="mt-4 pt-2">
+            <span className={`inline-flex h-12 items-center gap-2 rounded-2xl px-6 text-sm font-extrabold shadow-lg transition-all active:scale-95 ${accentClasses.cta}`}>
+              {cta}
+              <ArrowRight className="h-4 w-4" />
+            </span>
           </div>
         </div>
+        
+        {/* Shine effect overlay */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
       </button>
     </PremiumTouchInteraction>
   );
 }
+
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function HomePage() {
