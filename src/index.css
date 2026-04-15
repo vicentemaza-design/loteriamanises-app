@@ -334,14 +334,19 @@
     @apply font-sans;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    min-height: 100%;
+    min-height: 100svh;
+    min-height: 100dvh;
+    background-color: var(--color-manises-blue);
   }
 
   html, body {
     @apply overflow-x-hidden;
     overscroll-behavior-y: none;
-    position: fixed;
     width: 100%;
-    height: 100%;
+    min-height: 100%;
+    min-height: 100svh;
+    min-height: 100dvh;
     /* Permite selección de texto en contenido informativo */
     -webkit-user-select: none;
     user-select: none;
@@ -356,19 +361,29 @@
   }
 
   #root {
-    height: 100dvh;
+    min-height: 100%;
+    min-height: 100svh;
+    min-height: 100dvh;
     width: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background-color: var(--color-manises-blue);
   }
 
   body {
     @apply bg-background text-foreground;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    background-color: var(--color-manises-blue);
     background-image:
       radial-gradient(circle at top left, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 26%),
       radial-gradient(circle at bottom right, rgba(245,197,24,0.09) 0%, rgba(245,197,24,0) 22%);
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    html, body, #root {
+      min-height: -webkit-fill-available;
+    }
   }
 
   /* Animación de entrada suave para página */
