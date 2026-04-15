@@ -11,7 +11,10 @@ import {
   Lock,
   Sparkles,
   Clock,
-  Calendar
+  Calendar,
+  BriefcaseBusiness,
+  Landmark,
+  BadgeCheck,
 } from 'lucide-react';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
@@ -30,6 +33,7 @@ import primitivaJoyV2 from '@/assets/images/primitiva_joy_v2.jpg';
 import joySecondary from '@/assets/images/joy_secondary.png';
 import loteriaNacionalHero from '@/assets/images/loteria_nacional.jpg';
 import quinielaHero from '@/assets/quiniela_hero.jpg';
+import adminFacade from '@/assets/images/administracion_manises.webp';
 
 /**
  * ⚠️ BACKEND INTEGRATION POINT: OFFICIAL_PENAS
@@ -192,6 +196,113 @@ function PenaCard({ pena, onClick }: { key?: Key; pena: typeof OFFICIAL_PENAS[0]
   );
 }
 
+function PremiumEditorialCard({
+  badge,
+  title,
+  description,
+  cta,
+  image,
+  imageAlt,
+  onClick,
+  accent = 'gold',
+  icon: Icon,
+  stats,
+}: {
+  badge: string;
+  title: string;
+  description: string;
+  cta: string;
+  image: string;
+  imageAlt: string;
+  onClick: () => void;
+  accent?: 'gold' | 'blue';
+  icon: typeof BriefcaseBusiness;
+  stats: string[];
+}) {
+  const accentClasses =
+    accent === 'gold'
+      ? {
+          badge: 'bg-manises-gold text-manises-blue',
+          cta: 'bg-manises-gold text-manises-blue hover:bg-white',
+          glow: 'rgba(245,197,24,0.18)',
+        }
+      : {
+          badge: 'bg-sky-400/18 text-sky-100 border border-sky-200/20',
+          cta: 'bg-white text-manises-blue hover:bg-sky-100',
+          glow: 'rgba(56,189,248,0.18)',
+        };
+
+  return (
+    <PremiumTouchInteraction scale={0.985}>
+      <button
+        type="button"
+        onClick={onClick}
+        className="premium-editorial-card group relative overflow-hidden rounded-[2rem] border border-white/70 text-left shadow-[0_22px_55px_rgba(10,25,47,0.16)]"
+      >
+        <div className="absolute inset-0">
+          <img
+            src={image}
+            alt={imageAlt}
+            className="h-full w-full object-cover transition-transform duration-[1600ms] group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(8,22,41,0.92)_0%,rgba(10,25,47,0.78)_40%,rgba(17,34,64,0.48)_100%)]" />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `radial-gradient(circle at 82% 18%, ${accentClasses.glow} 0%, rgba(255,255,255,0) 38%)`,
+            }}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0)_28%,rgba(255,255,255,0.04)_100%)]" />
+        </div>
+
+        <div className="relative grid min-h-[280px] grid-cols-1 gap-5 p-5 text-white md:min-h-[240px]">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.22em] shadow-lg ${accentClasses.badge}`}>
+                <Icon className="h-3.5 w-3.5" />
+                {badge}
+              </span>
+              <div className="hidden items-center gap-2 rounded-full border border-white/12 bg-white/8 px-3 py-1.5 backdrop-blur-md md:flex">
+                <BadgeCheck className="h-3.5 w-3.5 text-white/70" />
+                <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/72">
+                  Gestion premium
+                </span>
+              </div>
+            </div>
+
+            <div className="max-w-[18rem] space-y-2">
+              <h3 className="text-[1.7rem] font-black leading-[1.02] tracking-tight text-white text-shadow-premium">
+                {title}
+              </h3>
+              <p className="text-[13px] font-medium leading-relaxed text-white/75">
+                {description}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {stats.map((item) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-white/12 bg-white/8 px-3 py-2.5 backdrop-blur-md"
+                >
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/72">{item}</p>
+                </div>
+              ))}
+            </div>
+
+            <div>
+              <span className={`inline-flex h-12 items-center gap-2 rounded-2xl px-5 text-sm font-black shadow-xl transition-all ${accentClasses.cta}`}>
+                {cta}
+                <ArrowRight className="h-4 w-4" />
+              </span>
+            </div>
+          </div>
+        </div>
+      </button>
+    </PremiumTouchInteraction>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function HomePage() {
   const navigate = useNavigate();
@@ -229,12 +340,14 @@ export function HomePage() {
     const hero = gsap.utils.toArray<HTMLElement>('.hero-card');
     const heroParts = gsap.utils.toArray<HTMLElement>('.hero-badge, .hero-timer, .hero-title, .hero-tagline, .hero-box');
     const gameCards = gsap.utils.toArray<HTMLElement>('.game-card');
+    const editorialCards = gsap.utils.toArray<HTMLElement>('.premium-editorial-card');
     const penaCards = gsap.utils.toArray<HTMLElement>('.pena-card');
 
     gsap.set(greeting, { y: 12, autoAlpha: 0 });
     gsap.set(hero, { y: 16, scale: 0.985, autoAlpha: 0 });
     gsap.set(heroParts, { y: 10, autoAlpha: 0 });
     gsap.set(gameCards, { y: 12, autoAlpha: 0 });
+    gsap.set(editorialCards, { y: 18, autoAlpha: 0 });
     gsap.set(penaCards, { x: 10, autoAlpha: 0 });
 
     const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
@@ -244,6 +357,7 @@ export function HomePage() {
       .to(hero, { y: 0, scale: 1, autoAlpha: 1, duration: 0.46 }, '-=0.16')
       .to(heroParts, { y: 0, autoAlpha: 1, duration: 0.32, stagger: 0.05 }, '-=0.2')
       .to(gameCards, { y: 0, autoAlpha: 1, duration: 0.32, stagger: 0.055 }, '-=0.16')
+      .to(editorialCards, { y: 0, autoAlpha: 1, duration: 0.4, stagger: 0.08 }, '-=0.1')
       .to(penaCards, { x: 0, autoAlpha: 1, duration: 0.32, stagger: 0.055 }, '-=0.14');
   }, { scope: containerRef });
 
@@ -345,6 +459,47 @@ export function HomePage() {
         </section>
       )}
 
+      {/* ── Editorial Premium ─────────────────────────────────── */}
+      <section className="space-y-4 px-4">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-manises-blue" />
+            <h2 className="text-xs font-black uppercase tracking-widest text-manises-blue">Servicios Premium</h2>
+          </div>
+          <span className="text-[9px] font-black uppercase tracking-[0.18em] text-manises-blue/40">
+            Gestion avanzada
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <PremiumEditorialCard
+            badge="B2B Navidad"
+            title="Loteria de Navidad para Empresas"
+            description="Gestiona participaciones, reparto interno y seguimiento de cobros con una experiencia pensada para equipos, asociaciones y campanas corporativas."
+            cta="Abrir modulo empresas"
+            image={adminFacade}
+            imageAlt="Servicio premium para empresas"
+            icon={BriefcaseBusiness}
+            accent="blue"
+            stats={['Participaciones digitales', 'Seguimiento de cobros', 'Soporte dedicado']}
+            onClick={() => navigate('/profile/companies')}
+          />
+
+          <PremiumEditorialCard
+            badge="Numero Fiel"
+            title="Abonarte a un numero de loteria"
+            description="Convierte tu numero favorito en un abono estable y deja preparada la renovacion automatica para no perder nunca tu combinacion de referencia."
+            cta="Ver abonos disponibles"
+            image={loteriaNacionalHero}
+            imageAlt="Abonos a numero de loteria"
+            icon={Landmark}
+            accent="gold"
+            stats={['Numero persistente', 'Cobro recurrente', 'Control semanal']}
+            onClick={() => navigate('/profile/subscriptions')}
+          />
+        </div>
+      </section>
+
       {/* ── Peñas Oficiales ───────────────────────────────────── */}
       <section className="space-y-3 px-4">
         <div className="flex items-center justify-between px-1">
@@ -367,7 +522,7 @@ export function HomePage() {
       </section>
 
       {/* ── Trust ─────────────────────────────────────────────── */}
-      <section className="px-6 mt-2">
+      <section className="mt-auto px-6 pt-2">
         <div className="flex items-center justify-around gap-4 border-t border-gray-100 pt-5">
           {TRUST_ITEMS.map(({ icon: Icon, label }) => (
             <div key={label} className="flex flex-col items-center gap-2 text-center opacity-60">

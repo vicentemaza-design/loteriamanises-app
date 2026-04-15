@@ -78,6 +78,7 @@
 
 /* ===== MODO CLARO (default) ===== */
 :root {
+  --app-height: 100dvh;
   --background:            #F7F8FA;
   --foreground:            #0A192F;
   --card:                  #FFFFFF;
@@ -218,10 +219,16 @@
     min-height: 100svh;
     min-height: 100dvh;
   }
+  .min-h-app {
+    min-height: var(--app-height);
+  }
   .h-dvh {
     height: 100vh;
     height: 100svh;
     height: 100dvh;
+  }
+  .h-app {
+    height: var(--app-height);
   }
 
   /* Gradientes de marca */

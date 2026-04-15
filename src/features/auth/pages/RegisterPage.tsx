@@ -98,7 +98,7 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="relative flex min-h-full w-full flex-1 flex-col overflow-x-hidden overflow-y-auto bg-manises-blue">
+    <div className="relative flex min-h-app w-full flex-1 flex-col overflow-x-hidden overflow-y-auto bg-manises-blue">
       {/* Background Decor (Same as Login for consistency) */}
       <div className="fixed inset-0 pointer-events-none">
         <motion.img
@@ -149,7 +149,7 @@ export function RegisterPage() {
         variants={authContainer}
         initial="hidden"
         animate="visible"
-        className="relative z-10 flex min-h-full flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.75rem)] gap-5"
+        className="relative z-10 flex min-h-app flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.75rem)] gap-5"
       >
         
         {/* Back Button */}
