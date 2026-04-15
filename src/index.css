@@ -352,6 +352,7 @@
     @apply font-sans;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    height: var(--app-height);
     min-height: 100%;
     min-height: 100svh;
     min-height: 100dvh;
@@ -362,6 +363,7 @@
     @apply overflow-x-hidden;
     overscroll-behavior-y: none;
     width: 100%;
+    height: var(--app-height);
     min-height: 100%;
     min-height: 100svh;
     min-height: 100dvh;
@@ -379,6 +381,7 @@
   }
 
   #root {
+    height: var(--app-height);
     min-height: 100%;
     min-height: 100svh;
     min-height: 100dvh;
