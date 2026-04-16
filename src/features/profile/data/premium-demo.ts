@@ -121,7 +121,7 @@ export const premiumDemoData: PremiumDemoData = {
     {
       id: 'company-01',
       title: 'Gestion de loteria para empresas',
-      description: 'Campanas de Navidad y Nino con reparto por equipos o departamentos.',
+      description: 'Campañas de Navidad y El Niño con reparto por equipos o departamentos.',
       detail: 'Panel de participaciones, control de cobros y soporte dedicado.',
     },
     {

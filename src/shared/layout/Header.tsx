@@ -5,6 +5,42 @@ import { useEffect, useRef, useState } from 'react';
 import { formatCurrency } from '@/shared/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
+// Hook para detectar scroll direction
+function useScrollDirection() {
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const scrollThreshold = 50;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Si estamos cerca del top (< 100px), siempre visible
+      if (currentScrollY < 100) {
+        setIsVisible(true);
+        lastScrollY.current = currentScrollY;
+        return;
+      }
+
+      // Si scrolls down más de threshold, ocultar
+      if (currentScrollY > lastScrollY.current + scrollThreshold) {
+        setIsVisible(false);
+      }
+      // Si scrolls up más de threshold, mostrar
+      else if (currentScrollY < lastScrollY.current - scrollThreshold) {
+        setIsVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return isVisible;
+}
+
 function AnimatedBalance({ value }: { value: number }) {
   const [display, setDisplay] = useState(value);
   const prevRef = useRef(value);
@@ -28,10 +64,31 @@ function AnimatedBalance({ value }: { value: number }) {
 export function Header() {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const isVisible = useScrollDirection();
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-manises-blue shadow-lg border-b border-white/10 pt-safe">
-      <div className="flex items-center justify-between h-16 px-5 max-w-7xl mx-auto">
+    <motion.header 
+      className="sticky top-0 z-40 w-full pt-safe"
+      animate={{ 
+        y: isVisible ? 0 : -100,
+        opacity: isVisible ? 1 : 0,
+      }}
+      transition={{ 
+        duration: 0.3,
+        ease: 'easeOut',
+      }}
+      style={{
+        pointerEvents: isVisible ? 'auto' : 'none',
+      }}
+    >
+      {/* Premium gradient + blur backdrop */}
+      <div className="absolute inset-0 bg-gradient-to-b from-manises-blue via-manises-blue/95 to-manises-blue/90 backdrop-blur-xl border-b border-white/10" />
+      
+      {/* Shadow effect */}
+      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-b from-black/20 to-transparent pointer-events-none" />
+
+      {/* Content */}
+      <div className="relative flex items-center justify-between h-16 px-5 max-w-7xl mx-auto">
         {/* Logo + Brand */}
         <div className="flex items-center gap-4 min-w-0" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
           <motion.img
@@ -58,7 +115,7 @@ export function Header() {
               whileTap={{ scale: 0.95 }}
               whileHover={{ scale: 1.02 }}
               onClick={() => navigate('/profile')}
-              className="bg-white/10 border border-white/20 rounded-full pl-3 pr-2 py-1.5 flex items-center gap-2 shadow-sm transition-all hover:bg-white/15 active:bg-white/20"
+              className="bg-white/10 border border-white/20 rounded-full pl-3 pr-2 py-1.5 flex items-center gap-2 shadow-sm transition-all hover:bg-white/15 active:bg-white/20 backdrop-blur-sm"
               aria-label={`Mi saldo: ${formatCurrency(profile.balance)}. Pulsar para recargar.`}
             >
               <Wallet className="w-4 h-4 text-manises-gold shrink-0" />
@@ -72,6 +129,6 @@ export function Header() {
           )}
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }

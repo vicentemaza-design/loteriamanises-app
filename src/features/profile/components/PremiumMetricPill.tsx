@@ -1,27 +1,42 @@
 import { cn } from '@/shared/lib/utils';
+import type { ReactNode } from 'react';
 
 interface PremiumMetricPillProps {
   label: string;
   value: string;
-  tone?: 'default' | 'gold' | 'blue';
+  tone?: 'default' | 'gold' | 'blue' | 'rose' | 'emerald' | 'violet';
+  icon?: ReactNode;
 }
+
+const toneMap: Record<string, { label: string }> = {
+  gold:    { label: 'text-amber-600' },
+  blue:    { label: 'text-sky-600' },
+  rose:    { label: 'text-rose-600' },
+  emerald: { label: 'text-emerald-600' },
+  violet:  { label: 'text-violet-600' },
+  default: { label: 'text-manises-blue/60' },
+};
 
 export function PremiumMetricPill({
   label,
   value,
   tone = 'default',
+  icon,
 }: PremiumMetricPillProps) {
+  const palette = toneMap[tone] ?? toneMap.default;
   return (
     <div
-      className={cn(
-        'rounded-2xl border px-4 py-3 backdrop-blur-md',
-        tone === 'gold' && 'border-manises-gold/20 bg-manises-gold/10',
-        tone === 'blue' && 'border-manises-blue/12 bg-manises-blue/6',
-        tone === 'default' && 'border-white/70 bg-white/65'
-      )}
+      className="flex flex-col gap-0.5 px-3 py-2.5 rounded-xl border border-gray-100 bg-gray-50/50 shadow-inner"
     >
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-manises-blue/45">{label}</p>
-      <p className="mt-1 text-sm font-black tracking-tight text-manises-blue">{value}</p>
+      <div className="flex items-center gap-1.5 leading-none">
+        {icon && <span className={cn('opacity-70', palette.label)}>{icon}</span>}
+        <p className={cn('text-[9px] font-black uppercase tracking-[0.16em]', palette.label)}>
+          {label}
+        </p>
+      </div>
+      <p className="text-[0.85rem] font-black tracking-tight text-manises-blue mt-1">
+        {value}
+      </p>
     </div>
   );
 }

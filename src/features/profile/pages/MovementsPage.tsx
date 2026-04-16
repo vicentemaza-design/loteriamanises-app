@@ -1,3 +1,4 @@
+import type { ElementType } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Trophy, Wallet } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/shared/lib/utils';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
@@ -17,37 +18,55 @@ export function MovementsPage() {
     return ArrowUpRight;
   };
 
+  const getTone = (type: 'deposit' | 'bet' | 'prize') => {
+    if (type === 'deposit') return 'blue';
+    if (type === 'prize') return 'gold';
+    return 'violet';
+  };
+
   return (
     <div className="flex min-h-full flex-col bg-background pb-nav-safe">
-      <ProfileSubHeader title="Movimientos" />
-      <div className="flex flex-col gap-4 p-5">
-        <PremiumSectionCard
-          eyebrow="Finanzas"
-          title="Libro de movimientos del cliente"
-          description="Vista pensada para backend de wallet, premios, compras y conciliacion."
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <PremiumMetricPill label="Ingresado" value={formatCurrency(deposits)} tone="blue" />
-            <PremiumMetricPill label="Premios" value={formatCurrency(prizes)} tone="gold" />
+      <ProfileSubHeader title="Movimientos" subtitle="Historial financiero" />
+      <div className="flex flex-col gap-5 p-4">
+        
+        {/* Subtle summary metric at the top instead of a loud hero */}
+        <section className="px-1 flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Balance de actividad</p>
+            <p className="text-[1.2rem] font-black text-manises-blue tracking-tight">
+              {formatCurrency(deposits + prizes)}
+              <span className="ml-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Histórico</span>
+            </p>
           </div>
-        </PremiumSectionCard>
+          <div className="w-10 h-10 rounded-xl bg-manises-blue/5 flex items-center justify-center">
+            <Wallet className="w-5 h-5 text-manises-blue/40" />
+          </div>
+        </section>
 
-        <PremiumSectionCard
-          eyebrow="Timeline"
-          title="Actividad reciente"
-          description="Cada movimiento deberia enlazar con ticket, premio, recarga o retirada."
-        >
-          <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-2 gap-3">
+          <PremiumMetricPill label="Total Ingresado" value={formatCurrency(deposits)} tone="blue" />
+          <PremiumMetricPill label="Total Premios" value={formatCurrency(prizes)} tone="gold" />
+        </div>
+
+        <section className="space-y-3">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Actividad reciente</p>
+          <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border/50">
             {movements.map((movement) => {
               const Icon = getIcon(movement.type);
+              const tone = getTone(movement.type);
               return (
                 <PremiumActionRow
                   key={movement.id}
                   icon={Icon}
                   title={movement.description}
-                  description={`${formatDate(movement.createdAt)} · ${movement.type}`}
+                  description={`${formatDate(movement.createdAt)}`}
+                  tone={tone}
+                  badge={movement.type === 'deposit' ? 'Entrada' : movement.type === 'prize' ? 'Premio' : 'Apuesta'}
                   trailing={
-                    <span className="text-sm font-black text-manises-blue">
+                    <span className={cn(
+                      'text-sm font-bold tabular-nums',
+                      movement.amount > 0 ? 'text-emerald-600' : 'text-manises-blue'
+                    )}>
                       {movement.amount > 0 ? '+' : ''}
                       {formatCurrency(movement.amount)}
                     </span>
@@ -56,20 +75,23 @@ export function MovementsPage() {
               );
             })}
           </div>
-        </PremiumSectionCard>
+        </section>
 
         <PremiumSectionCard
-          eyebrow="Backend"
-          title="Modelo recomendado"
-          description="wallet_movement { type, amount, sourceId, sourceType, balanceAfter, createdAt }"
+          title="Seguridad y Auditoría"
+          description="Cada movimiento cuenta con un identificador único de transacción para su seguimiento."
+          tone="default"
         >
-          <PremiumActionRow
-            icon={Wallet}
-            title="Conciliacion y trazabilidad"
-            description="Clave para soporte, devoluciones, cobros fallidos, premios y auditoria financiera."
-          />
+          <p className="text-[10px] text-muted-foreground/60 font-medium">
+            Los datos mostrados son a título informativo.
+          </p>
         </PremiumSectionCard>
       </div>
     </div>
   );
+}
+
+// Utility check for cn inside the component closure
+function cn(...inputs: any[]) {
+  return inputs.filter(Boolean).join(' ');
 }
