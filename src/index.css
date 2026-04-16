@@ -406,6 +406,20 @@
     }
   }
 
+  html.auth-route,
+  html.auth-route body,
+  body.auth-route,
+  html.auth-route #root {
+    height: auto;
+    min-height: 100dvh;
+    background-color: #060d1a;
+    background-image: none;
+  }
+
+  html.auth-route #root {
+    overflow: visible;
+  }
+
   /* Animación de entrada suave para página */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(12px); }
