@@ -98,9 +98,9 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-manises-blue overflow-hidden z-[100]">
+    <div className="fixed inset-x-0 -inset-y-12 bg-[#060d1a] overflow-hidden z-[100]">
       {/* Background stays absolutely fixed underneath to prevent banding during bounce */}
-      <div className="absolute -inset-y-12 inset-x-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none">
         <motion.img
           src={authBackground}
           alt=""
