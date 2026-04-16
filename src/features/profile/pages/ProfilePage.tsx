@@ -77,12 +77,13 @@ export function ProfilePage() {
     },
     {
       title: 'Premium Demo',
+      premium: true,
       items: [
-        { icon: Heart,          label: 'Jugadas favoritas',    detail: null, color: 'text-rose-600', bg: 'bg-rose-50', onClick: () => navigate('/profile/favorites') },
-        { icon: RefreshCcw,     label: 'Mis abonos',           detail: null, color: 'text-amber-600', bg: 'bg-amber-50', onClick: () => navigate('/profile/subscriptions') },
-        { icon: ArrowLeftRight, label: 'Movimientos',          detail: null, color: 'text-cyan-700', bg: 'bg-cyan-50', onClick: () => navigate('/profile/movements') },
-        { icon: Landmark,       label: 'Cobrar premios',       detail: null, color: 'text-emerald-700', bg: 'bg-emerald-50', onClick: () => navigate('/profile/withdrawals') },
-        { icon: Building2,      label: 'Empresas y colectivos',detail: null, color: 'text-indigo-700', bg: 'bg-indigo-50', onClick: () => navigate('/profile/companies') },
+        { icon: Heart,          label: 'Jugadas favoritas',     detail: 'Guardadas', color: 'text-rose-500', bg: 'bg-gradient-to-br from-rose-500/18 via-red-400/10 to-white/70 border border-rose-300/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]', accent: 'from-rose-500/16 via-red-400/8 to-transparent', onClick: () => navigate('/profile/favorites') },
+        { icon: RefreshCcw,     label: 'Mis abonos',            detail: 'Activos',   color: 'text-sky-600',  bg: 'bg-gradient-to-br from-sky-500/18 via-cyan-400/10 to-white/70 border border-sky-300/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]', accent: 'from-sky-500/16 via-cyan-400/8 to-transparent', onClick: () => navigate('/profile/subscriptions') },
+        { icon: ArrowLeftRight, label: 'Movimientos',           detail: 'Historial', color: 'text-cyan-600', bg: 'bg-gradient-to-br from-cyan-500/18 via-teal-400/10 to-white/70 border border-cyan-300/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]', accent: 'from-cyan-500/16 via-teal-400/8 to-transparent', onClick: () => navigate('/profile/movements') },
+        { icon: Landmark,       label: 'Cobrar premios',        detail: 'Express',   color: 'text-emerald-600', bg: 'bg-gradient-to-br from-emerald-500/18 via-green-400/10 to-white/70 border border-emerald-300/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]', accent: 'from-emerald-500/16 via-green-400/8 to-transparent', onClick: () => navigate('/profile/withdrawals') },
+        { icon: Building2,      label: 'Empresas y colectivos', detail: 'Pro',       color: 'text-violet-600', bg: 'bg-gradient-to-br from-violet-500/18 via-indigo-400/10 to-white/70 border border-violet-300/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.65)]', accent: 'from-violet-500/16 via-indigo-400/8 to-transparent', onClick: () => navigate('/profile/companies') },
       ],
     },
     {
@@ -174,31 +175,66 @@ export function ProfilePage() {
       {/* ---- Menú por secciones ---- */}
       {MENU_SECTIONS.map(section => (
         <div key={section.title}>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 px-1">
-            {section.title}
-          </p>
-          <div className="bg-card rounded-xl border border-border overflow-hidden divide-y divide-border shadow-manises surface-neo-soft">
+          <div className="mb-2 flex items-center justify-between px-1">
+            <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${section.premium ? 'text-manises-blue' : 'text-muted-foreground'}`}>
+              {section.title}
+            </p>
+            {section.premium && (
+              <span className="rounded-full border border-manises-gold/30 bg-manises-gold/12 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.24em] text-manises-blue">
+                Curated
+              </span>
+            )}
+          </div>
+          <div className={`${section.premium
+            ? 'relative overflow-hidden rounded-[1.35rem] border border-manises-gold/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.92))] shadow-[0_18px_40px_rgba(10,25,47,0.12)]'
+            : 'bg-card rounded-xl border border-border overflow-hidden shadow-manises surface-neo-soft'
+          }`}>
+            {section.premium && (
+              <>
+                <div className="section-wash absolute inset-0 pointer-events-none" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-manises-gold/70 to-transparent pointer-events-none" />
+                <div className="absolute -top-10 right-4 h-24 w-24 rounded-full bg-manises-gold/12 blur-2xl pointer-events-none" />
+              </>
+            )}
+            <div className={`${section.premium ? 'relative divide-y divide-white/70 p-1.5' : 'divide-y divide-border'}`}>
             {section.items.map((item) => (
               <button
                 key={item.label}
                 onClick={item.onClick}
-                className="w-full flex items-center gap-4 px-4 py-3.5 text-left hover:bg-muted/50 active:bg-muted transition-colors group"
+                className={`group relative w-full text-left transition-all ${section.premium
+                  ? 'flex items-center gap-4 rounded-[1.1rem] px-4 py-3.5 hover:bg-white/85 active:bg-white/95'
+                  : 'flex items-center gap-4 px-4 py-3.5 hover:bg-muted/50 active:bg-muted'
+                }`}
               >
-                <div className={`p-2 rounded-xl ${item.bg} ${item.color} shrink-0 transition-transform group-hover:scale-105`}>
-                  <item.icon className="w-4.5 h-4.5" aria-hidden="true" />
+                {section.premium && item.accent && (
+                  <div className={`absolute inset-0 rounded-[1.1rem] bg-gradient-to-r ${item.accent} opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-100`} />
+                )}
+                <div className={`relative shrink-0 rounded-xl p-2 ${item.bg} ${item.color} transition-transform duration-300 group-hover:scale-[1.08]`}>
+                  <item.icon className={section.premium ? 'h-5 w-5' : 'h-4.5 w-4.5'} aria-hidden="true" />
                 </div>
-                <span className="flex-1 text-sm font-semibold text-manises-blue truncate">
-                  {item.label}
-                </span>
-                {item.detail && (
-                  <div className="mr-2">
-                    {typeof item.detail === 'function' ? item.detail(profile?.balance ?? 0) : item.detail}
+                <div className="relative flex min-w-0 flex-1 items-center gap-3">
+                  <span className={`truncate ${section.premium ? 'text-[0.95rem] font-bold tracking-[-0.01em] text-manises-blue' : 'text-sm font-semibold text-manises-blue'}`}>
+                    {item.label}
+                  </span>
+                  {item.detail && (
+                    <div className="mr-1 ml-auto">
+                      {typeof item.detail === 'function' ? item.detail(profile?.balance ?? 0) : (
+                        <span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${section.premium ? 'border border-manises-blue/10 bg-white/80 text-manises-blue/75 shadow-[0_6px_16px_rgba(10,25,47,0.08)]' : 'text-manises-blue/65'}`}>
+                          {item.detail}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {item.logos}
+                {(!item.detail || section.premium) && (
+                  <div className={`${section.premium ? 'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-manises-blue/10 bg-white/70 shadow-[0_8px_18px_rgba(10,25,47,0.08)]' : ''}`}>
+                    <ChevronRight className={`w-4 h-4 shrink-0 transition-colors ${section.premium ? 'text-manises-blue/60 group-hover:text-manises-blue' : 'text-muted-foreground group-hover:text-manises-blue'}`} />
                   </div>
                 )}
-                {item.logos}
-                {!item.detail && <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-manises-blue transition-colors shrink-0" />}
               </button>
             ))}
+            </div>
           </div>
         </div>
       ))}
