@@ -19,7 +19,7 @@ import {
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import authBackground from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
+import { AuthScreenShell } from '@/features/auth/components/AuthScreenShell';
 
 function GoogleIcon() {
   return (
@@ -98,61 +98,13 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="fixed inset-x-0 -inset-y-12 bg-[#060d1a] overflow-hidden z-[100]">
-      {/* Background stays absolutely fixed underneath to prevent banding during bounce */}
-      <div className="absolute inset-0 pointer-events-none">
-        <motion.img
-          src={authBackground}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover opacity-40"
-          animate={{
-            scale: [1.03, 1.08, 1.04, 1.03],
-            x: [0, -12, 10, 0],
-            y: [0, 8, -6, 0],
-          }}
-          transition={{ duration: 32, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(circle at 16% 18%, rgba(245,197,24,0.34) 0%, rgba(245,197,24,0) 38%), radial-gradient(circle at 84% 22%, rgba(56,189,248,0.32) 0%, rgba(56,189,248,0) 34%), linear-gradient(180deg, rgba(10,25,47,0.56) 0%, rgba(12,24,48,0.62) 44%, rgba(9,20,38,0.74) 100%)',
-          }}
-        />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_78%,rgba(16,185,129,0.18)_0%,rgba(16,185,129,0)_34%),radial-gradient(circle_at_76%_82%,rgba(245,197,24,0.14)_0%,rgba(245,197,24,0)_42%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.11)_0%,rgba(255,255,255,0)_40%)] opacity-80" />
-        <motion.div
-          animate={{ x: [0, 40, -20, 0], y: [0, -30, 20, 0], scale: [1, 1.1, 0.9, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute -top-20 -right-20 w-96 h-96 rounded-full blur-3xl opacity-20"
-          style={{ background: 'radial-gradient(circle, #F5C518 0%, transparent 70%)' }}
-        />
-        <motion.div
-            animate={{ x: [0, -50, 20, 0], y: [0, 30, -20, 0], scale: [1, 0.9, 1.1, 1] }}
-            transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute top-[30%] -left-20 w-[30rem] h-[30rem] rounded-full blur-3xl opacity-10"
-            style={{ background: 'radial-gradient(circle, #F5C518 0%, transparent 70%)' }}
-        />
-        <motion.div
-          animate={{ rotate: [0, 360] }}
-          transition={{ duration: 44, repeat: Infinity, ease: 'linear' }}
-          className="absolute left-1/2 top-1/2 w-[38rem] h-[38rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.16] blur-2xl"
-          style={{
-            background:
-              'conic-gradient(from 0deg, rgba(245,197,24,0) 0deg, rgba(245,197,24,0.24) 68deg, rgba(56,189,248,0.12) 132deg, rgba(10,25,47,0) 220deg, rgba(16,185,129,0.1) 290deg, rgba(245,197,24,0) 360deg)',
-          }}
-        />
-      </div>
-
-      {/* The isolated scrolling layer, strictly on top of the fixed background */}
-      <div className="absolute inset-0 overflow-y-auto overflow-x-hidden">
-        <motion.div
-          variants={authContainer}
-          initial="hidden"
-          animate="visible"
-          className="relative z-10 flex min-h-max flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] pb-[calc(env(safe-area-inset-bottom,0px)+3rem)] gap-5"
-        >
+    <AuthScreenShell contentClassName="gap-5 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)]">
+      <motion.div
+        variants={authContainer}
+        initial="hidden"
+        animate="visible"
+        className="flex min-h-max flex-col items-center justify-start gap-5"
+      >
         
         {/* Back Button */}
         <motion.button
@@ -441,7 +393,6 @@ export function RegisterPage() {
           Uso exclusivo para mayores de <span className="text-white/40">18 años</span>. Se requiere verificación de identidad para retirar premios y cumplir normativa de juego responsable.
         </p>
       </motion.div>
-      </div>
-    </div>
+    </AuthScreenShell>
   );
 }

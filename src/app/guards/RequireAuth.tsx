@@ -1,21 +1,12 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { AuthScreenShell } from '@/features/auth/components/AuthScreenShell';
 
-export function RequireAuth() {
-  const { user, isDemo, loading } = useAuth();
-
-  if (loading) {
-    return (
-        <motion.div
-          className="absolute inset-0 opacity-50"
-          style={{
-            background:
-              'radial-gradient(circle at 50% 30%, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0) 35%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 24%)',
-          }}
-          animate={{ opacity: [0.35, 0.58, 0.35] }}
-          transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
-        />
+function AuthLoadingScreen() {
+  return (
+    <AuthScreenShell contentClassName="min-h-full justify-center py-[calc(env(safe-area-inset-top,0px)+2rem)]">
+      <div className="flex min-h-full items-center justify-center">
         <motion.div
           initial={{ opacity: 0, y: 18, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -57,13 +48,19 @@ export function RequireAuth() {
               />
             ))}
           </div>
-          </motion.div>
-        </div>
+        </motion.div>
       </div>
-    );
+    </AuthScreenShell>
+  );
+}
+
+export function RequireAuth() {
+  const { user, isDemo, loading } = useAuth();
+
+  if (loading) {
+    return <AuthLoadingScreen />;
   }
 
-  // Permite acceso si hay usuario real ó modo demo activo
   if (!user && !isDemo) {
     return <Navigate to="/login" replace />;
   }
