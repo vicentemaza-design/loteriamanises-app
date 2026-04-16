@@ -61,8 +61,8 @@ export function LoginPage() {
 
   return (
     <div className="relative flex min-h-app w-full flex-1 flex-col overflow-x-hidden overflow-y-auto bg-manises-blue">
-      {/* Decoración de fondo */}
-      <div className="fixed inset-0 pointer-events-none">
+      {/* Decoración de fondo extendida para evitar bandas en PWA */}
+      <div className="fixed -inset-y-20 inset-x-0 pointer-events-none">
         <motion.img
           src={authBackground}
           alt=""
