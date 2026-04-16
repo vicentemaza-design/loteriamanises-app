@@ -7,7 +7,7 @@ export function RequireAuth() {
 
   if (loading) {
     return (
-      <div className="fixed left-0 top-0 w-full h-[120vh] -translate-y-[10vh] z-[300] flex items-center justify-center overflow-hidden px-6 pt-[10vh]">
+      <div className="fixed inset-0 z-[300] flex items-center justify-center overflow-hidden px-6 pt-[10vh]">
         {/* Fondo base oscuro */}
         <div className="absolute inset-0 bg-[#07182c] -z-10" />
         <motion.div
