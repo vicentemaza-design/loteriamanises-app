@@ -352,7 +352,7 @@
     min-height: 100%;
     min-height: 100svh;
     min-height: 100dvh;
-    background-color: var(--background);
+    background-color: #0A192F; /* Manises Blue - Evita banda blanca */
   }
 
   html, body {
@@ -368,6 +368,7 @@
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    background-color: #0A192F;
   }
 
   /* El texto informativo sí puede seleccionarse */
