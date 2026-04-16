@@ -62,7 +62,7 @@ export function LoginPage() {
   return (
     <div className="relative flex min-h-app w-full flex-1 flex-col overflow-x-hidden overflow-y-auto bg-manises-blue">
       {/* Decoración de fondo */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="fixed right-0 left-0 -top-[env(safe-area-inset-top,0px)] -bottom-[env(safe-area-inset-bottom,0px)] pointer-events-none">
         <motion.img
           src={authBackground}
           alt=""

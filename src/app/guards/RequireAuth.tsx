@@ -8,6 +8,8 @@ export function RequireAuth() {
   if (loading) {
     return (
       <div className="fixed inset-0 z-[300] flex min-h-dvh items-center justify-center overflow-hidden bg-[#07182c] px-6 pt-safe pb-safe">
+        {/* Extensión para safe area de iOS PWA */}
+        <div className="absolute right-0 left-0 -top-[env(safe-area-inset-top,0px)] -bottom-[env(safe-area-inset-bottom,0px)] bg-[#07182c] -z-10" />
         <motion.div
           className="absolute inset-0"
           animate={{
