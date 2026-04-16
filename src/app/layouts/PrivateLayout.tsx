@@ -20,7 +20,7 @@ export function PrivateLayout() {
   );
 
   return (
-    <div className="app-shell h-app min-h-app min-h-0 font-sans text-manises-blue flex flex-col overflow-hidden bg-background">
+    <div className="app-shell h-app min-h-app min-h-0 font-sans text-manises-blue flex flex-col overflow-hidden">
       <AnimatePresence>
         {isLocked && (
           <AppLock onUnlock={() => setIsLocked(false)} />
@@ -32,13 +32,13 @@ export function PrivateLayout() {
           {!hideNav && <Header scrollContainer={scrollContainer} />}
           <main
             ref={setScrollContainer}
-            className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scroll-smooth scrollbar-hide ${
+            className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scroll-smooth scrollbar-hide bg-background ${
               hideNav ? 'pb-0 pt-0' : 'pb-nav-safe pt-[calc(env(safe-area-inset-top,0px)+4rem)]'
             }`}
           >
             <div className="absolute inset-0 section-wash pointer-events-none" />
             <div className="absolute top-0 left-0 right-0 h-56 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.62)_0,_rgba(255,255,255,0)_70%)] pointer-events-none" />
-            <div className="relative w-full min-h-full">
+            <div className="relative w-full min-h-full bg-background">
               <Outlet />
             </div>
           </main>
