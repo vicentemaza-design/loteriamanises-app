@@ -17,15 +17,14 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 px-4 pt-3"
-      style={{
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        background: 'linear-gradient(180deg, rgba(247,248,250,0) 0%, rgba(247,248,250,0.92) 24%, rgba(247,248,250,1) 100%)',
-      }}
+      className="pointer-events-none fixed bottom-0 left-0 right-0 z-50 px-4 pb-3"
       role="navigation"
       aria-label="Navegación principal"
     >
-      <div className="relative mx-auto max-w-sm overflow-hidden rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(17,34,64,0.96)_0%,rgba(10,25,47,0.98)_55%,rgba(7,18,33,1)_100%)] shadow-[0_18px_40px_rgba(10,25,47,0.45)] backdrop-blur-xl">
+      <div
+        className="pointer-events-auto relative mx-auto max-w-sm overflow-hidden rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(17,34,64,0.96)_0%,rgba(10,25,47,0.98)_55%,rgba(7,18,33,1)_100%)] shadow-[0_18px_40px_rgba(10,25,47,0.45)] backdrop-blur-xl"
+        style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+      >
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_24%,rgba(255,255,255,0)_58%)]" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/16" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-[linear-gradient(180deg,rgba(245,197,24,0)_0%,rgba(245,197,24,0.06)_100%)]" />
