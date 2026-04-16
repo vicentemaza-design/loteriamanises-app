@@ -55,7 +55,7 @@ export function WalletPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-background pb-nav-safe" ref={containerRef}>
+    <div className="flex min-h-full flex-col bg-background" ref={containerRef}>
       <ProfileSubHeader title="Mi Saldo" />
       
       <div className="p-5 flex flex-col gap-6">

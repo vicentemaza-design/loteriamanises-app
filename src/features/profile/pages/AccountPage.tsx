@@ -94,7 +94,7 @@ export function AccountPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-background pb-nav-safe" ref={containerRef}>
+    <div className="flex min-h-full flex-col bg-background" ref={containerRef}>
       <ProfileSubHeader title="Datos Personales" />
       
       <div className="p-5 flex flex-col gap-4">

@@ -25,7 +25,7 @@ export function MovementsPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-background pb-nav-safe">
+    <div className="flex min-h-full flex-col bg-background">
       <ProfileSubHeader title="Movimientos" subtitle="Historial financiero" />
       <div className="flex flex-col gap-5 p-4">
         

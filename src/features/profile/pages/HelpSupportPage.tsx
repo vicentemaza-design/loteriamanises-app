@@ -9,7 +9,7 @@ export function HelpSupportPage() {
   const topics = premiumDemoData.helpTopics;
 
   return (
-    <div className="flex min-h-full flex-col bg-background pb-nav-safe">
+    <div className="flex min-h-full flex-col bg-background">
       <ProfileSubHeader title="Ayuda y Garantias" />
       <div className="flex flex-col gap-4 p-5">
         <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-manises-blue text-white shadow-[0_20px_60px_rgba(10,25,47,0.25)]">

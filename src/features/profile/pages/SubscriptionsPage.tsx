@@ -11,7 +11,7 @@ export function SubscriptionsPage() {
   const activeCount = subscriptions.filter((item) => item.status === 'active').length;
 
   return (
-    <div className="flex min-h-full flex-col bg-background pb-nav-safe">
+    <div className="flex min-h-full flex-col bg-background">
       <ProfileSubHeader title="Mis Abonos" subtitle={`${activeCount} activos`} />
       <div className="flex flex-col gap-5 p-4">
         

@@ -1,15 +1,20 @@
 {
+  "id": "/",
   "name": "Lotería Manises",
   "short_name": "Manises",
   "description": "Compra tus loterías online con seguridad.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
+  "lang": "es-ES",
   "background_color": "#0A192F",
   "theme_color": "#0A192F",
+  "categories": ["finance", "shopping", "lifestyle"],
   "icons": [
     {
       "src": "/apple-touch-icon.png",
-      "sizes": "192x192 512x512",
+      "sizes": "28x28",
       "type": "image/png"
     }
   ]

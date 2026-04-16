@@ -13,7 +13,7 @@ export function FavoritesPage() {
   const favorites = premiumDemoData.favoritePlays;
 
   return (
-    <div className="flex min-h-full flex-col bg-background pb-nav-safe">
+    <div className="flex min-h-full flex-col bg-background">
       <ProfileSubHeader title="Jugadas Favoritas" subtitle={`${favorites.length} guardados`} />
       <div className="flex flex-col gap-5 p-4">
         
