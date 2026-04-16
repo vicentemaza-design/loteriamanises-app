@@ -240,16 +240,12 @@
   }
 
   .app-shell {
-    background: var(--shell-gradient);
+    background: var(--background);
     position: relative;
   }
 
   .app-shell::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--shell-overlay);
-    pointer-events: none;
+    content: none;
   }
 
   .surface-neo {
@@ -356,7 +352,7 @@
     min-height: 100%;
     min-height: 100svh;
     min-height: 100dvh;
-    background-color: var(--color-manises-blue);
+    background-color: var(--background);
   }
 
   html, body {
@@ -389,16 +385,14 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background-color: var(--color-manises-blue);
+    background-color: var(--background);
   }
 
   body {
     @apply bg-background text-foreground;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-    background-color: var(--color-manises-blue);
-    background-image:
-      radial-gradient(circle at top left, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 26%),
-      radial-gradient(circle at bottom right, rgba(245,197,24,0.09) 0%, rgba(245,197,24,0) 22%);
+    background-color: var(--background);
+    background-image: none;
   }
 
   @supports (-webkit-touch-callout: none) {
