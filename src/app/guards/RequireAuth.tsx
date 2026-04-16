@@ -7,9 +7,7 @@ export function RequireAuth() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-[300] flex items-center justify-center overflow-hidden px-6 pt-[10vh]">
-        {/* Fondo base oscuro */}
-        <div className="absolute inset-0 bg-[#07182c] -z-10" />
+      <div className="fixed inset-0 z-[300] flex min-h-dvh items-center justify-center overflow-hidden bg-[#07182c] px-6 pt-safe pb-safe">
         <motion.div
           className="absolute inset-0"
           animate={{

@@ -99,8 +99,8 @@ export function RegisterPage() {
 
   return (
     <div className="relative flex min-h-app w-full flex-1 flex-col overflow-x-hidden overflow-y-auto bg-manises-blue">
-      {/* Decoración de fondo anclada al tamaño total del contenedor para evitar cortes al hacer scroll o rebote */}
-      <div className="absolute inset-0 pointer-events-none bg-manises-blue">
+      {/* Background Decor (Same as Login for consistency) */}
+      <div className="fixed inset-0 pointer-events-none">
         <motion.img
           src={authBackground}
           alt=""
