@@ -6,15 +6,17 @@ import { formatCurrency } from '@/shared/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
 // Hook para detectar scroll direction
-function useScrollDirection() {
+function useScrollDirection(scrollContainer: HTMLElement | null) {
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
   const scrollThreshold = 50;
 
   useEffect(() => {
+    if (!scrollContainer) return;
+
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
+      const currentScrollY = scrollContainer.scrollTop;
+
       // Si estamos cerca del top (< 100px), siempre visible
       if (currentScrollY < 100) {
         setIsVisible(true);
@@ -34,9 +36,11 @@ function useScrollDirection() {
       lastScrollY.current = currentScrollY;
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    handleScroll();
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, [scrollContainer]);
 
   return isVisible;
 }
@@ -61,10 +65,10 @@ function AnimatedBalance({ value }: { value: number }) {
   return <>{formatCurrency(display)}</>;
 }
 
-export function Header() {
+export function Header({ scrollContainer }: { scrollContainer: HTMLElement | null }) {
   const { profile } = useAuth();
   const navigate = useNavigate();
-  const isVisible = useScrollDirection();
+  const isVisible = useScrollDirection(scrollContainer);
 
   return (
     <motion.header 
@@ -90,7 +94,12 @@ export function Header() {
       {/* Content */}
       <div className="relative flex items-center justify-between h-16 px-5 max-w-7xl mx-auto">
         {/* Logo + Brand */}
-        <div className="flex items-center gap-4 min-w-0" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+        <button
+          type="button"
+          className="flex items-center gap-4 min-w-0 text-left"
+          onClick={() => navigate('/')}
+          aria-label="Ir al inicio"
+        >
           <motion.img
             src="/assets/branding/logo-white.png"
             alt="Lotería Manises"
@@ -106,7 +115,7 @@ export function Header() {
               Receptor 81980
             </span>
           </div>
-        </div>
+        </button>
 
         {/* Saldo Pill - interaction to top-up */}
         <div className="flex items-center">

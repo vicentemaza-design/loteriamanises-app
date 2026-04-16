@@ -15,12 +15,14 @@ import {
   BriefcaseBusiness,
   Landmark,
   BadgeCheck,
+  Download,
 } from 'lucide-react';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { GameIcon } from '@/shared/ui/GameIcon';
 import { ScannerModal } from '@/shared/ui/ScannerModal';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
+import { useInstallPrompt } from '@/shared/hooks/useInstallPrompt';
 import { useLotteryGames } from '@/shared/hooks/useLotteryGames';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -324,6 +326,7 @@ export function HomePage() {
   const navigate = useNavigate();
   const { featuredGame, upcomingGames } = useLotteryGames();
   const { profile } = useAuth();
+  const { canInstall, isInstalled, shouldShowIosHint, promptInstall } = useInstallPrompt();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
@@ -376,6 +379,10 @@ export function HomePage() {
       .to(editorialCards, { y: 0, autoAlpha: 1, duration: 0.4, stagger: 0.08 }, '-=0.1')
       .to(penaCards, { x: 0, autoAlpha: 1, duration: 0.32, stagger: 0.055 }, '-=0.14');
   }, { scope: containerRef });
+
+  const handleInstall = async () => {
+    await promptInstall();
+  };
 
   return (
     <div className="flex min-h-full flex-col gap-6 overflow-x-hidden bg-background" ref={containerRef}>
@@ -446,6 +453,52 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      {!isInstalled && (canInstall || shouldShowIosHint) && (
+        <section className="px-4">
+          <div className="surface-neo-soft rounded-[2rem] border border-white/70 p-4 shadow-[0_14px_28px_rgba(10,25,47,0.08)]">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-manises-blue text-white shadow-manises">
+                <Download className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-manises-blue/45">
+                  Demo PWA
+                </p>
+                <h2 className="text-base font-black tracking-tight text-manises-blue text-balance">
+                  Instala la app para probarla como experiencia móvil real
+                </h2>
+                <p className="mt-1 text-[12px] font-medium leading-relaxed text-muted-foreground">
+                  {canInstall
+                    ? 'Añádela al inicio para revisar safe areas, navegación inferior y sensación de app instalada.'
+                    : 'En iPhone abre Compartir y pulsa “Añadir a pantalla de inicio”.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center gap-3">
+              {canInstall ? (
+                <PremiumTouchInteraction scale={0.98}>
+                  <Button
+                    onClick={handleInstall}
+                    className="h-11 rounded-xl bg-manises-blue px-5 font-bold text-white hover:bg-manises-blue/90"
+                  >
+                    Instalar App
+                  </Button>
+                </PremiumTouchInteraction>
+              ) : (
+                <div className="rounded-xl bg-manises-blue/6 px-4 py-2 text-[11px] font-semibold text-manises-blue">
+                  Safari → Compartir → Añadir a pantalla de inicio
+                </div>
+              )}
+
+              <span className="text-[10px] font-bold uppercase tracking-wider text-manises-blue/35">
+                Demo sin offline
+              </span>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Bento: Próximos Sorteos ───────────────────────────── */}
       {bentoGames.length > 0 && (

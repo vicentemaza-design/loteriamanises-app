@@ -10,6 +10,7 @@ const HIDE_BOTTOM_NAV_PATTERNS = ['/play/'];
 
 export function PrivateLayout() {
   const location = useLocation();
+  const [scrollContainer, setScrollContainer] = React.useState<HTMLElement | null>(null);
   const [isLocked, setIsLocked] = React.useState(() => {
     return localStorage.getItem('app_lock_enabled') === 'true';
   });
@@ -28,8 +29,9 @@ export function PrivateLayout() {
 
       {!isLocked && (
         <>
-          {!hideNav && <Header />}
+          {!hideNav && <Header scrollContainer={scrollContainer} />}
           <main
+            ref={setScrollContainer}
             className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scroll-smooth scrollbar-hide ${
               hideNav ? 'pb-0' : 'pb-nav-safe'
             }`}
