@@ -60,9 +60,9 @@ export function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-app w-full flex-1 flex-col overflow-x-hidden overflow-y-auto bg-manises-blue">
-      {/* Decoración de fondo */}
-      <div className="fixed right-0 left-0 -top-[env(safe-area-inset-top,0px)] -bottom-[env(safe-area-inset-bottom,0px)] pointer-events-none">
+    <div className="fixed inset-0 bg-manises-blue overflow-hidden z-[100]">
+      {/* Background stays absolutely fixed underneath to prevent banding during bounce */}
+      <div className="absolute -inset-y-12 inset-x-0 pointer-events-none">
         <motion.img
           src={authBackground}
           alt=""
@@ -152,13 +152,14 @@ export function LoginPage() {
         <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(245,197,24,0.06)_0%,transparent_36%,rgba(255,255,255,0.05)_52%,transparent_100%)]" />
       </div>
 
-      {/* Contenido */}
-      <motion.div
-        variants={authContainer}
-        initial="hidden"
-        animate="visible"
-        className="relative z-10 flex min-h-app flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.75rem)] gap-6"
-      >
+      {/* The isolated scrolling layer */}
+      <div className="absolute inset-0 overflow-y-auto overflow-x-hidden">
+        <motion.div
+          variants={authContainer}
+          initial="hidden"
+          animate="visible"
+          className="relative z-10 flex min-h-max flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.75rem)] pb-[calc(env(safe-area-inset-bottom,0px)+3rem)] gap-6"
+        >
 
         {/* Brand */}
         <motion.div
@@ -308,6 +309,7 @@ export function LoginPage() {
           Juega con responsabilidad. +18. DGOJ.
         </p>
       </motion.div>
+      </div>
     </div>
   );
 }

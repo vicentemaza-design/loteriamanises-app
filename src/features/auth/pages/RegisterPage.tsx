@@ -98,9 +98,9 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="relative flex min-h-app w-full flex-1 flex-col overflow-x-hidden overflow-y-auto bg-manises-blue">
-      {/* Background Decor (Same as Login for consistency) */}
-      <div className="fixed right-0 left-0 -top-[env(safe-area-inset-top,0px)] -bottom-[env(safe-area-inset-bottom,0px)] pointer-events-none">
+    <div className="fixed inset-0 bg-manises-blue overflow-hidden z-[100]">
+      {/* Background stays absolutely fixed underneath to prevent banding during bounce */}
+      <div className="absolute -inset-y-12 inset-x-0 pointer-events-none">
         <motion.img
           src={authBackground}
           alt=""
@@ -145,12 +145,14 @@ export function RegisterPage() {
         />
       </div>
 
-      <motion.div
-        variants={authContainer}
-        initial="hidden"
-        animate="visible"
-        className="relative z-10 flex min-h-app flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] pb-[calc(env(safe-area-inset-bottom,0px)+1.75rem)] gap-5"
-      >
+      {/* The isolated scrolling layer, strictly on top of the fixed background */}
+      <div className="absolute inset-0 overflow-y-auto overflow-x-hidden">
+        <motion.div
+          variants={authContainer}
+          initial="hidden"
+          animate="visible"
+          className="relative z-10 flex min-h-max flex-col items-center justify-start px-6 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)] pb-[calc(env(safe-area-inset-bottom,0px)+3rem)] gap-5"
+        >
         
         {/* Back Button */}
         <motion.button
@@ -439,6 +441,7 @@ export function RegisterPage() {
           Uso exclusivo para mayores de <span className="text-white/40">18 años</span>. Se requiere verificación de identidad para retirar premios y cumplir normativa de juego responsable.
         </p>
       </motion.div>
+      </div>
     </div>
   );
 }

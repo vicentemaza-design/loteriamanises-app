@@ -7,32 +7,6 @@ export function RequireAuth() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-[300] flex min-h-dvh items-center justify-center overflow-hidden bg-[#07182c] px-6 pt-safe pb-safe">
-        {/* Extensión para safe area de iOS PWA */}
-        <div className="absolute right-0 left-0 -top-[env(safe-area-inset-top,0px)] -bottom-[env(safe-area-inset-bottom,0px)] bg-[#07182c] -z-10" />
-        <motion.div
-          className="absolute inset-0"
-          animate={{
-            background: [
-              'linear-gradient(135deg, #07182c 0%, #0b2140 42%, #12315a 100%)',
-              'linear-gradient(135deg, #0b1f39 0%, #133764 46%, #0b2140 100%)',
-              'linear-gradient(135deg, #07182c 0%, #0b2140 42%, #12315a 100%)',
-            ],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute -top-24 -left-20 h-72 w-72 rounded-full blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(245,197,24,0.32) 0%, rgba(245,197,24,0) 72%)' }}
-          animate={{ x: [0, 40, -10, 0], y: [0, 30, -20, 0], scale: [1, 1.18, 0.94, 1] }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute -right-24 top-1/3 h-80 w-80 rounded-full blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(56,189,248,0.24) 0%, rgba(56,189,248,0) 72%)' }}
-          animate={{ x: [0, -50, 20, 0], y: [0, -40, 20, 0], scale: [1, 0.92, 1.1, 1] }}
-          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-        />
         <motion.div
           className="absolute inset-0 opacity-50"
           style={{
@@ -83,7 +57,8 @@ export function RequireAuth() {
               />
             ))}
           </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     );
   }
