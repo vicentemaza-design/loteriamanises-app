@@ -99,8 +99,8 @@ export function RegisterPage() {
 
   return (
     <div className="relative flex min-h-app w-full flex-1 flex-col overflow-x-hidden overflow-y-auto bg-manises-blue">
-      {/* Decoración de fondo extendida para evitar bandas en PWA */}
-      <div className="fixed -inset-y-20 inset-x-0 pointer-events-none">
+      {/* Decoración de fondo extendida y anclada (vh explícito) */}
+      <div className="fixed left-0 top-0 w-full h-[120vh] -translate-y-[10vh] pointer-events-none">
         <motion.img
           src={authBackground}
           alt=""

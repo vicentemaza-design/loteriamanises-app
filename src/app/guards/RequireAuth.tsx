@@ -7,11 +7,11 @@ export function RequireAuth() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 z-[300] flex min-h-dvh items-center justify-center overflow-hidden px-6 pt-safe pb-safe">
-        {/* Fondo extendido para evitar banda de color diferente inferior */}
-        <div className="absolute -inset-y-24 inset-x-0 bg-[#07182c] -z-10" />
+      <div className="fixed left-0 top-0 w-full h-[120vh] -translate-y-[10vh] z-[300] flex items-center justify-center overflow-hidden px-6 pt-[10vh]">
+        {/* Fondo base oscuro */}
+        <div className="absolute inset-0 bg-[#07182c] -z-10" />
         <motion.div
-          className="absolute -inset-y-24 inset-x-0"
+          className="absolute inset-0"
           animate={{
             background: [
               'linear-gradient(135deg, #07182c 0%, #0b2140 42%, #12315a 100%)',
