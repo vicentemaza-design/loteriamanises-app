@@ -17,8 +17,11 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 px-4"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      className="fixed bottom-0 left-0 right-0 z-50 px-4 pt-3"
+      style={{
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        background: 'linear-gradient(180deg, rgba(247,248,250,0) 0%, rgba(247,248,250,0.92) 24%, rgba(247,248,250,1) 100%)',
+      }}
       role="navigation"
       aria-label="Navegación principal"
     >

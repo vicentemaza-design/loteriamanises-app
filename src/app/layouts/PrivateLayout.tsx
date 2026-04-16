@@ -33,7 +33,7 @@ export function PrivateLayout() {
           <main
             ref={setScrollContainer}
             className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scroll-smooth scrollbar-hide bg-background ${
-              hideNav ? 'pb-0' : 'pb-nav-safe'
+              hideNav ? 'pb-0 pt-0' : 'pb-nav-safe pt-[calc(env(safe-area-inset-top,0px)+4rem)]'
             }`}
           >
             <div className="absolute inset-0 section-wash pointer-events-none" />

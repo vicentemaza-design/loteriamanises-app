@@ -72,9 +72,9 @@ export function Header({ scrollContainer }: { scrollContainer: HTMLElement | nul
 
   return (
     <motion.header 
-      className="sticky top-0 z-40 w-full overflow-hidden"
+      className="fixed top-0 left-0 right-0 z-40 w-full overflow-hidden"
       animate={{ 
-        height: isVisible ? 'calc(env(safe-area-inset-top, 0px) + 4rem)' : 0,
+        y: isVisible ? 0 : 'calc(-1 * (env(safe-area-inset-top, 0px) + 4rem))',
         opacity: isVisible ? 1 : 0,
       }}
       transition={{ 
@@ -92,7 +92,7 @@ export function Header({ scrollContainer }: { scrollContainer: HTMLElement | nul
       <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-b from-black/20 to-transparent pointer-events-none" />
 
       {/* Content */}
-      <div className="relative flex h-16 max-w-7xl items-center justify-between px-5 pt-safe mx-auto">
+      <div className="relative mx-auto flex h-[calc(env(safe-area-inset-top,0px)+4rem)] max-w-7xl items-center justify-between px-5 pt-safe">
         {/* Logo + Brand */}
         <button
           type="button"
