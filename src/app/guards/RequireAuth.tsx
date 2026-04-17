@@ -53,6 +53,18 @@ function AuthLoadingScreen({ isSilent = false }: { isSilent?: boolean }) {
 
 export function RequireAuth() {
   const { user, isDemo, loading } = useAuth();
+  const [shouldShowLoading, setShouldShowLoading] = useState(false);
+
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        setShouldShowLoading(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    } else {
+      setShouldShowLoading(false);
+    }
+  }, [loading]);
 
   // Si no hay usuario y ya terminó de cargar, redirigimos a login (ahora en la raíz /)
   if (!loading && !user && !isDemo) {
@@ -61,11 +73,9 @@ export function RequireAuth() {
 
   // Solo mostramos LoadingScreen si estamos en una ruta privada y esperando sesión
   if (loading) {
-    return <AuthLoadingScreen />;
+    // Usamos el shell silencioso (isSilent) durante los primeros 300ms para evitar parpadeo
+    return <AuthLoadingScreen isSilent={!shouldShowLoading} />;
   }
-
-  return <Outlet />;
-}
 
   return <Outlet />;
 }
