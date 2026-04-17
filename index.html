@@ -28,30 +28,27 @@
           document.documentElement.style.setProperty('--app-vh', vh + 'px');
         }
 
-        function logVh(label) {
-          var vv = window.visualViewport ? window.visualViewport.height : 'N/A';
-          var ih = window.innerHeight;
-          var ch = document.documentElement.clientHeight;
-          var final = getRealViewportHeight();
-          console.log('[HEAD-DIAG] ' + label + ': VV=' + vv + ', IH=' + ih + ', CH=' + ch + ' -> FINAL=' + final);
+        function nudgeViewport() {
           setAppVh();
+          window.scrollTo(0, 0);
+          document.documentElement.offsetHeight;
         }
 
         function stabilizeAppVh() {
-          logVh('init');
+          nudgeViewport();
           requestAnimationFrame(function () {
-            logVh('raf_1');
+            nudgeViewport();
             requestAnimationFrame(function () {
-              logVh('raf_2');
+              nudgeViewport();
             });
           });
-          setTimeout(function () { logVh('120ms'); }, 120);
-          setTimeout(function () { logVh('350ms'); }, 350);
+          setTimeout(nudgeViewport, 120);
+          setTimeout(nudgeViewport, 350);
         }
 
         stabilizeAppVh();
-        window.addEventListener('load', function () { stabilizeAppVh(); });
-        window.addEventListener('pageshow', function () { stabilizeAppVh(); });
+        window.addEventListener('load', stabilizeAppVh);
+        window.addEventListener('pageshow', stabilizeAppVh);
         window.addEventListener('resize', setAppVh);
         if (window.visualViewport) {
           window.visualViewport.addEventListener('resize', setAppVh);

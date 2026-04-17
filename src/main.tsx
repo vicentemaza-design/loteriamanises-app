@@ -18,25 +18,24 @@ const setAppVh = () => {
   document.documentElement.style.setProperty('--app-vh', `${vh}px`);
 };
 
-const logVh = (label: string) => {
-  const vv = window.visualViewport ? window.visualViewport.height : 'N/A';
-  const ih = window.innerHeight;
-  const ch = document.documentElement.clientHeight;
-  const final = getRealViewportHeight();
-  console.log(`[MAIN-DIAG] ${label}: VV=${vv}, IH=${ih}, CH=${ch} -> FINAL=${final}`);
+const nudgeViewport = () => {
   setAppVh();
+  window.scrollTo(0, 0);
+  if (document.documentElement) {
+    const _unused = document.documentElement.offsetHeight;
+  }
 };
 
 const stabilizeAppVh = () => {
-  logVh('init');
+  nudgeViewport();
   requestAnimationFrame(() => {
-    logVh('raf_1');
+    nudgeViewport();
     requestAnimationFrame(() => {
-      logVh('raf_2');
+      nudgeViewport();
     });
   });
-  setTimeout(() => logVh('120ms'), 120);
-  setTimeout(() => logVh('350ms'), 350);
+  setTimeout(nudgeViewport, 120);
+  setTimeout(nudgeViewport, 350);
 };
 
 if (!window.hasOwnProperty('__app_vh_initialized')) {
