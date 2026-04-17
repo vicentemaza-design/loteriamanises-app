@@ -5,46 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import { formatCurrency } from '@/shared/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
-// Hook para detectar scroll direction
-function useScrollDirection(scrollContainer: HTMLElement | null) {
-  const [isVisible, setIsVisible] = useState(true);
-  const lastScrollY = useRef(0);
-  const scrollThreshold = 50;
-
-  useEffect(() => {
-    if (!scrollContainer) return;
-
-    const handleScroll = () => {
-      const currentScrollY = scrollContainer.scrollTop;
-
-      // Si estamos cerca del top (< 100px), siempre visible
-      if (currentScrollY < 100) {
-        setIsVisible(true);
-        lastScrollY.current = currentScrollY;
-        return;
-      }
-
-      // Si scrolls down más de threshold, ocultar
-      if (currentScrollY > lastScrollY.current + scrollThreshold) {
-        setIsVisible(false);
-      }
-      // Si scrolls up más de threshold, mostrar
-      else if (currentScrollY < lastScrollY.current - scrollThreshold) {
-        setIsVisible(true);
-      }
-
-      lastScrollY.current = currentScrollY;
-    };
-
-    handleScroll();
-    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => scrollContainer.removeEventListener('scroll', handleScroll);
-  }, [scrollContainer]);
-
-  return isVisible;
-}
-
 function AnimatedBalance({ value }: { value: number }) {
   const [display, setDisplay] = useState(value);
   const prevRef = useRef(value);
@@ -65,79 +25,62 @@ function AnimatedBalance({ value }: { value: number }) {
   return <>{formatCurrency(display)}</>;
 }
 
-export function Header({ scrollContainer }: { scrollContainer: HTMLElement | null }) {
+export function Header() {
   const { profile } = useAuth();
   const navigate = useNavigate();
-  const isVisible = useScrollDirection(scrollContainer);
 
   return (
-    <motion.header 
-      className="sticky top-0 z-40 w-full overflow-hidden"
-      animate={{ 
-        height: isVisible ? 'calc(env(safe-area-inset-top, 0px) + 4rem)' : 0,
-        opacity: isVisible ? 1 : 0,
-      }}
-      transition={{ 
-        duration: 0.3,
-        ease: 'easeOut',
-      }}
-      style={{
-        pointerEvents: isVisible ? 'auto' : 'none',
-      }}
-    >
-      {/* Premium gradient + blur backdrop */}
-      <div className="absolute inset-0 bg-gradient-to-b from-manises-blue via-manises-blue/95 to-manises-blue/90 backdrop-blur-xl border-b border-white/10" />
+    <header className="sticky top-0 z-40 w-full overflow-hidden bg-manises-blue border-b border-[#D5E3F2]/10 shadow-md">
+      {/* Background layer with subtle brand depth */}
+      <div className="absolute inset-0 bg-gradient-to-br from-manises-blue via-[#093d7c] to-manises-blue-mid opacity-95" />
       
-      {/* Shadow effect */}
-      <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-b from-black/20 to-transparent pointer-events-none" />
-
-      {/* Content */}
-      <div className="relative flex h-16 max-w-7xl items-center justify-between px-5 pt-safe mx-auto">
-        {/* Logo + Brand */}
+      {/* Content wrapper with pt-safe for iPhone Dynamic Island / Notch */}
+      <div className="relative flex h-[3.75rem] max-w-7xl items-center justify-between px-4 pt-safe mx-auto">
+        {/* Logo Section - More compact */}
         <button
           type="button"
-          className="flex items-center gap-4 min-w-0 text-left"
+          className="flex items-center gap-3 min-w-0"
           onClick={() => navigate('/')}
           aria-label="Ir al inicio"
         >
-          <motion.img
+          <img
             src="/assets/branding/logo-white.png"
             alt="Lotería Manises"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="h-6 w-auto object-contain shrink-0"
+            className="h-5 w-auto object-contain shrink-0"
           />
-          <div className="flex flex-col border-l border-white/20 pl-4 py-1.5 min-w-0">
-            <span className="text-[9px] font-black text-manises-gold tracking-widest uppercase truncate leading-tight">
+          <div className="hidden xs:flex flex-col border-l border-white/15 pl-3 py-1 min-w-0">
+            <span className="text-[8px] font-black text-manises-gold tracking-widest uppercase leading-tight">
               Administración nº 3
             </span>
-            <span className="text-[8px] font-bold text-white/40 tracking-tight truncate">
-              Receptor 81980
+            <span className="text-[7px] font-bold text-[#D5E3F2]/40 tracking-tight uppercase">
+              Oficial Loterías
             </span>
           </div>
         </button>
 
-        {/* Saldo Pill - interaction to top-up */}
-        <div className="flex items-center">
-          {profile && (
+        {/* Balance Section - Integrated look */}
+        {profile && (
+          <div className="flex items-center gap-2">
             <motion.button
-              whileTap={{ scale: 0.95 }}
-              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => navigate('/profile')}
-              className="bg-white/10 border border-white/20 rounded-full pl-3 pr-2 py-1.5 flex items-center gap-2 shadow-sm transition-all hover:bg-white/15 active:bg-white/20 backdrop-blur-sm"
+              className="bg-[#D5E3F2]/5 hover:bg-[#D5E3F2]/10 border border-[#D5E3F2]/15 rounded-xl px-2.5 py-1.5 flex items-center gap-2 transition-all backdrop-blur-sm"
               aria-label={`Mi saldo: ${formatCurrency(profile.balance)}. Pulsar para recargar.`}
             >
-              <Wallet className="w-4 h-4 text-manises-gold shrink-0" />
-              <span className="text-sm font-black text-white tabular-nums">
-                <AnimatedBalance value={profile.balance} />
-              </span>
-              <div className="w-5 h-5 rounded-full bg-manises-gold flex items-center justify-center text-manises-blue">
+              <Wallet className="w-3.5 h-3.5 text-manises-gold" />
+              <div className="flex flex-col items-start leading-none">
+                <span className="text-[7px] font-bold text-[#D5E3F2]/50 uppercase tracking-tighter">Mi Saldo</span>
+                <span className="text-sm font-black text-white tabular-nums">
+                  <AnimatedBalance value={profile.balance} />
+                </span>
+              </div>
+              <div className="ml-1 w-5 h-5 rounded-lg bg-manises-gold flex items-center justify-center text-manises-blue shadow-sm">
                 <PlusCircle className="w-3.5 h-3.5 stroke-[3px]" />
               </div>
             </motion.button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-    </motion.header>
+    </header>
   );
 }

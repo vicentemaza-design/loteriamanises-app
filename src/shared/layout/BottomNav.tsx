@@ -8,7 +8,7 @@ const navItems = [
   { icon: Home,       label: 'Inicio',     path: '/' },
   { icon: LayoutGrid, label: 'Juegos',     path: '/games' },
   { icon: Trophy,     label: 'Resultados', path: '/results' },
-  { icon: Ticket,     label: 'Mis Jugadas',path: '/tickets' },
+  { icon: Ticket,     label: 'Tickets',    path: '/tickets' },
   { icon: User,       label: 'Perfil',     path: '/profile' },
 ];
 
@@ -17,73 +17,66 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 px-4"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[#051c3a]/85 backdrop-blur-2xl border-t border-[#D5E3F2]/15 shadow-[0_-8px_30px_rgba(0,0,0,0.3)]"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
       aria-label="Navegación principal"
     >
-      <div className="relative mx-auto max-w-sm overflow-hidden rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(17,34,64,0.96)_0%,rgba(10,25,47,0.98)_55%,rgba(7,18,33,1)_100%)] shadow-[0_18px_40px_rgba(10,25,47,0.45)] backdrop-blur-xl">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.03)_24%,rgba(255,255,255,0)_58%)]" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/16" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-[linear-gradient(180deg,rgba(245,197,24,0)_0%,rgba(245,197,24,0.06)_100%)]" />
-        <div className="flex justify-around items-stretch h-[4.25rem] px-1">
+      {/* Glossy top highlight for premium feel */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D5E3F2]/30 to-transparent" />
+      
+      <div className="flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
         {navItems.map(({ icon: Icon, label, path }) => {
-          // "/" activo solo cuando es exactamente "/"
           const isActive = path === '/'
             ? location.pathname === '/'
             : location.pathname.startsWith(path);
 
           return (
-            <PremiumTouchInteraction key={path} scale={0.92} className="flex-1">
+            <PremiumTouchInteraction key={path} scale={0.94} className="flex-1">
               <NavLink
                 to={path}
                 end={path === '/'}
-                aria-label={label}
                 className={cn(
-                  'flex flex-col items-center justify-center w-full h-full gap-0.5 relative transition-all duration-200',
-                  isActive ? 'text-manises-gold' : 'text-white/50'
+                  'flex flex-col items-center justify-center w-full h-full gap-0.5 relative transition-all duration-300',
+                  isActive ? 'text-manises-gold' : 'text-[#D5E3F2]/40 hover:text-[#D5E3F2]/60'
                 )}
               >
+                {/* Active Indicator: Refined gold pill top indicator */}
                 {isActive && (
                   <motion.div
-                    layoutId="nav-active-shell"
-                    className="absolute inset-x-1.5 top-1.5 bottom-1.5 rounded-[1.1rem] bg-white/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_18px_rgba(0,0,0,0.16)]"
-                    transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                    layoutId="nav-pill-top"
+                    className="absolute top-0 w-8 h-0.5 bg-manises-gold rounded-full shadow-[0_0_12px_rgba(245,197,24,0.4)]"
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   />
                 )}
 
+                {/* Subtle glow background for active item */}
                 {isActive && (
                   <motion.div
-                    layoutId="nav-pill"
-                    className="absolute top-1.5 w-8 h-1 bg-manises-gold rounded-pill"
-                    transition={{ type: 'spring', stiffness: 500, damping: 38 }}
+                    layoutId="nav-active-glow"
+                    className="absolute inset-x-2 inset-y-1.5 rounded-xl bg-manises-gold/5"
+                    transition={{ type: 'linear', duration: 0.2 }}
                   />
                 )}
 
-                <div
+                <Icon
                   className={cn(
-                    'relative z-10 p-1.5 rounded-xl transition-all duration-200',
-                    isActive ? 'text-manises-gold' : ''
+                    'w-5 h-5 transition-transform duration-300',
+                    isActive ? 'scale-110' : 'scale-100'
                   )}
-                >
-                  <Icon
-                    className={cn('w-5 h-5', isActive ? 'stroke-[2.5px]' : 'stroke-[1.8px]')}
-                    aria-hidden="true"
-                  />
-                </div>
-                <span
-                  className={cn(
-                    'relative z-10 text-[10px] font-semibold tracking-tight truncate transition-colors duration-200',
-                    isActive ? 'text-manises-gold' : 'text-white/58'
-                  )}
-                >
+                  style={{ strokeWidth: isActive ? '2.5px' : '2px' }}
+                />
+                
+                <span className={cn(
+                  'text-[9px] font-bold tracking-wider uppercase transition-colors',
+                  isActive ? 'text-manises-gold' : ''
+                )}>
                   {label}
                 </span>
               </NavLink>
             </PremiumTouchInteraction>
           );
         })}
-        </div>
       </div>
     </nav>
   );
