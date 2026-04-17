@@ -25,18 +25,18 @@ function AuthLoadingScreen() {
       {/* Placeholder Card - Matching LoginPage's Card exactly */}
       <div className="w-full max-w-sm shrink-0">
         <div className="bg-white/6 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 shadow-[0_18px_42px_rgba(0,0,0,0.28)] flex flex-col items-center gap-6">
-          <div className="text-center space-y-1">
-            <p className="text-sm font-semibold text-white/70">
-              Conectando servidor seguro...
+          <div className="text-center">
+            <p className="text-[11px] font-medium text-white/40 tracking-wide">
+              Estableciendo conexión segura...
             </p>
           </div>
-          <div className="flex gap-2.5">
+          <div className="flex gap-3">
             {[0, 1, 2].map((i) => (
               <motion.div
                 key={i}
-                animate={{ opacity: [0.2, 1, 0.2] }}
-                transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                className="h-2 w-2 rounded-full bg-manises-gold/80"
+                animate={{ opacity: [0.1, 0.35, 0.1] }}
+                transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4 }}
+                className="h-1.5 w-1.5 rounded-full bg-white/30"
               />
             ))}
           </div>
