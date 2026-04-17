@@ -140,16 +140,7 @@ export function RegisterPage() {
           className="w-full max-w-sm shrink-0"
         >
           <motion.div
-            animate={{
-              y: [0, -4, 0],
-              boxShadow: [
-                '0 18px 44px rgba(0,0,0,0.28)',
-                '0 26px 60px rgba(0,0,0,0.38)',
-                '0 18px 44px rgba(0,0,0,0.28)',
-              ],
-            }}
-            transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
-            className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-7"
+            className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-7 shadow-[0_18px_44px_rgba(0,0,0,0.28)]"
           >
             <div className="flex items-center justify-between mb-5 px-1">
               {[
@@ -368,8 +359,6 @@ export function RegisterPage() {
           {TRUST_BADGES.map(({ icon: Icon, label }) => (
             <motion.div
               key={label}
-              animate={{ y: [0, -3, 0] }}
-              transition={{ duration: 3.8, repeat: Infinity, delay: 0.15, ease: 'easeInOut' }}
               className="flex flex-col items-center gap-1.5 opacity-30"
             >
               <Icon className="w-4 h-4 text-white" />

@@ -93,16 +93,7 @@ export function LoginPage() {
         >
           {/* Card */}
           <motion.div
-            animate={{
-              y: [0, -4, 0],
-              boxShadow: [
-                '0 18px 42px rgba(0,0,0,0.28)',
-                '0 26px 56px rgba(0,0,0,0.38)',
-                '0 18px 42px rgba(0,0,0,0.28)',
-              ],
-            }}
-            transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
-            className="bg-white/6 backdrop-blur-2xl border border-white/10 rounded-2xl p-6"
+            className="bg-white/6 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 shadow-[0_18px_42px_rgba(0,0,0,0.28)]"
           >
 
             {/* Google — método principal */}
@@ -190,8 +181,6 @@ export function LoginPage() {
           {TRUST_BADGES.map(({ icon: Icon, label }) => (
             <motion.div
               key={label}
-              animate={{ y: [0, -3, 0] }}
-              transition={{ duration: 3.8, repeat: Infinity, delay: Math.random() * 0.4, ease: 'easeInOut' }}
               className="flex flex-col items-center gap-1 text-white/40"
             >
               <Icon className="w-4 h-4" aria-hidden="true" />
