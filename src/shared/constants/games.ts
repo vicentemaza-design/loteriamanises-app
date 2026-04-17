@@ -105,7 +105,7 @@ export const LOTTERY_GAMES: LotteryGame[] = [
     type: 'loteria-nacional',
     jackpot: 60_000,
     nextDraw: nextDate(5, 12, 0),   // En 5 días (jueves)
-    color: '#0A192F',
+    color: '#0a4792',
     colorEnd: '#1e293b',
     icon: 'Landmark',
     price: 3.00,

@@ -469,7 +469,7 @@ export function GamePlayPage() {
                       onClick={() => setSelectedNationalDrawId(draw.id)}
                       className={`rounded-xl border p-3 text-left transition-all ${
                         active
-                          ? 'border-manises-blue bg-[linear-gradient(160deg,#0A192F_0%,#17325E_100%)] shadow-[0_10px_20px_rgba(10,25,47,0.25)]'
+                          ? 'border-manises-blue bg-[linear-gradient(160deg,#0a4792_0%,#083d7d_100%)] shadow-[0_10px_20px_rgba(10,71,146,0.25)]'
                           : 'border-gray-200 bg-white/90 hover:border-manises-blue/30'
                       }`}
                     >

@@ -60,7 +60,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={!isProcessing ? onClose : undefined}
-            className="fixed inset-0 z-50 bg-[#0A192F]/40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-[#0a4792]/40 backdrop-blur-sm"
           />
 
           <motion.div
@@ -193,7 +193,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                       className={`w-full h-14 rounded-2xl text-white font-black text-lg transition-all shadow-md ${
                         selectedMethod === 'apple' ? 'bg-black hover:bg-gray-900 border-b-4 border-gray-800' :
                         selectedMethod === 'bizum' ? 'bg-[#00c4b3] hover:bg-[#00aba0] border-b-4 border-[#009e93]' :
-                        'bg-manises-blue hover:bg-[#081320] border-b-4 border-[#060e18]'
+                        'bg-manises-blue hover:bg-[#083d7d] border-b-4 border-[#052a5a]'
                       }`}
                     >
                       {isProcessing ? (

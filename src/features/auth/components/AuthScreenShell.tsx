@@ -16,7 +16,7 @@ export function AuthScreenShell({
 }: AuthScreenShellProps) {
   return (
     // Conservamos la estructura técnica de persecución de viewport (--app-vh)
-    <div className="relative h-[var(--app-vh)] min-h-[var(--app-vh)] w-full overflow-hidden bg-[#060d1a] text-white">
+    <div className="relative h-[var(--app-vh)] min-h-[var(--app-vh)] w-full overflow-hidden bg-[#052a5a] text-white">
       
       {/* CAPA DE FONDO: Recuperada con la imagen pero 100% estática */}
       <div className="absolute inset-0 pointer-events-none">
@@ -27,7 +27,7 @@ export function AuthScreenShell({
           className="h-full w-full object-cover opacity-35"
         />
         {/* Overlay oscuro estático para legibilidad */}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,13,26,0.72)_0%,rgba(10,25,48,0.78)_45%,rgba(6,13,26,0.88)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,42,90,0.72)_0%,rgba(10,71,146,0.78)_45%,rgba(5,42,90,0.88)_100%)]" />
         {/* Luces sutiles estáticas para profundidad */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,197,24,0.10),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_30%)]" />
       </div>
