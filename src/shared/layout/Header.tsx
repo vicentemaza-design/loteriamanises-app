@@ -31,8 +31,8 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#0A4792] border-b border-[#D5E3F2]/10 shadow-md">
-      {/* Background layer with subtle brand depth */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0A4792] via-[#093d7c] to-[#0A4792] opacity-95" />
+      {/* Background layer with subtle brand depth - Specific corporate gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0A4792] via-[#0B4D9D] to-[#083F84] opacity-95" />
       
       {/* Content wrapper with pt-safe + generous breathing room - Flexible height to prevent clipping */}
       <div className="relative flex min-h-[5rem] items-center justify-between px-6 pt-safe pt-3 pb-3 mx-auto max-w-7xl">
