@@ -13,14 +13,37 @@
     <title>Lotería Manises — Administración nº 3</title>
     <script>
       (function () {
+        function getRealViewportHeight() {
+          var candidates = [
+            window.visualViewport ? window.visualViewport.height : 0,
+            window.innerHeight || 0,
+            document.documentElement ? document.documentElement.clientHeight : 0
+          ].filter(Boolean);
+
+          return Math.max.apply(null, candidates);
+        }
+
         function setAppVh() {
-          var vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+          var vh = getRealViewportHeight();
           document.documentElement.style.setProperty('--app-vh', vh + 'px');
         }
 
-        setAppVh();
+        function stabilizeAppVh() {
+          setAppVh();
+          requestAnimationFrame(function () {
+            setAppVh();
+            requestAnimationFrame(function () {
+              setAppVh();
+            });
+          });
+          setTimeout(setAppVh, 150);
+          setTimeout(setAppVh, 400);
+        }
+
+        stabilizeAppVh();
+        window.addEventListener('load', stabilizeAppVh);
+        window.addEventListener('pageshow', stabilizeAppVh);
         window.addEventListener('resize', setAppVh);
-        window.addEventListener('pageshow', setAppVh);
         if (window.visualViewport) {
           window.visualViewport.addEventListener('resize', setAppVh);
         }
