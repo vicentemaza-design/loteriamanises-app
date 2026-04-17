@@ -30,8 +30,8 @@ export function PrivateLayout() {
         <>
           {!hideNav && <Header />}
           <main
-            className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scroll-smooth scrollbar-hide bg-background pt-[5rem] ${
-              hideNav ? 'pb-0' : 'pb-nav-safe'
+            className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scroll-smooth scrollbar-hide bg-background ${
+              hideNav ? 'pt-0 pb-0' : 'pt-[5rem] pb-nav-safe'
             }`}
           >
             <div className="absolute inset-0 section-wash pointer-events-none" />
