@@ -31,8 +31,9 @@ export function PrivateLayout() {
           {!hideNav && <Header />}
           <main
             className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scroll-smooth scrollbar-hide bg-background ${
-              hideNav ? 'pt-0 pb-0' : 'pt-[5rem] pb-nav-safe'
+              hideNav ? 'pt-0 pb-0' : 'pb-nav-safe'
             }`}
+            style={!hideNav ? { paddingTop: 'calc(env(safe-area-inset-top, 0px) + 5rem)' } : undefined}
           >
             <div className="absolute inset-0 section-wash pointer-events-none" />
             <div className="absolute top-0 left-0 right-0 h-56 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.62)_0,_rgba(255,255,255,0)_70%)] pointer-events-none" />
