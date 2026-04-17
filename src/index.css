@@ -79,6 +79,7 @@
 /* ===== MODO CLARO (default) ===== */
 :root {
   --app-bg: #ffffff;
+  --app-vh: 100vh;
   --app-height: 100dvh;
   --background:            #F7F8FA;
   --foreground:            #0A192F;

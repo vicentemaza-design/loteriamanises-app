@@ -8,10 +8,13 @@ const setAppVh = () => {
   document.documentElement.style.setProperty('--app-vh', `${vh}px`);
 };
 
-setAppVh();
-window.addEventListener('resize', setAppVh);
-window.addEventListener('pageshow', setAppVh);
-window.visualViewport?.addEventListener('resize', setAppVh);
+if (!window.hasOwnProperty('__app_vh_initialized')) {
+  setAppVh();
+  window.addEventListener('resize', setAppVh);
+  window.addEventListener('pageshow', setAppVh);
+  window.visualViewport?.addEventListener('resize', setAppVh);
+  (window as any).__app_vh_initialized = true;
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
