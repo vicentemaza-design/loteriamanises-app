@@ -100,9 +100,6 @@ export function RegisterPage() {
   return (
     <AuthScreenShell contentClassName="gap-5 pt-12">
       <motion.div
-        variants={authContainer}
-        initial="hidden"
-        animate="visible"
         className="flex min-h-max flex-col items-center justify-start gap-5"
       >
         
@@ -110,9 +107,6 @@ export function RegisterPage() {
         <div className="w-full max-w-sm flex flex-col items-center gap-8 px-1">
           {/* Botón Volver - Integrado en el flujo */}
           <motion.button
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
             onClick={() => navigate('/login')}
             className="self-start flex items-center gap-2 text-white/40 hover:text-white transition-colors group"
           >
@@ -122,16 +116,11 @@ export function RegisterPage() {
 
           {/* Brand */}
           <motion.div
-            variants={authItem}
-            transition={{ duration: 0.58, ease: 'easeOut' }}
             className="flex flex-col items-center gap-3"
           >
             <motion.img
               src="/assets/branding/logo-white.png"
               alt="Lotería Manises"
-              initial={{ opacity: 0, scale: 0.75, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 170, damping: 15, delay: 0.18 }}
               className="h-12 w-auto"
             />
             <p className="text-manises-gold text-[9px] font-black uppercase tracking-[0.4em]">Administración nº 3</p>
@@ -139,7 +128,7 @@ export function RegisterPage() {
         </div>
 
         {/* Header Text */}
-        <motion.div variants={authItem} transition={{ duration: 0.52, ease: 'easeOut' }} className="text-center space-y-1">
+        <motion.div className="text-center space-y-1">
           <h1 className="text-white text-2xl font-black tracking-tight">Crea tu cuenta</h1>
           <p className="text-white/40 text-xs font-medium">
             Registro seguro para jugadores mayores de 18 años
@@ -148,8 +137,6 @@ export function RegisterPage() {
 
         {/* Form Card */}
         <motion.div
-          variants={authItem}
-          transition={{ duration: 0.72, ease: 'easeOut' }}
           className="w-full max-w-sm shrink-0"
         >
           <motion.div
@@ -377,7 +364,7 @@ export function RegisterPage() {
         </motion.div>
 
         {/* Trust Badges */}
-        <motion.div variants={authItem} transition={{ duration: 0.55, ease: 'easeOut' }} className="mt-auto flex justify-center gap-6 pt-2">
+        <motion.div className="mt-auto flex justify-center gap-6 pt-2">
           {TRUST_BADGES.map(({ icon: Icon, label }) => (
             <motion.div
               key={label}

@@ -62,9 +62,6 @@ export function LoginPage() {
   return (
     <AuthScreenShell contentClassName="gap-6 pt-14">
       <motion.div
-        variants={authContainer}
-        initial="hidden"
-        animate="visible"
         className="flex min-h-max flex-col items-center justify-start gap-6"
       >
 
@@ -72,17 +69,12 @@ export function LoginPage() {
         <div className="w-full max-w-sm flex flex-col items-center gap-8 px-1">
           {/* Brand */}
           <motion.div
-            variants={authItem}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
             className="flex flex-col items-center gap-4"
           >
             {/* Logo Real */}
             <motion.img
               src="/assets/branding/logo-white.png"
               alt="Lotería Manises"
-              initial={{ scale: 0.72, opacity: 0, y: -10 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 180, damping: 16, delay: 0.18 }}
               className="h-14 w-auto max-w-[200px] object-contain"
             />
 
@@ -97,8 +89,6 @@ export function LoginPage() {
 
         {/* Formulario */}
         <motion.div
-          variants={authItem}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
           className="w-full max-w-sm shrink-0"
         >
           {/* Card */}
@@ -195,8 +185,6 @@ export function LoginPage() {
 
         {/* Trust badges */}
         <motion.div
-          variants={authItem}
-          transition={{ duration: 0.55, ease: 'easeOut' }}
           className="mt-auto flex items-center justify-center gap-5 pt-2"
         >
           {TRUST_BADGES.map(({ icon: Icon, label }) => (
