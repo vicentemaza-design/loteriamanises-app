@@ -72,7 +72,7 @@ export function LoginPage() {
         <motion.div
           variants={authItem}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="mt-2 flex flex-col items-center gap-3"
+          className="mt-8 flex flex-col items-center gap-3"
         >
           {/* Logo Real */}
           <motion.img

@@ -106,34 +106,37 @@ export function RegisterPage() {
         className="flex min-h-max flex-col items-center justify-start gap-5"
       >
         
-        {/* Back Button */}
-        <motion.button
-          initial={{ opacity: 0, x: -14 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.45, ease: 'easeOut' }}
-          onClick={() => navigate('/login')}
-          className="absolute left-6 top-[calc(env(safe-area-inset-top,0px)+1.25rem)] flex items-center gap-2 text-white/50 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-xs font-bold uppercase tracking-widest">Volver</span>
-        </motion.button>
+        {/* Composición Superior Unificada */}
+        <div className="w-full flex flex-col items-center gap-8">
+          {/* Botón Volver - Integrado en el flujo */}
+          <motion.button
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            onClick={() => navigate('/login')}
+            className="self-start flex items-center gap-2 text-white/40 hover:text-white transition-colors group"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Volver</span>
+          </motion.button>
 
-        {/* Brand */}
-        <motion.div
-          variants={authItem}
-          transition={{ duration: 0.58, ease: 'easeOut' }}
-          className="mt-10 flex flex-col items-center gap-2"
-        >
-          <motion.img
-            src="/assets/branding/logo-white.png"
-            alt="Lotería Manises"
-            initial={{ opacity: 0, scale: 0.75, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 170, damping: 15, delay: 0.18 }}
-            className="h-10 w-auto"
-          />
-          <p className="text-manises-gold text-[9px] font-black uppercase tracking-[0.4em]">Administración nº 3</p>
-        </motion.div>
+          {/* Brand */}
+          <motion.div
+            variants={authItem}
+            transition={{ duration: 0.58, ease: 'easeOut' }}
+            className="flex flex-col items-center gap-3"
+          >
+            <motion.img
+              src="/assets/branding/logo-white.png"
+              alt="Lotería Manises"
+              initial={{ opacity: 0, scale: 0.75, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 170, damping: 15, delay: 0.18 }}
+              className="h-12 w-auto"
+            />
+            <p className="text-manises-gold text-[9px] font-black uppercase tracking-[0.4em]">Administración nº 3</p>
+          </motion.div>
+        </div>
 
         {/* Header Text */}
         <motion.div variants={authItem} transition={{ duration: 0.52, ease: 'easeOut' }} className="text-center space-y-1">
