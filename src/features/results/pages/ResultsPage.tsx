@@ -179,7 +179,7 @@ export function ResultsPage() {
         </section>
 
       {/* Filtros horizontales */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 rounded-2xl border border-white/70 bg-white/70 backdrop-blur-md p-2 shadow-[0_10px_20px_rgba(10,25,47,0.05)]">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 rounded-2xl border border-white/70 bg-white/70 backdrop-blur-md p-2">
         {GAME_FILTERS.map(f => (
           <PremiumTouchInteraction key={f} scale={0.95}>
             <button
@@ -212,7 +212,7 @@ export function ResultsPage() {
           return (
             <div
               key={`${result.gameId}-${result.date}`}
-              className="result-card bg-card rounded-2xl border border-white/80 overflow-hidden shadow-[0_14px_26px_rgba(10,25,47,0.10)] surface-neo-soft"
+              className="result-card bg-card rounded-2xl border border-white/80 overflow-hidden surface-neo-soft"
             >
               <div className="h-1" style={{ backgroundColor: game.color }} />
 
