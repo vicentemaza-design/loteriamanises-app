@@ -30,7 +30,7 @@ export function Header() {
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#0A4792] border-b border-[#D5E3F2]/10 shadow-md">
+    <header className="fixed top-0 left-0 right-0 z-40 w-full bg-[#0A4792] border-b border-[#D5E3F2]/10 shadow-md">
       {/* Background layer with subtle brand depth - Specific corporate gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#0A4792] via-[#0B4D9D] to-[#083F84] opacity-95" />
       
