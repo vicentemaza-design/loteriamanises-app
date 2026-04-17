@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -48,9 +49,24 @@ function AuthLoadingScreen() {
 
 export function RequireAuth() {
   const { user, isDemo, loading } = useAuth();
+  const [shouldShowLoading, setShouldShowLoading] = useState(false);
+
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        setShouldShowLoading(true);
+      }, 300);
+      return () => clearTimeout(timer);
+    } else {
+      setShouldShowLoading(false);
+    }
+  }, [loading]);
 
   if (loading) {
-    return <AuthLoadingScreen />;
+    if (shouldShowLoading) {
+      return <AuthLoadingScreen />;
+    }
+    return null; // Omitimos el renderizado durante los primeros 300ms para evitar flicker
   }
 
   if (!user && !isDemo) {
