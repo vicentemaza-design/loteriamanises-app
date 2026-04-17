@@ -384,22 +384,9 @@
     min-height: 100dvh;
     background: var(--app-bg) !important;
     box-sizing: border-box;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
-  /* opcional pero útil en iPhone/PWA */
-  body::after {
-    content: "";
-    display: block;
-    height: env(safe-area-inset-bottom, 0px);
-    background: var(--app-bg);
-  }
 
-  @supports (-webkit-touch-callout: none) {
-    html, body, #root {
-      min-height: -webkit-fill-available;
-    }
-  }
 
   html.auth-route,
   html.auth-route body,
