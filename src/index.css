@@ -389,13 +389,13 @@
 
 
   html.auth-route,
-  html.auth-route body,
   body.auth-route,
   html.auth-route #root {
+    --app-bg: #060d1a !important;
+    background: #060d1a !important;
+    background-image: none !important;
     height: auto;
     min-height: 100dvh;
-    background: var(--app-bg) !important;
-    background-image: none;
   }
 
   html.auth-route #root {
