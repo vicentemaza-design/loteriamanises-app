@@ -28,29 +28,30 @@
           document.documentElement.style.setProperty('--app-vh', vh + 'px');
         }
 
-        function nudgeViewport() {
+        function logVh(label) {
+          var vv = window.visualViewport ? window.visualViewport.height : 'N/A';
+          var ih = window.innerHeight;
+          var ch = document.documentElement.clientHeight;
+          var final = getRealViewportHeight();
+          console.log('[HEAD-DIAG] ' + label + ': VV=' + vv + ', IH=' + ih + ', CH=' + ch + ' -> FINAL=' + final);
           setAppVh();
-          window.scrollTo(0, 0);
-          if (document.body) {
-            var _reflow = document.body.offsetHeight;
-          }
         }
 
         function stabilizeAppVh() {
-          nudgeViewport();
+          logVh('init');
           requestAnimationFrame(function () {
-            nudgeViewport();
+            logVh('raf_1');
             requestAnimationFrame(function () {
-              nudgeViewport();
+              logVh('raf_2');
             });
           });
-          setTimeout(nudgeViewport, 120);
-          setTimeout(nudgeViewport, 350);
+          setTimeout(function () { logVh('120ms'); }, 120);
+          setTimeout(function () { logVh('350ms'); }, 350);
         }
 
         stabilizeAppVh();
-        window.addEventListener('load', stabilizeAppVh);
-        window.addEventListener('pageshow', stabilizeAppVh);
+        window.addEventListener('load', function () { stabilizeAppVh(); });
+        window.addEventListener('pageshow', function () { stabilizeAppVh(); });
         window.addEventListener('resize', setAppVh);
         if (window.visualViewport) {
           window.visualViewport.addEventListener('resize', setAppVh);

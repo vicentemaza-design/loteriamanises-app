@@ -18,30 +18,31 @@ const setAppVh = () => {
   document.documentElement.style.setProperty('--app-vh', `${vh}px`);
 };
 
-const nudgeViewport = () => {
+const logVh = (label: string) => {
+  const vv = window.visualViewport ? window.visualViewport.height : 'N/A';
+  const ih = window.innerHeight;
+  const ch = document.documentElement.clientHeight;
+  const final = getRealViewportHeight();
+  console.log(`[MAIN-DIAG] ${label}: VV=${vv}, IH=${ih}, CH=${ch} -> FINAL=${final}`);
   setAppVh();
-  window.scrollTo(0, 0);
-  if (document.body) {
-    const _unused = document.body.offsetHeight;
-  }
 };
 
 const stabilizeAppVh = () => {
-  nudgeViewport();
+  logVh('init');
   requestAnimationFrame(() => {
-    nudgeViewport();
+    logVh('raf_1');
     requestAnimationFrame(() => {
-      nudgeViewport();
+      logVh('raf_2');
     });
   });
-  setTimeout(nudgeViewport, 120);
-  setTimeout(nudgeViewport, 350);
+  setTimeout(() => logVh('120ms'), 120);
+  setTimeout(() => logVh('350ms'), 350);
 };
 
 if (!window.hasOwnProperty('__app_vh_initialized')) {
   stabilizeAppVh();
-  window.addEventListener('load', stabilizeAppVh);
-  window.addEventListener('pageshow', stabilizeAppVh);
+  window.addEventListener('load', () => stabilizeAppVh());
+  window.addEventListener('pageshow', () => stabilizeAppVh());
   window.addEventListener('resize', setAppVh);
   window.visualViewport?.addEventListener('resize', setAppVh);
   (window as any).__app_vh_initialized = true;
