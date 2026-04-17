@@ -34,22 +34,22 @@ export function Header() {
       {/* Background layer with subtle brand depth */}
       <div className="absolute inset-0 bg-gradient-to-br from-manises-blue via-[#093d7c] to-manises-blue-mid opacity-95" />
       
-      {/* Content wrapper with pt-safe + extra breathing room */}
-      <div className="relative flex h-[4.25rem] max-w-7xl items-center justify-between px-4 pt-safe pt-1 mx-auto">
-        {/* Logo Section - Compact but readable */}
+      {/* Content wrapper with pt-safe + generous breathing room */}
+      <div className="relative flex h-20 max-w-7xl items-center justify-between px-6 pt-safe pt-3 mx-auto">
+        {/* Logo Section - Institutional and readable */}
         <button
           type="button"
-          className="flex items-center gap-3 min-w-0"
+          className="flex items-center gap-4 min-w-0"
           onClick={() => navigate('/')}
           aria-label="Ir al inicio"
         >
           <img
             src="/assets/branding/logo-white.png"
             alt="Lotería Manises"
-            className="h-5.5 w-auto object-contain shrink-0"
+            className="h-6 w-auto object-contain shrink-0"
           />
-          <div className="hidden xs:flex flex-col border-l border-white/15 pl-3 py-0.5 min-w-0">
-            <span className="text-[8px] font-black text-manises-gold tracking-widest uppercase leading-tight">
+          <div className="hidden xs:flex flex-col border-l border-white/15 pl-4 py-1.5 min-w-0">
+            <span className="text-[9px] font-black text-manises-gold tracking-widest uppercase leading-tight">
               Administración nº 3
             </span>
             <span className="text-[7px] font-bold text-[#D5E3F2]/40 tracking-tight uppercase">
