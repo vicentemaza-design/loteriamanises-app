@@ -168,9 +168,15 @@ export function ResultsPage() {
       <div className="pointer-events-none absolute inset-x-0 top-10 h-32 bg-[radial-gradient(circle_at_top,_rgba(227,182,87,0.12)_0,_rgba(227,182,87,0)_70%)]" />
 
       <div className="relative z-10 flex flex-col gap-4 p-4">
-      <div className="results-header rounded-2xl border border-white/60 bg-white/75 backdrop-blur-md px-3 py-2 shadow-[0_12px_28px_rgba(10,25,47,0.06)]">
-        <PageHeader title="Resultados" icon={<Trophy className="w-5 h-5 text-manises-gold" />} />
-      </div>
+        <section className="px-1 pt-0.5 flex items-center justify-between results-header">
+          <div>
+            <h2 className="text-sm font-black text-manises-blue uppercase tracking-widest mb-1">Resultados</h2>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Últimos sorteos oficiales registrados</p>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-manises-gold/10 flex items-center justify-center">
+            <Trophy className="w-5 h-5 text-manises-gold" />
+          </div>
+        </section>
 
       {/* Filtros horizontales */}
       <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 rounded-2xl border border-white/70 bg-white/70 backdrop-blur-md p-2 shadow-[0_10px_20px_rgba(10,25,47,0.05)]">
