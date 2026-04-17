@@ -60,7 +60,7 @@ export function LoginPage() {
   };
 
   return (
-    <AuthScreenShell contentClassName="gap-6 pt-12">
+    <AuthScreenShell contentClassName="gap-6 pt-14">
       <motion.div
         variants={authContainer}
         initial="hidden"
