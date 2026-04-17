@@ -18,16 +18,24 @@ const setAppVh = () => {
   document.documentElement.style.setProperty('--app-vh', `${vh}px`);
 };
 
-const stabilizeAppVh = () => {
+const nudgeViewport = () => {
   setAppVh();
+  window.scrollTo(0, 0);
+  if (document.body) {
+    const _unused = document.body.offsetHeight;
+  }
+};
+
+const stabilizeAppVh = () => {
+  nudgeViewport();
   requestAnimationFrame(() => {
-    setAppVh();
+    nudgeViewport();
     requestAnimationFrame(() => {
-      setAppVh();
+      nudgeViewport();
     });
   });
-  setTimeout(setAppVh, 150);
-  setTimeout(setAppVh, 400);
+  setTimeout(nudgeViewport, 120);
+  setTimeout(nudgeViewport, 350);
 };
 
 if (!window.hasOwnProperty('__app_vh_initialized')) {

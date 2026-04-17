@@ -28,16 +28,24 @@
           document.documentElement.style.setProperty('--app-vh', vh + 'px');
         }
 
-        function stabilizeAppVh() {
+        function nudgeViewport() {
           setAppVh();
+          window.scrollTo(0, 0);
+          if (document.body) {
+            var _reflow = document.body.offsetHeight;
+          }
+        }
+
+        function stabilizeAppVh() {
+          nudgeViewport();
           requestAnimationFrame(function () {
-            setAppVh();
+            nudgeViewport();
             requestAnimationFrame(function () {
-              setAppVh();
+              nudgeViewport();
             });
           });
-          setTimeout(setAppVh, 150);
-          setTimeout(setAppVh, 400);
+          setTimeout(nudgeViewport, 120);
+          setTimeout(nudgeViewport, 350);
         }
 
         stabilizeAppVh();
