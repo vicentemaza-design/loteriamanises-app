@@ -164,9 +164,6 @@ export function ResultsPage() {
 
   return (
     <div className="relative min-h-full overflow-x-hidden bg-background">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-[radial-gradient(circle_at_top,_rgba(10,25,47,0.10)_0,_rgba(10,25,47,0)_72%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-10 h-32 bg-[radial-gradient(circle_at_top,_rgba(227,182,87,0.12)_0,_rgba(227,182,87,0)_70%)]" />
-
       <div className="relative z-10 flex flex-col gap-4 p-4">
         <section className="px-1 pt-0.5 flex items-center justify-between results-header">
           <div>
@@ -179,7 +176,7 @@ export function ResultsPage() {
         </section>
 
       {/* Filtros horizontales */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 rounded-2xl border border-white/70 bg-white/70 backdrop-blur-md p-2">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 rounded-2xl border border-white/70 bg-white/70 p-2">
         {GAME_FILTERS.map(f => (
           <PremiumTouchInteraction key={f} scale={0.95}>
             <button
@@ -187,7 +184,7 @@ export function ResultsPage() {
               className={cn(
                 'filter-chip text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap border transition-all shrink-0',
                 activeFilter === f
-                  ? 'bg-manises-blue text-white border-manises-blue shadow-[0_8px_16px_rgba(10,25,47,0.25)]'
+                  ? 'bg-manises-blue text-white border-manises-blue'
                   : 'bg-white/85 text-muted-foreground border-border hover:border-manises-blue/30'
               )}
             >
