@@ -1,4 +1,4 @@
-// Final iOS PWA Layout Stabilization - Isolation Test v1.0.2
+// Final iOS PWA Layout Stabilization - Static Identity v1.0.3
 import type { ReactNode } from 'react';
 import { cn } from '@/shared/lib/utils';
 import authBackground from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
@@ -12,13 +12,27 @@ interface AuthScreenShellProps {
 export function AuthScreenShell({
   children,
   contentClassName,
+  backgroundImageSrc = authBackground,
 }: AuthScreenShellProps) {
   return (
-    // TEST DE AISLAMIENTO: Volvemos a la estructura técnica de persecución de viewport
-    // pero eliminando toda la carga decorativa y animada.
+    // Conservamos la estructura técnica de persecución de viewport (--app-vh)
     <div className="relative h-[var(--app-vh)] min-h-[var(--app-vh)] w-full overflow-hidden bg-[#060d1a] text-white">
-      {/* Sin imagen, sin motion, sin gradientes. Solo fondo sólido. */}
       
+      {/* CAPA DE FONDO: Recuperada con la imagen pero 100% estática */}
+      <div className="absolute inset-0 pointer-events-none">
+        <img
+          src={backgroundImageSrc}
+          alt=""
+          aria-hidden="true"
+          className="h-full w-full object-cover opacity-35"
+        />
+        {/* Overlay oscuro estático para legibilidad */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(6,13,26,0.72)_0%,rgba(10,25,48,0.78)_45%,rgba(6,13,26,0.88)_100%)]" />
+        {/* Luces sutiles estáticas para profundidad */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(245,197,24,0.10),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_30%)]" />
+      </div>
+      
+      {/* CONTENIDOR DE SCROLL: Mantenemos la lógica de scroll interno para evitar glitches del viewport global */}
       <div className="relative z-10 h-[var(--app-vh)] min-h-[var(--app-vh)] w-full overflow-y-auto overflow-x-hidden">
         <div
           className={cn(
