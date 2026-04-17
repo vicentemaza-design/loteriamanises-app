@@ -106,8 +106,8 @@ export function RegisterPage() {
         className="flex min-h-max flex-col items-center justify-start gap-5"
       >
         
-        {/* Composición Superior Unificada */}
-        <div className="w-full flex flex-col items-center gap-8">
+        {/* Composición Superior Unificada - Alineada con el ancho de la Card */}
+        <div className="w-full max-w-sm flex flex-col items-center gap-8 px-1">
           {/* Botón Volver - Integrado en el flujo */}
           <motion.button
             initial={{ opacity: 0, y: -10 }}
