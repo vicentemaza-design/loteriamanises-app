@@ -224,7 +224,10 @@ export function GamePlayPage() {
   };
 
   return (
-    <div className="flex flex-col bg-white min-h-full pb-36">
+    <div 
+      className="flex flex-col bg-white min-h-full pb-36"
+      style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 64px)' }}
+    >
       {/* Success Overlay - MEJORA MILOTO: Feedback visual y compartir */}
       <AnimatePresence>
         {showSuccess && (
@@ -275,7 +278,7 @@ export function GamePlayPage() {
       </AnimatePresence>
 
       <div
-        className="sticky top-0 z-40 text-white pt-safe shadow-lg"
+        className="fixed top-0 left-0 right-0 z-40 text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+64px)] flex flex-col justify-end"
         style={{ background: `linear-gradient(135deg, ${game.color}, ${game.colorEnd ?? game.color})` }}
       >
         <div className="flex items-center justify-between px-3 py-3">
