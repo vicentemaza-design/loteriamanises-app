@@ -98,7 +98,7 @@ export function RegisterPage() {
   };
 
   return (
-    <AuthScreenShell contentClassName="gap-5 pt-[calc(env(safe-area-inset-top,0px)+1.25rem)]">
+    <AuthScreenShell contentClassName="gap-5 pt-[calc(env(safe-area-inset-top,0px)+5rem)]">
       <motion.div
         variants={authContainer}
         initial="hidden"
@@ -112,7 +112,7 @@ export function RegisterPage() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.45, ease: 'easeOut' }}
           onClick={() => navigate('/login')}
-          className="absolute left-6 top-[calc(env(safe-area-inset-top,0px)+0.75rem)] flex items-center gap-2 text-white/50 hover:text-white transition-colors"
+          className="absolute left-6 top-[calc(env(safe-area-inset-top,0px)+1.25rem)] flex items-center gap-2 text-white/50 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-xs font-bold uppercase tracking-widest">Volver</span>
