@@ -53,28 +53,19 @@ function AuthLoadingScreen({ isSilent = false }: { isSilent?: boolean }) {
 
 export function RequireAuth() {
   const { user, isDemo, loading } = useAuth();
-  const [shouldShowLoading, setShouldShowLoading] = useState(false);
 
-  useEffect(() => {
-    if (loading) {
-      const timer = setTimeout(() => {
-        setShouldShowLoading(true);
-      }, 300);
-      return () => clearTimeout(timer);
-    } else {
-      setShouldShowLoading(false);
-    }
-  }, [loading]);
+  // Si no hay usuario y ya terminó de cargar, redirigimos a login (ahora en la raíz /)
+  if (!loading && !user && !isDemo) {
+    return <Navigate to="/" replace />;
+  }
 
+  // Solo mostramos LoadingScreen si estamos en una ruta privada y esperando sesión
   if (loading) {
-    // Si estamos en el umbral (<300ms), mostramos el shell silencioso (solo fondo + logo)
-    // Si superamos el umbral, mostramos el shell completo con el feedback de carga
-    return <AuthLoadingScreen isSilent={!shouldShowLoading} />;
+    return <AuthLoadingScreen />;
   }
 
-  if (!user && !isDemo) {
-    return <Navigate to="/login" replace />;
-  }
+  return <Outlet />;
+}
 
   return <Outlet />;
 }

@@ -14,7 +14,7 @@ export function PublicLayout() {
   }, []);
 
   if (!loading && (user || isDemo)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   return <Outlet />;

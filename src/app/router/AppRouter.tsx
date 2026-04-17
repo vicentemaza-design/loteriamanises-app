@@ -26,13 +26,15 @@ export function AppRouter() {
   return (
     <Routes>
       <Route element={<PublicLayout />}>
-        <Route path="/login" element={<LoginPage />} />
+        {/* Usamos el Login como página de aterrizaje (index) para renderizado inmediato */}
+        <Route index element={<LoginPage />} />
+        <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="/register" element={<RegisterPage />} />
       </Route>
 
       <Route element={<RequireAuth />}>
         <Route element={<PrivateLayout />}>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/home" element={<HomePage />} />
           <Route path="/games" element={<GamesPage />} />
           <Route path="/play/:gameId" element={<GamePlayPage />} />
           <Route path="/results" element={<ResultsPage />} />
