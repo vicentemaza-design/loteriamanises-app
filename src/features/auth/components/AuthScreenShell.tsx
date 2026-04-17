@@ -15,7 +15,7 @@ export function AuthScreenShell({
   backgroundImageSrc = authBackground,
 }: AuthScreenShellProps) {
   return (
-    <div className="fixed inset-x-0 -inset-y-12 z-[100] overflow-hidden bg-[#060d1a]">
+    <div className="fixed inset-0 z-[100] overflow-hidden bg-[#060d1a]">
       <div className="absolute inset-0 pointer-events-none">
         <motion.img
           src={backgroundImageSrc}

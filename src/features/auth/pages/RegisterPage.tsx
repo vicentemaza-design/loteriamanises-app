@@ -98,7 +98,7 @@ export function RegisterPage() {
   };
 
   return (
-    <AuthScreenShell contentClassName="gap-5 pt-[clamp(3.5rem,10vh,6rem)]">
+    <AuthScreenShell contentClassName="gap-5 pt-[clamp(7rem,20vh,12rem)]">
       <motion.div
         variants={authContainer}
         initial="hidden"

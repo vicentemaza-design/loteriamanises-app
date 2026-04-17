@@ -60,7 +60,7 @@ export function LoginPage() {
   };
 
   return (
-    <AuthScreenShell contentClassName="gap-6 pt-[clamp(3.5rem,10vh,6rem)]">
+    <AuthScreenShell contentClassName="gap-6 pt-[clamp(7rem,20vh,12rem)]">
       <motion.div
         variants={authContainer}
         initial="hidden"
@@ -70,18 +70,6 @@ export function LoginPage() {
 
         {/* Composición Superior Unificada - Coherente con Registro */}
         <div className="w-full max-w-sm flex flex-col items-center gap-8 px-1">
-          {/* Botón Volver - Integrado en el flujo */}
-          <motion.button
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
-            onClick={() => navigate('/')}
-            className="self-start flex items-center gap-2 text-white/40 hover:text-white transition-colors group"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Volver</span>
-          </motion.button>
-
           {/* Brand */}
           <motion.div
             variants={authItem}
