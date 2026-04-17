@@ -78,6 +78,7 @@
 
 /* ===== MODO CLARO (default) ===== */
 :root {
+  --app-bg: #ffffff;
   --app-height: 100dvh;
   --background:            #F7F8FA;
   --foreground:            #0A192F;
@@ -215,16 +216,12 @@
 
   /* Dynamic viewport */
   .min-h-dvh {
-    min-height: 100vh;
-    min-height: 100svh;
     min-height: 100dvh;
   }
   .min-h-app {
     min-height: var(--app-height);
   }
   .h-dvh {
-    height: 100vh;
-    height: 100svh;
     height: 100dvh;
   }
   .h-app {
@@ -352,52 +349,50 @@
     @apply font-sans;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    height: var(--app-height);
-    min-height: 100%;
-    min-height: 100svh;
-    min-height: 100dvh;
-    background-color: #060d1a;
+    background: var(--app-bg);
+    height: 100%;
   }
 
-  html, body {
-    @apply overflow-x-hidden;
+  body {
+    margin: 0;
+    padding: 0;
+    @apply font-sans text-foreground;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    min-height: 100dvh;
+    background: var(--app-bg) !important;
+    overflow-x: hidden;
     overscroll-behavior-y: none;
     width: 100%;
-    height: var(--app-height);
-    min-height: 100%;
-    min-height: 100svh;
-    min-height: 100dvh;
-    /* Permite selección de texto en contenido informativo */
     -webkit-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
 
-  /* El texto informativo sí puede seleccionarse */
-  p, span, h1, h2, h3, h4, h5, h6, label, li {
-    -webkit-user-select: text;
-    user-select: text;
-  }
-
   #root {
-    height: var(--app-height);
-    min-height: 100%;
-    min-height: 100svh;
     min-height: 100dvh;
+    background: var(--app-bg) !important;
     width: 100%;
     display: flex;
     flex-direction: column;
-    background-color: #060d1a;
   }
 
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-    background-color: #060d1a;
-    background-image:
-      radial-gradient(circle at top left, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 26%),
-      radial-gradient(circle at bottom right, rgba(245,197,24,0.09) 0%, rgba(245,197,24,0) 22%);
+  /* contenedor principal de tu app */
+  .app-shell,
+  .App,
+  main {
+    min-height: 100dvh;
+    background: var(--app-bg) !important;
+    box-sizing: border-box;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* opcional pero útil en iPhone/PWA */
+  body::after {
+    content: "";
+    display: block;
+    height: env(safe-area-inset-bottom, 0px);
+    background: var(--app-bg);
   }
 
   @supports (-webkit-touch-callout: none) {
@@ -412,7 +407,7 @@
   html.auth-route #root {
     height: auto;
     min-height: 100dvh;
-    background-color: #060d1a;
+    background: var(--app-bg) !important;
     background-image: none;
   }
 
