@@ -34,9 +34,9 @@ export function Header() {
       {/* Background layer with subtle brand depth */}
       <div className="absolute inset-0 bg-gradient-to-br from-manises-blue via-[#093d7c] to-manises-blue-mid opacity-95" />
       
-      {/* Content wrapper with pt-safe for iPhone Dynamic Island / Notch */}
-      <div className="relative flex h-[3.75rem] max-w-7xl items-center justify-between px-4 pt-safe mx-auto">
-        {/* Logo Section - More compact */}
+      {/* Content wrapper with pt-safe + extra breathing room */}
+      <div className="relative flex h-[4.25rem] max-w-7xl items-center justify-between px-4 pt-safe pt-1 mx-auto">
+        {/* Logo Section - Compact but readable */}
         <button
           type="button"
           className="flex items-center gap-3 min-w-0"
@@ -46,9 +46,9 @@ export function Header() {
           <img
             src="/assets/branding/logo-white.png"
             alt="Lotería Manises"
-            className="h-5 w-auto object-contain shrink-0"
+            className="h-5.5 w-auto object-contain shrink-0"
           />
-          <div className="hidden xs:flex flex-col border-l border-white/15 pl-3 py-1 min-w-0">
+          <div className="hidden xs:flex flex-col border-l border-white/15 pl-3 py-0.5 min-w-0">
             <span className="text-[8px] font-black text-manises-gold tracking-widest uppercase leading-tight">
               Administración nº 3
             </span>
