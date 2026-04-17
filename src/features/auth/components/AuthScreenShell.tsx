@@ -16,7 +16,7 @@ export function AuthScreenShell({
   backgroundImageSrc = authBackground,
 }: AuthScreenShellProps) {
   return (
-    <div className="relative min-h-[100svh] min-h-dvh w-full overflow-hidden bg-[#060d1a]">
+    <div className="relative h-[var(--app-vh)] min-h-[var(--app-vh)] w-full overflow-hidden bg-[#060d1a]">
       <div className="absolute inset-0 pointer-events-none">
         <motion.img
           src={backgroundImageSrc}
@@ -89,10 +89,10 @@ export function AuthScreenShell({
         <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(245,197,24,0.06)_0%,transparent_36%,rgba(255,255,255,0.05)_52%,transparent_100%)]" />
       </div>
 
-      <div className="relative z-10 min-h-[100svh] min-h-dvh w-full overflow-y-auto overflow-x-hidden">
+      <div className="relative z-10 h-[var(--app-vh)] min-h-[var(--app-vh)] w-full overflow-y-auto overflow-x-hidden">
         <div
           className={cn(
-            'flex min-h-[100svh] min-h-dvh flex-col items-center justify-start px-6 pb-[calc(env(safe-area-inset-bottom,0px)+3rem)]',
+            'flex min-h-full flex-col items-center justify-start px-6 pb-[calc(env(safe-area-inset-bottom,0px)+3rem)]',
             contentClassName
           )}
         >

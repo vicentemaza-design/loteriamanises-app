@@ -11,6 +11,21 @@
     <meta name="apple-mobile-web-app-title" content="Lotería Manises" />
     <link rel="manifest" href="/manifest.json" />
     <title>Lotería Manises — Administración nº 3</title>
+    <script>
+      (function () {
+        function setAppVh() {
+          var vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+          document.documentElement.style.setProperty('--app-vh', vh + 'px');
+        }
+
+        setAppVh();
+        window.addEventListener('resize', setAppVh);
+        window.addEventListener('pageshow', setAppVh);
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener('resize', setAppVh);
+        }
+      })();
+    </script>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <script>
       (function () {
