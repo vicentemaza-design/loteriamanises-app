@@ -30,12 +30,12 @@ export function Header() {
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-40 w-full overflow-hidden bg-manises-blue border-b border-[#D5E3F2]/10 shadow-md">
+    <header className="sticky top-0 z-40 w-full bg-[#0A4792] border-b border-[#D5E3F2]/10 shadow-md">
       {/* Background layer with subtle brand depth */}
-      <div className="absolute inset-0 bg-gradient-to-br from-manises-blue via-[#093d7c] to-manises-blue-mid opacity-95" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0A4792] via-[#093d7c] to-[#0A4792] opacity-95" />
       
-      {/* Content wrapper with pt-safe + generous breathing room */}
-      <div className="relative flex h-20 max-w-7xl items-center justify-between px-6 pt-safe pt-3 mx-auto">
+      {/* Content wrapper with pt-safe + generous breathing room - Flexible height to prevent clipping */}
+      <div className="relative flex min-h-[5rem] items-center justify-between px-6 pt-safe pt-3 pb-3 mx-auto max-w-7xl">
         {/* Logo Section - Institutional and readable */}
         <button
           type="button"

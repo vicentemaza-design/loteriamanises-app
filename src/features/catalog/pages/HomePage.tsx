@@ -228,7 +228,7 @@ function PremiumEditorialCard({
           cta: 'bg-manises-gold/90 text-manises-blue backdrop-blur-md border border-white/20',
           glow: 'rgba(245,197,24,0.12)',
           border: 'border-manises-gold/20',
-          overlay: 'bg-[linear-gradient(135deg,rgba(10,25,47,0.85)_0%,rgba(10,25,47,0.65)_50%,rgba(212,160,23,0.1)_100%)]'
+          overlay: 'bg-[linear-gradient(135deg,rgba(10,71,146,0.85)_0%,rgba(10,71,146,0.65)_50%,rgba(212,160,23,0.1)_100%)]'
         }
       : accent === 'blue'
       ? {
@@ -236,14 +236,14 @@ function PremiumEditorialCard({
           cta: 'bg-white/10 text-white backdrop-blur-md border border-white/20',
           glow: 'rgba(56,189,248,0.12)',
           border: 'border-sky-400/20',
-          overlay: 'bg-[linear-gradient(135deg,rgba(8,22,41,0.9)_0%,rgba(10,25,47,0.75)_40%,rgba(17,34,64,0.25)_100%)]'
+          overlay: 'bg-[linear-gradient(135deg,rgba(8,61,125,0.9)_0%,rgba(10,71,146,0.75)_40%,rgba(13,86,176,0.25)_100%)]'
         }
       : {
           badge: 'bg-indigo-500/20 text-indigo-100 border border-indigo-400/30',
           cta: 'bg-indigo-500 text-white',
           glow: 'rgba(99,102,241,0.12)',
           border: 'border-indigo-400/20',
-          overlay: 'bg-[linear-gradient(135deg,rgba(49,46,129,0.95)_0%,rgba(67,56,202,0.75)_40%,rgba(99,102,241,0.3)_100%)]'
+          overlay: 'bg-[linear-gradient(135deg,rgba(10,71,146,0.95)_0%,rgba(67,56,202,0.75)_40%,rgba(99,102,241,0.3)_100%)]'
         };
 
   return (
