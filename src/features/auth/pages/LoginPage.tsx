@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
-import { Mail, Lock, Shield, Clock, BadgePercent, FlaskConical } from 'lucide-react';
+import { Mail, Lock, Shield, Clock, BadgePercent, FlaskConical, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -68,29 +68,44 @@ export function LoginPage() {
         className="flex min-h-max flex-col items-center justify-start gap-6"
       >
 
-        {/* Brand */}
-        <motion.div
-          variants={authItem}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="mt-8 flex flex-col items-center gap-3"
-        >
-          {/* Logo Real */}
-          <motion.img
-            src="/assets/branding/logo-white.png"
-            alt="Lotería Manises"
-            initial={{ scale: 0.72, opacity: 0, y: -10 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 180, damping: 16, delay: 0.18 }}
-            className="h-14 w-auto max-w-[200px] object-contain"
-          />
+        {/* Composición Superior Unificada - Coherente con Registro */}
+        <div className="w-full max-w-sm flex flex-col items-center gap-8 px-1">
+          {/* Botón Volver - Integrado en el flujo */}
+          <motion.button
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            onClick={() => navigate('/')}
+            className="self-start flex items-center gap-2 text-white/40 hover:text-white transition-colors group"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em]">Volver</span>
+          </motion.button>
 
-          {/* Descriptor real */}
-          <div className="text-center">
-            <p className="text-manises-gold text-[10px] font-bold uppercase tracking-[0.3em] opacity-90">
-              Administración nº 3 · Valencia
-            </p>
-          </div>
-        </motion.div>
+          {/* Brand */}
+          <motion.div
+            variants={authItem}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="flex flex-col items-center gap-4"
+          >
+            {/* Logo Real */}
+            <motion.img
+              src="/assets/branding/logo-white.png"
+              alt="Lotería Manises"
+              initial={{ scale: 0.72, opacity: 0, y: -10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 180, damping: 16, delay: 0.18 }}
+              className="h-14 w-auto max-w-[200px] object-contain"
+            />
+
+            {/* Descriptor real */}
+            <div className="text-center">
+              <p className="text-manises-gold text-[10px] font-bold uppercase tracking-[0.3em] opacity-90">
+                Administración nº 3 · Valencia
+              </p>
+            </div>
+          </motion.div>
+        </div>
 
         {/* Formulario */}
         <motion.div
