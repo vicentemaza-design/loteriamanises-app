@@ -27,7 +27,13 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <AppRouter />
-        <Toaster position="top-center" richColors />
+        <Toaster 
+          position="top-center" 
+          richColors 
+          containerStyle={{
+            top: 'calc(env(safe-area-inset-top, 0px) + 12px)',
+          }}
+        />
       </BrowserRouter>
     </AuthProvider>
   );
