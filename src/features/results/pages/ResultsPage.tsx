@@ -104,7 +104,7 @@ const DEMO_TICKETS: Ticket[] = [
   },
 ];
 
-const GAME_FILTERS = ['Todos', 'Euromillones', 'Primitiva', 'Bonoloto', 'El Gordo', 'Lotería Nacional'];
+const GAME_FILTERS = ['Todos', ...LOTTERY_GAMES.map(g => g.name)];
 
 export function ResultsPage() {
   const { user, isDemo } = useAuth();
