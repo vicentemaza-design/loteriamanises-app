@@ -1,3 +1,4 @@
+// Final iOS PWA Layout Stabilization - v1.0.1
 import type { ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '@/shared/lib/utils';
