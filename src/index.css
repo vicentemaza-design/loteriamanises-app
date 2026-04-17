@@ -304,6 +304,11 @@
     overflow: hidden;
   }
 
+  /* Forzar desplazamiento del contenedor de notificaciones en la parte superior (iOS Safe Area) */
+  [data-sonner-toaster][data-y-position="top"] {
+    top: calc(env(safe-area-inset-top, 0px) + 16px) !important;
+  }
+
   /* Animaciones Laguinda Style */
   @keyframes scan-move {
     0% { transform: translateY(-100%); }
