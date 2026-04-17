@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { AuthScreenShell } from '@/features/auth/components/AuthScreenShell';
 
-function AuthLoadingScreen() {
+function AuthLoadingScreen({ isSilent = false }: { isSilent?: boolean }) {
   return (
     <AuthScreenShell contentClassName="gap-6 pt-14">
       {/* Brand - Mimicking LoginPage structure for perfect alignment */}
@@ -23,26 +23,28 @@ function AuthLoadingScreen() {
         </div>
       </div>
 
-      {/* Placeholder Card - Matching LoginPage's Card exactly */}
-      <div className="w-full max-w-sm shrink-0">
-        <div className="bg-white/6 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 shadow-[0_18px_42px_rgba(0,0,0,0.28)] flex flex-col items-center gap-6">
-          <div className="text-center">
-            <p className="text-[11px] font-medium text-white/40 tracking-wide">
-              Estableciendo conexión segura...
-            </p>
-          </div>
-          <div className="flex gap-3">
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                animate={{ opacity: [0.1, 0.35, 0.1] }}
-                transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4 }}
-                className="h-1.5 w-1.5 rounded-full bg-white/30"
-              />
-            ))}
+      {/* Placeholder Card - Only shown if NOT silent */}
+      {!isSilent && (
+        <div className="w-full max-w-sm shrink-0">
+          <div className="bg-white/6 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 shadow-[0_18px_42px_rgba(0,0,0,0.28)] flex flex-col items-center gap-6">
+            <div className="text-center">
+              <p className="text-[11px] font-medium text-white/40 tracking-wide">
+                Estableciendo conexión segura...
+              </p>
+            </div>
+            <div className="flex gap-3">
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  animate={{ opacity: [0.1, 0.35, 0.1] }}
+                  transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.4 }}
+                  className="h-1.5 w-1.5 rounded-full bg-white/30"
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </AuthScreenShell>
   );
 }
@@ -63,10 +65,9 @@ export function RequireAuth() {
   }, [loading]);
 
   if (loading) {
-    if (shouldShowLoading) {
-      return <AuthLoadingScreen />;
-    }
-    return null; // Omitimos el renderizado durante los primeros 300ms para evitar flicker
+    // Si estamos en el umbral (<300ms), mostramos el shell silencioso (solo fondo + logo)
+    // Si superamos el umbral, mostramos el shell completo con el feedback de carga
+    return <AuthLoadingScreen isSilent={!shouldShowLoading} />;
   }
 
   if (!user && !isDemo) {
