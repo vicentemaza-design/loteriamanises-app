@@ -21,9 +21,7 @@ const setAppVh = () => {
 const nudgeViewport = () => {
   setAppVh();
   window.scrollTo(0, 0);
-  if (document.documentElement) {
-    const _unused = document.documentElement.offsetHeight;
-  }
+  document.documentElement.offsetHeight;
 };
 
 const stabilizeAppVh = () => {
