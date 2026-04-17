@@ -389,7 +389,7 @@
 
 
   html.auth-route,
-  body.auth-route,
+  html.auth-route body,
   html.auth-route #root {
     --app-bg: #060d1a !important;
     background: #060d1a !important;
