@@ -16,7 +16,7 @@ export function AuthScreenShell({
   backgroundImageSrc = authBackground,
 }: AuthScreenShellProps) {
   return (
-    <div className="min-h-screen w-full overflow-hidden bg-[#060d1a] text-white">
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#060d1a] text-white">
       <div className="absolute inset-0 pointer-events-none">
         <img
           src={backgroundImageSrc}
