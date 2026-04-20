@@ -51,7 +51,7 @@ export function PrivateLayout() {
           >
             <div className="absolute inset-0 section-wash pointer-events-none" />
             <div className="absolute top-0 left-0 right-0 h-56 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.62)_0,_rgba(255,255,255,0)_70%)] pointer-events-none" />
-            <div className="relative w-full min-h-full bg-background">
+            <div key={location.pathname} className="relative w-full min-h-full bg-background">
               <Outlet />
             </div>
           </main>
