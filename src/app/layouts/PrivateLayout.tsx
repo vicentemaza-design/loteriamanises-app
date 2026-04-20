@@ -21,7 +21,9 @@ export function PrivateLayout() {
   const mainRef = React.useRef<HTMLElement>(null);
 
   React.useEffect(() => {
-    if (mainRef.current) mainRef.current.scrollTop = 0;
+    if (mainRef.current) {
+      mainRef.current.scrollTo({ top: 0, behavior: 'auto' });
+    }
   }, [location.pathname]);
 
   return (
