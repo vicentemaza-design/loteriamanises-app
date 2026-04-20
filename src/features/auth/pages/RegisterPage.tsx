@@ -367,10 +367,21 @@ export function RegisterPage() {
           ))}
         </motion.div>
 
-        {/* Legal */}
-        <p className="text-[9px] text-white/20 text-center font-medium max-w-[240px] leading-relaxed">
-          Uso exclusivo para mayores de <span className="text-white/40">18 años</span>. Se requiere verificación de identidad para retirar premios y cumplir normativa de juego responsable.
-        </p>
+        {/* Pie legal minimalista */}
+        <div className="flex flex-col items-center gap-3 px-4 opacity-30 mt-2">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+            <button className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Términos</button>
+            <span className="text-[8px]">•</span>
+            <button className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Privacidad</button>
+            <span className="text-[8px]">•</span>
+            <button className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Juego responsable</button>
+            <span className="text-[8px]">•</span>
+            <span className="text-[9px] font-bold uppercase tracking-wider">+18</span>
+          </div>
+          <p className="text-[9px] font-medium italic text-center leading-tight">
+            Juega con responsabilidad. Prohibido a menores de 18 años.
+          </p>
+        </div>
       </motion.div>
     </AuthScreenShell>
   );

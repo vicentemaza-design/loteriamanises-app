@@ -3,7 +3,8 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { Button } from '@/shared/ui/Button';
 import { toast } from 'sonner';
-import { Save, User, Mail, Phone, Lock, Landmark, CircleCheck, Shield } from 'lucide-react';
+import { Save, User, Mail, Phone, Lock, Landmark, CircleCheck, Shield, ChevronRight, ShieldCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -59,6 +60,7 @@ function Field({
 }
 
 export function AccountPage() {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -161,6 +163,26 @@ export function AccountPage() {
                 Usamos estos datos solo para validación y pagos. Puedes actualizarlos cuando quieras.
               </p>
             </div>
+
+            <div className="h-px bg-border/40 my-1" />
+
+            {/* Enlace contextual a Juego Responsable */}
+            <button
+              type="button"
+              onClick={() => navigate('/profile/help')}
+              className="flex items-center justify-between p-3 rounded-xl bg-purple-50/50 border border-purple-100 hover:bg-purple-50 transition-colors group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-purple-100 text-purple-600">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold text-purple-900">Juego Responsable</p>
+                  <p className="text-[9px] text-purple-600/70 font-medium">Control, límites y autoexclusión</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-purple-400 group-hover:translate-x-0.5 transition-transform" />
+            </button>
           </section>
 
           <PremiumTouchInteraction scale={0.98} className="mt-2 stagger-item">

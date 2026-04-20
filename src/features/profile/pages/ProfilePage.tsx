@@ -107,7 +107,7 @@ export function ProfilePage() {
       title: 'Ajustes',
       items: [
         { icon: Settings,    label: 'Preferencias',      detail: null, color: 'text-gray-600',    bg: 'bg-gray-100', onClick: () => navigate('/profile/settings') },
-        { icon: HelpCircle,  label: 'Ayuda y soporte',   detail: null, color: 'text-orange-500',  bg: 'bg-orange-50', onClick: () => navigate('/profile/help') },
+        { icon: HelpCircle,  label: 'Ayuda, premios y legal', detail: null, color: 'text-orange-500',  bg: 'bg-orange-50', onClick: () => navigate('/profile/help') },
       ],
     },
   ];

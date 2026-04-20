@@ -189,12 +189,21 @@ export function LoginPage() {
           ))}
         </motion.div>
 
-        {/* Pie legal */}
-        <p className="text-[10px] text-white/20 text-center font-medium leading-relaxed max-w-xs">
-          Al acceder aceptas los{' '}
-          <span className="underline cursor-pointer">Términos y Condiciones</span>.
-          Juega con responsabilidad. +18. DGOJ.
-        </p>
+        {/* Pie legal minimalista */}
+        <div className="flex flex-col items-center gap-3 px-4 opacity-30">
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+            <button className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Términos</button>
+            <span className="text-[8px]">•</span>
+            <button className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Privacidad</button>
+            <span className="text-[8px]">•</span>
+            <button className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Juego responsable</button>
+            <span className="text-[8px]">•</span>
+            <span className="text-[9px] font-bold uppercase tracking-wider">+18</span>
+          </div>
+          <p className="text-[9px] font-medium italic text-center leading-tight">
+            Juega con responsabilidad. Prohibido a menores de 18 años.
+          </p>
+        </div>
       </motion.div>
     </AuthScreenShell>
   );

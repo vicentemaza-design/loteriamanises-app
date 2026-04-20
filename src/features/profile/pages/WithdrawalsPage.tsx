@@ -1,5 +1,6 @@
 import type { ElementType } from 'react';
-import { BadgeCheck, CheckCircle2, Landmark, ShieldAlert, ShieldCheck, WalletCards } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { BadgeCheck, CheckCircle2, ChevronRight, Landmark, ShieldAlert, ShieldCheck, Trophy, WalletCards } from 'lucide-react';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { premiumDemoData } from '@/features/profile/data/premium-demo';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';
@@ -7,6 +8,7 @@ import { PremiumActionRow } from '../components/PremiumActionRow';
 import { PremiumMetricPill } from '../components/PremiumMetricPill';
 
 export function WithdrawalsPage() {
+  const navigate = useNavigate();
   const withdrawals = premiumDemoData.withdrawals;
 
   return (
@@ -70,6 +72,23 @@ export function WithdrawalsPage() {
             })}
           </div>
         </section>
+
+        {/* Info Contextual — Enlace a Ayuda */}
+        <button
+          onClick={() => navigate('/profile/help')}
+          className="mt-2 group flex items-center justify-between p-4 rounded-2xl border border-manises-blue/10 bg-manises-blue/5 hover:bg-manises-blue/10 transition-all text-left"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-manises-blue/10 text-manises-blue">
+              <Trophy className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-manises-blue">Guía de pago de premios</p>
+              <p className="text-[10px] text-muted-foreground font-medium">Plazos, fiscalidad y seguridad oficial</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-manises-blue group-hover:translate-x-0.5 transition-transform" />
+        </button>
 
         {/* Security / Compliance Note */}
         <div className="px-1 flex items-start gap-2.5 opacity-60">

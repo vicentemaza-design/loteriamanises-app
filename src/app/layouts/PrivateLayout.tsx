@@ -18,6 +18,12 @@ export function PrivateLayout() {
     location.pathname.startsWith(p)
   );
 
+  const mainRef = React.useRef<HTMLElement>(null);
+
+  React.useEffect(() => {
+    if (mainRef.current) mainRef.current.scrollTop = 0;
+  }, [location.pathname]);
+
   return (
     <div className="app-shell min-h-dvh font-sans text-manises-blue flex flex-col overflow-hidden">
       <AnimatePresence>
@@ -30,7 +36,8 @@ export function PrivateLayout() {
         <>
           {!hideNav && <Header />}
           <main
-            className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scroll-smooth scrollbar-hide bg-background ${
+            ref={mainRef}
+            className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scrollbar-hide bg-background ${
               hideNav ? 'pt-0 pb-0' : 'pb-nav-safe'
             }`}
             style={!hideNav ? { paddingTop: 'calc(env(safe-area-inset-top, 0px) + 5rem)' } : undefined}
