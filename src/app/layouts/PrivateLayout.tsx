@@ -18,10 +18,10 @@ export function PrivateLayout() {
     location.pathname.startsWith(p)
   );
 
-  // Implementación del ref para el reset de scroll
+  // 1. Ref explícito para el contenedor scrollable
   const mainRef = React.useRef<HTMLElement | null>(null);
 
-  // Efecto para resetear el scroll al cambiar de ruta
+  // 2. Reset de scroll automático al cambiar de ruta - IMPLEMENTACIÓN EXACTA SOLICITADA
   React.useEffect(() => {
     if (mainRef.current) {
       mainRef.current.scrollTo({ top: 0, behavior: 'auto' });
