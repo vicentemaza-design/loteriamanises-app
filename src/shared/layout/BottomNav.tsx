@@ -1,4 +1,4 @@
-import { Home, LayoutGrid, Trophy, Ticket, User } from 'lucide-react';
+import { Home, ViewGrid, Trophy, Ticket, User } from 'iconoir-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '@/shared/lib/utils';
 import { motion } from 'motion/react';
@@ -6,7 +6,7 @@ import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInterac
 
 const navItems = [
   { icon: Home,       label: 'Inicio',     path: '/' },
-  { icon: LayoutGrid, label: 'Juegos',     path: '/games' },
+  { icon: ViewGrid,   label: 'Juegos',     path: '/games' },
   { icon: Trophy,     label: 'Resultados', path: '/results' },
   { icon: Ticket,     label: 'Mis jugadas', path: '/tickets' },
   { icon: User,       label: 'Perfil',     path: '/profile' },
