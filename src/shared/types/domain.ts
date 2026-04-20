@@ -24,13 +24,13 @@ export interface LotteryGame {
   isMonthly?: boolean; // For EuroDreams
   
   // Matriz Técnica (Fase 1)
-  technicalMode?: 'simple' | 'multiple' | 'reduced';
+  technicalMode?: 'simple' | 'multiple' | 'reduced' | 'multiple_direct' | 'reduced_official';
   systemFamily?: 'direct' | 'official' | 'manises';
   guaranteeType?: 'none' | 'direct_full_coverage' | 'conditional_minimum';
   guaranteeCondition?: string;
   selectionRange?: {
-    numbers: { min: number; max: number };
-    stars?: { min: number; max: number };
+    numbers: { min: number; max: number; total: number };
+    stars?: { min: number; max: number; total: number };
   };
   productLimit?: string;
   productionPhase1?: boolean;

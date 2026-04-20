@@ -6,7 +6,6 @@ import { Button } from '@/shared/ui/Button';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { 
   ChevronLeft, 
-  Info, 
   RotateCcw, 
   Sparkles, 
   CheckCircle2, 
@@ -97,11 +96,12 @@ export function GamePlayPage() {
   const game = LOTTERY_GAMES.find(g => g.id === gameId);
 
   // Determinar modos disponibles desde la matriz
-  const availableModes: Array<'simple' | 'multiple' | 'reduced'> = game?.technicalMode === 'reduced_official' 
-    ? ['simple', 'reduced'] 
-    : game?.technicalMode === 'multiple_direct' 
-      ? ['simple', 'multiple'] 
-      : ['simple'];
+  const availableModes: Array<'simple' | 'multiple' | 'reduced'> = 
+    game?.technicalMode === 'reduced_official' 
+      ? ['simple', 'reduced'] 
+      : game?.technicalMode === 'multiple_direct' || game?.technicalMode === 'multiple'
+        ? ['simple', 'multiple'] 
+        : ['simple'];
 
   const [mode, setMode] = useState<'simple' | 'multiple' | 'reduced'>(availableModes[0]);
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
@@ -132,11 +132,11 @@ export function GamePlayPage() {
   }
 
   // Límites dinámicos basados en el MODO y la MATRIZ
-  const range = game.selectionRange;
-  const maxNums = mode === 'multiple' ? range.maxNumbers : range.minNumbers;
-  const totalNums = range.totalNumbers;
-  const maxStars = mode === 'multiple' ? (range.maxStars ?? range.minStars ?? 0) : (range.minStars ?? 0);
-  const totalStars = range.totalStars ?? 0;
+  const range = game.selectionRange!;
+  const maxNums = mode === 'multiple' ? range.numbers.max : range.numbers.min;
+  const totalNums = range.numbers.total;
+  const maxStars = mode === 'multiple' ? (range.stars?.max ?? range.stars?.min ?? 0) : (range.stars?.min ?? 0);
+  const totalStars = range.stars?.total ?? 0;
 
   const theme = getGameTheme(game);
   const isNationalLottery = game.id === 'loteria-nacional';
@@ -147,7 +147,7 @@ export function GamePlayPage() {
   if (isQuiniela && mode === 'reduced') {
     betsCount = QUINIELA_REDUCED_TABLES[reducedType].bets;
   } else if (!isNationalLottery && !isQuiniela) {
-    if (mode === 'multiple' || selectedNumbers.length > range.minNumbers || selectedStars.length > (range.minStars ?? 0)) {
+    if (mode === 'multiple' || selectedNumbers.length > range.numbers.min || (range.stars && selectedStars.length > range.stars.min)) {
       betsCount = calculateMultipleBets(selectedNumbers.length, selectedStars.length, game.type);
     }
   }
@@ -247,7 +247,7 @@ export function GamePlayPage() {
     ? selectedNationalNumber !== null
     : isQuiniela
       ? isQuinielaValid
-      : selectedNumbers.length >= range.minNumbers && selectedNumbers.length <= range.maxNumbers && selectedStars.length === maxStars;
+      : selectedNumbers.length >= range.numbers.min && selectedNumbers.length <= range.numbers.max && selectedStars.length === maxStars;
 
   const handlePlay = async () => {
     if (!user || !profile) { toast.error('Sesión requerida'); return; }
