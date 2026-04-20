@@ -22,22 +22,10 @@ import { placeBet, generateRandomPlay } from '@/features/play/services/play.serv
 import { formatCurrency, formatDrawTime } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { calculateMultipleBets, calculateTotalPrice, QUINIELA_REDUCED_TABLES, QuinielaReducedType } from '../lib/bet-calculator';
-import { validatePlaySelection } from '../lib/game-rules';
 import { GameModeSelector } from '../components/GameModeSelector';
 import { QuinielaProfessionalSelector } from '../components/QuinielaProfessionalSelector';
 import { Wallet, Info, AlertTriangle } from 'lucide-react';
 import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
-
-// Config de juego por tipo
-const GAME_CONFIG = {
-  euromillones: { numbers: 5, totalNums: 50, stars: 2, totalStars: 12 },
-  primitiva:    { numbers: 6, totalNums: 49, stars: 0, totalStars: 0 },
-  bonoloto:     { numbers: 6, totalNums: 49, stars: 0, totalStars: 0 },
-  gordo:        { numbers: 5, totalNums: 54, stars: 1, totalStars: 9 },
-  eurodreams:   { numbers: 6, totalNums: 40, stars: 1, totalStars: 5 },
-  quiniela:     { numbers: 0, totalNums: 0,  stars: 0, totalStars: 0 }, // tipo diferente
-  'loteria-nacional': { numbers: 0, totalNums: 0, stars: 0, totalStars: 0 },
-} as const;
 
 const INSURANCE_PRICE = 0.50;
 
@@ -131,16 +119,43 @@ export function GamePlayPage() {
     );
   }
 
+  const isNationalLottery = game.id === 'loteria-nacional';
+  const isQuiniela = game.id === 'quiniela';
+  const isStructuredGame = Boolean(game.selectionRange) || isNationalLottery || isQuiniela;
+
+  if (!isStructuredGame) {
+    return (
+      <div className="flex min-h-full flex-col items-center justify-center gap-4 bg-background p-8 text-center">
+        <div className="rounded-3xl border border-manises-blue/10 bg-white px-6 py-8 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-manises-gold">Próximamente</p>
+          <h1 className="mt-2 text-2xl font-black text-manises-blue">{game.name}</h1>
+          <p className="mt-3 max-w-[18rem] text-sm font-medium leading-relaxed text-muted-foreground">
+            Esta variante todavía no está preparada en la app demo. El juego sigue visible en catálogo, pero su flujo de compra aún no está habilitado.
+          </p>
+          <div className="mt-6 flex gap-2">
+            <Button onClick={() => navigate('/games')} className="rounded-xl bg-manises-blue text-white">
+              Ver otros juegos
+            </Button>
+            <Button variant="outline" onClick={() => navigate(-1)} className="rounded-xl">
+              Volver
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Límites dinámicos basados en el MODO y la MATRIZ
   const range = game.selectionRange!;
   const maxNums = mode === 'multiple' ? range.numbers.max : range.numbers.min;
   const totalNums = range.numbers.total;
   const maxStars = mode === 'multiple' ? (range.stars?.max ?? range.stars?.min ?? 0) : (range.stars?.min ?? 0);
   const totalStars = range.stars?.total ?? 0;
+  const starValues = game.type === 'gordo'
+    ? Array.from({ length: totalStars }, (_, i) => i)
+    : Array.from({ length: totalStars }, (_, i) => i + 1);
 
   const theme = getGameTheme(game);
-  const isNationalLottery = game.id === 'loteria-nacional';
-  const isQuiniela = game.id === 'quiniela';
 
   // --- CÁLCULO DE APUESTAS (NÚCLEO MATEMÁTICO) ---
   let betsCount = 1;
@@ -197,9 +212,14 @@ export function GamePlayPage() {
       return;
     }
 
-    const { numbers, stars } = generateRandomPlay(totalNums, maxNums, totalStars, maxStars);
+    const { numbers, stars } = generateRandomPlay(
+      totalNums,
+      maxNums,
+      game.type === 'gordo' ? 10 : totalStars,
+      maxStars
+    );
     setSelectedNumbers(numbers);
-    setSelectedStars(stars);
+    setSelectedStars(game.type === 'gordo' ? stars.map((value) => value - 1) : stars);
     toast.success('¡Combinación aleatoria generada!');
   };
 
@@ -243,11 +263,15 @@ export function GamePlayPage() {
       )
     : false;
 
+  const hasValidStarSelection = range.stars
+    ? selectedStars.length >= range.stars.min && selectedStars.length <= maxStars
+    : true;
+
   const canPlay = isNationalLottery
     ? selectedNationalNumber !== null
     : isQuiniela
       ? isQuinielaValid
-      : selectedNumbers.length >= range.numbers.min && selectedNumbers.length <= range.numbers.max && selectedStars.length === maxStars;
+      : selectedNumbers.length >= range.numbers.min && selectedNumbers.length <= range.numbers.max && hasValidStarSelection;
 
   const handlePlay = async () => {
     if (!user || !profile) { toast.error('Sesión requerida'); return; }
@@ -547,7 +571,7 @@ export function GamePlayPage() {
                   </span>
                 </div>
                 <div className={`grid gap-2 ${totalStars <= 9 ? 'grid-cols-5' : 'grid-cols-6'}`}>
-                  {Array.from({ length: totalStars }, (_, i) => i + 1).map(n => {
+                  {starValues.map(n => {
                     const isSelected = selectedStars.includes(n);
                     return (
                       <button

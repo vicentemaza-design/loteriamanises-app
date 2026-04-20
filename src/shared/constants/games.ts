@@ -37,7 +37,7 @@ export const LOTTERY_GAMES: LotteryGame[] = [
     systemFamily: 'direct',
     guaranteeType: 'direct_full_coverage',
     selectionRange: { numbers: { min: 5, max: 10, total: 50 }, stars: { min: 2, max: 5, total: 12 } },
-    productLimit: '252 ap.',
+    productLimit: '2520 ap.',
     productionPhase1: true,
   },
   {
@@ -53,11 +53,11 @@ export const LOTTERY_GAMES: LotteryGame[] = [
     description: '6 números del 1 al 49',
     frequency: 'Jue y Sáb',
     // Matriz Técnica
-    technicalMode: 'simple',
+    technicalMode: 'multiple_direct',
     systemFamily: 'direct',
     guaranteeType: 'direct_full_coverage',
-    selectionRange: { numbers: { min: 6, max: 6, total: 49 } },
-    productLimit: '8 bloques',
+    selectionRange: { numbers: { min: 6, max: 11, total: 49 } },
+    productLimit: '462 ap.',
     productionPhase1: true,
   },
   {
@@ -73,11 +73,11 @@ export const LOTTERY_GAMES: LotteryGame[] = [
     description: 'El más económico, cada día',
     frequency: 'Lun a Vie',
     // Matriz Técnica
-    technicalMode: 'simple',
+    technicalMode: 'multiple_direct',
     systemFamily: 'direct',
     guaranteeType: 'direct_full_coverage',
-    selectionRange: { numbers: { min: 6, max: 6, total: 49 } },
-    productLimit: '8 bloques',
+    selectionRange: { numbers: { min: 6, max: 11, total: 49 } },
+    productLimit: '462 ap.',
     productionPhase1: true,
   },
   {
@@ -92,7 +92,12 @@ export const LOTTERY_GAMES: LotteryGame[] = [
     price: 1.50,
     description: '5 números + clave del 0 al 9',
     frequency: 'Domingo',
-    productionPhase1: false, // Fuera de alcance Fase 1 reducidos
+    technicalMode: 'multiple_direct',
+    systemFamily: 'direct',
+    guaranteeType: 'direct_full_coverage',
+    selectionRange: { numbers: { min: 5, max: 11, total: 54 }, stars: { min: 1, max: 1, total: 10 } },
+    productLimit: '462 ap.',
+    productionPhase1: true,
   },
   {
     id: 'eurodreams',
