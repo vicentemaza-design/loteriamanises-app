@@ -22,6 +22,11 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { placeBet, generateRandomPlay } from '@/features/play/services/play.service';
 import { formatCurrency, formatDrawTime } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
+import { calculateMultipleBets, calculateTotalPrice, QUINIELA_REDUCED_TABLES, QuinielaReducedType } from '../lib/bet-calculator';
+import { validatePlaySelection } from '../lib/game-rules';
+import { GameModeSelector } from '../components/GameModeSelector';
+import { QuinielaProfessionalSelector } from '../components/QuinielaProfessionalSelector';
+import { Wallet, Info, AlertTriangle } from 'lucide-react';
 import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
 
 // Config de juego por tipo
@@ -78,23 +83,42 @@ function nextWeekdayIso(targetWeekday: number, hour: number): string {
   return date.toISOString();
 }
 
+interface QuinielaMatch {
+  id: number;
+  home: string;
+  away: string;
+  result: string | null;
+}
+
 export function GamePlayPage() {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const game = LOTTERY_GAMES.find(g => g.id === gameId);
 
+  // Determinar modos disponibles desde la matriz
+  const availableModes: Array<'simple' | 'multiple' | 'reduced'> = game?.technicalMode === 'reduced_official' 
+    ? ['simple', 'reduced'] 
+    : game?.technicalMode === 'multiple_direct' 
+      ? ['simple', 'multiple'] 
+      : ['simple'];
+
+  const [mode, setMode] = useState<'simple' | 'multiple' | 'reduced'>(availableModes[0]);
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [selectedStars, setSelectedStars]     = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting]       = useState(false);
   const [showSuccess, setShowSuccess]         = useState(false);
   
-  // Features Laguinda Style
-  const [hasInsurance, setHasInsurance] = useState(false);
-  const [isSubscription, setIsSubscription] = useState(false);
+  // Quiniela & Nacional Específico
+  const [quinielaMatches, setQuinielaMatches] = useState<QuinielaMatch[]>([]);
+  const [reducedType, setReducedType] = useState<QuinielaReducedType>('reducida_1');
   const [selectedNationalDrawId, setSelectedNationalDrawId] = useState<NationalDrawId>('sabado');
   const [selectedNationalNumber, setSelectedNationalNumber] = useState<string | null>(null);
   const [selectedNationalQuantity, setSelectedNationalQuantity] = useState(1);
+
+  // Features Laguinda Style
+  const [hasInsurance, setHasInsurance] = useState(false);
+  const [isSubscription, setIsSubscription] = useState(false);
 
   if (!game) {
     return (
@@ -107,10 +131,34 @@ export function GamePlayPage() {
     );
   }
 
-  const cfg = GAME_CONFIG[game.type as keyof typeof GAME_CONFIG] ?? { numbers: 6, totalNums: 49, stars: 0, totalStars: 0 };
-  const { numbers: maxNums, totalNums, stars: maxStars, totalStars } = cfg;
+  // Límites dinámicos basados en el MODO y la MATRIZ
+  const range = game.selectionRange;
+  const maxNums = mode === 'multiple' ? range.maxNumbers : range.minNumbers;
+  const totalNums = range.totalNumbers;
+  const maxStars = mode === 'multiple' ? (range.maxStars ?? range.minStars ?? 0) : (range.minStars ?? 0);
+  const totalStars = range.totalStars ?? 0;
+
   const theme = getGameTheme(game);
   const isNationalLottery = game.id === 'loteria-nacional';
+  const isQuiniela = game.id === 'quiniela';
+
+  // --- CÁLCULO DE APUESTAS (NÚCLEO MATEMÁTICO) ---
+  let betsCount = 1;
+  if (isQuiniela && mode === 'reduced') {
+    betsCount = QUINIELA_REDUCED_TABLES[reducedType].bets;
+  } else if (!isNationalLottery && !isQuiniela) {
+    if (mode === 'multiple' || selectedNumbers.length > range.minNumbers || selectedStars.length > (range.minStars ?? 0)) {
+      betsCount = calculateMultipleBets(selectedNumbers.length, selectedStars.length, game.type);
+    }
+  }
+
+  const basePrice = isNationalLottery 
+    ? (NATIONAL_DRAW_CONFIG.find(d => d.id === selectedNationalDrawId)?.decimoPrice ?? 3) * selectedNationalQuantity 
+    : calculateTotalPrice(game.price, betsCount, false);
+  
+  const totalPrice = basePrice + (hasInsurance ? INSURANCE_PRICE : 0);
+  const isOverBalance = profile ? profile.balance < totalPrice : false;
+
   const nationalDraws = NATIONAL_DRAW_CONFIG.map((draw) => ({
     ...draw,
     nextDraw: nextWeekdayIso(draw.weekday, draw.hour),
@@ -186,34 +234,66 @@ export function GamePlayPage() {
     }
   };
 
+  const isQuinielaValid = isQuiniela 
+    ? quinielaMatches.every(m => m.result !== null) && (
+        mode !== 'reduced' || (
+          quinielaMatches.filter(m => ['1X', '12', 'X2'].includes(m.result)).length === QUINIELA_REDUCED_TABLES[reducedType].dobles &&
+          quinielaMatches.filter(m => m.result === '1X2').length === QUINIELA_REDUCED_TABLES[reducedType].triples
+        )
+      )
+    : false;
+
   const canPlay = isNationalLottery
     ? selectedNationalNumber !== null
-    : selectedNumbers.length === maxNums && selectedStars.length === maxStars;
-  const basePrice = isNationalLottery ? selectedNationalDraw.decimoPrice * selectedNationalQuantity : game.price;
-  const totalPrice = basePrice + (hasInsurance ? INSURANCE_PRICE : 0);
+    : isQuiniela
+      ? isQuinielaValid
+      : selectedNumbers.length >= range.minNumbers && selectedNumbers.length <= range.maxNumbers && selectedStars.length === maxStars;
 
   const handlePlay = async () => {
     if (!user || !profile) { toast.error('Sesión requerida'); return; }
-    if (!canPlay)           { toast.error('Completa tu apuesta'); return; }
-    if (profile.balance < totalPrice) { toast.error('Saldo insuficiente'); return; }
+    if (!canPlay)           { 
+      if (isQuiniela && !isQuinielaValid && mode === 'reduced') {
+        const config = QUINIELA_REDUCED_TABLES[reducedType];
+        toast.error(`Requisitos: ${config.dobles}D y ${config.triples}T`);
+      } else {
+        toast.error('Completa tu apuesta'); 
+      }
+      return; 
+    }
+    if (isOverBalance) { toast.error('Saldo insuficiente'); return; }
 
     setIsSubmitting(true);
     const drawDate = new Date(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw).toISOString().split('T')[0];
-    const payloadNumbers = isNationalLottery && selectedNationalNumber
-      ? selectedNationalNumber.split('').map((digit) => Number(digit))
-      : selectedNumbers;
-    const payloadStars = isNationalLottery ? [] : selectedStars;
-    const result = await placeBet({
+    
+    // Payload Profesional para el BE
+    const payload: any = {
       userId: user.uid,
       gameId: game.id,
       gameType: game.type,
-      numbers: payloadNumbers,
-      stars: payloadStars,
+      mode,
       drawDate,
       price: totalPrice,
+      betsCount,
       hasInsurance,
-      isSubscription
-    });
+      isSubscription,
+      metadata: {
+        technicalMode: game.technicalMode,
+        systemFamily: game.systemFamily,
+      }
+    };
+
+    if (isNationalLottery && selectedNationalNumber) {
+      payload.numbers = selectedNationalNumber.split('').map(Number);
+      payload.stars = [];
+    } else if (isQuiniela) {
+      payload.selections = quinielaMatches.map(m => ({ id: m.id, val: m.result }));
+      if (mode === 'reduced') payload.systemId = reducedType;
+    } else {
+      payload.numbers = selectedNumbers;
+      payload.stars = selectedStars;
+    }
+
+    const result = await placeBet(payload);
     setIsSubmitting(false);
 
     if (result.success) {
@@ -310,9 +390,62 @@ export function GamePlayPage() {
           </Button>
         </div>
       </div>
+      
+      <div className="flex flex-col gap-5 p-4 pt-2">
+        {/* Selector de Modo (Solo si hay varios disponibles) */}
+        {!isNationalLottery && (
+          <GameModeSelector 
+            gameType={game.type}
+            availableModes={availableModes}
+            currentMode={mode}
+            onModeChange={(m) => {
+              setMode(m);
+              handleClear(); // Limpiar al cambiar de modo para evitar estados inconsistentes
+            }}
+          />
+        )}
 
-      <div className="flex flex-col gap-5 p-4">
-        {!isNationalLottery ? (
+        {/* Advertencia de Saldo Insuficiente */}
+        {isOverBalance && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border border-red-100 p-3 rounded-xl flex items-center gap-3"
+          >
+            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+            <p className="text-[10px] font-bold text-red-700 uppercase tracking-tight leading-normal">
+              Saldo insuficiente ({formatCurrency(profile?.balance ?? 0)}). <br/>
+              Necesitas {formatCurrency(totalPrice)} para jugar esta variante.
+            </p>
+          </motion.div>
+        )}
+
+        {isQuiniela ? (
+          /* VISTA PROFESIONAL DE QUINIELA */
+          <div className="space-y-6">
+            {mode === 'reduced' && (
+              <div className="grid grid-cols-3 gap-2">
+                {(Object.keys(QUINIELA_REDUCED_TABLES) as QuinielaReducedType[]).map(t => (
+                  <button
+                    key={t}
+                    onClick={() => setReducedType(t)}
+                    className={`p-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all ${
+                      reducedType === t ? 'bg-manises-blue text-white border-manises-blue shadow-md' : 'bg-white text-slate-400 border-slate-100'
+                    }`}
+                  >
+                    {QUINIELA_REDUCED_TABLES[t].dobles > 0 ? `${QUINIELA_REDUCED_TABLES[t].dobles}D` : `${QUINIELA_REDUCED_TABLES[t].triples}T`}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            <QuinielaProfessionalSelector 
+              mode={mode} 
+              reducedType={mode === 'reduced' ? reducedType : undefined}
+              onSelectionChange={(m) => setQuinielaMatches(m)}
+            />
+          </div>
+        ) : !isNationalLottery ? (
           <>
             {/* ---- Selección visual ---- */}
             <div className="rounded-xl p-4 flex flex-col items-center gap-4 border shadow-manises surface-neo-soft" style={theme.surface}>
@@ -711,10 +844,12 @@ export function GamePlayPage() {
               ) : canPlay
                 ? isNationalLottery
                   ? 'Reservar décimos'
-                  : 'Confirmar apuesta'
+                  : `Confirmar ${betsCount} ${betsCount === 1 ? 'apuesta' : 'apuestas'}`
                 : isNationalLottery
                   ? 'Elige un décimo'
-                  : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' nums' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
+                  : isQuiniela
+                    ? 'Completa los 15 partidos'
+                    : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' nums' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
               }
             </Button>
           </AnimatePresence>
