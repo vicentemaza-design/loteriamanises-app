@@ -53,6 +53,19 @@ const MOCK_RESULTS = [
     jackpotNext: 5_400_000,
   },
   {
+    gameId: 'eurodreams',
+    date: '2026-04-06T21:00:00Z',
+    numbers: [4, 15, 22, 31, 38, 42],
+    stars: [5],
+    jackpotNext: 20_000,
+  },
+  {
+    gameId: 'quiniela',
+    date: '2026-04-05T18:00:00Z',
+    numbers: [1, 2, 1, 'X', 2, 1, 1, 'X', 1, 2, 1, 1, 'X', 2, 'M-1'],
+    jackpotNext: 4_700_000,
+  },
+  {
     gameId: 'loteria-nacional',
     date: '2026-04-11T12:00:00Z',
     numbers: [6, 9, 8, 4, 4],
@@ -144,13 +157,7 @@ export function ResultsPage() {
       ease: 'power3.out'
     });
 
-    gsap.from('.filter-chip', {
-      x: 30,
-      opacity: 0,
-      stagger: 0.05,
-      duration: 0.6,
-      ease: 'back.out(1.7)'
-    });
+
 
     gsap.from('.result-card', {
       y: 30,
@@ -175,17 +182,17 @@ export function ResultsPage() {
           </div>
         </section>
 
-      {/* Filtros horizontales */}
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5 rounded-2xl border border-white/70 bg-white/70 p-2">
+      {/* Filtros horizontales — Limpio y Funcional */}
+      <div className="flex gap-3 overflow-x-auto scrollbar-hide py-2 -mx-4 px-4">
         {GAME_FILTERS.map(f => (
           <PremiumTouchInteraction key={f} scale={0.95}>
             <button
               onClick={() => setActiveFilter(f)}
               className={cn(
-                'filter-chip text-xs font-semibold px-3 py-1.5 rounded-full whitespace-nowrap border transition-all shrink-0',
+                'filter-chip text-[11px] font-bold px-5 py-2.5 rounded-xl whitespace-nowrap border transition-all shrink-0 uppercase tracking-widest',
                 activeFilter === f
-                  ? 'bg-manises-blue text-white border-manises-blue'
-                  : 'bg-white/85 text-muted-foreground border-border hover:border-manises-blue/30'
+                  ? 'bg-manises-blue text-white border-manises-blue shadow-md'
+                  : 'bg-white text-manises-blue/60 border-manises-blue/5 hover:border-manises-blue/20'
               )}
             >
               {f}
