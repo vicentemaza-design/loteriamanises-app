@@ -18,13 +18,15 @@ export function PrivateLayout() {
     location.pathname.startsWith(p)
   );
 
-  const mainRef = React.useRef<HTMLElement>(null);
+  // 1. Ref explícito para el contenedor scrollable
+  const mainRef = React.useRef<HTMLElement | null>(null);
 
+  // 2. Reset de scroll automático al cambiar de ruta
   React.useEffect(() => {
     if (mainRef.current) {
       mainRef.current.scrollTo({ top: 0, behavior: 'auto' });
     }
-  }, [location.pathname]);
+  }, [location.pathname, location.search, location.hash]);
 
   return (
     <div className="app-shell min-h-dvh font-sans text-manises-blue flex flex-col overflow-hidden">
@@ -36,7 +38,9 @@ export function PrivateLayout() {
 
       {!isLocked && (
         <>
+          {/* 3. Header sin props de scroll innecesarias */}
           {!hideNav && <Header />}
+          
           <main
             ref={mainRef}
             className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scrollbar-hide bg-background ${
@@ -50,6 +54,7 @@ export function PrivateLayout() {
               <Outlet />
             </div>
           </main>
+
           {!hideNav && <BottomNav />}
         </>
       )}
