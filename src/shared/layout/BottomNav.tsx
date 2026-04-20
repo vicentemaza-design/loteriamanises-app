@@ -8,7 +8,7 @@ const navItems = [
   { icon: Home,       label: 'Inicio',     path: '/' },
   { icon: LayoutGrid, label: 'Juegos',     path: '/games' },
   { icon: Trophy,     label: 'Resultados', path: '/results' },
-  { icon: Ticket,     label: 'Tickets',    path: '/tickets' },
+  { icon: Ticket,     label: 'Mis jugadas', path: '/tickets' },
   { icon: User,       label: 'Perfil',     path: '/profile' },
 ];
 
