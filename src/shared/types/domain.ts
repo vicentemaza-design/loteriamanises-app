@@ -21,7 +21,19 @@ export interface LotteryGame {
   price: number; // Price per bet in €
   description?: string;
   frequency?: string; // "Mar y Vie", "Sábados", etc.
-  isMonthly?: boolean; // For EuroDreams (jackpot is monthly)
+  isMonthly?: boolean; // For EuroDreams
+  
+  // Matriz Técnica (Fase 1)
+  technicalMode?: 'simple' | 'multiple' | 'reduced';
+  systemFamily?: 'direct' | 'official' | 'manises';
+  guaranteeType?: 'none' | 'direct_full_coverage' | 'conditional_minimum';
+  guaranteeCondition?: string;
+  selectionRange?: {
+    numbers: { min: number; max: number };
+    stars?: { min: number; max: number };
+  };
+  productLimit?: string;
+  productionPhase1?: boolean;
 }
 
 export interface Ticket {

@@ -21,6 +21,7 @@ import { MovementsPage } from '@/features/profile/pages/MovementsPage';
 import { WithdrawalsPage } from '@/features/profile/pages/WithdrawalsPage';
 import { HelpSupportPage } from '@/features/profile/pages/HelpSupportPage';
 import { CompaniesPage } from '@/features/profile/pages/CompaniesPage';
+import { TechnicalMatrixPage } from '@/features/admin/pages/TechnicalMatrixPage';
 
 export function AppRouter() {
   return (
@@ -51,6 +52,7 @@ export function AppRouter() {
           <Route path="/profile/help" element={<HelpSupportPage />} />
           <Route path="/profile/companies" element={<CompaniesPage />} />
           <Route path="/profile/settings" element={<SettingsPage />} />
+          <Route path="/profile/matrix" element={<TechnicalMatrixPage />} />
         </Route>
       </Route>
 

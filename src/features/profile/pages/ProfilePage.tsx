@@ -18,6 +18,7 @@ import {
   Lock,
   Unlock,
   ArrowLeftRight,
+  Database,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { formatCurrency } from '@/shared/lib/utils';
@@ -101,6 +102,12 @@ export function ProfilePage() {
           onClick: toggleLock
         },
         { icon: Shield,      label: 'Seguridad biométrica',detail: null, color: 'text-purple-600',  bg: 'bg-purple-50', onClick: () => toast.info('Biometría disponible en App Nativa.') },
+      ],
+    },
+    {
+      title: 'Auditoría de Producción',
+      items: [
+        { icon: Database,    label: 'Matriz Técnica (Fase 1)', detail: null, color: 'text-indigo-600', bg: 'bg-indigo-50', onClick: () => navigate('/profile/matrix') },
       ],
     },
     {
