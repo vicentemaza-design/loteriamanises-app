@@ -17,13 +17,13 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-[#0A4792]/88 backdrop-blur-xl border-t border-[#D5E3F2]/16 shadow-[0_-8px_24px_rgba(10,71,146,0.18)]"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[#0A4792]/75 backdrop-blur-2xl border-t border-white/5 shadow-[0_-4px_24px_rgba(0,0,0,0.16)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
       aria-label="Navegación principal"
     >
-      {/* Glossy top highlight for premium feel */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D5E3F2]/30 to-transparent" />
+      {/* Precision top highlight - single pixel for depth */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       
       <div className="flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
         {navItems.map(({ icon: Icon, label, path }) => {
@@ -32,43 +32,43 @@ export function BottomNav() {
             : location.pathname.startsWith(path);
 
           return (
-            <PremiumTouchInteraction key={path} scale={0.94} className="flex-1">
+            <PremiumTouchInteraction key={path} scale={0.98} className="flex-1">
               <NavLink
                 to={path}
                 end={path === '/'}
                 className={cn(
-                  'flex flex-col items-center justify-center w-full h-full gap-0.5 relative transition-all duration-300',
-                  isActive ? 'text-manises-gold' : 'text-[#D5E3F2]/58 hover:text-[#D5E3F2]/78'
+                  'flex flex-col items-center justify-center w-full h-full gap-0.5 relative transition-all duration-500',
+                  isActive ? 'text-manises-gold' : 'text-[#D5E3F2]/52 hover:text-[#D5E3F2]/70'
                 )}
               >
-                {/* Active Indicator: Refined gold pill top indicator */}
+                {/* Active Indicator: Ultra-thin refined line */}
                 {isActive && (
                   <motion.div
-                    layoutId="nav-pill-top"
-                    className="absolute top-0 w-8 h-0.5 bg-manises-gold rounded-full shadow-[0_0_12px_rgba(245,197,24,0.4)]"
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    layoutId="nav-indicator-top"
+                    className="absolute top-0 w-6 h-[1.5px] bg-manises-gold rounded-full"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
 
-                {/* Subtle glow background for active item */}
+                {/* Subtle active glow - very soft integration */}
                 {isActive && (
                   <motion.div
                     layoutId="nav-active-glow"
-                    className="absolute inset-x-2 inset-y-1.5 rounded-xl bg-manises-gold/5"
-                    transition={{ type: 'linear', duration: 0.2 }}
+                    className="absolute inset-x-3 inset-y-2 rounded-xl bg-manises-gold/[0.04]"
+                    transition={{ duration: 0.3 }}
                   />
                 )}
 
                 <Icon
                   className={cn(
-                    'w-5 h-5 transition-transform duration-300',
-                    isActive ? 'scale-110' : 'scale-100'
+                    'w-[19px] h-[19px] transition-all duration-300',
+                    isActive ? 'scale-105' : 'scale-100 opacity-90'
                   )}
-                  style={{ strokeWidth: isActive ? '2.5px' : '2px' }}
+                  style={{ strokeWidth: isActive ? '2.1px' : '1.75px' }}
                 />
                 
                 <span className={cn(
-                  'text-[9px] font-bold tracking-wider uppercase transition-colors',
+                  'text-[9px] font-bold tracking-[0.05em] uppercase transition-colors antialiased',
                   isActive ? 'text-manises-gold' : ''
                 )}>
                   {label}
