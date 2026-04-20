@@ -1,4 +1,4 @@
-import { Wallet, PlusCircle } from 'lucide-react';
+import { Wallet, PlusCircle } from 'iconoir-react/regular';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { motion, animate } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';

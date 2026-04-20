@@ -5,26 +5,28 @@ import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { Button } from '@/shared/ui/Button';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { 
-  ChevronLeft, 
-  RotateCcw, 
-  Sparkles, 
-  CheckCircle2, 
-  Share2, 
+  NavArrowLeft,
+  RefreshCircle,
+  Spark,
+  CheckCircle,
+  ShareAndroid,
   ArrowRight,
-  Ticket as TicketIcon,
+  JournalPage,
   ShieldCheck,
-  RefreshCcw,
-  Zap
-} from 'lucide-react';
+  BrightStar,
+  Wallet,
+  InfoCircle,
+  WarningTriangle
+} from 'iconoir-react/regular';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { placeBet, generateRandomPlay } from '@/features/play/services/play.service';
 import { formatCurrency, formatDrawTime } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
+import { MOTION_EASE_OUT, panelSwap, sectionFadeUp } from '@/shared/lib/motion';
 import { calculateMultipleBets, calculateTotalPrice, QUINIELA_REDUCED_TABLES, QuinielaReducedType } from '../lib/bet-calculator';
 import { GameModeSelector } from '../components/GameModeSelector';
 import { QuinielaProfessionalSelector } from '../components/QuinielaProfessionalSelector';
-import { Wallet, Info, AlertTriangle } from 'lucide-react';
 import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
 
 const INSURANCE_PRICE = 0.50;
@@ -346,7 +348,7 @@ export function GamePlayPage() {
               transition={{ type: 'spring', damping: 15 }}
               className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center mb-6"
             >
-              <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+              <CheckCircle className="w-12 h-12 text-emerald-500" />
             </motion.div>
             
             <h2 className="text-2xl font-black text-manises-blue uppercase tracking-tight mb-2">¡Apuesta Confirmada!</h2>
@@ -359,7 +361,7 @@ export function GamePlayPage() {
                 onClick={handleShare}
                 className="w-full h-14 bg-manises-blue text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-manises"
               >
-                <Share2 className="w-5 h-5" /> Compartir con amigos
+                <ShareAndroid className="w-5 h-5" /> Compartir con amigos
               </Button>
               
               <Button 
@@ -367,7 +369,7 @@ export function GamePlayPage() {
                 onClick={() => navigate('/tickets')}
                 className="w-full h-14 border-2 border-manises-blue/10 text-manises-blue font-bold rounded-2xl flex items-center justify-center gap-2"
               >
-                <TicketIcon className="w-5 h-5" /> Ver mis jugadas
+                <JournalPage className="w-5 h-5" /> Ver mis jugadas
               </Button>
 
               <button 
@@ -393,7 +395,7 @@ export function GamePlayPage() {
               onClick={() => navigate(-1)}
               aria-label="Volver"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <NavArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-2">
               <GameBadge game={game} size="sm" className="w-8 h-8 rounded-lg shadow-none bg-white/10" />
@@ -410,7 +412,7 @@ export function GamePlayPage() {
             className="text-white/70 hover:text-white hover:bg-white/15 w-9 h-9 rounded-xl"
             aria-label="Información del juego"
           >
-            <Info className="w-4.5 h-4.5" />
+            <InfoCircle className="w-4.5 h-4.5" />
           </Button>
         </div>
       </div>
@@ -432,11 +434,12 @@ export function GamePlayPage() {
         {/* Advertencia de Saldo Insuficiente */}
         {isOverBalance && (
           <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
+            variants={sectionFadeUp}
+            initial="hidden"
+            animate="visible"
             className="bg-red-50 border border-red-100 p-3 rounded-xl flex items-center gap-3"
           >
-            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+            <WarningTriangle className="w-5 h-5 text-red-500 shrink-0" />
             <p className="text-[10px] font-bold text-red-700 uppercase tracking-tight leading-normal">
               Saldo insuficiente ({formatCurrency(profile?.balance ?? 0)}). <br/>
               Necesitas {formatCurrency(totalPrice)} para jugar esta variante.
@@ -444,31 +447,47 @@ export function GamePlayPage() {
           </motion.div>
         )}
 
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={`${game.id}-${isQuiniela ? 'quiniela' : isNationalLottery ? 'nacional' : mode}`}
+            variants={panelSwap}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="space-y-6"
+          >
         {isQuiniela ? (
-          /* VISTA PROFESIONAL DE QUINIELA */
-          <div className="space-y-6">
-            {mode === 'reduced' && (
-              <div className="grid grid-cols-3 gap-2">
-                {(Object.keys(QUINIELA_REDUCED_TABLES) as QuinielaReducedType[]).map(t => (
-                  <button
-                    key={t}
-                    onClick={() => setReducedType(t)}
-                    className={`p-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all ${
-                      reducedType === t ? 'bg-manises-blue text-white border-manises-blue shadow-md' : 'bg-white text-slate-400 border-slate-100'
-                    }`}
-                  >
-                    {QUINIELA_REDUCED_TABLES[t].dobles > 0 ? `${QUINIELA_REDUCED_TABLES[t].dobles}D` : `${QUINIELA_REDUCED_TABLES[t].triples}T`}
-                  </button>
-                ))}
-              </div>
-            )}
-            
+          <>
+            <AnimatePresence mode="wait" initial={false}>
+              {mode === 'reduced' && (
+                <motion.div
+                  key={`quiniela-reduced-${reducedType}`}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0, transition: { duration: 0.2, ease: MOTION_EASE_OUT } }}
+                  exit={{ opacity: 0, y: -6, transition: { duration: 0.16, ease: MOTION_EASE_OUT } }}
+                  className="grid grid-cols-3 gap-2"
+                >
+                  {(Object.keys(QUINIELA_REDUCED_TABLES) as QuinielaReducedType[]).map(t => (
+                    <button
+                      key={t}
+                      onClick={() => setReducedType(t)}
+                      className={`p-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all ${
+                        reducedType === t ? 'bg-manises-blue text-white border-manises-blue shadow-md' : 'bg-white text-slate-400 border-slate-100'
+                      }`}
+                    >
+                      {QUINIELA_REDUCED_TABLES[t].dobles > 0 ? `${QUINIELA_REDUCED_TABLES[t].dobles}D` : `${QUINIELA_REDUCED_TABLES[t].triples}T`}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <QuinielaProfessionalSelector 
               mode={mode} 
               reducedType={mode === 'reduced' ? reducedType : undefined}
               onSelectionChange={(m) => setQuinielaMatches(m)}
             />
-          </div>
+          </>
         ) : !isNationalLottery ? (
           <>
             {/* ---- Selección visual ---- */}
@@ -516,14 +535,14 @@ export function GamePlayPage() {
                   className="rounded-lg font-semibold text-xs px-4 border-gray-200 text-gray-500 hover:bg-gray-50"
                   onClick={handleClear}
                 >
-                  <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Limpiar
+                  <RefreshCircle className="w-3.5 h-3.5 mr-1.5" /> Limpiar
                 </Button>
                 <Button
                   variant="outline" size="sm"
                   className="rounded-lg font-semibold text-xs px-4 border-manises-gold/50 text-manises-gold hover:bg-manises-gold/5"
                   onClick={handleRandom}
                 >
-                  <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Aleatorio
+                  <Spark className="w-3.5 h-3.5 mr-1.5" /> Aleatorio
                 </Button>
               </div>
             </div>
@@ -661,14 +680,14 @@ export function GamePlayPage() {
                   className="rounded-lg font-semibold text-xs px-4 border-gray-200 text-gray-500 hover:bg-gray-50"
                   onClick={handleClear}
                 >
-                  <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> Limpiar
+                  <RefreshCircle className="w-3.5 h-3.5 mr-1.5" /> Limpiar
                 </Button>
                 <Button
                   variant="outline" size="sm"
                   className="rounded-lg font-semibold text-xs px-4 border-manises-blue/20 bg-manises-blue/5 text-manises-blue hover:bg-manises-blue/10"
                   onClick={handleRandom}
                 >
-                  <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Número aleatorio
+                  <Spark className="w-3.5 h-3.5 mr-1.5" /> Número aleatorio
                 </Button>
               </div>
 
@@ -771,6 +790,8 @@ export function GamePlayPage() {
             )}
           </>
         )}
+          </motion.div>
+        </AnimatePresence>
 
         {/* ---- SECCIÓN LAGUINDA: Seguro y Abono ---- */}
         <div className="mt-2 space-y-3">
@@ -803,7 +824,7 @@ export function GamePlayPage() {
             </div>
             {hasInsurance && (
               <div className="absolute top-0 right-0 p-1">
-                <Zap className="w-3 h-3 text-manises-gold fill-manises-gold" />
+                <BrightStar className="h-3 w-3 text-manises-gold" />
               </div>
             )}
           </motion.div>
@@ -816,7 +837,7 @@ export function GamePlayPage() {
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                 isSubscription ? 'bg-manises-blue text-white' : 'bg-white text-gray-400'
               }`}>
-                <RefreshCcw className={`w-5 h-5 ${isSubscription ? 'animate-spin-slow' : ''}`} />
+                <RefreshCircle className={`w-5 h-5 ${isSubscription ? 'animate-spin-slow' : ''}`} />
               </div>
               <div>
                 <h3 className="font-bold text-xs text-manises-blue">Abonarse</h3>

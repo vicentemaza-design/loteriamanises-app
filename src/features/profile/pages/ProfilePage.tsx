@@ -7,25 +7,26 @@ import {
   Wallet,
   CreditCard,
   Settings,
-  Shield,
+  ShieldCheck,
   HelpCircle,
   LogOut,
-  ChevronRight,
+  NavArrowRight,
   Heart,
-  RefreshCcw,
-  Landmark,
-  Building2,
+  RefreshCircle,
+  Bank,
+  Building,
   Lock,
-  Unlock,
-  ArrowLeftRight,
-  Database,
-} from 'lucide-react';
+  LockSlash,
+  Repeat,
+  DatabaseScript,
+} from 'iconoir-react/regular';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { formatCurrency } from '@/shared/lib/utils';
 import { toast } from 'sonner';
 import visaLogo from '@/assets/games/visa.svg';
 import mastercardLogo from '@/assets/games/mastercard.svg';
 import maestroLogo from '@/assets/games/maestro.svg';
+import { listItemFadeUp, listStagger, pageStagger, sectionFadeUp } from '@/shared/lib/motion';
 
 function PaymentMethodsIcon() {
   const paymentLogos = [
@@ -80,17 +81,17 @@ export function ProfilePage() {
       title: 'Premium Demo',
       items: [
         { icon: Heart,          label: 'Jugadas favoritas',    detail: null, color: 'text-rose-600', bg: 'bg-rose-50', onClick: () => navigate('/profile/favorites') },
-        { icon: RefreshCcw,     label: 'Mis abonos',           detail: null, color: 'text-amber-600', bg: 'bg-amber-50', onClick: () => navigate('/profile/subscriptions') },
-        { icon: ArrowLeftRight, label: 'Movimientos',          detail: null, color: 'text-cyan-700', bg: 'bg-cyan-50', onClick: () => navigate('/profile/movements') },
-        { icon: Landmark,       label: 'Cobrar premios',       detail: null, color: 'text-emerald-700', bg: 'bg-emerald-50', onClick: () => navigate('/profile/withdrawals') },
-        { icon: Building2,      label: 'Empresas y colectivos',detail: null, color: 'text-indigo-700', bg: 'bg-indigo-50', onClick: () => navigate('/profile/companies') },
+        { icon: RefreshCircle,  label: 'Mis abonos',           detail: null, color: 'text-amber-600', bg: 'bg-amber-50', onClick: () => navigate('/profile/subscriptions') },
+        { icon: Repeat,         label: 'Movimientos',          detail: null, color: 'text-cyan-700', bg: 'bg-cyan-50', onClick: () => navigate('/profile/movements') },
+        { icon: Bank,           label: 'Cobrar premios',       detail: null, color: 'text-emerald-700', bg: 'bg-emerald-50', onClick: () => navigate('/profile/withdrawals') },
+        { icon: Building,       label: 'Empresas y colectivos',detail: null, color: 'text-indigo-700', bg: 'bg-indigo-50', onClick: () => navigate('/profile/companies') },
       ],
     },
     {
       title: 'Seguridad y Privacidad',
       items: [
         { 
-          icon: isLockEnabled ? Lock : Unlock, 
+          icon: isLockEnabled ? Lock : LockSlash, 
           label: 'Bloqueo por PIN', 
           detail: () => (
             <div className={`w-10 h-5 rounded-full transition-colors relative ${isLockEnabled ? 'bg-manises-blue' : 'bg-gray-200'}`}>
@@ -101,13 +102,13 @@ export function ProfilePage() {
           bg: isLockEnabled ? 'bg-purple-50' : 'bg-gray-50',
           onClick: toggleLock
         },
-        { icon: Shield,      label: 'Seguridad biométrica',detail: null, color: 'text-purple-600',  bg: 'bg-purple-50', onClick: () => toast.info('Biometría disponible en App Nativa.') },
+        { icon: ShieldCheck, label: 'Seguridad biométrica',detail: null, color: 'text-purple-600',  bg: 'bg-purple-50', onClick: () => toast.info('Biometría disponible en App Nativa.') },
       ],
     },
     {
       title: 'Auditoría de Producción',
       items: [
-        { icon: Database,    label: 'Matriz Técnica (Fase 1)', detail: null, color: 'text-indigo-600', bg: 'bg-indigo-50', onClick: () => navigate('/profile/matrix') },
+        { icon: DatabaseScript, label: 'Matriz Técnica (Fase 1)', detail: null, color: 'text-indigo-600', bg: 'bg-indigo-50', onClick: () => navigate('/profile/matrix') },
       ],
     },
     {
@@ -120,12 +121,16 @@ export function ProfilePage() {
   ];
 
   return (
-    <div className="flex min-h-full flex-col gap-5 bg-background p-4">
+    <motion.div
+      className="flex min-h-full flex-col gap-5 bg-background p-4"
+      initial="hidden"
+      animate="visible"
+      variants={pageStagger}
+    >
 
       {/* ---- Hero de usuario ---- */}
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
+        variants={sectionFadeUp}
         className="bg-manises-blue rounded-2xl p-5 text-white relative overflow-hidden"
       >
         {/* Decoración */}
@@ -180,16 +185,20 @@ export function ProfilePage() {
 
       {/* ---- Menú por secciones ---- */}
       {MENU_SECTIONS.map(section => (
-        <div key={section.title}>
+        <motion.section key={section.title} variants={sectionFadeUp}>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2 px-1">
             {section.title}
           </p>
-          <div className="bg-card rounded-xl border border-border overflow-hidden divide-y divide-border shadow-manises surface-neo-soft">
+          <motion.div
+            className="bg-card rounded-xl border border-border overflow-hidden divide-y divide-border shadow-manises surface-neo-soft"
+            variants={listStagger}
+          >
             {section.items.map((item) => (
-              <button
+              <motion.button
                 key={item.label}
                 onClick={item.onClick}
                 className="w-full flex items-center gap-4 px-4 py-3.5 text-left hover:bg-muted/50 active:bg-muted transition-colors group"
+                variants={listItemFadeUp}
               >
                 <div className={`p-2 rounded-xl ${item.bg} ${item.color} shrink-0 transition-transform group-hover:scale-105`}>
                   <item.icon className="w-4.5 h-4.5" aria-hidden="true" />
@@ -203,25 +212,27 @@ export function ProfilePage() {
                   </div>
                 )}
                 {item.logos}
-                {!item.detail && <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-manises-blue transition-colors shrink-0" />}
-              </button>
+                {!item.detail && <NavArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-manises-blue transition-colors shrink-0" />}
+              </motion.button>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.section>
       ))}
 
       {/* ---- Cerrar sesión ---- */}
+      <motion.div variants={sectionFadeUp}>
       <Button
         variant="ghost"
         className="w-full h-12 text-red-500 font-semibold hover:bg-red-50 hover:text-red-600 rounded-xl border border-red-100 transition-all"
         onClick={logout}
       >
-        <LogOut className="w-4 h-4 mr-2" />
+        <LogOut className="mr-2 h-4 w-4" />
         Cerrar sesión
       </Button>
+      </motion.div>
 
       {/* Footer legal */}
-      <div className="text-center space-y-1 pb-1">
+      <motion.div className="text-center space-y-1 pb-1" variants={sectionFadeUp}>
         <p className="text-[10px] text-muted-foreground font-semibold">Lotería Manises · Admon. nº 3</p>
         <p className="text-[9px] text-muted-foreground/60 font-medium">
           Receptor Oficial de Apuestas 81980 · Valencia
@@ -229,7 +240,7 @@ export function ProfilePage() {
         <p className="text-[9px] text-muted-foreground/40">
           Juega con responsabilidad. +18. DGOJ. v2.0.26
         </p>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
-import { Mail, Lock, Shield, Clock, BadgePercent, FlaskConical, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, ShieldCheck, Clock, PercentageCircle, Flask } from 'iconoir-react/regular';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
@@ -21,9 +21,9 @@ function GoogleIcon() {
 }
 
 const TRUST_BADGES = [
-  { icon: Shield,      label: 'Juego Seguro' },
+  { icon: ShieldCheck, label: 'Juego Seguro' },
   { icon: Clock,       label: 'Soporte 24h' },
-  { icon: BadgePercent,label: '0 Comisiones' },
+  { icon: PercentageCircle, label: '0 Comisiones' },
 ];
 
 const authContainer = {
@@ -168,7 +168,7 @@ export function LoginPage() {
               onClick={signInDemo}
               className="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors text-xs font-semibold"
             >
-              <FlaskConical className="w-4 h-4 text-white/30" />
+              <Flask className="w-4 h-4 text-white/30" />
               <span>Entrar en modo demo <span className="text-white/25">(sin cuenta)</span></span>
             </button>
           </div>
