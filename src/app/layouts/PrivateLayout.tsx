@@ -30,7 +30,7 @@ export function PrivateLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="app-shell min-h-dvh font-sans text-manises-blue flex flex-col overflow-hidden">
+    <div className="app-shell h-dvh font-sans text-manises-blue flex flex-col overflow-hidden">
       <AnimatePresence>
         {isLocked && (
           <AppLock onUnlock={() => setIsLocked(false)} />
