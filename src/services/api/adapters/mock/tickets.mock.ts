@@ -4,7 +4,7 @@ import type { TicketDto } from '../../contracts/tickets.contracts';
  * Mock Tickets Adapter
  */
 
-export const MOCK_TICKETS_DATA: TicketDto[] = [
+const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   {
     id: 'demo-1',
     userId: 'demo-user',
@@ -43,10 +43,16 @@ export const MOCK_TICKETS_DATA: TicketDto[] = [
   },
 ];
 
+const mockTicketsStore: TicketDto[] = [...INITIAL_MOCK_TICKETS_DATA];
+
+export function appendMockTickets(tickets: TicketDto[]) {
+  mockTicketsStore.unshift(...tickets);
+}
+
 export async function getUserTicketsMock(userId: string): Promise<TicketDto[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(MOCK_TICKETS_DATA);
+      resolve(mockTicketsStore.filter((ticket) => ticket.userId === userId));
     }, 500);
   });
 }
@@ -54,7 +60,7 @@ export async function getUserTicketsMock(userId: string): Promise<TicketDto[]> {
 export async function getTicketByIdMock(id: string): Promise<TicketDto | null> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const ticket = MOCK_TICKETS_DATA.find(t => t.id === id);
+      const ticket = mockTicketsStore.find(t => t.id === id);
       resolve(ticket || null);
     }, 300);
   });

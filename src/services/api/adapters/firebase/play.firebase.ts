@@ -12,7 +12,9 @@ export async function placeBetFirebase(dto: CreateBetRequestDto & { userId: stri
     const userId = dto.userId;
     const userRef = doc(db, 'users', userId);
     const ticketsCollection = collection(db, 'tickets');
-    const newTicketRef = doc(ticketsCollection);
+    const drawDates = dto.drawDates && dto.drawDates.length > 0 ? dto.drawDates : [dto.drawDate];
+    const orderId = drawDates.length > 1 ? `firebase-order-${Date.now()}` : undefined;
+    const ticketRefs = drawDates.map(() => doc(ticketsCollection));
 
     await runTransaction(db, async (transaction) => {
       // 1. Get current user profile for balance check
@@ -26,37 +28,47 @@ export async function placeBetFirebase(dto: CreateBetRequestDto & { userId: stri
         throw new Error('Saldo insuficiente para realizar esta apuesta.');
       }
 
-      // 2. Prepare the ticket data
-      const ticketData = {
-        userId: dto.userId,
-        gameId: dto.gameId,
-        gameType: dto.gameType,
-        numbers: dto.numbers || [],
-        stars: dto.stars || [],
-        selections: dto.selections || null, // For Quiniela
-        systemId: dto.systemId || null,     // For Reduced
-        drawDate: dto.drawDate,
-        status: 'pending',
-        price: dto.price,
-        betsCount: dto.betsCount,
-        hasInsurance: dto.hasInsurance,
-        isSubscription: dto.isSubscription,
-        createdAt: new Date().toISOString(),
-        serverTimestamp: serverTimestamp(),
-        metadata: dto.metadata || {}
-      };
-
-      // 3. Subtract balance and create ticket atomically
+      // 2. Subtract balance and create ticket atomically
       transaction.update(userRef, {
         balance: currentBalance - dto.price
       });
 
-      transaction.set(newTicketRef, ticketData);
+      drawDates.forEach((drawDate, index) => {
+        const ticketData = {
+          userId: dto.userId,
+          gameId: dto.gameId,
+          gameType: dto.gameType,
+          numbers: dto.numbers || [],
+          stars: dto.stars || [],
+          selections: dto.selections || null,
+          systemId: dto.systemId || null,
+          drawDate,
+          status: 'pending',
+          price: drawDates.length > 0 ? Number((dto.price / drawDates.length).toFixed(2)) : dto.price,
+          betsCount: dto.betsCount,
+          hasInsurance: dto.hasInsurance,
+          isSubscription: dto.isSubscription,
+          createdAt: new Date().toISOString(),
+          serverTimestamp: serverTimestamp(),
+          metadata: {
+            ...(dto.metadata || {}),
+            scheduleMode: dto.scheduleMode ?? 'next_draw',
+            weeksCount: dto.weeksCount ?? 1,
+            drawIndex: index,
+          }
+        };
+
+        if (orderId) {
+          Object.assign(ticketData, { orderId });
+        }
+
+        transaction.set(ticketRefs[index], ticketData);
+      });
     });
 
     return { 
       success: true, 
-      ticketId: newTicketRef.id 
+      ticketId: ticketRefs[0]?.id 
     };
 
   } catch (error) {

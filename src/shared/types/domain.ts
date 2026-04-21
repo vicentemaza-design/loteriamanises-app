@@ -49,6 +49,7 @@ export interface Ticket {
   price: number;
   hasInsurance?: boolean; // Laguinda feature: Recubera el 20% de impuestos
   isSubscription?: boolean; // Recurring bet
+  orderId?: string;
   createdAt: string;
 }
 

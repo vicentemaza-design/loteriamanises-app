@@ -21,7 +21,7 @@ import { toast } from 'sonner';
 import { generateRandomPlay } from '@/features/play/services/play.service';
 import { usePlay } from '../hooks/usePlay';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { formatCurrency, formatDrawTime } from '@/shared/lib/utils';
+import { cn, formatCurrency, formatDate, formatDrawTime } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { MOTION_EASE_OUT, panelSwap, sectionFadeUp } from '@/shared/lib/motion';
 import { calculateMultipleBets, calculateTotalPrice, QUINIELA_REDUCED_TABLES, QuinielaReducedType } from '../lib/bet-calculator';
@@ -32,8 +32,18 @@ import { GameInfoSheet } from '../components/GameInfoSheet';
 import { QuinielaProfessionalSelector } from '../components/QuinielaProfessionalSelector';
 import { ReductionSystemSelector } from '../components/ReductionSystemSelector';
 import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
+import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
+import { getDrawsForCurrentWeek, getUpcomingDraws, groupDrawsByWeek } from '../lib/draw-schedule';
 
 const INSURANCE_PRICE = 0.50;
+const DEFAULT_CUSTOM_WEEKS = 2;
+
+const SCHEDULE_OPTIONS: Array<{ id: ScheduleMode; label: string }> = [
+  { id: 'next_draw', label: 'Próximo sorteo' },
+  { id: 'current_week', label: 'Semana en curso' },
+  { id: 'two_weeks', label: 'Dos semanas' },
+  { id: 'custom_weeks', label: 'Varias semanas' },
+];
 
 type NationalDrawId = 'jueves' | 'sabado';
 
@@ -86,7 +96,7 @@ interface QuinielaMatch {
 export function GamePlayPage() {
   const { gameId } = useParams();
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, profile, isDemo } = useAuth();
   const { placeBet, isSubmitting, showSuccess, error, reset } = usePlay();
   const game = LOTTERY_GAMES.find(g => g.id === gameId);
 
@@ -102,6 +112,9 @@ export function GamePlayPage() {
   const [selectedNationalDrawId, setSelectedNationalDrawId] = useState<NationalDrawId>('sabado');
   const [selectedNationalNumber, setSelectedNationalNumber] = useState<string | null>(null);
   const [selectedNationalQuantity, setSelectedNationalQuantity] = useState(1);
+  const [timeMode, setTimeMode] = useState<ScheduleMode>('next_draw');
+  const [selectedWeeksCount, setSelectedWeeksCount] = useState(DEFAULT_CUSTOM_WEEKS);
+  const [selectedDrawDates, setSelectedDrawDates] = useState<string[]>([]);
 
   // Features Laguinda Style
   const [hasInsurance, setHasInsurance] = useState(false);
@@ -122,6 +135,8 @@ export function GamePlayPage() {
   const isNationalLottery = game.id === 'loteria-nacional';
   const isQuiniela = game.id === 'quiniela';
   const isStructuredGame = Boolean(game.selectionRange) || isNationalLottery || isQuiniela;
+  const drawScheduleConfig = getDrawScheduleConfig(game.type);
+  const supportsTimeSelection = Boolean(drawScheduleConfig?.supportsMultipleDrawSelection) && !isNationalLottery && !isQuiniela;
 
   if (!isStructuredGame) {
     return (
@@ -163,6 +178,7 @@ export function GamePlayPage() {
   const isSupportedReducedSelection = isNationalLottery || mode !== 'reduced' || isQuiniela || supportedReducedNumbers.length === 0 || supportedReducedNumbers.includes(selectedNumbers.length);
 
   const theme = getGameTheme(game);
+  const maxWeeksSelectable = drawScheduleConfig?.maxWeeksSelectable ?? DEFAULT_CUSTOM_WEEKS;
 
   // --- CÁLCULO DE APUESTAS (NÚCLEO MATEMÁTICO) ---
   let betsCount = 1;
@@ -182,10 +198,11 @@ export function GamePlayPage() {
     }
   }
 
-  const basePrice = isNationalLottery 
-    ? (NATIONAL_DRAW_CONFIG.find(d => d.id === selectedNationalDrawId)?.decimoPrice ?? 3) * selectedNationalQuantity 
+  const drawPrice = isNationalLottery
+    ? (NATIONAL_DRAW_CONFIG.find(d => d.id === selectedNationalDrawId)?.decimoPrice ?? 3) * selectedNationalQuantity
     : calculateTotalPrice(game.price, betsCount, false);
-  
+  const drawsCount = Math.max(selectedDrawDates.length, 1);
+  const basePrice = drawPrice * drawsCount;
   const totalPrice = basePrice + (hasInsurance ? INSURANCE_PRICE : 0);
   const isOverBalance = profile ? profile.balance < totalPrice : false;
 
@@ -204,6 +221,61 @@ export function GamePlayPage() {
     totalPrice,
     reducedSystemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
   });
+  const groupedSelectedDraws = groupDrawsByWeek(
+    selectedDrawDates.map((drawDate) => ({
+      gameId: game.type,
+      drawDate,
+      label: new Date(drawDate).toLocaleDateString('es-ES', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'short',
+      }),
+      weekLabel: new Date(drawDate).toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'short',
+      }),
+      isClosed: false,
+    }))
+  );
+
+  useEffect(() => {
+    setTimeMode('next_draw');
+    setSelectedWeeksCount(Math.min(DEFAULT_CUSTOM_WEEKS, maxWeeksSelectable));
+  }, [game.id, maxWeeksSelectable]);
+
+  useEffect(() => {
+    const fallbackDrawDate = new Date(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw).toISOString();
+
+    if (!supportsTimeSelection) {
+      setSelectedDrawDates([fallbackDrawDate]);
+      return;
+    }
+
+    let resolvedDraws = getUpcomingDraws(game.type, new Date(), 1);
+
+    if (timeMode === 'current_week') {
+      resolvedDraws = getDrawsForCurrentWeek(game.type, new Date());
+    }
+
+    if (timeMode === 'two_weeks') {
+      resolvedDraws = getUpcomingDraws(game.type, new Date(), 2);
+    }
+
+    if (timeMode === 'custom_weeks') {
+      resolvedDraws = getUpcomingDraws(game.type, new Date(), selectedWeeksCount);
+    }
+
+    const nextDrawDates = resolvedDraws.map((draw) => draw.drawDate);
+    setSelectedDrawDates(nextDrawDates.length > 0 ? nextDrawDates : [fallbackDrawDate]);
+  }, [
+    game.nextDraw,
+    game.type,
+    isNationalLottery,
+    selectedNationalDraw.nextDraw,
+    selectedWeeksCount,
+    supportsTimeSelection,
+    timeMode,
+  ]);
 
   const toggleNumber = (n: number) => {
     setSelectedNumbers(prev =>
@@ -320,7 +392,9 @@ export function GamePlayPage() {
     }
     if (isOverBalance) { toast.error('Saldo insuficiente'); return; }
 
-    const drawDate = new Date(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw).toISOString().split('T')[0];
+    const drawDates = (selectedDrawDates.length > 0 ? selectedDrawDates : [new Date(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw).toISOString()])
+      .map((draw) => new Date(draw).toISOString().split('T')[0]);
+    const drawDate = drawDates[0];
     
     // 321: Preparamos la selección para el hook
     const selection = {
@@ -328,6 +402,9 @@ export function GamePlayPage() {
       gameType: game.type,
       mode,
       drawDate,
+      drawDates,
+      scheduleMode: supportsTimeSelection ? timeMode : 'next_draw',
+      weeksCount: supportsTimeSelection ? (timeMode === 'custom_weeks' ? selectedWeeksCount : timeMode === 'two_weeks' ? 2 : 1) : 1,
       price: totalPrice,
       betsCount,
       hasInsurance,
@@ -335,6 +412,7 @@ export function GamePlayPage() {
       metadata: {
         technicalMode: game.technicalMode,
         systemFamily: game.systemFamily,
+        drawsCount: drawDates.length,
       }
     };
     if (isNationalLottery && selectedNationalNumber) {
@@ -934,6 +1012,94 @@ export function GamePlayPage() {
           </motion.div>
         </AnimatePresence>
 
+        {supportsTimeSelection && (
+          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible" className="space-y-3">
+            <div className="rounded-2xl border border-manises-blue/10 bg-white p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Planificación</p>
+                  <h3 className="mt-1 text-sm font-black text-manises-blue">¿Cuándo quieres jugar?</h3>
+                  <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
+                    Elige el próximo sorteo o agrupa varios sorteos futuros sin cambiar tu selección actual.
+                  </p>
+                </div>
+                <div className="rounded-xl bg-manises-blue/[0.06] px-3 py-2 text-right">
+                  <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Sorteos</p>
+                  <p className="mt-0.5 text-lg font-black text-manises-blue">{drawsCount}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {SCHEDULE_OPTIONS.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => setTimeMode(option.id)}
+                    className={cn(
+                      'rounded-xl border px-3 py-3 text-left transition-all',
+                      timeMode === option.id
+                        ? 'border-manises-blue bg-manises-blue/[0.06] shadow-sm'
+                        : 'border-gray-200 bg-white hover:border-manises-blue/20'
+                    )}
+                  >
+                    <p className={cn(
+                      'text-[11px] font-black uppercase tracking-[0.12em]',
+                      timeMode === option.id ? 'text-manises-blue' : 'text-slate-500'
+                    )}>
+                      {option.label}
+                    </p>
+                  </button>
+                ))}
+              </div>
+
+              {timeMode === 'custom_weeks' && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {Array.from({ length: maxWeeksSelectable - 1 }, (_, index) => index + 2).map((weeks) => (
+                    <button
+                      key={weeks}
+                      onClick={() => setSelectedWeeksCount(weeks)}
+                      className={cn(
+                        'rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] transition-all',
+                        selectedWeeksCount === weeks
+                          ? 'border-manises-gold bg-amber-50 text-manises-blue'
+                          : 'border-gray-200 bg-white text-slate-500 hover:border-manises-gold/40'
+                      )}
+                    >
+                      {weeks} semanas
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50/60 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue">Sorteos incluidos</p>
+                  <p className="text-[11px] font-semibold text-slate-500">
+                    {formatCurrency(drawPrice)} x {drawsCount} sorteos
+                  </p>
+                </div>
+
+                <div className="mt-3 space-y-2">
+                  {Object.entries(groupedSelectedDraws).map(([weekLabel, draws]) => (
+                    <div key={weekLabel}>
+                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">{weekLabel}</p>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        {draws.map((draw) => (
+                          <span
+                            key={draw.drawDate}
+                            className="inline-flex items-center rounded-full border border-manises-blue/12 bg-white px-2.5 py-1 text-[10px] font-bold text-manises-blue"
+                          >
+                            {formatDate(draw.drawDate)}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* ---- SECCIÓN LAGUINDA: Seguro y Abono ---- */}
         <div className="mt-2 space-y-3">
           <motion.div 
@@ -1002,6 +1168,9 @@ export function GamePlayPage() {
             <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
               Importe Total
             </p>
+            <p className="text-[10px] text-muted-foreground font-medium">
+              {formatCurrency(drawPrice)} x {drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}
+            </p>
             <div className="flex items-baseline gap-1">
               <p className="text-xl font-black tabular-nums" style={theme.title}>
                 {formatCurrency(totalPrice)}
@@ -1028,7 +1197,9 @@ export function GamePlayPage() {
                   Procesando...
                 </span>
               ) : canPlay
-                ? isNationalLottery
+                ? drawsCount > 1
+                  ? `Confirmar ${drawsCount} sorteos`
+                  : isNationalLottery
                   ? 'Reservar décimos'
                   : `Confirmar ${betsCount} ${betsCount === 1 ? 'apuesta' : 'apuestas'}`
                 : isNationalLottery

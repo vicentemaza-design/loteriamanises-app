@@ -1,5 +1,6 @@
 import type { GameType } from '@/shared/types/domain';
 import type { ApiResponseDto } from './common.contracts';
+import type { ScheduleMode } from '@/features/play/config/draw-schedule.config';
 
 /**
  * Play API Contracts
@@ -17,6 +18,9 @@ export interface CreateBetRequestDto {
   mode: string; // 'simple' | 'multiple' | 'reduced' | 'nacional'
   price: number;
   drawDate: string;
+  drawDates?: string[];
+  scheduleMode?: ScheduleMode;
+  weeksCount?: number;
   betsCount: number;
   hasInsurance: boolean;
   isSubscription: boolean;

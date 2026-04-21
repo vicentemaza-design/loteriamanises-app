@@ -31,6 +31,8 @@ export const ticketsMapper = {
       prize: dto.prize,
       price: dto.price,
       hasInsurance: dto.hasInsurance,
+      isSubscription: dto.isSubscription,
+      orderId: dto.orderId,
       createdAt: dto.createdAt,
       // Map other optional domain fields if present in DTO
     } as Ticket;

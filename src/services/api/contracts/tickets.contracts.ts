@@ -17,6 +17,8 @@ export interface TicketDto {
   prize?: number;
   price: number;
   hasInsurance?: boolean;
+  isSubscription?: boolean;
+  orderId?: string;
   createdAt: string;
 }
 
