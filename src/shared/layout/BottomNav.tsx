@@ -17,7 +17,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-manises-blue/85 backdrop-blur-3xl border-t border-white/5 shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[#0a4792]/80 backdrop-blur-3xl border-t border-white/5 shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
       aria-label="Navegación principal"

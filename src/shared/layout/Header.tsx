@@ -30,7 +30,7 @@ export function Header() {
   const navigate = useNavigate();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[50] w-full bg-manises-blue/85 backdrop-blur-3xl border-b border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+    <header className="fixed top-0 left-0 right-0 z-[50] w-full bg-[#0a4792]/80 backdrop-blur-3xl border-b border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
       {/* Content wrapper with pt-safe + generous breathing room */}
       <div className="relative flex h-[var(--header-height)] items-center justify-between px-6 pt-[env(safe-area-inset-top,0px)] mx-auto max-w-7xl">
         {/* Logo Section - Institutional and readable */}
