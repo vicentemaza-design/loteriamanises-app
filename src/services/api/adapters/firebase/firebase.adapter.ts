@@ -36,7 +36,7 @@ export class FirebaseAdapter implements IApiProvider {
   // Play
   play = {
     placeBet: placeBetFirebase,
-    calculatePrice: async () => 0, // Logic remains in domain services for now
+    calculatePrice: async (_gameId: string, _selection: Record<string, any>) => 0, // Logic remains in domain services for now
   };
 
   // Wallet

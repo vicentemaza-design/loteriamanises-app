@@ -318,8 +318,8 @@ export function GamePlayPage() {
 
     const drawDate = new Date(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw).toISOString().split('T')[0];
     
-    // Payload Profesional para el BE
-    const payload: any = {
+    // 321: Preparamos la selección para el hook
+    const selection = {
       gameId: game.id,
       gameType: game.type,
       mode,
@@ -333,19 +333,24 @@ export function GamePlayPage() {
         systemFamily: game.systemFamily,
       }
     };
-
     if (isNationalLottery && selectedNationalNumber) {
-      payload.numbers = selectedNationalNumber.split('').map(Number);
-      payload.stars = [];
+      Object.assign(selection, {
+        numbers: selectedNationalNumber.split('').map(Number),
+        stars: []
+      });
     } else if (isQuiniela) {
-      payload.selections = quinielaMatches.map(m => ({ id: m.id, val: m.result }));
-      if (mode === 'reduced') payload.systemId = selectedReductionSystemId;
+      Object.assign(selection, {
+        selections: quinielaMatches.map(m => ({ id: m.id, val: m.result })),
+        systemId: mode === 'reduced' ? selectedReductionSystemId : undefined
+      });
     } else {
-      payload.numbers = selectedNumbers;
-      payload.stars = selectedStars;
+      Object.assign(selection, {
+        numbers: selectedNumbers,
+        stars: selectedStars
+      });
     }
 
-    await placeBet(payload);
+    await placeBet(selection);
   };
 
   return (

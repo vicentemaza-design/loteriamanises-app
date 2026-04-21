@@ -11,8 +11,6 @@ import { cn } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { ComparisonModal } from '../components/ComparisonModal';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { db } from '@/shared/config/firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import type { Ticket } from '@/shared/types/domain';
 import { useResults } from '../hooks/useResults';
 import { ResultCardSkeleton } from '@/shared/ui/Skeleton';
@@ -70,22 +68,12 @@ const GAME_FILTERS = ['Todos', ...LOTTERY_GAMES.map(g => g.name)];
 export function ResultsPage() {
   const { user, isDemo } = useAuth();
   const { results, isLoading, error } = useResults();
+  const { tickets: hookTickets, isLoading: isLoadingTickets } = useTickets();
   const [activeFilter, setActiveFilter] = useState('Todos');
-  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [comparingResult, setComparingResult] = useState<ResultDto | null>(null);
 
-  useEffect(() => {
-    if (isDemo) {
-      setTickets(DEMO_TICKETS);
-      return;
-    }
-    if (!user) return;
-    const q = query(collection(db, 'tickets'), where('userId', '==', user.uid));
-    const unsub = onSnapshot(q, snap => {
-      setTickets(snap.docs.map(d => ({ id: d.id, ...d.data() })) as Ticket[]);
-    });
-    return () => unsub();
-  }, [user, isDemo]);
+  // Usamos los tickets del hook useTickets
+  const tickets = hookTickets;
 
   const filtered = results.filter(r => {
     if (activeFilter === 'Todos') return true;

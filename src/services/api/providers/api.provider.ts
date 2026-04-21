@@ -1,6 +1,7 @@
-import type { LotteryGame, Ticket, UserProfile, WalletMovement } from '@/shared/types/domain';
 import type { ResultDto } from '../contracts/results.contracts';
 import type { CreateBetRequestDto, CreateBetResponseDto } from '../contracts/play.contracts';
+import type { TicketDto } from '../contracts/tickets.contracts';
+import type { WalletBalanceDto, WalletMovementDto } from '../contracts/wallet.contracts';
 
 /**
  * IApiProvider
@@ -23,8 +24,8 @@ export interface IApiProvider {
 
   // Tickets
   tickets: {
-    getUserTickets: (userId: string) => Promise<Ticket[]>;
-    getTicketById: (id: string) => Promise<Ticket | null>;
+    getUserTickets: (userId: string) => Promise<TicketDto[]>;
+    getTicketById: (id: string) => Promise<TicketDto | null>;
   };
 
   // Play
@@ -35,8 +36,8 @@ export interface IApiProvider {
 
   // Wallet
   wallet: {
-    getBalance: (userId: string) => Promise<number>;
-    getMovements: (userId: string) => Promise<WalletMovement[]>;
+    getBalance: (userId: string) => Promise<WalletBalanceDto>;
+    getMovements: (userId: string) => Promise<WalletMovementDto[]>;
     topUp: (userId: string, amount: number) => Promise<{ success: boolean; newBalance: number }>;
   };
 }

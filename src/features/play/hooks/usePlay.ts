@@ -35,14 +35,13 @@ export function usePlay() {
         console.log('[usePlay] Preparing bet submission...', selection);
       }
 
-      // 1. Standardize the payload using the mapper
+      // 1. Standardize UI state into a DTO using the mapper
       const dto = playMapper.toCreateBetDto(selection);
       
-      // 2. Get the API Client and place the bet
+      // 2. Get the API Client
       const client = await createApiClient();
       
-      // We pass the userId explicitly for the Firebase transaction if needed
-      // Most adapters will extract it or use the authenticated context
+      // 3. Place the bet (merging DTO with session data)
       const result = await client.play.placeBet({ 
         ...dto, 
         userId: user?.uid || 'demo-user' 

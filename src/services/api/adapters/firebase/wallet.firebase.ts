@@ -1,16 +1,16 @@
 import { db } from '@/shared/config/firebase';
 import { collection, query, where, orderBy, getDocs, doc, runTransaction, serverTimestamp } from 'firebase/firestore';
-import type { WalletMovementDto } from '../../contracts/wallet.contracts';
+import type { WalletBalanceDto, WalletMovementDto } from '../../contracts/wallet.contracts';
 
 /**
  * Firebase Wallet Adapter
  * Implements atomic top-up and transactional history fetch.
  */
 
-export async function getBalanceFirebase(userId: string): Promise<number> {
+export async function getBalanceFirebase(userId: string): Promise<WalletBalanceDto> {
   const userSnap = await getDocs(query(collection(db, 'users'), where('uid', '==', userId)));
-  if (userSnap.empty) return 0;
-  return userSnap.docs[0].data().balance || 0;
+  const balance = userSnap.empty ? 0 : (userSnap.docs[0].data().balance || 0);
+  return { balance, userId };
 }
 
 export async function getMovementsFirebase(userId: string): Promise<WalletMovementDto[]> {
