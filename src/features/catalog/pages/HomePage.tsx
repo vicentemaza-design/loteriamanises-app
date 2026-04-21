@@ -14,8 +14,8 @@ import {
   ShieldCheck as BadgeCheck,
   Download,
   Flash as Zap,
+  Calendar,
 } from 'iconoir-react/regular';
-import { Sparks as HeroSparkles } from 'iconoir-react/regular';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { GameIcon } from '@/shared/ui/GameIcon';
