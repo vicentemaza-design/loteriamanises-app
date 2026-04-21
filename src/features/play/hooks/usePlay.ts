@@ -3,6 +3,7 @@ import { createApiClient } from '@/services/api/factory/createApiClient';
 import { playMapper } from '@/services/api/mappers/play.mapper';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
+import type { CreateBetRequestDto } from '@/services/api/contracts/play.contracts';
 
 /**
  * usePlay Hook
@@ -17,9 +18,9 @@ export function usePlay() {
 
   /**
    * Places a bet using the modular API architecture.
-   * @param rawParams Raw selection and game data from the view.
+   * @param betData Raw selection and game data from the view.
    */
-  const placeBet = useCallback(async (rawParams: any) => {
+  const placeBet = useCallback(async (betData: CreateBetRequestDto) => {
     if (!user && !FEATURE_FLAGS.enableDemoMode) {
       setError('Debes iniciar sesión para realizar una apuesta.');
       return;
@@ -31,11 +32,11 @@ export function usePlay() {
 
     try {
       if (FEATURE_FLAGS.enableVerboseApiLogs) {
-        console.log('[usePlay] Preparing bet submission...', rawParams);
+        console.log('[usePlay] Preparing bet submission...', betData);
       }
 
       // 1. Standardize the payload using the mapper
-      const dto = playMapper.toCreateBetDto(rawParams);
+      const dto = playMapper.toCreateBetDto(betData);
       
       // 2. Get the API Client and place the bet
       const client = await createApiClient();

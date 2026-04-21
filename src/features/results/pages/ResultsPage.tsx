@@ -17,6 +17,7 @@ import type { Ticket } from '@/shared/types/domain';
 import { useResults } from '../hooks/useResults';
 import { ResultCardSkeleton } from '@/shared/ui/Skeleton';
 import { useTickets } from '@/features/tickets/hooks/useTickets';
+import type { ResultDto } from '@/services/api/contracts/results.contracts';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
@@ -71,7 +72,7 @@ export function ResultsPage() {
   const { results, isLoading, error } = useResults();
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [comparingResult, setComparingResult] = useState<any | null>(null);
+  const [comparingResult, setComparingResult] = useState<ResultDto | null>(null);
 
   useEffect(() => {
     if (isDemo) {
@@ -92,7 +93,7 @@ export function ResultsPage() {
     return game?.name === activeFilter;
   });
 
-  const openComparison = (result: any) => {
+  const openComparison = (result: ResultDto) => {
     setComparingResult(result);
   };
 

@@ -1,4 +1,6 @@
 import type { LotteryGame, Ticket, UserProfile, WalletMovement } from '@/shared/types/domain';
+import type { ResultDto } from '../contracts/results.contracts';
+import type { CreateBetRequestDto, CreateBetResponseDto } from '../contracts/play.contracts';
 
 /**
  * IApiProvider
@@ -15,8 +17,8 @@ export interface IApiProvider {
 
   // Results
   results: {
-    getLatest: () => Promise<any[]>; // Will refine with contracts later
-    getById: (id: string) => Promise<any | null>;
+    getLatest: () => Promise<ResultDto[]>;
+    getById: (id: string) => Promise<ResultDto | null>;
   };
 
   // Tickets
@@ -27,7 +29,7 @@ export interface IApiProvider {
 
   // Play
   play: {
-    placeBet: (betData: any) => Promise<{ success: boolean; ticketId?: string; error?: string }>;
+    placeBet: (betData: CreateBetRequestDto & { userId: string }) => Promise<CreateBetResponseDto>;
     calculatePrice: (gameId: string, selection: any) => Promise<number>;
   };
 

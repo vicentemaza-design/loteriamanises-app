@@ -14,8 +14,10 @@ export async function createApiClient(): Promise<IApiProvider> {
       return new MockAdapter();
     }
     
-    case 'firebase':
-      throw new Error('FirebaseAdapter not yet implemented');
+    case 'firebase': {
+      const { FirebaseAdapter } = await import('../adapters/firebase/firebase.adapter');
+      return new FirebaseAdapter();
+    }
     
     case 'http':
       throw new Error('HttpAdapter not yet implemented');
