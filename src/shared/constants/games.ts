@@ -146,7 +146,12 @@ export const LOTTERY_GAMES: LotteryGame[] = [
     price: 3.00,
     description: 'Décimos de 5 cifras (jueves y sábado)',
     frequency: 'Jueves y Sábados',
-    productionPhase1: false,
+    // Matriz Técnica
+    technicalMode: 'simple',
+    systemFamily: 'direct',
+    guaranteeType: 'direct_full_coverage',
+    selectionRange: { numbers: { min: 1, max: 1, total: 99999 } }, // Simboliza el décimo
+    productionPhase1: true,
   },
   {
     id: 'loteria-navidad',

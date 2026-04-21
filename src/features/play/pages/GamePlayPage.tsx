@@ -149,10 +149,10 @@ export function GamePlayPage() {
   const currentSelection = currentModeDefinition?.selection ?? game.selectionRange!;
   const reductionSystems = game ? getReductionSystemsForMode(game.id, mode) : [];
   const currentReductionSystem = mode === 'reduced' ? getReductionSystem(game.id, selectedReductionSystemId) : null;
-  const range = currentSelection;
-  const minNums = range.numbers.min;
-  const maxNums = range.numbers.max;
-  const totalNums = range.numbers.total;
+  const range = currentSelection || { numbers: { min: 1, max: 1, total: 1 } };
+  const minNums = range.numbers?.min ?? 1;
+  const maxNums = range.numbers?.max ?? 1;
+  const totalNums = range.numbers?.total ?? 1;
   const minStars = range.stars?.min ?? 0;
   const maxStars = range.stars?.max ?? minStars;
   const totalStars = range.stars?.total ?? 0;
@@ -160,7 +160,7 @@ export function GamePlayPage() {
     ? Array.from({ length: totalStars }, (_, i) => i)
     : Array.from({ length: totalStars }, (_, i) => i + 1);
   const supportedReducedNumbers = currentReductionSystem?.supportedNumbers ?? [];
-  const isSupportedReducedSelection = mode !== 'reduced' || isQuiniela || supportedReducedNumbers.length === 0 || supportedReducedNumbers.includes(selectedNumbers.length);
+  const isSupportedReducedSelection = isNationalLottery || mode !== 'reduced' || isQuiniela || supportedReducedNumbers.length === 0 || supportedReducedNumbers.includes(selectedNumbers.length);
 
   const theme = getGameTheme(game);
 
