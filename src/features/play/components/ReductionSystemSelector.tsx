@@ -30,6 +30,9 @@ export function ReductionSystemSelector({
           const pattern = system.requiredPattern
             ? `${system.requiredPattern.dobles}D · ${system.requiredPattern.triples}T`
             : system.guaranteeLabel;
+          const supportedRange = system.supportedNumbers && system.supportedNumbers.length > 0
+            ? `${system.supportedNumbers[0]}-${system.supportedNumbers[system.supportedNumbers.length - 1]} bolas`
+            : null;
 
           return (
             <button
@@ -59,6 +62,11 @@ export function ReductionSystemSelector({
                   <p className={`mt-1 text-[12px] font-medium leading-relaxed ${isActive ? 'text-white/78' : 'text-slate-500'}`}>
                     {system.guaranteeCondition}
                   </p>
+                  {supportedRange && (
+                    <p className={`mt-2 text-[10px] font-black uppercase tracking-[0.14em] ${isActive ? 'text-white/62' : 'text-slate-400'}`}>
+                      {supportedRange}
+                    </p>
+                  )}
                 </div>
 
                 {system.fixedBetsCount ? (

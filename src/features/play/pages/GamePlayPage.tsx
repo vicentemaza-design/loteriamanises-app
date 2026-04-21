@@ -508,6 +508,28 @@ export function GamePlayPage() {
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">
+                <span className="inline-flex items-center rounded-full border border-manises-blue/10 bg-manises-blue/[0.05] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-manises-blue/75">
+                  Rango válido: {supportedReducedNumbers[0]}-{supportedReducedNumbers[supportedReducedNumbers.length - 1]}
+                </span>
+                {game.type === 'euromillones' && (
+                  <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-amber-900">
+                    2 estrellas fijas
+                  </span>
+                )}
+                {selectedNumbers.length > 0 && (
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${
+                      isSupportedReducedSelection
+                        ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
+                        : 'border border-amber-200 bg-amber-50 text-amber-900'
+                    }`}
+                  >
+                    {isSupportedReducedSelection ? 'Fila válida' : 'Ajusta la fila'}
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
                 {selectedNumbers.length > 0 ? (
                   selectedNumbers.map((number) => (
                     <span
@@ -528,6 +550,22 @@ export function GamePlayPage() {
                 Soporta {supportedReducedNumbers[0]} a {supportedReducedNumbers[supportedReducedNumbers.length - 1]} números, según la tabla oficial disponible.
               </p>
             </div>
+          </motion.div>
+        )}
+
+        {!isNationalLottery && !isQuiniela && mode === 'reduced' && selectedNumbers.length > 0 && isSupportedReducedSelection && betsCount > 0 && (
+          <motion.div
+            variants={sectionFadeUp}
+            initial="hidden"
+            animate="visible"
+            className="rounded-xl border border-emerald-200 bg-emerald-50 p-3"
+          >
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-900">
+              Selección lista para cotizar
+            </p>
+            <p className="mt-1 text-[12px] font-medium leading-relaxed text-emerald-800">
+              Tu selección encaja en la tabla de {currentReductionSystem?.label?.toLowerCase() ?? 'reducida'} y genera {betsCount} columnas para esta variante.
+            </p>
           </motion.div>
         )}
 
