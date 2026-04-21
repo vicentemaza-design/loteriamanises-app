@@ -20,6 +20,8 @@ import { getGameTheme } from '@/shared/lib/game-theme';
 import { useTickets } from '../hooks/useTickets';
 import { TicketCardSkeleton } from '@/shared/ui/Skeleton';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
 
 gsap.registerPlugin(useGSAP);
 
