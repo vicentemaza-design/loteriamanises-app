@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 
 const navItems = [
-  { icon: Home,        label: 'Inicio',      path: '/' },
+  { icon: Home,        label: 'Inicio',      path: '/home' },
   { icon: ViewGrid,    label: 'Juegos',      path: '/games' },
   { icon: Trophy,      label: 'Resultados',  path: '/results' },
   { icon: JournalPage, label: 'Mis jugadas', path: '/tickets' },
@@ -27,15 +27,15 @@ export function BottomNav() {
       
       <div className="flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
         {navItems.map(({ icon: Icon, label, path }) => {
-          const isActive = path === '/'
-            ? location.pathname === '/'
+          const isActive = path === '/home' 
+            ? location.pathname === '/home' || location.pathname === '/'
             : location.pathname.startsWith(path);
 
           return (
             <PremiumTouchInteraction key={path} scale={0.98} className="flex-1">
               <NavLink
                 to={path}
-                end={path === '/'}
+                end
                 className={cn(
                   'flex flex-col items-center justify-center w-full h-full gap-0.5 relative transition-all duration-500',
                   isActive ? 'text-manises-gold' : 'text-white/40 hover:text-white/80'
