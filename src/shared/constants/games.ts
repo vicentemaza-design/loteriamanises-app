@@ -71,7 +71,7 @@ export const LOTTERY_GAMES: LotteryGame[] = [
     icon: 'CircleDot',
     price: 0.50,
     description: 'El más económico, cada día',
-    frequency: 'Lun a Vie',
+    frequency: 'Lun a Dom',
     // Matriz Técnica
     technicalMode: 'multiple_direct',
     systemFamily: 'direct',

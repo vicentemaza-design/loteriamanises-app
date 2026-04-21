@@ -30,6 +30,22 @@ export const DRAW_SCHEDULE_CONFIG: Partial<Record<GameType, DrawScheduleConfig>>
     supportsMultipleDrawSelection: true,
     supportsSubscription: false,
   },
+  bonoloto: {
+    drawWeekdays: [1, 2, 3, 4, 5, 6, 0],
+    drawHour: 21,
+    drawMinute: 30,
+    maxWeeksSelectable: DEFAULT_MAX_WEEKS_SELECTABLE,
+    supportsMultipleDrawSelection: true,
+    supportsSubscription: false,
+  },
+  gordo: {
+    drawWeekdays: [0],
+    drawHour: 13,
+    drawMinute: 0,
+    maxWeeksSelectable: DEFAULT_MAX_WEEKS_SELECTABLE,
+    supportsMultipleDrawSelection: true,
+    supportsSubscription: false,
+  },
   'loteria-nacional': {
     drawWeekdays: [4, 6],
     drawHour: 12,

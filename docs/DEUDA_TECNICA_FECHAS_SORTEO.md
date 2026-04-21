@@ -42,7 +42,7 @@ El siguiente paso recomendado es introducir una capa explícita de normalizació
 Que toda fecha de sorteo tenga una semántica única y consistente en toda la app:
 
 - fecha lógica del sorteo
-- zona horaria de referencia
+- zona horaria de referencia: `Europe/Madrid`
 - representación para UI
 - representación para persistencia
 
@@ -56,9 +56,17 @@ Crear una utilidad central para fechas de sorteo, por ejemplo:
 
 Y fijar una convención única:
 
-- UI basada en calendario local de negocio
+- UI basada en la fecha lógica del sorteo en zona de negocio (`Europe/Madrid`)
 - persistencia basada en fecha normalizada
 - comparaciones siempre contra el mismo formato
+
+### Convención recomendada
+
+- almacenar el día de sorteo como `YYYY-MM-DD` en zona de negocio (`Europe/Madrid`)
+- usar `Date` o `ISO timestamp` solo para:
+  - cierres de sorteo
+  - auditoría
+  - marcas de creación/actualización
 
 ## Regla recomendada
 
@@ -89,3 +97,20 @@ La deuda pendiente es temporal, no matemática:
 
 - falta una normalización explícita de zona horaria
 - conviene resolverla antes de seguir escalando calendario y persistencia temporal
+
+---
+
+## Actualización: Multi-draw validada como estable (21/04/2026)
+
+Se ha realizado una auditoría funcional exhaustiva de 10 puntos validando los siguientes escenarios:
+
+1. **Euromillones Multi-semana:** Verificada la generación de hasta 8 tickets por compra (4 semanas) con fechas de sorteo sucesivas y precios correctos (2,50€ x N).
+2. **Primitiva Multi-semana:** Verificada la integridad del flujo en variantes de sorteo único y multi-semana.
+3. **Regresión:** El flujo tradicional de "Próximo sorteo" permanece intacto y funcional.
+4. **Integridad Transaccional:** Se ha comprobado que el cálculo del precio total en el frontend coincide con la creación de tickets individuales en la capa de datos.
+5. **Revisión Técnica:** `npm run build` y `npm run lint` están en verde.
+
+### Decisión de Ciclo
+La funcionalidad multi-draw se considera **Cerrada y Válida** para la fase actual de industrialización. 
+
+El siguiente paso es la **Normalización de fechas en Europe/Madrid** para eliminar la ambigüedad de `toISOString()` y garantizar que la app sea resiliente a cambios de huso horario en el cliente, según se detalla en las recomendaciones técnicas de este documento.
