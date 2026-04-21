@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
@@ -20,6 +20,7 @@ import {
 import { toast } from 'sonner';
 import { generateRandomPlay } from '@/features/play/services/play.service';
 import { usePlay } from '../hooks/usePlay';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { formatCurrency, formatDrawTime } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { MOTION_EASE_OUT, panelSwap, sectionFadeUp } from '@/shared/lib/motion';

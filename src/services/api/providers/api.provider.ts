@@ -1,3 +1,4 @@
+import type { UserProfile } from '@/shared/types/domain';
 import type { ResultDto } from '../contracts/results.contracts';
 import type { CreateBetRequestDto, CreateBetResponseDto } from '../contracts/play.contracts';
 import type { TicketDto } from '../contracts/tickets.contracts';
