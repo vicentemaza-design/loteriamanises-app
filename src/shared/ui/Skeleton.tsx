@@ -1,6 +1,7 @@
 import { cn } from '@/shared/lib/utils';
+import React from 'react';
 
-interface SkeletonProps {
+interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
   variant?: 'text' | 'circle' | 'rect';
 }

@@ -17,10 +17,9 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
-import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
 import { useTickets } from '../hooks/useTickets';
+import { TicketCardSkeleton } from '@/shared/ui/Skeleton';
+import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 
 gsap.registerPlugin(useGSAP);
 
@@ -71,14 +70,7 @@ export function TicketsPage() {
     }
   }, { scope: containerRef, dependencies: [tab, isLoading, displayed.length] });
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <div className="w-10 h-10 border-4 border-manises-blue/10 border-t-manises-blue rounded-full animate-spin" />
-        <p className="text-[10px] font-bold text-manises-blue/40 uppercase tracking-widest">Sincronizando tus jugadas...</p>
-      </div>
-    );
-  }
+  // El loading se maneja dentro del return principal para mostrar Skeletons con el header intacto
 
   return (
     <div className="flex min-h-full flex-col gap-4 overflow-x-hidden bg-background" ref={containerRef}>
@@ -128,13 +120,17 @@ export function TicketsPage() {
 
       {/* Content List */}
       <section className="px-5 flex-1 min-h-[400px]">
-        {error && (
+        {isLoading ? (
+          <div className="flex flex-col gap-3.5">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <TicketCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : error ? (
           <div className="p-8 text-center bg-red-50 rounded-2xl border border-red-100 mb-6">
             <p className="text-xs text-red-600 font-bold">{error}</p>
           </div>
-        )}
-
-        {displayed.length === 0 ? (
+        ) : displayed.length === 0 ? (
           <div className="pt-12">
             <EmptyState
               icon={<TicketIcon className="w-10 h-10 text-manises-blue/20" />}

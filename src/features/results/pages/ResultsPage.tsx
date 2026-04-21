@@ -16,9 +16,10 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import type { Ticket } from '@/shared/types/domain';
 import { useResults } from '../hooks/useResults';
 import { ResultCardSkeleton, TicketCardSkeleton } from '@/shared/ui/Skeleton';
+import { useTickets } from '../hooks/useTickets';
+import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import { PremiumTouchInteraction } from '@/shared/ui/PremiumTouchInteraction';
 
 gsap.registerPlugin(useGSAP);
 
