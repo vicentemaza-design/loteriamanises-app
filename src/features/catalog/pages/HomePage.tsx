@@ -3,20 +3,19 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { Key } from 'react';
 import { 
   ArrowRight, 
-  Community as Users, 
+  Group as Users, 
   Shield, 
-  CreditCard, 
+  Wallet as CreditCard, 
   Lock,
-  Spark,
-  Clock,
-  Calendar,
-  BusinessCase as BriefcaseBusiness,
-  Bank as Landmark,
-  CheckBadge as BadgeCheck,
+  Sparks as Sparkles,
+  Timer as Clock,
+  Suitcase as BriefcaseBusiness,
+  Safe as Landmark,
+  ShieldCheck as BadgeCheck,
   Download,
   Flash as Zap,
-  Sparkles,
 } from 'iconoir-react/regular';
+import { Sparks as HeroSparkles } from 'iconoir-react/regular';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { GameIcon } from '@/shared/ui/GameIcon';
