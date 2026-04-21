@@ -14,7 +14,6 @@ import {
   JournalPage,
   ShieldCheck,
   BrightStar,
-  Wallet,
   InfoCircle,
   WarningTriangle
 } from 'iconoir-react/regular';
@@ -25,7 +24,9 @@ import { formatCurrency, formatDrawTime } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { MOTION_EASE_OUT, panelSwap, sectionFadeUp } from '@/shared/lib/motion';
 import { calculateMultipleBets, calculateTotalPrice, QUINIELA_REDUCED_TABLES, QuinielaReducedType } from '../lib/bet-calculator';
+import { getGameHelpContent } from '../lib/game-help';
 import { GameModeSelector } from '../components/GameModeSelector';
+import { GameInfoSheet } from '../components/GameInfoSheet';
 import { QuinielaProfessionalSelector } from '../components/QuinielaProfessionalSelector';
 import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
 
@@ -109,6 +110,7 @@ export function GamePlayPage() {
   // Features Laguinda Style
   const [hasInsurance, setHasInsurance] = useState(false);
   const [isSubscription, setIsSubscription] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   if (!game) {
     return (
@@ -184,6 +186,13 @@ export function GamePlayPage() {
   const selectedNationalTicket = NATIONAL_NUMBER_POOL.find((ticket) => ticket.number === selectedNationalNumber);
   const maxNationalQuantity = selectedNationalTicket?.available ?? 1;
   const nationalPotentialFirstPrize = selectedNationalDraw.firstPrize * selectedNationalQuantity;
+  const helpContent = getGameHelpContent({
+    game,
+    mode,
+    betsCount,
+    totalPrice,
+    reducedType: mode === 'reduced' ? reducedType : undefined,
+  });
 
   const toggleNumber = (n: number) => {
     setSelectedNumbers(prev =>
@@ -410,12 +419,20 @@ export function GamePlayPage() {
           <Button
             variant="ghost" size="icon"
             className="text-white/70 hover:text-white hover:bg-white/15 w-9 h-9 rounded-xl"
+            onClick={() => setIsInfoOpen(true)}
             aria-label="Información del juego"
           >
             <InfoCircle className="w-4.5 h-4.5" />
           </Button>
         </div>
       </div>
+
+      <GameInfoSheet
+        game={game}
+        isOpen={isInfoOpen}
+        onClose={() => setIsInfoOpen(false)}
+        content={helpContent}
+      />
       
       <div className="flex flex-col gap-5 p-4 pt-2">
         {/* Selector de Modo (Solo si hay varios disponibles) */}
