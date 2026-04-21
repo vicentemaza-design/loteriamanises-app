@@ -81,7 +81,7 @@
   --app-bg: #F8FAFC; /* Slate-50: Gris suave premium */
   --app-vh: 100vh;
   --app-height: 100dvh;
-  --header-height: calc(4.5rem + env(safe-area-inset-top, 0px));
+  --header-height: calc(4rem + env(safe-area-inset-top, 0px));
   --nav-height: calc(5rem + env(safe-area-inset-bottom, 0px));
   --background:            #F8FAFC;
   --foreground:            #0a4792;

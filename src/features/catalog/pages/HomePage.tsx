@@ -366,7 +366,7 @@ export function HomePage() {
   }, { scope: containerRef });
 
   return (
-    <div className="flex min-h-full flex-col gap-8 pb-32 pt-[var(--header-height)]" ref={containerRef}>
+    <div className="flex min-h-full flex-col gap-6 pb-12" ref={containerRef}>
 
       {/* ── Greeting ────────────────────────────────────────────── */}
       <section className="px-6 home-greeting">
