@@ -303,7 +303,10 @@ export function GamePlayPage() {
   }, [error]);
 
   const handlePlay = async () => {
-    if (!user || !profile) { toast.error('Sesión requerida'); return; }
+    if (!user && !isDemo) { 
+      toast.error('Sesión requerida'); 
+      return; 
+    }
     if (!canPlay)           { 
       if (isQuiniela && !isQuinielaValid && mode === 'reduced') {
         const config = QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType];
