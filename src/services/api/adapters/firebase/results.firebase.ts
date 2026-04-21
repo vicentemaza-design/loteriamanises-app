@@ -16,7 +16,7 @@ export async function getLatestResultsFirebase(): Promise<ResultDto[]> {
     );
     
     const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() })) as ResultDto[];
+    return snap.docs.map(d => d.data() as ResultDto);
   } catch (error) {
     console.warn('[Firebase Results Adapter] Could not fetch results from collection "results". Falling back to empty array.', error);
     return [];

@@ -10,7 +10,7 @@ export interface ResultDto {
   gameId: string;
   gameType: GameType;
   date: string; // ISO Date
-  numbers: number[] | string[];
+  numbers: Array<number | string>;
   stars?: number[];
   complementario?: number;
   reintegro?: number;

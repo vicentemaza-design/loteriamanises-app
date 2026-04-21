@@ -1,4 +1,4 @@
-import type { WalletMovementDto } from '../../contracts/wallet.contracts';
+import type { WalletBalanceDto, WalletMovementDto } from '../../contracts/wallet.contracts';
 
 /**
  * Mock Wallet Adapter
@@ -31,8 +31,8 @@ export const MOCK_MOVEMENTS: WalletMovementDto[] = [
   },
 ];
 
-export async function getBalanceMock(userId: string): Promise<number> {
-  return new Promise(resolve => setTimeout(() => resolve(124.50), 400));
+export async function getBalanceMock(userId: string): Promise<WalletBalanceDto> {
+  return new Promise(resolve => setTimeout(() => resolve({ balance: 124.50, userId }), 400));
 }
 
 export async function getMovementsMock(userId: string): Promise<WalletMovementDto[]> {
