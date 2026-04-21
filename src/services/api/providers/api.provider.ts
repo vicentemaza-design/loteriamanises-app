@@ -30,7 +30,7 @@ export interface IApiProvider {
   // Play
   play: {
     placeBet: (betData: CreateBetRequestDto & { userId: string }) => Promise<CreateBetResponseDto>;
-    calculatePrice: (gameId: string, selection: any) => Promise<number>;
+    calculatePrice: (gameId: string, selection: Record<string, any>) => Promise<number>;
   };
 
   // Wallet

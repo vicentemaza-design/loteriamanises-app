@@ -13,14 +13,12 @@ export class FirebaseAdapter implements IApiProvider {
   // Auth - Minimal implementation for now as it's handled by AuthContext
   auth = {
     signInWithGoogle: async () => {
-      // Logic managed in AuthProvider
-      throw new Error('Sign in must be called from AuthContext');
+      console.warn('FirebaseAdapter.auth.signInWithGoogle: Stub called. Use AuthContext for auth logic.');
     },
     logout: async () => {
-      // Logic managed in AuthProvider
-      throw new Error('Logout must be called from AuthContext');
+      console.warn('FirebaseAdapter.auth.logout: Stub called. Use AuthContext for auth logic.');
     },
-    getCurrentUser: async () => null, // Placeholder
+    getCurrentUser: async () => null,
   };
 
   // Results
