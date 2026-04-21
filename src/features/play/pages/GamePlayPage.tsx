@@ -18,8 +18,8 @@ import {
   WarningTriangle
 } from 'iconoir-react/regular';
 import { toast } from 'sonner';
-import { useAuth } from '@/features/auth/hooks/useAuth';
-import { placeBet, generateRandomPlay } from '@/features/play/services/play.service';
+import { generateRandomPlay } from '@/features/play/services/play.service';
+import { usePlay } from '../hooks/usePlay';
 import { formatCurrency, formatDrawTime } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { MOTION_EASE_OUT, panelSwap, sectionFadeUp } from '@/shared/lib/motion';
@@ -86,6 +86,7 @@ export function GamePlayPage() {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { placeBet, isSubmitting, showSuccess, error, reset } = usePlay();
   const game = LOTTERY_GAMES.find(g => g.id === gameId);
 
   const availableModes: PlayMode[] = game ? getAvailableModesForGame(game.id) : ['simple'];
@@ -93,8 +94,6 @@ export function GamePlayPage() {
   const [mode, setMode] = useState<PlayMode>(availableModes[0]);
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [selectedStars, setSelectedStars]     = useState<number[]>([]);
-  const [isSubmitting, setIsSubmitting]       = useState(false);
-  const [showSuccess, setShowSuccess]         = useState(false);
   
   // Quiniela & Nacional Específico
   const [quinielaMatches, setQuinielaMatches] = useState<QuinielaMatch[]>([]);
@@ -295,6 +294,13 @@ export function GamePlayPage() {
       ? isQuinielaValid
       : selectedNumbers.length >= minNums && selectedNumbers.length <= maxNums && hasValidStarSelection && isSupportedReducedSelection && betsCount > 0;
 
+  // Manejo de errores del hook
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   const handlePlay = async () => {
     if (!user || !profile) { toast.error('Sesión requerida'); return; }
     if (!canPlay)           { 
@@ -310,12 +316,10 @@ export function GamePlayPage() {
     }
     if (isOverBalance) { toast.error('Saldo insuficiente'); return; }
 
-    setIsSubmitting(true);
     const drawDate = new Date(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw).toISOString().split('T')[0];
     
     // Payload Profesional para el BE
     const payload: any = {
-      userId: user.uid,
       gameId: game.id,
       gameType: game.type,
       mode,
@@ -341,14 +345,7 @@ export function GamePlayPage() {
       payload.stars = selectedStars;
     }
 
-    const result = await placeBet(payload);
-    setIsSubmitting(false);
-
-    if (result.success) {
-      setShowSuccess(true);
-    } else {
-      toast.error('Error al procesar la apuesta. Inténtalo de nuevo.');
-    }
+    await placeBet(payload);
   };
 
   return (

@@ -2,13 +2,15 @@ import type { ElementType } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Trophy, Wallet } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/shared/lib/utils';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
-import { premiumDemoData } from '@/features/profile/data/premium-demo';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';
 import { PremiumActionRow } from '../components/PremiumActionRow';
 import { PremiumMetricPill } from '../components/PremiumMetricPill';
+import { useMovements } from '@/features/wallet/hooks/useMovements';
+import { MovementRowSkeleton } from '@/shared/ui/Skeleton';
 
 export function MovementsPage() {
-  const movements = premiumDemoData.walletMovements;
+  const { movements, isLoading } = useMovements();
+  
   const deposits = movements.filter((item) => item.type === 'deposit').reduce((sum, item) => sum + item.amount, 0);
   const prizes = movements.filter((item) => item.type === 'prize').reduce((sum, item) => sum + item.amount, 0);
 
@@ -51,29 +53,38 @@ export function MovementsPage() {
         <section className="space-y-3">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Actividad reciente</p>
           <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border/50">
-            {movements.map((movement) => {
-              const Icon = getIcon(movement.type);
-              const tone = getTone(movement.type);
-              return (
-                <PremiumActionRow
-                  key={movement.id}
-                  icon={Icon}
-                  title={movement.description}
-                  description={`${formatDate(movement.createdAt)}`}
-                  tone={tone}
-                  badge={movement.type === 'deposit' ? 'Entrada' : movement.type === 'prize' ? 'Premio' : 'Apuesta'}
-                  trailing={
-                    <span className={cn(
-                      'text-sm font-bold tabular-nums',
-                      movement.amount > 0 ? 'text-emerald-600' : 'text-manises-blue'
-                    )}>
-                      {movement.amount > 0 ? '+' : ''}
-                      {formatCurrency(movement.amount)}
-                    </span>
-                  }
-                />
-              );
-            })}
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => <MovementRowSkeleton key={i} />)
+            ) : movements.length === 0 ? (
+              <div className="p-12 text-center space-y-2">
+                <p className="text-sm font-bold text-manises-blue">Sin movimientos</p>
+                <p className="text-xs text-muted-foreground">Tu actividad financiera aparecerá aquí.</p>
+              </div>
+            ) : (
+              movements.map((movement) => {
+                const Icon = getIcon(movement.type);
+                const tone = getTone(movement.type);
+                return (
+                  <PremiumActionRow
+                    key={movement.id}
+                    icon={Icon}
+                    title={movement.description}
+                    description={`${formatDate(movement.createdAt)}`}
+                    tone={tone}
+                    badge={movement.type === 'deposit' ? 'Entrada' : movement.type === 'prize' ? 'Premio' : 'Apuesta'}
+                    trailing={
+                      <span className={cn(
+                        'text-sm font-bold tabular-nums',
+                        movement.amount > 0 ? 'text-emerald-600' : 'text-manises-blue'
+                      )}>
+                        {movement.amount > 0 ? '+' : ''}
+                        {formatCurrency(movement.amount)}
+                      </span>
+                    }
+                  />
+                );
+              })
+            )}
           </div>
         </section>
 

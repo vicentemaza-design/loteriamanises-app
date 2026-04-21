@@ -10,21 +10,20 @@ import { toast } from 'sonner';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { TopUpModal } from '../components/TopUpModal';
-import { doc, updateDoc, increment } from 'firebase/firestore';
-import { db } from '@/shared/config/firebase';
 import { PremiumActionRow } from '../components/PremiumActionRow';
+import { useWallet } from '@/features/wallet/hooks/useWallet';
+import { useMovements } from '@/features/wallet/hooks/useMovements';
+import { MovementRowSkeleton } from '@/shared/ui/Skeleton';
 
 export function WalletPage() {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
+  const { topUp, isProcessing: isTopUpProcessing } = useWallet();
+  const { movements, isLoading: isLoadingMovements } = useMovements();
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   
-  const transactions = [
-    { id: 1, type: 'prize', amount: 15.00, desc: 'Premio Bonoloto', date: 'Hoy, 10:30' },
-    { id: 2, type: 'bet', amount: -2.50, desc: 'Apuesta Euromillones', date: 'Ayer, 18:45' },
-    { id: 3, type: 'deposit', amount: 20.00, desc: 'Recarga Apple Pay', date: '12 Abr, 09:15' },
-  ];
+  const latestMovements = movements.slice(0, 3);
 
   useGSAP(() => {
     gsap.from('.wallet-hero', {
@@ -47,11 +46,8 @@ export function WalletPage() {
   }, { scope: containerRef });
 
   const handleTopUpSuccess = async (amount: number) => {
-    if (!user) return;
-    await updateDoc(doc(db, 'users', user.uid), {
-      balance: increment(amount)
-    });
-    // Visualmente GSAP podría animar el número, pero al estar linkeado al context de React, reaccionará muy bien.
+    const result = await topUp(amount);
+    return result?.success ? Promise.resolve() : Promise.reject();
   };
 
   return (
@@ -97,32 +93,40 @@ export function WalletPage() {
           <h3 className="text-xs font-black text-manises-blue uppercase tracking-widest pl-1">Últimos Movimientos</h3>
           
           <div className="flex flex-col gap-2">
-            {transactions.map(tx => (
-              <PremiumTouchInteraction key={tx.id} scale={0.98} className="tx-item">
-                <div className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:border-manises-blue/20 hover:shadow-md transition-all group">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${
-                      tx.type === 'prize' ? 'bg-emerald-50 text-emerald-500' :
-                      tx.type === 'deposit' ? 'bg-blue-50 text-blue-500' : 'bg-gray-50 text-gray-400'
+            {isLoadingMovements ? (
+              Array.from({ length: 3 }).map((_, i) => <MovementRowSkeleton key={i} />)
+            ) : latestMovements.length === 0 ? (
+              <div className="p-8 text-center bg-white rounded-2xl border border-gray-100">
+                <p className="text-xs text-muted-foreground">No hay movimientos recientes</p>
+              </div>
+            ) : (
+              latestMovements.map(tx => (
+                <PremiumTouchInteraction key={tx.id} scale={0.98} className="tx-item">
+                  <div className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:border-manises-blue/20 hover:shadow-md transition-all group">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${
+                        tx.type === 'prize' ? 'bg-emerald-50 text-emerald-500' :
+                        tx.type === 'deposit' ? 'bg-blue-50 text-blue-500' : 'bg-gray-50 text-gray-400'
+                      }`}>
+                        {tx.type === 'prize' ? <Trophy className="w-5 h-5" /> :
+                        tx.type === 'deposit' ? <ArrowDownLeft className="w-5 h-5" /> : 
+                        <ArrowUpRight className="w-5 h-5" />}
+                      </div>
+                      <div>
+                        <p className="font-bold text-manises-blue text-sm">{tx.description}</p>
+                        <p className="text-[10px] text-muted-foreground font-medium">{new Date(tx.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    
+                    <p className={`font-black tabular-nums tracking-tight ${
+                      tx.type === 'bet' ? 'text-manises-blue' : 'text-emerald-600'
                     }`}>
-                      {tx.type === 'prize' ? <Trophy className="w-5 h-5" /> :
-                       tx.type === 'deposit' ? <ArrowDownLeft className="w-5 h-5" /> : 
-                       <ArrowUpRight className="w-5 h-5" />}
-                    </div>
-                    <div>
-                      <p className="font-bold text-manises-blue text-sm">{tx.desc}</p>
-                      <p className="text-[10px] text-muted-foreground font-medium">{tx.date}</p>
-                    </div>
+                      {tx.amount > 0 ? '+' : ''}{formatCurrency(tx.amount)}
+                    </p>
                   </div>
-                  
-                  <p className={`font-black tabular-nums tracking-tight ${
-                    tx.type === 'bet' ? 'text-manises-blue' : 'text-emerald-600'
-                  }`}>
-                    {tx.type === 'bet' ? '' : '+'}{formatCurrency(tx.amount)}
-                  </p>
-                </div>
-              </PremiumTouchInteraction>
-            ))}
+                </PremiumTouchInteraction>
+              ))
+            )}
           </div>
         </section>
 

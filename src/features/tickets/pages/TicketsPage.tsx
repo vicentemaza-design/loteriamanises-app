@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { StatusBadge } from '@/shared/ui/StatusBadge';
 import { NumberBall } from '@/shared/ui/NumberBall';
 import { GameBadge } from '@/shared/ui/GameBadge';
@@ -8,160 +8,31 @@ import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { formatDate, formatCurrency } from '@/shared/lib/utils';
 import { 
   Ticket as TicketIcon, 
-  Clock, 
   Search, 
   Shield, 
   RefreshCcw,
   Sparkles,
   ArrowRight
 } from 'lucide-react';
-import { useAuth } from '@/features/auth/hooks/useAuth';
-import { db } from '@/shared/config/firebase';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
-import type { Ticket } from '@/shared/types/domain';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { useTickets } from '../hooks/useTickets';
 
 gsap.registerPlugin(useGSAP);
 
 type Tab = 'activos' | 'historial';
 
-// Tickets de muestra para el modo demo
-const DEMO_TICKETS: Ticket[] = [
-  {
-    id: 'demo-1',
-    userId: 'demo-user',
-    gameId: 'euromillones',
-    gameType: 'euromillones',
-    numbers: [7, 14, 23, 38, 47],
-    stars: [3, 9],
-    drawDate: '2026-04-11',
-    status: 'pending',
-    price: 3.00,
-    hasInsurance: true,
-    isSubscription: true,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'demo-1b',
-    userId: 'demo-user',
-    gameId: 'loteria-nacional',
-    gameType: 'loteria-nacional',
-    numbers: [3, 14, 25, 41, 59, 73],
-    drawDate: '2026-04-13',
-    status: 'pending',
-    price: 6.00,
-    hasInsurance: true,
-    isSubscription: false,
-    createdAt: new Date(Date.now() - 3600000 * 6).toISOString(),
-  },
-  {
-    id: 'demo-2',
-    userId: 'demo-user',
-    gameId: 'primitiva',
-    gameType: 'primitiva',
-    numbers: [5, 12, 21, 30, 44, 49],
-    drawDate: '2026-04-08',
-    status: 'lost',
-    price: 1.00,
-    hasInsurance: false,
-    isSubscription: false,
-    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-  },
-  {
-    id: 'demo-3',
-    userId: 'demo-user',
-    gameId: 'bonoloto',
-    gameType: 'bonoloto',
-    numbers: [2, 9, 18, 27, 33, 41],
-    drawDate: '2026-04-06',
-    status: 'won',
-    prize: 15.40,
-    price: 0.50,
-    hasInsurance: false,
-    isSubscription: false,
-    createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
-  },
-  {
-    id: 'demo-4',
-    userId: 'demo-user',
-    gameId: 'quiniela',
-    gameType: 'quiniela',
-    numbers: [1, 2, 1, 0, 2, 1],
-    drawDate: '2026-04-05',
-    status: 'won',
-    prize: 128.00,
-    price: 2.00,
-    hasInsurance: false,
-    isSubscription: false,
-    createdAt: new Date(Date.now() - 86400000 * 6).toISOString(),
-  },
-];
-
-const LEGACY_GAME_ID_MAP: Record<string, string> = {
-  'loteria-sabado': 'loteria-nacional',
-};
-
-function normalizeTicketGameId(ticket: Ticket): Ticket {
-  const normalizedGameId = LEGACY_GAME_ID_MAP[ticket.gameId] ?? ticket.gameId;
-  return normalizedGameId === ticket.gameId
-    ? ticket
-    : { ...ticket, gameId: normalizedGameId };
-}
-
 export function TicketsPage() {
-  const { user, isDemo } = useAuth();
   const navigate  = useNavigate();
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { tickets, isLoading, error } = useTickets();
   const [tab, setTab]         = useState<Tab>('activos');
   const [search, setSearch]   = useState('');
 
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (isDemo) {
-      setTickets(DEMO_TICKETS);
-      setLoading(false);
-      return;
-    }
-    
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-    
-    const q = query(
-      collection(db, 'tickets'),
-      where('userId', '==', user.uid),
-      orderBy('createdAt', 'desc')
-    );
-    
-    const unsub = onSnapshot(q, snap => {
-      const fetched = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Ticket[];
-      const normalized = fetched.map(normalizeTicketGameId);
-      const valid = normalized.filter((ticket) =>
-        LOTTERY_GAMES.some((game) => game.id === ticket.gameId)
-      );
-
-      // Si no hay jugadas válidas, mostramos ejemplos demo para evitar pantalla vacía.
-      if (valid.length === 0) {
-        setTickets(DEMO_TICKETS.map(t => ({ ...t, userId: user.uid })));
-      } else {
-        setTickets(valid);
-      }
-      setLoading(false);
-    }, (error) => {
-      console.warn('Firebase query failed, using fallback.', error);
-      setTickets(DEMO_TICKETS.map(t => ({ ...t, userId: user.uid })));
-      setLoading(false);
-    });
-    return () => unsub();
-  }, [user, isDemo]);
 
   const filteredTickets = tickets.filter(ticket => {
     const game = LOTTERY_GAMES.find(g => g.id === ticket.gameId);
@@ -177,9 +48,9 @@ export function TicketsPage() {
   const displayed        = tab === 'activos' ? activeTickets : historyTickets;
 
   useGSAP(() => {
-    if (loading) return;
+    if (isLoading) return;
 
-    // Intro animation for header and tabs using fromTo to avoid React 18 Strict Mode opacity 0 bugs
+    // Intro animation for header and tabs
     gsap.fromTo('.tickets-header > *', 
       { y: -20, opacity: 0 },
       { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out', clearProps: 'all' }
@@ -198,12 +69,13 @@ export function TicketsPage() {
         { y: 0, opacity: 1, stagger: 0.08, duration: 0.7, ease: 'power2.out', clearProps: 'all' }
       );
     }
-  }, { scope: containerRef, dependencies: [tab, loading, displayed.length] });
+  }, { scope: containerRef, dependencies: [tab, isLoading, displayed.length] });
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="w-8 h-8 border-2 border-manises-blue border-t-transparent rounded-full animate-spin" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="w-10 h-10 border-4 border-manises-blue/10 border-t-manises-blue rounded-full animate-spin" />
+        <p className="text-[10px] font-bold text-manises-blue/40 uppercase tracking-widest">Sincronizando tus jugadas...</p>
       </div>
     );
   }
@@ -256,10 +128,14 @@ export function TicketsPage() {
 
       {/* Content List */}
       <section className="px-5 flex-1 min-h-[400px]">
+        {error && (
+          <div className="p-8 text-center bg-red-50 rounded-2xl border border-red-100 mb-6">
+            <p className="text-xs text-red-600 font-bold">{error}</p>
+          </div>
+        )}
+
         {displayed.length === 0 ? (
-          <div
-            className="pt-12"
-          >
+          <div className="pt-12">
             <EmptyState
               icon={<TicketIcon className="w-10 h-10 text-manises-blue/20" />}
               title={search ? 'Sin coincidencias' : `Sin jugadas ${tab}`}
@@ -275,16 +151,13 @@ export function TicketsPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-3.5">
-              {displayed.map((ticket, index) => {
+              {displayed.map((ticket) => {
                 const game = LOTTERY_GAMES.find(g => g.id === ticket.gameId);
                 if (!game) return null;
-                const theme = getGameTheme(game);
                 
                 return (
                   <PremiumTouchInteraction key={ticket.id} scale={0.98}>
-                    <div
-                      className="ticket-card relative bg-white border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm transition-all group active:scale-[0.98]"
-                    >
+                    <div className="ticket-card relative bg-white border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm transition-all group active:scale-[0.98]">
                       {/* Lateral Game Color Accent */}
                       <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ backgroundColor: game.color }} />
                       
@@ -360,7 +233,7 @@ export function TicketsPage() {
                 );
               })}
             </div>
-          )}
+        )}
       </section>
 
       <div className="px-6 mt-4 opacity-50">

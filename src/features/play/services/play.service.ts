@@ -1,5 +1,4 @@
-import { collection, addDoc, doc, updateDoc, increment } from 'firebase/firestore';
-import { db } from '@/shared/config/firebase';
+import { createApiClient } from '@/services/api/factory/createApiClient';
 import type { GameType } from '@/shared/types/domain';
 
 export interface PlaceBetParams {
@@ -21,41 +20,18 @@ export interface PlaceBetResult {
 }
 
 /**
- * Crea un ticket en Firestore y descuenta el saldo del usuario.
- * Desacoplado completamente de la vista (antes estaba inline en GamePlayPage).
+ * @deprecated Use usePlay() hook or createApiClient().play.placeBet() instead.
+ * Provided for backward compatibility during migration.
  */
-export async function placeBet(params: PlaceBetParams): Promise<PlaceBetResult> {
-  try {
-    const ticketRef = await addDoc(collection(db, 'tickets'), {
-      userId: params.userId,
-      gameId: params.gameId,
-      gameType: params.gameType,
-      numbers: params.numbers,
-      stars: params.stars ?? [],
-      drawDate: params.drawDate,
-      status: 'pending',
-      price: params.price,
-      hasInsurance: params.hasInsurance ?? false,
-      isSubscription: params.isSubscription ?? false,
-      createdAt: new Date().toISOString(),
-    });
-
-    await updateDoc(doc(db, 'users', params.userId), {
-      balance: increment(-params.price),
-    });
-
-    return { success: true, ticketId: ticketRef.id };
-  } catch (error) {
-    console.error('[play.service] Error placing bet:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Error desconocido',
-    };
-  }
+export async function placeBet(params: any): Promise<PlaceBetResult> {
+  console.warn('[DEPRECATED] placeBet in play.service.ts is deprecated. Use the modular API.');
+  const client = await createApiClient();
+  return client.play.placeBet(params);
 }
 
 /**
  * Genera una combinación aleatoria de números para un juego dado.
+ * (Keep this utility here for now as it doesn't depend on persistence)
  */
 export function generateRandomPlay(
   totalNumbers: number,
