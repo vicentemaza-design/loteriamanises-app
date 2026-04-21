@@ -44,14 +44,15 @@ export function PrivateLayout() {
           
           <main
             ref={mainRef}
-            className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scrollbar-hide bg-background ${
+            className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scrollbar-hide ${
               hideNav ? 'pt-0 pb-0' : 'pb-nav-safe'
             }`}
-            style={!hideNav ? { paddingTop: 'calc(env(safe-area-inset-top, 0px) + 5rem)' } : undefined}
+            style={!hideNav ? { paddingTop: 'var(--header-height)' } : undefined}
           >
-            <div className="absolute inset-0 section-wash pointer-events-none" />
-            <div className="absolute top-0 left-0 right-0 h-56 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.62)_0,_rgba(255,255,255,0)_70%)] pointer-events-none" />
-            <div key={location.pathname} className="relative w-full min-h-full bg-background">
+            {/* Capas sutiles de profundidad para el canvas unificado */}
+            <div className="absolute inset-x-0 top-0 h-96 section-wash pointer-events-none opacity-40" />
+            
+            <div key={location.pathname} className="relative w-full min-h-full">
               <Outlet />
             </div>
           </main>

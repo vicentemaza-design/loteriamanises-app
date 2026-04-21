@@ -78,9 +78,12 @@
 
 /* ===== MODO CLARO (default) ===== */
 :root {
-  --app-bg: #ffffff;
+  --app-bg: #F8FAFC; /* Slate-50: Gris suave premium */
   --app-vh: 100vh;
   --app-height: 100dvh;
+  --header-height: calc(4.5rem + env(safe-area-inset-top, 0px));
+  --nav-height: calc(5rem + env(safe-area-inset-bottom, 0px));
+  --background:            #F8FAFC;
   --foreground:            #0a4792;
   --card:                  #FFFFFF;
   --card-foreground:       #0a4792;
@@ -90,13 +93,13 @@
   --primary-foreground:    #FFFFFF;
   --secondary:             #F5C518;
   --secondary-foreground:  #0a4792;
-  --muted:                 #ECEEF2;
-  --muted-foreground:      #6B7280;
+  --muted:                 #F1F5F9; /* Slate-100 */
+  --muted-foreground:      #64748B;
   --accent:                #F5C518;
   --accent-foreground:     #0a4792;
   --destructive:           #DC2626;
-  --border:                #E5E7EB;
-  --input:                 #E5E7EB;
+  --border:                #E2E8F0;
+  --input:                 #E2E8F0;
   --ring:                  #0a4792;
   --chart-1:               #2563eb;
   --chart-2:               #16a34a;
