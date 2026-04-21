@@ -17,13 +17,13 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-[#0A4792]/75 backdrop-blur-2xl border-t border-white/5 shadow-[0_-4px_24px_rgba(0,0,0,0.16)]"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[#D5E3F2]/75 backdrop-blur-3xl border-t border-white/20 shadow-[0_-4px_24px_rgba(0,0,0,0.06)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
       aria-label="Navegación principal"
     >
       {/* Precision top highlight - single pixel for depth */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
       
       <div className="flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
         {navItems.map(({ icon: Icon, label, path }) => {
@@ -38,7 +38,7 @@ export function BottomNav() {
                 end={path === '/'}
                 className={cn(
                   'flex flex-col items-center justify-center w-full h-full gap-0.5 relative transition-all duration-500',
-                  isActive ? 'text-manises-gold' : 'text-[#D5E3F2]/52 hover:text-[#D5E3F2]/70'
+                  isActive ? 'text-manises-gold' : 'text-[#0A4792]/60 hover:text-[#0A4792]'
                 )}
               >
                 {/* Active Indicator: Ultra-thin refined line */}
