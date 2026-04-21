@@ -288,8 +288,8 @@ function PremiumEditorialCard({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_28%,rgba(255,255,255,0.02)_100%)]" />
         </div>
 
-        <div className="relative flex min-h-[260px] md:min-h-[300px] flex-col justify-between p-5 md:p-8 text-white">
-          <div className="space-y-5">
+        <div className="relative flex min-h-[240px] xs:min-h-[260px] md:min-h-[300px] flex-col justify-between p-5 md:p-8 text-white">
+          <div className="space-y-4 md:space-y-5">
             <div className="flex items-center justify-between gap-3">
               <span className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[9px] font-extrabold uppercase tracking-[0.2em] backdrop-blur-md shadow-inner ${accentClasses.badge}`}>
                 <Icon className="h-3.5 w-3.5" />
@@ -297,11 +297,11 @@ function PremiumEditorialCard({
               </span>
             </div>
 
-            <div className="max-w-[19rem] space-y-3">
-              <h3 className="text-[1.8rem] font-extrabold leading-[1.05] tracking-tight text-white drop-shadow-sm">
+            <div className="max-w-[19rem] space-y-2 md:space-y-3">
+              <h3 className="text-[1.5rem] xs:text-[1.8rem] font-extrabold leading-[1.05] tracking-tight text-white drop-shadow-sm">
                 {title}
               </h3>
-              <p className="text-[13px] font-medium leading-relaxed text-white/70">
+              <p className="text-[12px] xs:text-[13px] font-medium leading-relaxed text-white/70 line-clamp-2">
                 {description}
               </p>
             </div>
