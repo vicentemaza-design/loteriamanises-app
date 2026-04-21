@@ -3,20 +3,20 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { Key } from 'react';
 import { 
   ArrowRight, 
-  TrendingUp, 
-  Users, 
-  Zap, 
+  Community as Users, 
   Shield, 
   CreditCard, 
   Lock,
-  Sparkles,
+  Spark,
   Clock,
   Calendar,
-  BriefcaseBusiness,
-  Landmark,
-  BadgeCheck,
+  BusinessCase as BriefcaseBusiness,
+  Bank as Landmark,
+  CheckBadge as BadgeCheck,
   Download,
-} from 'lucide-react';
+  Flash as Zap,
+  Sparkles,
+} from 'iconoir-react/regular';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { GameIcon } from '@/shared/ui/GameIcon';
@@ -289,7 +289,7 @@ function PremiumEditorialCard({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_28%,rgba(255,255,255,0.02)_100%)]" />
         </div>
 
-        <div className="relative flex min-h-[300px] flex-col justify-between p-7 text-white md:min-h-[260px]">
+        <div className="relative flex min-h-[260px] md:min-h-[300px] flex-col justify-between p-5 md:p-8 text-white">
           <div className="space-y-5">
             <div className="flex items-center justify-between gap-3">
               <span className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[9px] font-extrabold uppercase tracking-[0.2em] backdrop-blur-md shadow-inner ${accentClasses.badge}`}>
@@ -495,7 +495,7 @@ export function HomePage() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <PremiumEditorialCard
             badge="B2B Navidad"
             title="Loteria de Navidad Empresas"

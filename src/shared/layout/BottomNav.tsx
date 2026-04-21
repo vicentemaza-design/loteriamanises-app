@@ -17,13 +17,13 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-[#D5E3F2]/45 backdrop-blur-3xl border-t border-white/20 shadow-[0_-4px_24px_rgba(0,0,0,0.06)]"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-manises-blue/85 backdrop-blur-3xl border-t border-white/5 shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
       aria-label="Navegación principal"
     >
-      {/* Precision top highlight - single pixel for depth */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+      {/* Precision top highlight - single pixel for depth in dark mode */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
       
       <div className="flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
         {navItems.map(({ icon: Icon, label, path }) => {
@@ -38,23 +38,23 @@ export function BottomNav() {
                 end={path === '/'}
                 className={cn(
                   'flex flex-col items-center justify-center w-full h-full gap-0.5 relative transition-all duration-500',
-                  isActive ? 'text-manises-gold' : 'text-[#0A4792]/60 hover:text-[#0A4792]'
+                  isActive ? 'text-manises-gold' : 'text-white/40 hover:text-white/80'
                 )}
               >
                 {/* Active Indicator: Ultra-thin refined line */}
                 {isActive && (
                   <motion.div
                     layoutId="nav-indicator-top"
-                    className="absolute top-0 w-6 h-[1.5px] bg-manises-gold rounded-full"
+                    className="absolute top-0 w-6 h-[1.5px] bg-manises-gold rounded-full shadow-[0_0_8px_rgba(245,197,24,0.4)]"
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
 
-                {/* Subtle active glow - very soft integration */}
+                {/* Subtle active glow - adjusted for dark background */}
                 {isActive && (
                   <motion.div
                     layoutId="nav-active-glow"
-                    className="absolute inset-x-3 inset-y-2 rounded-xl bg-manises-gold/[0.04]"
+                    className="absolute inset-x-3 inset-y-2 rounded-xl bg-manises-gold/[0.08]"
                     transition={{ duration: 0.3 }}
                   />
                 )}
