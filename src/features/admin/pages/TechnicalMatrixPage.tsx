@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, AlertCircle, ShieldCheck, Database, Award } from 'lucide-react';
-import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { formatCurrency } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
+import { getPhase1MatrixGames } from '@/features/play/lib/play-matrix';
 
 export function TechnicalMatrixPage() {
   const navigate = useNavigate();
-  const phase1Games = LOTTERY_GAMES.filter(g => g.productionPhase1);
+  const phase1Games = getPhase1MatrixGames();
 
   return (
     <div className="flex min-h-full flex-col bg-slate-50">
@@ -57,7 +57,12 @@ export function TechnicalMatrixPage() {
                     </div>
                     <div>
                       <h4 className="font-extrabold text-slate-900 leading-none mb-1">{game.name}</h4>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{game.technicalMode} · {game.systemFamily}</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        {game.playDefinition?.modes
+                          .filter((mode) => mode.status === 'implemented')
+                          .map((mode) => mode.label)
+                          .join(' · ') || 'Sin matriz'}
+                      </p>
                     </div>
                   </div>
                   <div className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full flex items-center gap-1.5 border border-emerald-100">
@@ -74,17 +79,17 @@ export function TechnicalMatrixPage() {
                   <div>
                     <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Garantía</p>
                     <p className="text-sm font-black text-slate-900">
-                      {game.guaranteeType === 'direct_full_coverage' ? '100% Directa' : 'Condicional'}
+                      {game.playDefinition?.modes.some((mode) => mode.guaranteeType === 'direct_full_coverage') ? 'Directa / total' : 'Condicional'}
                     </p>
                   </div>
                 </div>
 
-                {game.guaranteeCondition && (
+                {game.playDefinition?.modes.some((mode) => mode.guaranteeCondition) && (
                   <div className="mt-4 bg-slate-50 rounded-2xl p-3 border border-slate-100">
                     <div className="flex gap-2">
                       <Award className="w-3.5 h-3.5 text-manises-gold shrink-0 mt-0.5" />
                       <p className="text-[11px] font-medium text-slate-600 leading-relaxed italic">
-                        "{game.guaranteeCondition}"
+                        "{game.playDefinition?.modes.find((mode) => mode.guaranteeCondition)?.guaranteeCondition}"
                       </p>
                     </div>
                   </div>

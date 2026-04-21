@@ -1,6 +1,7 @@
 import type { LotteryGame } from '@/shared/types/domain';
 import { formatCurrency } from '@/shared/lib/utils';
-import { QUINIELA_REDUCED_TABLES, type QuinielaReducedType } from './bet-calculator';
+import type { QuinielaReducedType } from './bet-calculator';
+import { getReductionSystem } from './play-matrix';
 
 type PlayMode = 'simple' | 'multiple' | 'reduced';
 
@@ -23,7 +24,7 @@ interface GetGameHelpContentInput {
   mode: PlayMode;
   betsCount: number;
   totalPrice: number;
-  reducedType?: QuinielaReducedType;
+  reducedSystemId?: string;
 }
 
 function formatSelection(game: LotteryGame): string {
@@ -154,17 +155,22 @@ function getQuinielaSimpleSummary(totalPrice: number): GameHelpContent {
 }
 
 function getQuinielaReducedSummary(
+  game: LotteryGame,
   reducedType: QuinielaReducedType | undefined,
   betsCount: number,
   totalPrice: number
 ): GameHelpContent {
-  const config = QUINIELA_REDUCED_TABLES[reducedType ?? 'reducida_1'];
+  const system = getReductionSystem(game.id, reducedType ?? 'reducida_1');
+  const pattern = system?.requiredPattern
+    ? `${system.requiredPattern.dobles} dobles y ${system.requiredPattern.triples} triples`
+    : 'un patrón oficial';
+  const label = system?.label ?? 'Reducida oficial';
 
   return {
     modeLabel: 'Reducida oficial',
-    summary: `Estás usando ${config.label}. La app te guía para introducir exactamente ${config.dobles} dobles y ${config.triples} triples del sistema oficial.`,
+    summary: `Estás usando ${label}. La app te guía para introducir exactamente ${pattern} del sistema oficial.`,
     quickFacts: [
-      { label: 'Patrón', value: `${config.dobles}D · ${config.triples}T` },
+      { label: 'Patrón', value: system?.requiredPattern ? `${system.requiredPattern.dobles}D · ${system.requiredPattern.triples}T` : 'Oficial' },
       { label: 'Columnas', value: `${betsCount}` },
       { label: 'Precio actual', value: formatCurrency(totalPrice) },
     ],
@@ -173,7 +179,7 @@ function getQuinielaReducedSummary(
         title: 'Cómo funciona',
         bullets: [
           'Tu pronóstico general incluye dobles y triples, pero no se desarrolla completo.',
-          `El sistema lo reduce a ${config.bets} columnas siguiendo una tabla oficial.`,
+          `El sistema lo reduce a ${system?.fixedBetsCount ?? betsCount} columnas siguiendo una tabla oficial.`,
           'Así reduces coste frente al múltiple total, a cambio de una garantía condicionada.',
         ],
       },
@@ -187,7 +193,7 @@ function getQuinielaReducedSummary(
       {
         title: 'Precio y uso',
         bullets: [
-          `El total actual sale de ${config.bets} columnas a 0,75 € cada una.`,
+          `El total actual sale de ${system?.fixedBetsCount ?? betsCount} columnas a 0,75 € cada una.`,
           'La app valida automáticamente que el patrón de dobles y triples sea correcto antes de dejarte jugar.',
         ],
       },
@@ -197,17 +203,72 @@ function getQuinielaReducedSummary(
   };
 }
 
+function getGenericReducedSummary(
+  game: LotteryGame,
+  reducedSystemId: string | undefined,
+  betsCount: number,
+  totalPrice: number
+): GameHelpContent {
+  const system = getReductionSystem(game.id, reducedSystemId);
+  const supportedNumbers = system?.supportedNumbers ?? [];
+  const supportedLabel = supportedNumbers.length > 0
+    ? `${supportedNumbers[0]}–${supportedNumbers[supportedNumbers.length - 1]} números`
+    : 'selección compatible';
+
+  return {
+    modeLabel: 'Reducida',
+    summary: `Estás usando ${system?.label ?? 'un sistema reducido'} de ${game.name}. El sistema recorta columnas frente al múltiple completo para bajar coste con una garantía condicionada.`,
+    quickFacts: [
+      { label: 'Garantía', value: system?.guaranteeLabel ?? 'Condicional' },
+      { label: 'Columnas', value: betsCount > 0 ? `${betsCount}` : 'Según tabla' },
+      { label: 'Precio actual', value: formatCurrency(totalPrice) },
+    ],
+    sections: [
+      {
+        title: 'Cómo funciona',
+        bullets: [
+          `Seleccionas un bloque general de números y eliges una reducción concreta.`,
+          `La tabla del sistema transforma esa selección en menos columnas que el múltiple directo.`,
+          `En ${game.name}, el sistema activo trabaja con ${supportedLabel}.`,
+        ],
+      },
+      {
+        title: 'Garantía y condición',
+        bullets: [
+          system?.guaranteeCondition ?? 'La garantía depende de que la combinación premiada quede contenida dentro de la selección general.',
+          'No equivale a cobertura total: ahorras columnas a cambio de una protección mínima concreta.',
+        ],
+      },
+      {
+        title: 'Precio y uso',
+        bullets: [
+          betsCount > 0
+            ? `Con tu selección actual se generan ${betsCount} columnas reducidas.`
+            : 'La app calculará las columnas cuando la selección encaje en una fila válida de la tabla.',
+          'Es el modo adecuado si buscas más cobertura que una simple, pero sin llegar al coste del múltiple completo.',
+        ],
+      },
+    ],
+    tip: 'Primero elige la reducida y luego ajusta el número total de bolas hasta entrar en una fila válida de la tabla.',
+    warning: 'Si la selección no coincide con una fila soportada por la tabla, la app no dejará confirmar la jugada.',
+  };
+}
+
 export function getGameHelpContent({
   game,
   mode,
   betsCount,
   totalPrice,
-  reducedType,
+  reducedSystemId,
 }: GetGameHelpContentInput): GameHelpContent {
   if (game.type === 'quiniela') {
     return mode === 'reduced'
-      ? getQuinielaReducedSummary(reducedType, betsCount, totalPrice)
+      ? getQuinielaReducedSummary(game, reducedSystemId as QuinielaReducedType | undefined, betsCount, totalPrice)
       : getQuinielaSimpleSummary(totalPrice);
+  }
+
+  if (mode === 'reduced') {
+    return getGenericReducedSummary(game, reducedSystemId, betsCount, totalPrice);
   }
 
   if (mode === 'multiple') {

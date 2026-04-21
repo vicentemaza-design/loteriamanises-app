@@ -25,9 +25,11 @@ import { getGameTheme } from '@/shared/lib/game-theme';
 import { MOTION_EASE_OUT, panelSwap, sectionFadeUp } from '@/shared/lib/motion';
 import { calculateMultipleBets, calculateTotalPrice, QUINIELA_REDUCED_TABLES, QuinielaReducedType } from '../lib/bet-calculator';
 import { getGameHelpContent } from '../lib/game-help';
+import { getAvailableModesForGame, getModeDefinition, getReductionSystem, getReductionSystemsForMode, quotePlay, type PlayMode } from '../lib/play-matrix';
 import { GameModeSelector } from '../components/GameModeSelector';
 import { GameInfoSheet } from '../components/GameInfoSheet';
 import { QuinielaProfessionalSelector } from '../components/QuinielaProfessionalSelector';
+import { ReductionSystemSelector } from '../components/ReductionSystemSelector';
 import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
 
 const INSURANCE_PRICE = 0.50;
@@ -86,15 +88,9 @@ export function GamePlayPage() {
   const { user, profile } = useAuth();
   const game = LOTTERY_GAMES.find(g => g.id === gameId);
 
-  // Determinar modos disponibles desde la matriz
-  const availableModes: Array<'simple' | 'multiple' | 'reduced'> = 
-    game?.technicalMode === 'reduced_official' 
-      ? ['simple', 'reduced'] 
-      : game?.technicalMode === 'multiple_direct' || game?.technicalMode === 'multiple'
-        ? ['simple', 'multiple'] 
-        : ['simple'];
+  const availableModes: PlayMode[] = game ? getAvailableModesForGame(game.id) : ['simple'];
 
-  const [mode, setMode] = useState<'simple' | 'multiple' | 'reduced'>(availableModes[0]);
+  const [mode, setMode] = useState<PlayMode>(availableModes[0]);
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [selectedStars, setSelectedStars]     = useState<number[]>([]);
   const [isSubmitting, setIsSubmitting]       = useState(false);
@@ -102,7 +98,7 @@ export function GamePlayPage() {
   
   // Quiniela & Nacional Específico
   const [quinielaMatches, setQuinielaMatches] = useState<QuinielaMatch[]>([]);
-  const [reducedType, setReducedType] = useState<QuinielaReducedType>('reducida_1');
+  const [selectedReductionSystemId, setSelectedReductionSystemId] = useState<string>('reducida_1');
   const [selectedNationalDrawId, setSelectedNationalDrawId] = useState<NationalDrawId>('sabado');
   const [selectedNationalNumber, setSelectedNationalNumber] = useState<string | null>(null);
   const [selectedNationalQuantity, setSelectedNationalQuantity] = useState(1);
@@ -149,24 +145,39 @@ export function GamePlayPage() {
     );
   }
 
-  // Límites dinámicos basados en el MODO y la MATRIZ
-  const range = game.selectionRange!;
-  const maxNums = mode === 'multiple' ? range.numbers.max : range.numbers.min;
+  const currentModeDefinition = getModeDefinition(game.id, mode);
+  const currentSelection = currentModeDefinition?.selection ?? game.selectionRange!;
+  const reductionSystems = game ? getReductionSystemsForMode(game.id, mode) : [];
+  const currentReductionSystem = mode === 'reduced' ? getReductionSystem(game.id, selectedReductionSystemId) : null;
+  const range = currentSelection;
+  const minNums = range.numbers.min;
+  const maxNums = range.numbers.max;
   const totalNums = range.numbers.total;
-  const maxStars = mode === 'multiple' ? (range.stars?.max ?? range.stars?.min ?? 0) : (range.stars?.min ?? 0);
+  const minStars = range.stars?.min ?? 0;
+  const maxStars = range.stars?.max ?? minStars;
   const totalStars = range.stars?.total ?? 0;
   const starValues = game.type === 'gordo'
     ? Array.from({ length: totalStars }, (_, i) => i)
     : Array.from({ length: totalStars }, (_, i) => i + 1);
+  const supportedReducedNumbers = currentReductionSystem?.supportedNumbers ?? [];
+  const isSupportedReducedSelection = mode !== 'reduced' || isQuiniela || supportedReducedNumbers.length === 0 || supportedReducedNumbers.includes(selectedNumbers.length);
 
   const theme = getGameTheme(game);
 
   // --- CÁLCULO DE APUESTAS (NÚCLEO MATEMÁTICO) ---
   let betsCount = 1;
   if (isQuiniela && mode === 'reduced') {
-    betsCount = QUINIELA_REDUCED_TABLES[reducedType].bets;
+    betsCount = QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType].bets;
   } else if (!isNationalLottery && !isQuiniela) {
-    if (mode === 'multiple' || selectedNumbers.length > range.numbers.min || (range.stars && selectedStars.length > range.stars.min)) {
+    betsCount = quotePlay({
+      game,
+      mode,
+      numbersCount: selectedNumbers.length,
+      starsCount: selectedStars.length,
+      reducedSystemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
+    }).betsCount;
+
+    if (mode === 'multiple' && betsCount === 0) {
       betsCount = calculateMultipleBets(selectedNumbers.length, selectedStars.length, game.type);
     }
   }
@@ -191,7 +202,7 @@ export function GamePlayPage() {
     mode,
     betsCount,
     totalPrice,
-    reducedType: mode === 'reduced' ? reducedType : undefined,
+    reducedSystemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
   });
 
   const toggleNumber = (n: number) => {
@@ -225,9 +236,9 @@ export function GamePlayPage() {
 
     const { numbers, stars } = generateRandomPlay(
       totalNums,
-      maxNums,
+      mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[0] : maxNums,
       game.type === 'gordo' ? 10 : totalStars,
-      maxStars
+      mode === 'reduced' ? minStars : maxStars
     );
     setSelectedNumbers(numbers);
     setSelectedStars(game.type === 'gordo' ? stars.map((value) => value - 1) : stars);
@@ -268,28 +279,30 @@ export function GamePlayPage() {
   const isQuinielaValid = isQuiniela 
     ? quinielaMatches.every(m => m.result !== null) && (
         mode !== 'reduced' || (
-          quinielaMatches.filter(m => ['1X', '12', 'X2'].includes(m.result)).length === QUINIELA_REDUCED_TABLES[reducedType].dobles &&
-          quinielaMatches.filter(m => m.result === '1X2').length === QUINIELA_REDUCED_TABLES[reducedType].triples
+          quinielaMatches.filter(m => ['1X', '12', 'X2'].includes(m.result)).length === QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType].dobles &&
+          quinielaMatches.filter(m => m.result === '1X2').length === QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType].triples
         )
       )
     : false;
 
   const hasValidStarSelection = range.stars
-    ? selectedStars.length >= range.stars.min && selectedStars.length <= maxStars
+    ? selectedStars.length >= minStars && selectedStars.length <= maxStars
     : true;
 
   const canPlay = isNationalLottery
     ? selectedNationalNumber !== null
     : isQuiniela
       ? isQuinielaValid
-      : selectedNumbers.length >= range.numbers.min && selectedNumbers.length <= range.numbers.max && hasValidStarSelection;
+      : selectedNumbers.length >= minNums && selectedNumbers.length <= maxNums && hasValidStarSelection && isSupportedReducedSelection && betsCount > 0;
 
   const handlePlay = async () => {
     if (!user || !profile) { toast.error('Sesión requerida'); return; }
     if (!canPlay)           { 
       if (isQuiniela && !isQuinielaValid && mode === 'reduced') {
-        const config = QUINIELA_REDUCED_TABLES[reducedType];
+        const config = QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType];
         toast.error(`Requisitos: ${config.dobles}D y ${config.triples}T`);
+      } else if (mode === 'reduced' && !isSupportedReducedSelection) {
+        toast.error('La selección actual no encaja en una fila válida de la tabla reducida');
       } else {
         toast.error('Completa tu apuesta'); 
       }
@@ -322,7 +335,7 @@ export function GamePlayPage() {
       payload.stars = [];
     } else if (isQuiniela) {
       payload.selections = quinielaMatches.map(m => ({ id: m.id, val: m.result }));
-      if (mode === 'reduced') payload.systemId = reducedType;
+      if (mode === 'reduced') payload.systemId = selectedReductionSystemId;
     } else {
       payload.numbers = selectedNumbers;
       payload.stars = selectedStars;
@@ -443,6 +456,10 @@ export function GamePlayPage() {
             currentMode={mode}
             onModeChange={(m) => {
               setMode(m);
+              const nextReductionSystems = getReductionSystemsForMode(game.id, m);
+              if (m === 'reduced' && nextReductionSystems.length > 0) {
+                setSelectedReductionSystemId(nextReductionSystems[0].id);
+              }
               handleClear(); // Limpiar al cambiar de modo para evitar estados inconsistentes
             }}
           />
@@ -464,6 +481,72 @@ export function GamePlayPage() {
           </motion.div>
         )}
 
+        {!isNationalLottery && !isQuiniela && mode === 'reduced' && reductionSystems.length > 0 && (
+          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible" className="space-y-3">
+            <ReductionSystemSelector
+              systems={reductionSystems}
+              currentSystemId={selectedReductionSystemId}
+              onChange={(systemId) => {
+                setSelectedReductionSystemId(systemId);
+                handleClear();
+              }}
+            />
+
+            <div className="rounded-2xl border border-manises-blue/10 bg-white px-4 py-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Selección actual</p>
+                  <h3 className="mt-1 text-sm font-black text-manises-blue">{currentReductionSystem?.label ?? 'Reducida'}</h3>
+                  <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
+                    {currentReductionSystem?.guaranteeCondition}
+                  </p>
+                </div>
+                <div className="rounded-xl bg-slate-50 px-3 py-2 text-right">
+                  <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Números</p>
+                  <p className="mt-0.5 text-lg font-black text-manises-blue">{selectedNumbers.length}</p>
+                </div>
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {selectedNumbers.length > 0 ? (
+                  selectedNumbers.map((number) => (
+                    <span
+                      key={number}
+                      className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-manises-blue/12 bg-manises-blue/[0.06] px-3 text-sm font-black text-manises-blue"
+                    >
+                      {number}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-[12px] font-medium text-slate-400">
+                    Añade números hasta encajar en una fila válida del sistema.
+                  </p>
+                )}
+              </div>
+
+              <p className="mt-3 text-[11px] font-semibold text-slate-500">
+                Soporta {supportedReducedNumbers[0]} a {supportedReducedNumbers[supportedReducedNumbers.length - 1]} números, según la tabla oficial disponible.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {!isNationalLottery && !isQuiniela && mode === 'reduced' && selectedNumbers.length > 0 && !isSupportedReducedSelection && (
+          <motion.div
+            variants={sectionFadeUp}
+            initial="hidden"
+            animate="visible"
+            className="rounded-xl border border-amber-200 bg-amber-50 p-3"
+          >
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-amber-900">
+              Selección no compatible con esta reducida
+            </p>
+            <p className="mt-1 text-[12px] font-medium leading-relaxed text-amber-800">
+              Ajusta el total de números para que coincida con una fila soportada por la tabla del sistema.
+            </p>
+          </motion.div>
+        )}
+
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={`${game.id}-${isQuiniela ? 'quiniela' : isNationalLottery ? 'nacional' : mode}`}
@@ -478,30 +561,24 @@ export function GamePlayPage() {
             <AnimatePresence mode="wait" initial={false}>
               {mode === 'reduced' && (
                 <motion.div
-                  key={`quiniela-reduced-${reducedType}`}
+                  key={`quiniela-reduced-${selectedReductionSystemId}`}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0, transition: { duration: 0.2, ease: MOTION_EASE_OUT } }}
                   exit={{ opacity: 0, y: -6, transition: { duration: 0.16, ease: MOTION_EASE_OUT } }}
-                  className="grid grid-cols-3 gap-2"
+                  className="space-y-3"
                 >
-                  {(Object.keys(QUINIELA_REDUCED_TABLES) as QuinielaReducedType[]).map(t => (
-                    <button
-                      key={t}
-                      onClick={() => setReducedType(t)}
-                      className={`p-2 rounded-xl border text-[9px] font-black uppercase tracking-tighter transition-all ${
-                        reducedType === t ? 'bg-manises-blue text-white border-manises-blue shadow-md' : 'bg-white text-slate-400 border-slate-100'
-                      }`}
-                    >
-                      {QUINIELA_REDUCED_TABLES[t].dobles > 0 ? `${QUINIELA_REDUCED_TABLES[t].dobles}D` : `${QUINIELA_REDUCED_TABLES[t].triples}T`}
-                    </button>
-                  ))}
+                  <ReductionSystemSelector
+                    systems={reductionSystems}
+                    currentSystemId={selectedReductionSystemId}
+                    onChange={(systemId) => setSelectedReductionSystemId(systemId)}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
 
             <QuinielaProfessionalSelector 
               mode={mode} 
-              reducedType={mode === 'reduced' ? reducedType : undefined}
+              reducedType={mode === 'reduced' ? selectedReductionSystemId as QuinielaReducedType : undefined}
               onSelectionChange={(m) => setQuinielaMatches(m)}
             />
           </>
@@ -511,7 +588,10 @@ export function GamePlayPage() {
             <div className="rounded-xl p-4 flex flex-col items-center gap-4 border shadow-manises surface-neo-soft" style={theme.surface}>
               {/* Números seleccionados */}
               <div className="flex flex-wrap justify-center gap-2.5">
-                {Array.from({ length: maxNums }).map((_, i) => (
+                {(mode === 'reduced'
+                  ? Array.from({ length: Math.max(minNums, selectedNumbers.length || minNums) })
+                  : Array.from({ length: maxNums })
+                ).map((_, i) => (
                   <motion.div
                     key={`slot-${i}`}
                     animate={{ scale: selectedNumbers[i] ? 1 : 0.95 }}
@@ -528,7 +608,7 @@ export function GamePlayPage() {
 
                 {maxStars > 0 && (
                   <div className="flex gap-2.5 border-l-2 border-gray-200 pl-3 ml-1">
-                    {Array.from({ length: maxStars }).map((_, i) => (
+                    {Array.from({ length: mode === 'reduced' ? minStars : maxStars }).map((_, i) => (
                       <motion.div
                         key={`star-slot-${i}`}
                         animate={{ scale: selectedStars[i] ? 1 : 0.95 }}
@@ -569,7 +649,7 @@ export function GamePlayPage() {
               <div className="flex items-center justify-between mb-3 px-1">
                 <h2 className="font-bold text-sm" style={theme.title}>Números</h2>
                 <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  {selectedNumbers.length}/{maxNums}
+                  {selectedNumbers.length}/{mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
                 </span>
               </div>
               <div className="grid grid-cols-7 gap-2">
