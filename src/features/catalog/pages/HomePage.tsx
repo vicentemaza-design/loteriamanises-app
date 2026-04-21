@@ -366,10 +366,10 @@ export function HomePage() {
   }, { scope: containerRef });
 
   return (
-    <div className="flex min-h-full flex-col gap-6 pb-12" ref={containerRef}>
+    <div className="flex min-h-full flex-col gap-6" ref={containerRef}>
 
       {/* ── Greeting ────────────────────────────────────────────── */}
-      <section className="px-6 home-greeting">
+      <section className="px-6 pt-6 home-greeting">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[1.75rem] font-black text-manises-blue tracking-tight leading-none">
