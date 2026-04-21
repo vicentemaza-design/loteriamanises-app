@@ -7,12 +7,25 @@ import type { CreateBetRequestDto, CreateBetResponseDto } from '../../contracts/
  * Implements atomic transactional purchase logic.
  */
 
+function splitAmountAcrossDraws(totalAmount: number, drawsCount: number): number[] {
+  const totalCents = Math.round(totalAmount * 100);
+  const baseCents = Math.floor(totalCents / drawsCount);
+  let remainder = totalCents - (baseCents * drawsCount);
+
+  return Array.from({ length: drawsCount }, () => {
+    const cents = baseCents + (remainder > 0 ? 1 : 0);
+    remainder = Math.max(0, remainder - 1);
+    return cents / 100;
+  });
+}
+
 export async function placeBetFirebase(dto: CreateBetRequestDto & { userId: string }): Promise<CreateBetResponseDto> {
   try {
     const userId = dto.userId;
     const userRef = doc(db, 'users', userId);
     const ticketsCollection = collection(db, 'tickets');
     const drawDates = dto.drawDates && dto.drawDates.length > 0 ? dto.drawDates : [dto.drawDate];
+    const distributedPrices = splitAmountAcrossDraws(dto.price, drawDates.length);
     const orderId = drawDates.length > 1 ? `firebase-order-${Date.now()}` : undefined;
     const ticketRefs = drawDates.map(() => doc(ticketsCollection));
 
@@ -44,7 +57,7 @@ export async function placeBetFirebase(dto: CreateBetRequestDto & { userId: stri
           systemId: dto.systemId || null,
           drawDate,
           status: 'pending',
-          price: drawDates.length > 0 ? Number((dto.price / drawDates.length).toFixed(2)) : dto.price,
+          price: distributedPrices[index] ?? distributedPrices[0] ?? dto.price,
           betsCount: dto.betsCount,
           hasInsurance: dto.hasInsurance,
           isSubscription: dto.isSubscription,

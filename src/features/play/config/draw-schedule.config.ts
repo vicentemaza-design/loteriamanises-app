@@ -20,7 +20,7 @@ export const DRAW_SCHEDULE_CONFIG: Partial<Record<GameType, DrawScheduleConfig>>
     drawMinute: 0,
     maxWeeksSelectable: DEFAULT_MAX_WEEKS_SELECTABLE,
     supportsMultipleDrawSelection: true,
-    supportsSubscription: true,
+    supportsSubscription: false,
   },
   primitiva: {
     drawWeekdays: [1, 4, 6],
@@ -28,7 +28,7 @@ export const DRAW_SCHEDULE_CONFIG: Partial<Record<GameType, DrawScheduleConfig>>
     drawMinute: 30,
     maxWeeksSelectable: DEFAULT_MAX_WEEKS_SELECTABLE,
     supportsMultipleDrawSelection: true,
-    supportsSubscription: true,
+    supportsSubscription: false,
   },
   'loteria-nacional': {
     drawWeekdays: [4, 6],
@@ -36,7 +36,7 @@ export const DRAW_SCHEDULE_CONFIG: Partial<Record<GameType, DrawScheduleConfig>>
     drawMinute: 0,
     maxWeeksSelectable: DEFAULT_MAX_WEEKS_SELECTABLE,
     supportsMultipleDrawSelection: false,
-    supportsSubscription: true,
+    supportsSubscription: false,
   },
   quiniela: {
     drawWeekdays: [],
