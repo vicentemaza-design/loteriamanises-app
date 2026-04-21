@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { QUINIELA_REDUCED_TABLES, QuinielaReducedType } from '../lib/bet-calculator';
-import { Check, AlertCircle, Info } from 'lucide-react';
-import { motion } from 'motion/react';
+import { InfoCircle } from 'iconoir-react/regular';
 
 interface QuinielaMatch {
   id: number;
@@ -73,8 +72,8 @@ export function QuinielaProfessionalSelector({ mode, reducedType, onSelectionCha
     <div className="space-y-4">
       {/* Resumen de Sistema */}
       {mode === 'reduced' && config && (
-        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex gap-3">
-          <Info className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
+        <div className="rounded-2xl border border-indigo-100 bg-[linear-gradient(180deg,#eef2ff_0%,#f8faff_100%)] p-4 shadow-sm flex gap-3">
+          <InfoCircle className="w-5 h-5 text-indigo-500 shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-xs font-black text-indigo-900 uppercase tracking-tight">Sistema: {config.label}</p>
             <div className="flex gap-4 mt-2">

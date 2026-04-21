@@ -437,7 +437,7 @@ export function GamePlayPage() {
 
   return (
     <div 
-      className="flex flex-col bg-white min-h-full pb-36"
+      className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-36"
       style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 64px)' }}
     >
       {/* Success Overlay - MEJORA MILOTO: Feedback visual y compartir */}
@@ -531,7 +531,7 @@ export function GamePlayPage() {
         content={helpContent}
       />
       
-      <div className="flex flex-col gap-5 p-4 pt-2">
+      <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-5 p-4 pt-3">
         {/* Selector de Modo (Solo si hay varios disponibles) */}
         {!isNationalLottery && (
           <GameModeSelector 
@@ -555,7 +555,7 @@ export function GamePlayPage() {
             variants={sectionFadeUp}
             initial="hidden"
             animate="visible"
-            className="bg-red-50 border border-red-100 p-3 rounded-xl flex items-center gap-3"
+            className="flex items-center gap-3 rounded-2xl border border-red-200/80 bg-[linear-gradient(180deg,#fff5f5_0%,#fff1f2_100%)] p-3.5 shadow-sm"
           >
             <WarningTriangle className="w-5 h-5 text-red-500 shrink-0" />
             <p className="text-[10px] font-bold text-red-700 uppercase tracking-tight leading-normal">
@@ -707,7 +707,7 @@ export function GamePlayPage() {
         ) : !isNationalLottery ? (
           <>
             {/* ---- Selección visual ---- */}
-            <div className="rounded-xl p-4 flex flex-col items-center gap-4 border shadow-manises surface-neo-soft" style={theme.surface}>
+            <div className="flex flex-col items-center gap-4 rounded-[1.6rem] border border-white/70 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] surface-neo-soft" style={theme.surface}>
               {/* Números seleccionados */}
               <div className="flex flex-wrap justify-center gap-2.5">
                 {(mode === 'reduced'
@@ -781,10 +781,10 @@ export function GamePlayPage() {
                     <button
                       key={n}
                       onClick={() => toggleNumber(n)}
-                      className={`aspect-square rounded-xl flex items-center justify-center font-bold text-sm transition-all active:scale-90 ${
+                      className={`aspect-square rounded-xl flex items-center justify-center border font-bold text-sm transition-all active:scale-90 ${
                         isSelected
-                          ? 'scale-95'
-                          : 'bg-gray-50 text-manises-blue/70 border border-gray-100 hover:border-manises-blue/30 hover:bg-manises-blue/5'
+                          ? 'scale-95 border-transparent shadow-[0_10px_20px_rgba(10,71,146,0.14)]'
+                          : 'border-gray-100 bg-white/80 text-manises-blue/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-manises-blue/30 hover:bg-manises-blue/5'
                       }`}
                       style={isSelected ? theme.selectedAccent : undefined}
                       aria-pressed={isSelected}
@@ -815,10 +815,10 @@ export function GamePlayPage() {
                       <button
                         key={n}
                         onClick={() => toggleStar(n)}
-                        className={`aspect-square rounded-xl flex items-center justify-center font-bold text-sm transition-all active:scale-90 ${
+                        className={`aspect-square rounded-xl flex items-center justify-center border font-bold text-sm transition-all active:scale-90 ${
                           isSelected
-                            ? 'bg-manises-gold text-manises-blue shadow-gold scale-95'
-                            : 'bg-amber-50 text-amber-400 border border-amber-100 hover:border-amber-300'
+                            ? 'border-transparent bg-manises-gold text-manises-blue shadow-gold scale-95'
+                            : 'border-amber-100 bg-white text-amber-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-amber-300 hover:bg-amber-50'
                         }`}
                         aria-pressed={isSelected}
                         aria-label={game.type === 'gordo' ? `Clave ${n}` : `Estrella ${n}`}
@@ -833,23 +833,23 @@ export function GamePlayPage() {
           </>
         ) : (
           <>
-            <div className="rounded-xl p-4 border shadow-manises surface-neo-soft space-y-4" style={theme.surface}>
+            <div className="space-y-4 rounded-[1.7rem] border border-manises-blue/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(244,248,255,0.98)_100%)] p-4 shadow-[0_18px_42px_rgba(10,71,146,0.10)]" style={theme.surface}>
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="font-black text-base text-manises-blue">Tu Selección</h2>
-                  <p className="text-[11px] font-semibold text-manises-blue/70 uppercase tracking-[0.14em] mt-0.5">
+                  <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-manises-blue/70">
                     Sorteo y décimos
                   </p>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-manises-blue/12 bg-white p-3.5 flex items-center gap-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-manises-blue/12 bg-[linear-gradient(180deg,#ffffff_0%,#f7faff_100%)] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-black uppercase tracking-widest text-manises-blue/60">Administración oficial</p>
-                  <p className="text-sm font-black text-manises-blue mt-0.5">Décimos disponibles para compra online</p>
-                  <p className="text-[10px] font-semibold text-muted-foreground mt-1">Juego responsable +18</p>
+                  <p className="mt-0.5 text-sm font-black text-manises-blue">Décimos disponibles para compra online</p>
+                  <p className="mt-1 text-[10px] font-semibold text-muted-foreground">Juego responsable +18</p>
                 </div>
-                <div className="w-[108px] h-[64px] rounded-xl overflow-hidden border border-manises-blue/15 shadow-sm shrink-0">
+                <div className="h-[64px] w-[108px] shrink-0 overflow-hidden rounded-xl border border-manises-blue/15 shadow-[0_10px_20px_rgba(10,71,146,0.12)]">
                   <img
                     src={loteriaTicketVisual}
                     alt="Billete de lotería nacional"
@@ -865,10 +865,10 @@ export function GamePlayPage() {
                     <button
                       key={draw.id}
                       onClick={() => setSelectedNationalDrawId(draw.id)}
-                      className={`rounded-xl border p-3 text-left transition-all ${
+                      className={`rounded-2xl border p-3 text-left transition-all ${
                         active
-                          ? 'border-manises-blue bg-[linear-gradient(160deg,#0a4792_0%,#083d7d_100%)] shadow-[0_10px_20px_rgba(10,71,146,0.25)]'
-                          : 'border-gray-200 bg-white/90 hover:border-manises-blue/30'
+                          ? 'border-manises-blue bg-[linear-gradient(160deg,#0a4792_0%,#083d7d_100%)] shadow-[0_14px_28px_rgba(10,71,146,0.24)]'
+                          : 'border-white bg-white/95 shadow-[0_10px_24px_rgba(15,23,42,0.05)] hover:border-manises-blue/20 hover:shadow-[0_14px_28px_rgba(15,23,42,0.08)]'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -940,8 +940,8 @@ export function GamePlayPage() {
                       }}
                       className={`relative overflow-hidden rounded-2xl border p-3 text-left transition-all ${
                         active
-                          ? 'border-manises-blue bg-manises-blue text-white shadow-lg'
-                          : 'border-gray-200 bg-white hover:border-manises-blue/30'
+                          ? 'border-manises-blue bg-[linear-gradient(160deg,#0a4792_0%,#0c56b1_100%)] text-white shadow-[0_14px_28px_rgba(10,71,146,0.28)]'
+                          : 'border-white bg-white/95 shadow-[0_10px_24px_rgba(15,23,42,0.05)] hover:border-manises-blue/20 hover:shadow-[0_14px_28px_rgba(15,23,42,0.08)]'
                       }`}
                     >
                       <div className="relative z-10">
@@ -962,7 +962,7 @@ export function GamePlayPage() {
             </div>
 
             {selectedNationalTicket && (
-              <div className="rounded-2xl border border-gray-200 bg-white p-4 flex flex-col gap-3">
+              <div className="flex flex-col gap-3 rounded-[1.6rem] border border-manises-blue/12 bg-[linear-gradient(180deg,#ffffff_0%,#f6f9ff_100%)] p-4 shadow-[0_16px_36px_rgba(10,71,146,0.10)]">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-black text-manises-blue uppercase tracking-wider">Ticket seleccionado</p>
@@ -971,13 +971,13 @@ export function GamePlayPage() {
                       Máximo disponible: {selectedNationalTicket.available} décimos
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-manises-blue text-white px-3 py-2 text-right min-w-[92px]">
+                  <div className="min-w-[92px] rounded-2xl bg-[linear-gradient(160deg,#0a4792_0%,#0c56b1_100%)] px-3 py-2 text-right text-white shadow-[0_10px_22px_rgba(10,71,146,0.24)]">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">Total</p>
                     <p className="text-lg font-black leading-none">{formatCurrency(selectedNationalDraw.decimoPrice * selectedNationalQuantity)}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between rounded-2xl border border-gray-200 bg-gray-50/60 px-3 py-2.5">
+                <div className="flex items-center justify-between rounded-2xl border border-manises-blue/10 bg-white/80 px-3 py-2.5">
                   <p className="text-[11px] font-black text-manises-blue uppercase tracking-wider">Cantidad</p>
                   <div className="flex items-center gap-2">
                     <Button
@@ -1014,7 +1014,7 @@ export function GamePlayPage() {
 
         {supportsTimeSelection && (
           <motion.div variants={sectionFadeUp} initial="hidden" animate="visible" className="space-y-3">
-            <div className="rounded-2xl border border-manises-blue/10 bg-white p-4 shadow-sm">
+            <div className="rounded-[1.6rem] border border-manises-blue/10 bg-[linear-gradient(180deg,#ffffff_0%,#f5f8ff_100%)] p-4 shadow-[0_16px_38px_rgba(15,23,42,0.06)]">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Planificación</p>
@@ -1023,7 +1023,7 @@ export function GamePlayPage() {
                     Elige el próximo sorteo o agrupa varios sorteos futuros sin cambiar tu selección actual.
                   </p>
                 </div>
-                <div className="rounded-xl bg-manises-blue/[0.06] px-3 py-2 text-right">
+                <div className="rounded-xl border border-manises-blue/10 bg-white/80 px-3 py-2 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
                   <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Sorteos</p>
                   <p className="mt-0.5 text-lg font-black text-manises-blue">{drawsCount}</p>
                 </div>
@@ -1035,10 +1035,10 @@ export function GamePlayPage() {
                     key={option.id}
                     onClick={() => setTimeMode(option.id)}
                     className={cn(
-                      'rounded-xl border px-3 py-3 text-left transition-all',
+                      'rounded-2xl border px-3 py-3 text-left transition-all',
                       timeMode === option.id
-                        ? 'border-manises-blue bg-manises-blue/[0.06] shadow-sm'
-                        : 'border-gray-200 bg-white hover:border-manises-blue/20'
+                        ? 'border-manises-blue bg-[linear-gradient(180deg,rgba(10,71,146,0.06)_0%,rgba(10,71,146,0.10)_100%)] shadow-[0_12px_24px_rgba(10,71,146,0.10)]'
+                        : 'border-white bg-white/90 shadow-[0_8px_18px_rgba(15,23,42,0.04)] hover:border-manises-blue/20'
                     )}
                   >
                     <p className={cn(
@@ -1060,8 +1060,8 @@ export function GamePlayPage() {
                       className={cn(
                         'rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] transition-all',
                         selectedWeeksCount === weeks
-                          ? 'border-manises-gold bg-amber-50 text-manises-blue'
-                          : 'border-gray-200 bg-white text-slate-500 hover:border-manises-gold/40'
+                          ? 'border-manises-gold bg-amber-50 text-manises-blue shadow-[0_8px_18px_rgba(184,134,11,0.10)]'
+                          : 'border-white bg-white text-slate-500 shadow-[0_6px_14px_rgba(15,23,42,0.04)] hover:border-manises-gold/40'
                       )}
                     >
                       {weeks} semanas
@@ -1070,7 +1070,7 @@ export function GamePlayPage() {
                 </div>
               )}
 
-              <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50/60 p-3">
+              <div className="mt-4 rounded-2xl border border-manises-blue/10 bg-white/80 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue">Sorteos incluidos</p>
                   <p className="text-[11px] font-semibold text-slate-500">
@@ -1086,7 +1086,7 @@ export function GamePlayPage() {
                         {draws.map((draw) => (
                           <span
                             key={draw.drawDate}
-                            className="inline-flex items-center rounded-full border border-manises-blue/12 bg-white px-2.5 py-1 text-[10px] font-bold text-manises-blue"
+                            className="inline-flex items-center rounded-full border border-manises-blue/12 bg-manises-blue/[0.05] px-2.5 py-1 text-[10px] font-bold text-manises-blue"
                           >
                             {formatDate(draw.drawDate)}
                           </span>
@@ -1105,10 +1105,10 @@ export function GamePlayPage() {
           <motion.div 
             whileTap={{ scale: 0.98 }}
             onClick={() => setHasInsurance(!hasInsurance)}
-            className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden ${
+            className={`relative overflow-hidden rounded-[1.55rem] border-2 p-4 transition-all cursor-pointer ${
               hasInsurance 
-                ? 'border-manises-gold bg-amber-50 shadow-md' 
-                : 'border-gray-100 bg-gray-50/50 hover:border-gray-200'
+                ? 'border-manises-gold bg-[linear-gradient(180deg,#fff9e9_0%,#fff4cf_100%)] shadow-[0_16px_34px_rgba(184,134,11,0.16)]' 
+                : 'border-white bg-white/85 shadow-[0_10px_24px_rgba(15,23,42,0.05)] hover:border-gray-200'
             }`}
           >
             <div className="flex items-center gap-4">
@@ -1138,7 +1138,7 @@ export function GamePlayPage() {
 
           <div 
             onClick={() => setIsSubscription(!isSubscription)}
-            className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-100 cursor-pointer hover:bg-gray-100 transition-colors"
+            className="flex items-center justify-between rounded-[1.45rem] border border-white bg-white/85 p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition-colors cursor-pointer hover:bg-gray-50"
           >
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
@@ -1163,26 +1163,26 @@ export function GamePlayPage() {
 
       {/* ---- Barra de confirmación ---- */}
       <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-safe">
-        <div className="flex items-center justify-between rounded-[1.8rem] bg-white/95 backdrop-blur-xl border border-gray-100 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] px-5 py-3 gap-4">
-          <div>
-            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+        <div className="mx-auto flex max-w-screen-sm items-center justify-between gap-4 rounded-[1.9rem] border border-white bg-white/95 px-5 py-3 shadow-[0_-8px_30px_rgba(15,23,42,0.12)] backdrop-blur-xl">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Importe Total
             </p>
-            <p className="text-[10px] text-muted-foreground font-medium">
+            <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
               {formatCurrency(drawPrice)} x {drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}
             </p>
-            <div className="flex items-baseline gap-1">
-              <p className="text-xl font-black tabular-nums" style={theme.title}>
+            <div className="mt-1 flex items-baseline gap-1.5">
+              <p className="text-[1.35rem] font-black tabular-nums leading-none" style={theme.title}>
                 {formatCurrency(totalPrice)}
               </p>
               {hasInsurance && (
-                <span className="text-[10px] font-bold text-manises-gold underline decoration-2 underline-offset-2">Protegido</span>
+                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-manises-gold">Protegido</span>
               )}
             </div>
           </div>
           <AnimatePresence mode="wait">
             <Button
-              className={`flex-1 h-12 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-[0.98] ${
+              className={`h-12 flex-1 rounded-2xl font-bold text-sm shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-all active:scale-[0.98] ${
                 canPlay
                   ? 'text-white'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
