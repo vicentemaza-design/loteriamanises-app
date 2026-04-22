@@ -206,6 +206,8 @@ export function GamePlayPage() {
   const basePrice = drawPrice * drawsCount;
   const totalPrice = basePrice + (hasInsurance ? INSURANCE_PRICE : 0);
   const isOverBalance = profile ? profile.balance < totalPrice : false;
+  const availableBalance = profile?.balance ?? 0;
+  const remainingBalance = Math.max(availableBalance - totalPrice, 0);
 
   const nationalDraws = NATIONAL_DRAW_CONFIG.map((draw) => ({
     ...draw,
@@ -1138,50 +1140,116 @@ export function GamePlayPage() {
             )}
           </motion.div>
 
-          <div 
+          <motion.div
+            variants={{
+              hidden: { opacity: 0, y: 10 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            initial="hidden"
+            animate="visible"
+            whileTap={{ scale: 0.985 }}
             onClick={() => setIsSubscription(!isSubscription)}
-            className="flex items-center justify-between rounded-[1.45rem] border border-white bg-white/85 p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition-colors cursor-pointer hover:bg-gray-50"
+            className={cn(
+              'relative overflow-hidden rounded-[1.65rem] border p-4 transition-all cursor-pointer',
+              isSubscription
+                ? 'border-manises-blue bg-[linear-gradient(135deg,rgba(10,71,146,0.08)_0%,rgba(10,71,146,0.14)_100%)] shadow-[0_18px_40px_rgba(10,71,146,0.14)]'
+                : 'border-manises-blue/10 bg-[linear-gradient(180deg,#ffffff_0%,#f7faff_100%)] shadow-[0_12px_28px_rgba(15,23,42,0.06)] hover:border-manises-blue/20'
+            )}
           >
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                isSubscription ? 'bg-manises-blue text-white' : 'bg-white text-gray-400'
-              }`}>
-                <RefreshCircle className={`w-5 h-5 ${isSubscription ? 'animate-spin-slow' : ''}`} />
+            <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-manises-gold/10 blur-2xl" />
+            <div className="relative flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className={cn(
+                  'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl',
+                  isSubscription ? 'bg-manises-blue text-white' : 'bg-manises-blue/8 text-manises-blue'
+                )}>
+                  <RefreshCircle className={cn('w-6 h-6', isSubscription && 'animate-spin-slow')} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-black text-manises-blue">Abono semanal</h3>
+                    <span className="rounded-full border border-manises-gold/30 bg-amber-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-amber-900">
+                      Recomendado
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-600">
+                    Repite esta jugada automáticamente en próximos sorteos para no quedarte fuera si sube el bote.
+                  </p>
+                  <p className="mt-2 text-[11px] font-semibold text-manises-blue/72">
+                    Puedes pausar o dar de baja tu abono desde <span className="font-black">Mi cuenta &gt; Mis abonos</span>.
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-xs text-manises-blue">Abonarse</h3>
-                <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-tight">Juega cada semana automáticamente</p>
+
+              <div className={cn(
+                'mt-1 flex h-7 w-12 shrink-0 rounded-full transition-colors relative',
+                isSubscription ? 'bg-manises-blue' : 'bg-gray-200'
+              )}>
+                <motion.div
+                  animate={{ x: isSubscription ? 24 : 4 }}
+                  className="absolute top-1 h-5 w-5 rounded-full bg-white shadow-sm"
+                />
               </div>
             </div>
-            <div className={`w-12 h-6 rounded-full transition-colors relative ${isSubscription ? 'bg-manises-blue' : 'bg-gray-200'}`}>
-              <motion.div 
-                animate={{ x: isSubscription ? 24 : 4 }}
-                className="w-4 h-4 bg-white rounded-full absolute top-1"
-              />
+
+            <div className="relative mt-4 flex flex-wrap gap-2">
+              <span className={cn(
+                'inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em]',
+                isSubscription
+                  ? 'border border-manises-blue/15 bg-white/80 text-manises-blue'
+                  : 'border border-manises-blue/10 bg-manises-blue/[0.05] text-manises-blue/80'
+              )}>
+                {isSubscription ? 'Abono activado en esta compra' : 'Actívalo con un toque'}
+              </span>
+              <span className="inline-flex items-center rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 text-[10px] font-bold text-slate-500">
+                Sin permanencia
+              </span>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 
       {/* ---- Barra de confirmación ---- */}
       <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-safe">
-        <div className="mx-auto flex max-w-screen-sm items-center justify-between gap-4 rounded-[1.9rem] border border-white bg-white/95 px-5 py-3 shadow-[0_-8px_30px_rgba(15,23,42,0.12)] backdrop-blur-xl">
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Importe Total
-            </p>
-            <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
-              {formatCurrency(drawPrice)} x {drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}
-            </p>
-            <div className="mt-1 flex items-baseline gap-1.5">
-              <p className="text-[1.35rem] font-black tabular-nums leading-none" style={theme.title}>
-                {formatCurrency(totalPrice)}
+        <div className="mx-auto flex max-w-screen-sm flex-col gap-3 rounded-[2.2rem] border border-white/80 bg-white/95 p-4 shadow-[0_-12px_40px_rgba(15,23,42,0.15)] backdrop-blur-2xl">
+          {/* Resumen de saldo */}
+          <div className="flex items-center justify-between gap-4 px-1">
+            <div className="flex flex-col">
+              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Tu saldo actual</p>
+              <p className="mt-1 text-base font-black text-manises-blue">{formatCurrency(availableBalance)}</p>
+            </div>
+            <div className={cn(
+              'flex flex-col items-end rounded-2xl border px-3 py-1.5',
+              isOverBalance
+                ? 'border-red-200 bg-red-50'
+                : 'border-emerald-200 bg-emerald-50'
+            )}>
+              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
+                {isOverBalance ? 'Te falta saldo' : 'Te quedará saldo'}
               </p>
-              {hasInsurance && (
-                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-manises-gold">Protegido</span>
-              )}
+              <p className={cn(
+                'mt-1 text-base font-black',
+                isOverBalance ? 'text-red-700' : 'text-emerald-700'
+              )}>
+                {isOverBalance ? formatCurrency(totalPrice - availableBalance) : formatCurrency(remainingBalance)}
+              </p>
             </div>
           </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0 px-1">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Importe Total
+              </p>
+              <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
+                {formatCurrency(drawPrice)} x {drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}
+              </p>
+              <div className="mt-1 flex items-baseline gap-1.5">
+                <p className="text-[1.35rem] font-black tabular-nums leading-none" style={theme.title}>
+                  {formatCurrency(totalPrice)}
+                </p>
+              </div>
+            </div>
           <AnimatePresence mode="wait">
             <Button
               className={`h-12 flex-1 rounded-2xl font-bold text-sm shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-all active:scale-[0.98] ${
@@ -1202,7 +1270,7 @@ export function GamePlayPage() {
                 ? drawsCount > 1
                   ? `Confirmar ${drawsCount} sorteos`
                   : isNationalLottery
-                  ? 'Reservar décimos'
+                  ? `Reservar ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'}`
                   : `Confirmar ${betsCount} ${betsCount === 1 ? 'apuesta' : 'apuestas'}`
                 : isNationalLottery
                   ? 'Elige un décimo'
@@ -1214,6 +1282,7 @@ export function GamePlayPage() {
           </AnimatePresence>
         </div>
       </div>
+    </div>
     </div>
   );
 }
