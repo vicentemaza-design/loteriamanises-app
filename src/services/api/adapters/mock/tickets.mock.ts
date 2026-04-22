@@ -21,13 +21,25 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   {
     id: 'demo-1b',
     userId: 'demo-user',
-    gameId: 'loteria-nacional',
+    gameId: 'loteria-nacional-jueves',
     gameType: 'loteria-nacional',
-    numbers: [31425], // DTO might expect an array or single number, mapping will fix it
-    drawDate: '2026-04-13',
+    numbers: [3, 1, 4, 2, 5],
+    drawDate: '2026-04-23',
     status: 'pending',
     price: 6.00,
     hasInsurance: true,
+    orderId: 'mock-order-national',
+    metadata: {
+      nationalNumber: '31425',
+      nationalQuantity: 2,
+      nationalDrawLabel: 'Jueves',
+      orderDrawDates: ['2026-04-23', '2026-04-30'],
+      orderTotalPrice: 12.00,
+      drawsCount: 2,
+      scheduleMode: 'custom_weeks',
+      weeksCount: 2,
+      drawIndex: 0,
+    },
     createdAt: new Date(Date.now() - 3600000 * 6).toISOString(),
   },
   {

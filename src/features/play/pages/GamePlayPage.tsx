@@ -482,12 +482,19 @@ export function GamePlayPage() {
         technicalMode: game.technicalMode,
         systemFamily: game.systemFamily,
         drawsCount: drawDates.length,
+        orderDrawDates: drawDates,
+        orderTotalPrice: totalPrice,
       }
     };
     if (isNationalLottery && selectedNationalNumber) {
       Object.assign(selection, {
         numbers: selectedNationalNumber.split('').map(Number),
         stars: []
+      });
+      Object.assign(selection.metadata, {
+        nationalNumber: selectedNationalNumber,
+        nationalQuantity: selectedNationalQuantity,
+        nationalDrawLabel: selectedNationalDraw.label,
       });
     } else if (isQuiniela) {
       Object.assign(selection, {
@@ -1025,13 +1032,19 @@ export function GamePlayPage() {
                 </div>
 
                 <div className="flex items-center justify-between p-2 bg-slate-50 rounded-2xl">
-                  <span className="ml-2 text-xs font-black text-slate-500 uppercase tracking-widest">Ajustar cantidad</span>
+                  <div className="ml-2">
+                    <span className="text-xs font-black uppercase tracking-widest text-slate-500">Ajustar cantidad</span>
+                    <p className="mt-1 text-[11px] font-semibold text-slate-500">
+                      Máximo {maxNationalQuantity} {maxNationalQuantity === 1 ? 'décimo disponible' : 'décimos disponibles'} para el número {selectedNationalNumber}.
+                    </p>
+                  </div>
                   <div className="flex items-center gap-3">
                     <Button
                       variant="ghost" size="icon"
                       className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
                       onClick={() => setSelectedNationalQuantity(q => Math.max(1, q - 1))}
                       disabled={selectedNationalQuantity <= 1}
+                      aria-label="Restar un décimo"
                     >
                       -
                     </Button>
@@ -1041,6 +1054,7 @@ export function GamePlayPage() {
                       className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
                       onClick={() => setSelectedNationalQuantity(q => Math.min(maxNationalQuantity, q + 1))}
                       disabled={selectedNationalQuantity >= maxNationalQuantity}
+                      aria-label="Sumar un décimo"
                     >
                       +
                     </Button>

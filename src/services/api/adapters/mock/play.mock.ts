@@ -42,6 +42,12 @@ export async function placeBetMock(dto: CreateBetRequestDto): Promise<CreateBetR
         price: distributedPrices[index] ?? distributedPrices[0] ?? dto.price,
         hasInsurance: dto.hasInsurance,
         isSubscription: dto.isSubscription,
+        metadata: {
+          ...(dto.metadata || {}),
+          scheduleMode: dto.scheduleMode ?? 'next_draw',
+          weeksCount: dto.weeksCount ?? 1,
+          drawIndex: index,
+        },
         createdAt,
       }));
 
