@@ -112,7 +112,9 @@ export function GamePlayPage() {
   // Quiniela & Nacional Específico
   const [quinielaMatches, setQuinielaMatches] = useState<QuinielaMatch[]>([]);
   const [selectedReductionSystemId, setSelectedReductionSystemId] = useState<string>('reducida_1');
-  const [selectedNationalDrawId, setSelectedNationalDrawId] = useState<NationalDrawId>('sabado');
+  const [selectedNationalDrawId, setSelectedNationalDrawId] = useState<NationalDrawId>(
+    gameId === 'loteria-nacional-jueves' ? 'jueves' : 'sabado'
+  );
   const [selectedNationalNumber, setSelectedNationalNumber] = useState<string | null>(null);
   const [selectedNationalQuantity, setSelectedNationalQuantity] = useState(1);
   const [timeMode, setTimeMode] = useState<ScheduleMode>('next_draw');
@@ -211,8 +213,12 @@ export function GamePlayPage() {
   const availableBalance = profile?.balance ?? 0;
   const remainingBalance = Math.max(availableBalance - totalPrice, 0);
 
-  const nationalDraws = game.id === 'loteria-nacional' 
-    ? NATIONAL_DRAW_CONFIG.map((draw) => ({
+  const nationalDraws = (game.id === 'loteria-nacional-jueves' || game.id === 'loteria-nacional-sabado')
+    ? NATIONAL_DRAW_CONFIG.filter(d => {
+        if (game.id === 'loteria-nacional-jueves') return d.id === 'jueves';
+        if (game.id === 'loteria-nacional-sabado') return d.id === 'sabado';
+        return true;
+      }).map((draw) => ({
         ...draw,
         nextDraw: nextWeekdayIso(draw.weekday, draw.hour),
       }))
@@ -878,8 +884,8 @@ export function GamePlayPage() {
                 />
               </motion.div>
 
-              {/* Selector de Sorteo (Jueves / Sábado) - SOLO SI ES LOTERÍA NACIONAL ORDINARIA */}
-              {game.id === 'loteria-nacional' && (
+              {/* Selector de Sorteo (Jueves / Sábado) - SOLO SI EL ID NO ES ESPECÍFICO */}
+              {(game.id === 'loteria-nacional') && (
                 <div className="grid grid-cols-2 gap-3">
                   {nationalDraws.map((draw) => {
                     const active = draw.id === selectedNationalDrawId;

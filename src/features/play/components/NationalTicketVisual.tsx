@@ -143,9 +143,9 @@ export const NationalTicketVisual: React.FC<NationalTicketVisualProps> = ({
             <p className={cn("text-[8px] font-bold uppercase tracking-tighter opacity-50", config.text)}>Fracción</p>
             <p className={cn("text-xs font-black", config.text)}>1ª</p>
           </div>
-          <div className="text-center">
-            <p className={cn("text-[8px] font-bold uppercase tracking-tighter opacity-50", config.text)}>Precio</p>
-            <p className={cn("text-xs font-black", config.text)}>{formatCurrency(price)}</p>
+          <div className="text-center px-3 py-1 rounded-full border border-current/10 bg-current/5">
+            <p className={cn("text-[7px] font-black uppercase tracking-tighter opacity-50", config.text)}>Precio</p>
+            <p className={cn("text-[13px] font-black leading-none", config.text)}>{formatCurrency(price)}</p>
           </div>
         </div>
       </div>

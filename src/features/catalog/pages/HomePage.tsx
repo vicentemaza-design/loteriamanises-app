@@ -117,7 +117,8 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
   const imageByGameId: Record<string, string> = {
     primitiva: primitivaJoy,
     bonoloto: joySecondary,
-    'loteria-nacional': loteriaNacionalHero,
+    'loteria-nacional-jueves': loteriaNacionalHero,
+    'loteria-nacional-sabado': loteriaNacionalHero,
     quiniela: quinielaHero,
     gordo: primitivaJoyV2,
     'loteria-navidad': headerWinner,
@@ -125,7 +126,7 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
   };
   const image = imageByGameId[game.id] ?? joySecondary;
   const cd = getCountdown(game.nextDraw);
-  const isNationalLottery = game.id === 'loteria-nacional';
+  const isNationalLottery = game.id.includes('loteria-nacional') || game.type === 'navidad' || game.type === 'nino';
   const imageStyle = isNationalLottery
     ? { filter: 'grayscale(0.18) brightness(0.68) contrast(1.08)' }
     : { filter: 'grayscale(0.4) brightness(0.54) contrast(1.04)' };
@@ -339,16 +340,17 @@ export function HomePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  // Los 4 juegos del bento
+  // Los juegos destacados en el bento (priorizamos los nacionales e inmediatos)
   const bentoGames = useMemo(() => {
     const baseGames = upcomingGames.filter((game) => game.id !== featuredGame.id);
-    const firstFour = baseGames.slice(0, 4);
-    const loteriaNacional = baseGames.find((game) => game.id === 'loteria-nacional');
-    if (!loteriaNacional || firstFour.some(g => g.id === 'loteria-nacional')) return firstFour;
-    const updated = [...firstFour];
-    const dropIdx = updated.findIndex(g => g.id === 'eurodreams') !== -1 ? updated.findIndex(g => g.id === 'eurodreams') : 3;
-    updated[dropIdx] = loteriaNacional;
-    return updated;
+    
+    // Priorizamos Jueves, Sábado, Navidad y Niño para que siempre aparezcan si están activos
+    const priorityIds = ['loteria-nacional-jueves', 'loteria-nacional-sabado', 'loteria-navidad', 'loteria-nino'];
+    const priorityGames = baseGames.filter(g => priorityIds.includes(g.id));
+    const otherGames = baseGames.filter(g => !priorityIds.includes(g.id));
+    
+    // Combinamos mostrando primero los de prioridad (hasta 4 o más si queremos expandir la rejilla)
+    return [...priorityGames, ...otherGames].slice(0, 6); // Ampliamos a 6 para dar cabida a la nueva oferta
   }, [upcomingGames, featuredGame]);
 
   useGSAP(() => {

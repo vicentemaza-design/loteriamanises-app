@@ -21,12 +21,22 @@ import { useGSAP } from '@gsap/react';
 import adminManises from '@/assets/images/administracion_manises.webp';
 import joySecondary from '@/assets/images/joy_secondary.png';
 import primitivaJoy from '@/assets/images/primitiva_joy.png';
+import loteriaNacionalHero from '@/assets/images/loteria_nacional.jpg';
+import headerWinner from '@/assets/images/header_winner.jpg';
+import primitivaJoyV2 from '@/assets/images/primitiva_joy_v2.jpg';
 
 gsap.registerPlugin(useGSAP);
 
 // ─── Sub-component: TodayGameCard ─────────────────────────────────────────────
 function TodayGameCard({ game, onClick }: { key?: Key; game: LotteryGame; onClick: () => void }) {
-  const image = game.id === 'primitiva' ? primitivaJoy : joySecondary;
+  const imageMap: Record<string, string> = {
+    primitiva: primitivaJoy,
+    'loteria-nacional-jueves': loteriaNacionalHero,
+    'loteria-nacional-sabado': loteriaNacionalHero,
+    'loteria-navidad': headerWinner,
+    'loteria-nino': primitivaJoyV2,
+  };
+  const image = imageMap[game.id] ?? joySecondary;
 
   return (
     <PremiumTouchInteraction scale={0.98}>
