@@ -6,6 +6,7 @@ import { NumberBall, NumberBallLabeled } from '@/shared/ui/NumberBall';
 import { PageHeader } from '@/shared/ui/PageHeader';
 import { Button } from '@/shared/ui/Button';
 import { formatDate } from '@/shared/lib/utils';
+import { getBusinessDate } from '@/shared/lib/timezone';
 import { Trophy, TrendingUp, CheckSquare } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
@@ -159,7 +160,7 @@ export function ResultsPage() {
           
           const userTicketsForSort = tickets.filter(t => 
             t.gameId === result.gameId && 
-            t.drawDate === result.date.split('T')[0]
+            t.drawDate === getBusinessDate(result.date)
           );
 
           return (
@@ -266,7 +267,7 @@ export function ResultsPage() {
         result={comparingResult || { numbers: [], date: '', gameId: '' }}
         userTickets={comparingResult ? tickets.filter(t => 
           t.gameId === comparingResult.gameId && 
-          t.drawDate === comparingResult.date.split('T')[0]
+          t.drawDate === getBusinessDate(comparingResult.date)
         ) : []}
       />
       </div>
