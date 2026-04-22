@@ -3,7 +3,23 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { Button } from '@/shared/ui/Button';
 import { toast } from 'sonner';
-import { Save, User, Mail, Phone, Lock, Landmark, CircleCheck, Shield, ChevronRight, ShieldCheck } from 'lucide-react';
+import { 
+  Save, 
+  User, 
+  Mail, 
+  Phone, 
+  Lock, 
+  Landmark, 
+  CircleCheck, 
+  Shield, 
+  ChevronRight, 
+  ShieldCheck, 
+  Calendar, 
+  MapPin, 
+  Building2, 
+  UserX, 
+  KeyRound 
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import gsap from 'gsap';
@@ -23,7 +39,7 @@ function Field({
   className,
 }: {
   label: string;
-  icon: typeof User;
+  icon: any;
   helper?: string;
   readOnly?: boolean;
   value: string;
@@ -70,6 +86,9 @@ export function AccountPage() {
     phone: '+34 600 000 000',
     dni: '12345678Z',
     iban: 'ES12 3456 7890 1234 5678 9012',
+    birthDate: '1990-01-01',
+    address: 'Calle Mayor, 1',
+    municipality: 'Manises',
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -80,7 +99,7 @@ export function AccountPage() {
     gsap.to(items, {
       y: 0,
       autoAlpha: 1,
-      stagger: 0.07,
+      stagger: 0.05,
       duration: 0.35,
       ease: 'power2.out',
     });
@@ -95,9 +114,13 @@ export function AccountPage() {
     }, 800);
   };
 
+  const handleSupportAction = (title: string) => {
+    toast.info(`${title}: Solicitud preparada. Procesando a través de la pasarela de soporte...`);
+  };
+
   return (
-    <div className="flex min-h-full flex-col bg-background" ref={containerRef}>
-      <ProfileSubHeader title="Datos Personales" />
+    <div className="flex min-h-full flex-col bg-background pb-12" ref={containerRef}>
+      <ProfileSubHeader title="Datos y Compliance" />
       
       <div className="p-5 flex flex-col gap-4">
         <section className="surface-neo-soft rounded-2xl border border-white/65 p-4 stagger-item">
@@ -108,7 +131,7 @@ export function AccountPage() {
             <div>
               <p className="text-xs font-black text-manises-blue uppercase tracking-widest">Perfil verificado</p>
               <p className="text-[11px] text-muted-foreground font-medium mt-1">
-                Mantén tus datos actualizados para validar jugadas y cobro de premios.
+                La verificación es obligatoria para el cobro de premios mayores de 2.000€.
               </p>
             </div>
           </div>
@@ -116,7 +139,7 @@ export function AccountPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <section className="surface-neo-soft rounded-2xl border border-white/65 p-4 flex flex-col gap-4 stagger-item">
-            <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Identidad</p>
+            <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Identidad y Nacimiento</p>
             <Field
               label="Nombre Completo"
               icon={User}
@@ -124,12 +147,12 @@ export function AccountPage() {
               onChange={(value) => setFormData({ ...formData, name: value })}
             />
             <Field
-              label="Email"
-              icon={Mail}
-              value={formData.email}
-              readOnly
-              helper="El email no se puede modificar directamente."
-              onChange={() => undefined}
+              label="Fecha de Nacimiento"
+              icon={Calendar}
+              type="date"
+              value={formData.birthDate}
+              onChange={(value) => setFormData({ ...formData, birthDate: value })}
+              helper="Debes ser mayor de 18 años para jugar."
             />
             <Field
               label="DNI / NIE"
@@ -141,7 +164,31 @@ export function AccountPage() {
           </section>
 
           <section className="surface-neo-soft rounded-2xl border border-white/65 p-4 flex flex-col gap-4 stagger-item">
+            <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Dirección Legal</p>
+            <Field
+              label="Dirección"
+              icon={MapPin}
+              value={formData.address}
+              onChange={(value) => setFormData({ ...formData, address: value })}
+            />
+            <Field
+              label="Municipio"
+              icon={Building2}
+              value={formData.municipality}
+              onChange={(value) => setFormData({ ...formData, municipality: value })}
+            />
+          </section>
+
+          <section className="surface-neo-soft rounded-2xl border border-white/65 p-4 flex flex-col gap-4 stagger-item">
             <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Contacto y cobro</p>
+            <Field
+              label="Email"
+              icon={Mail}
+              value={formData.email}
+              readOnly
+              helper="Contacta con soporte para cambiar tu email."
+              onChange={() => undefined}
+            />
             <Field
               label="Teléfono móvil"
               icon={Phone}
@@ -157,45 +204,81 @@ export function AccountPage() {
               onChange={(value) => setFormData({ ...formData, iban: value })}
               className="tabular-nums uppercase tracking-wider"
             />
-            <div className="flex items-start gap-2 px-1">
-              <Shield className="w-4 h-4 text-manises-blue/45 mt-0.5 shrink-0" />
-              <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">
-                Usamos estos datos solo para validación y pagos. Puedes actualizarlos cuando quieras.
-              </p>
+          </section>
+
+          {/* Acciones de Seguridad y Compliance */}
+          <section className="space-y-3 stagger-item">
+            <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Seguridad y Cuenta</p>
+            <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border/50">
+              <button
+                type="button"
+                onClick={() => handleSupportAction('Cambio de Contraseña')}
+                className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-manises-blue group-hover:text-white transition-all">
+                    <KeyRound className="w-4 h-4" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[11px] font-bold text-slate-900">Cambiar Contraseña</p>
+                    <p className="text-[9px] text-slate-500 font-medium">Último cambio: hace 3 meses</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-300" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate('/profile/help')}
+                className="w-full flex items-center justify-between p-4 hover:bg-purple-50/50 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-purple-100 text-purple-600">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[11px] font-bold text-purple-900">Juego Responsable</p>
+                    <p className="text-[9px] text-purple-600/70 font-medium">Límites, gasto y autoexclusión</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-purple-300" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSupportAction('Baja de Cuenta')}
+                className="w-full flex items-center justify-between p-4 hover:bg-rose-50/50 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-rose-100 text-rose-600">
+                    <UserX className="w-4 h-4" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[11px] font-bold text-rose-900">Cerrar Cuenta</p>
+                    <p className="text-[9px] text-rose-600/70 font-medium">Solicitar baja definitiva del servicio</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-rose-300" />
+              </button>
             </div>
-
-            <div className="h-px bg-border/40 my-1" />
-
-            {/* Enlace contextual a Juego Responsable */}
-            <button
-              type="button"
-              onClick={() => navigate('/profile/help')}
-              className="flex items-center justify-between p-3 rounded-xl bg-purple-50/50 border border-purple-100 hover:bg-purple-50 transition-colors group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-purple-100 text-purple-600">
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-[11px] font-bold text-purple-900">Juego Responsable</p>
-                  <p className="text-[9px] text-purple-600/70 font-medium">Control, límites y autoexclusión</p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-purple-400 group-hover:translate-x-0.5 transition-transform" />
-            </button>
           </section>
 
           <PremiumTouchInteraction scale={0.98} className="mt-2 stagger-item">
             <Button
               type="submit"
               disabled={isSaving}
-              className="w-full h-14 bg-manises-blue text-white hover:bg-manises-gold hover:text-manises-blue rounded-xl font-black shadow-xl gap-2 transition-all"
+              className="w-full h-14 bg-manises-blue text-white hover:bg-manises-gold hover:text-manises-blue rounded-2xl font-black shadow-xl gap-2 transition-all border-none"
             >
               <Save className="w-5 h-5" />
-              {isSaving ? 'Guardando...' : 'Guardar Cambios'}
+              {isSaving ? 'Guardando...' : 'Actualizar Perfil'}
             </Button>
           </PremiumTouchInteraction>
         </form>
+
+        <div className="stagger-item mt-2 flex items-center justify-center gap-2 opacity-40">
+          <Shield className="w-3.5 h-3.5 text-manises-blue" />
+          <p className="text-[9px] font-bold uppercase tracking-widest text-manises-blue">Conexión Segura SSL</p>
+        </div>
       </div>
     </div>
   );
