@@ -152,41 +152,65 @@ export const NationalTicketVisual: React.FC<NationalTicketVisualProps> = ({
           </div>
         )}
 
-        {/* NÚMERO - Ajustado para flotar sobre el décimo real si aplica */}
-        <div className={cn(
-          "flex gap-1.5 justify-center relative z-10",
-          config.realImage && "bg-white/90 backdrop-blur-sm p-3 rounded-2xl border border-slate-200/50 shadow-lg mt-4"
-        )}>
-          {displayNumbers.map((digit, i) => (
-            <motion.div
-              key={i}
-              initial={{ y: 5, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: i * 0.05 }}
-              className={cn(
-                "w-10 h-14 rounded-lg flex items-center justify-center text-3xl font-black shadow-inner border",
-                config.realImage ? "bg-slate-50 border-slate-200 text-slate-900" :
-                config.text === 'text-white' ? 'bg-white/10 border-white/20' : 'bg-slate-100 border-slate-200'
-              )}
-            >
-              {digit}
-            </motion.div>
-          ))}
-        </div>
+        {/* NÚMERO - Versión integrada como 'placa' o cápsula premium */}
+        <motion.div 
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className={cn(
+            "relative z-10 flex flex-col items-center",
+            config.realImage && "mt-2"
+          )}
+        >
+          {/* La Placa / Cápsula del número */}
+          <div className={cn(
+            "flex items-center justify-center px-6 py-4 rounded-[2rem] transition-all",
+            config.realImage 
+              ? "bg-white/95 backdrop-blur-md shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] border border-white/50" 
+              : "bg-white/10 border border-white/20"
+          )}>
+            <div className="flex gap-3">
+              {displayNumbers.map((digit, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "text-5xl font-black tracking-tighter",
+                    config.realImage ? "text-slate-900" : config.text
+                  )}
+                >
+                  {digit}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Indicador sutil de posición o tipo si es real */}
+          {config.realImage && (
+            <div className="mt-3 flex items-center gap-2">
+              <div className="h-[1px] w-4 bg-slate-300" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Número Seleccionado</span>
+              <div className="h-[1px] w-4 bg-slate-300" />
+            </div>
+          )}
+        </motion.div>
 
-        {/* Serie / Fracción */}
-        <div className="mt-4 flex gap-4">
+        {/* Serie / Fracción / Precio - Estilo minimalista sobre el décimo */}
+        <div className={cn(
+          "mt-4 flex gap-4 items-center px-4 py-2 rounded-full",
+          config.realImage ? "bg-black/5 backdrop-blur-sm border border-black/5" : "bg-current/5"
+        )}>
           <div className="text-center">
-            <p className={cn("text-[8px] font-bold uppercase tracking-tighter opacity-50", config.text)}>Serie</p>
+            <p className={cn("text-[7px] font-black uppercase tracking-widest opacity-40", config.text)}>Serie</p>
             <p className={cn("text-xs font-black", config.text)}>1ª</p>
           </div>
+          <div className="h-4 w-[1px] bg-current/10" />
           <div className="text-center">
-            <p className={cn("text-[8px] font-bold uppercase tracking-tighter opacity-50", config.text)}>Fracción</p>
+            <p className={cn("text-[7px] font-black uppercase tracking-widest opacity-40", config.text)}>Fracción</p>
             <p className={cn("text-xs font-black", config.text)}>1ª</p>
           </div>
-          <div className="text-center px-3 py-1 rounded-full border border-current/10 bg-current/5">
-            <p className={cn("text-[7px] font-black uppercase tracking-tighter opacity-50", config.text)}>Precio</p>
-            <p className={cn("text-[13px] font-black leading-none", config.text)}>{formatCurrency(price)}</p>
+          <div className="h-4 w-[1px] bg-current/10" />
+          <div className="text-center">
+            <p className={cn("text-[7px] font-black uppercase tracking-widest opacity-40", config.text)}>Precio</p>
+            <p className={cn("text-xs font-black", config.text)}>{formatCurrency(price)}</p>
           </div>
         </div>
       </div>
