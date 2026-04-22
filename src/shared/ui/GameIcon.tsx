@@ -8,7 +8,7 @@ import euromillonesBlue from '@/assets/games/euromillones-blue-simbolo.svg';
 import euromillonesWhite from '@/assets/games/euromillones-white-simbolo.svg';
 import elGordoRed from '@/assets/games/elgordo-red-simbolo.svg';
 import elGordoWhite from '@/assets/games/elgordo-white-simbolo.svg';
-import eurodreamsWhite from '@/assets/games/eurodreams-white.svg';
+import eurodreamsWhite from '@/assets/games/eurodreams-white-simbolo.svg';
 import eurodreamsSymbol from '@/assets/games/lg-eurodreams-svg-simbolo.svg';
 import laPrimitivaGreen from '@/assets/games/laprimitiva-green-simbolo.svg';
 import laPrimitivaWhite from '@/assets/games/laprimitiva-white-simbolo.svg';
