@@ -19,6 +19,10 @@ export const resultsMapper = {
       stars: dto.stars,
       complementario: dto.complementario,
       reintegro: dto.reintegro,
+      firstPrizeNumber: dto.firstPrizeNumber,
+      secondPrizeNumber: dto.secondPrizeNumber,
+      reintegros: dto.reintegros,
+      decimoPrice: dto.decimoPrice,
       jackpotNext: dto.jackpotNext,
       drawId: dto.drawId,
       // Add any additional UI-specific computed fields here

@@ -14,6 +14,10 @@ export interface ResultDto {
   stars?: number[];
   complementario?: number;
   reintegro?: number;
+  firstPrizeNumber?: string;
+  secondPrizeNumber?: string;
+  reintegros?: number[];
+  decimoPrice?: number;
   jackpotNext?: number;
   drawId?: string;
 }

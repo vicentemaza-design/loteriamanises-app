@@ -110,7 +110,7 @@ export function AccountPage() {
     setIsSaving(true);
     setTimeout(() => {
       setIsSaving(false);
-      toast.success('Datos actualizados correctamente');
+      toast.info('Cambios preparados en demo local. Pendientes de sincronización real con backend.');
     }, 800);
   };
 

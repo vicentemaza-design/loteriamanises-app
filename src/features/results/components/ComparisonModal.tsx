@@ -28,7 +28,7 @@ function evaluateNationalTicket(
   ticketDigits: string,
   result: ComparisonModalProps['result']
 ): { label: string; prize: number; isWinner: boolean } {
-  const first = result.firstPrizeNumber ?? '';
+  const first = result.firstPrizeNumber ?? (Array.isArray(result.numbers) ? result.numbers.join('') : '');
   const second = result.secondPrizeNumber ?? '';
   const decimoPrice = result.decimoPrice ?? 6;
   const last = ticketDigits.slice(-1);
@@ -49,6 +49,8 @@ export function ComparisonModal({ isOpen, onClose, result, userTickets }: Compar
   const game = LOTTERY_GAMES.find(g => g.id === result.gameId);
   if (!game) return null;
   const isNationalLottery = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
+  const firstPrizeNumber = result.firstPrizeNumber ?? (Array.isArray(result.numbers) ? result.numbers.join('') : '');
+  const hasDetailedNationalResult = Boolean(firstPrizeNumber || result.secondPrizeNumber || result.reintegros?.length);
 
   return (
     <AnimatePresence>
@@ -103,20 +105,29 @@ export function ComparisonModal({ isOpen, onClose, result, userTickets }: Compar
                   <div className="p-4 bg-[linear-gradient(135deg,rgba(10,25,47,0.08)_0%,rgba(227,182,87,0.12)_100%)] rounded-2xl border border-manises-blue/12 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">1º Premio</span>
-                      <span className="font-black text-xl text-manises-blue tracking-[0.08em]">{result.firstPrizeNumber}</span>
+                      <span className="font-black text-xl text-manises-blue tracking-[0.08em]">{firstPrizeNumber || 'Pendiente'}</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">2º Premio</span>
-                      <span className="font-black text-base text-manises-blue tracking-[0.08em]">{result.secondPrizeNumber}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Reintegros</span>
-                      {result.reintegros?.map((digit) => (
-                        <span key={digit} className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-white border border-manises-blue/15 px-2 text-[10px] font-black text-manises-blue">
-                          {digit}
-                        </span>
-                      ))}
-                    </div>
+                    {result.secondPrizeNumber && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">2º Premio</span>
+                        <span className="font-black text-base text-manises-blue tracking-[0.08em]">{result.secondPrizeNumber}</span>
+                      </div>
+                    )}
+                    {result.reintegros?.length ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Reintegros</span>
+                        {result.reintegros.map((digit) => (
+                          <span key={digit} className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-white border border-manises-blue/15 px-2 text-[10px] font-black text-manises-blue">
+                            {digit}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                    {!hasDetailedNationalResult && (
+                      <p className="text-[11px] font-medium text-muted-foreground">
+                        Escrutinio simplificado en demo. El desglose oficial detallado llegará con la integración real.
+                      </p>
+                    )}
                   </div>
                 )}
               </section>
