@@ -139,10 +139,11 @@ export function GamePlayPage() {
 
   const isNationalLottery = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
   const isQuiniela = game.id === 'quiniela';
+  const isExplicitNationalProduct = gameId === 'loteria-nacional-jueves' || gameId === 'loteria-nacional-sabado';
 
   // Próximas 5 fechas para lotería nacional
   const availableNationalDates = useMemo(() => {
-    if (!isNationalLottery || (gameId !== 'loteria-nacional-jueves' && gameId !== 'loteria-nacional-sabado')) return [];
+    if (!isNationalLottery || !isExplicitNationalProduct) return [];
     
     // Usamos el primer sorteo disponible como base
     const baseDraw = (gameId === 'loteria-nacional-jueves') 
@@ -156,7 +157,16 @@ export function GamePlayPage() {
       dates.push(d.toISOString());
     }
     return dates;
-  }, [isNationalLottery, gameId]);
+  }, [isExplicitNationalProduct, isNationalLottery, gameId]);
+
+  const effectiveSelectedDrawDates = useMemo(() => {
+    if (!isExplicitNationalProduct) return selectedDrawDates;
+
+    const validDates = selectedDrawDates.filter((drawDate) => availableNationalDates.includes(drawDate));
+    if (validDates.length > 0) return validDates;
+
+    return availableNationalDates.length > 0 ? [availableNationalDates[0]] : [];
+  }, [availableNationalDates, isExplicitNationalProduct, selectedDrawDates]);
 
   // Resetear estados cuando cambia el juego para evitar arrastrar selecciones o precios incorrectos
   useEffect(() => {
@@ -179,10 +189,27 @@ export function GamePlayPage() {
     }
   }, [gameId, availableNationalDates, isNationalLottery]);
 
+  useEffect(() => {
+    if (!isExplicitNationalProduct) return;
+
+    setSelectedDrawDates((current) => {
+      const validDates = current.filter((drawDate) => availableNationalDates.includes(drawDate));
+      const nextDates = validDates.length > 0
+        ? validDates
+        : availableNationalDates.length > 0
+          ? [availableNationalDates[0]]
+          : [];
+
+      return current.length === nextDates.length && current.every((drawDate, index) => drawDate === nextDates[index])
+        ? current
+        : nextDates;
+    });
+  }, [availableNationalDates, isExplicitNationalProduct]);
+
   const isStructuredGame = Boolean(game.selectionRange) || isNationalLottery || isQuiniela;
   const drawScheduleConfig = getDrawScheduleConfig(game.type);
   const supportsTimeSelection = (Boolean(drawScheduleConfig?.supportsMultipleDrawSelection) && !isQuiniela) || 
-                               (isNationalLottery && (gameId === 'loteria-nacional-jueves' || gameId === 'loteria-nacional-sabado'));
+                               (isNationalLottery && isExplicitNationalProduct);
 
   if (!isStructuredGame) {
     return (
@@ -272,7 +299,7 @@ export function GamePlayPage() {
     ? (selectedNationalDraw?.decimoPrice ?? game.price ?? 3) * selectedNationalQuantity
     : calculateTotalPrice(game.price, betsCount, false);
   
-  const drawsCount = Math.max(selectedDrawDates.length, 1);
+  const drawsCount = Math.max(effectiveSelectedDrawDates.length, 1);
   const basePrice = drawPrice * drawsCount;
   const totalPrice = basePrice + (hasInsurance ? INSURANCE_PRICE : 0);
   const isOverBalance = profile ? profile.balance < totalPrice : false;
@@ -290,7 +317,7 @@ export function GamePlayPage() {
     reducedSystemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
   });
   const groupedSelectedDraws = groupDrawsByWeek(
-    selectedDrawDates.map((drawDate) => ({
+    effectiveSelectedDrawDates.map((drawDate) => ({
       gameId: game.type,
       drawDate,
       label: new Date(drawDate).toLocaleDateString('es-ES', {
@@ -319,6 +346,18 @@ export function GamePlayPage() {
       return;
     }
 
+    if (isExplicitNationalProduct) {
+      setSelectedDrawDates((current) => {
+        const validDates = current.filter((drawDate) => availableNationalDates.includes(drawDate));
+        return validDates.length > 0
+          ? validDates
+          : availableNationalDates.length > 0
+            ? [availableNationalDates[0]]
+            : [fallbackDrawDate];
+      });
+      return;
+    }
+
     let resolvedDraws = getUpcomingDraws(game.type, new Date(), 1);
 
     if (timeMode === 'current_week') {
@@ -338,6 +377,8 @@ export function GamePlayPage() {
   }, [
     game.nextDraw,
     game.type,
+    availableNationalDates,
+    isExplicitNationalProduct,
     isNationalLottery,
     selectedNationalDraw.nextDraw,
     selectedWeeksCount,
@@ -460,8 +501,8 @@ export function GamePlayPage() {
     }
     if (isOverBalance) { toast.error('Saldo insuficiente'); return; }
 
-    const drawDates = selectedDrawDates.length > 0 
-      ? selectedDrawDates 
+    const drawDates = effectiveSelectedDrawDates.length > 0 
+      ? effectiveSelectedDrawDates 
       : [getBusinessDate(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw)];
     const drawDate = drawDates[0];
     
@@ -1097,7 +1138,7 @@ export function GamePlayPage() {
                   <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400 mb-2">Sorteos Disponibles (Próximas 5 semanas)</p>
                   <div className="grid grid-cols-1 gap-2">
                     {availableNationalDates.map((dateIso) => {
-                      const isSelected = selectedDrawDates.includes(dateIso);
+                      const isSelected = effectiveSelectedDrawDates.includes(dateIso);
                       const dateObj = new Date(dateIso);
                       return (
                         <button
