@@ -92,25 +92,38 @@ function TodayGameCard({ game, onClick }: { key?: Key; game: LotteryGame; onClic
 // ─── Sub-component: UpcomingGameRow ──────────────────────────────────────────
 function UpcomingGameRow({ game, onClick }: { key?: Key; game: LotteryGame; onClick: () => void }) {
   const identity = getGameIdentity(game);
+  const imageMap: Record<string, string> = {
+    primitiva: primitivaJoy,
+    bonoloto: joySecondary,
+    gordo: primitivaJoyV2,
+    quiniela: headerWinner,
+    'loteria-nacional-jueves': loteriaJuevesLuck,
+    'loteria-nacional-sabado': loteriaNacionalHero,
+    'loteria-navidad': loteriaNavidadHero,
+    'loteria-nino': primitivaJoyV2,
+  };
+  const image = imageMap[game.id] ?? joySecondary;
   return (
     <PremiumTouchInteraction scale={0.97}>
       <button
         onClick={onClick}
-        className="weekly-game-card w-full bg-white/70 backdrop-blur-md border border-gray-100 rounded-2xl p-4 flex items-center justify-between shadow-sm transition-all group"
+        className="weekly-game-card relative w-full overflow-hidden rounded-[1.6rem] border border-white/10 p-4 text-left shadow-lg transition-all group"
       >
+        <img
+          src={image}
+          alt={game.name}
+          className="absolute inset-0 h-full w-full object-cover opacity-18 transition-transform duration-700 group-hover:scale-105"
+          style={{ filter: 'grayscale(0.85) brightness(0.5)' }}
+        />
+        <div className="absolute inset-0" style={{ backgroundColor: game.color, mixBlendMode: 'multiply', opacity: 0.78 }} />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
+
+        <div className="relative flex items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 flex-1 min-w-0">
-          <GameBadge game={game} size="sm" tone="soft" />
+          <GameBadge game={game} size="md" tone="ghost" className="border-white/15 bg-white/10 shadow-[0_14px_28px_rgba(0,0,0,0.2)]" />
           <div className="min-w-0">
-            <div className="mb-1">
-              <span
-                className="inline-flex rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.16em]"
-                style={{ backgroundColor: identity.chipBackground, color: identity.chipText }}
-              >
-                {identity.badgeLabel}
-              </span>
-            </div>
-            <h3 className="font-black text-manises-blue text-sm truncate">{identity.shortName}</h3>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+            <h3 className="font-black text-white text-sm truncate">{identity.shortName}</h3>
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-white/72">
               {formatDrawTime(game.nextDraw)}
             </p>
           </div>
@@ -121,11 +134,12 @@ function UpcomingGameRow({ game, onClick }: { key?: Key; game: LotteryGame; onCl
             <p className="text-[11px] font-black text-manises-gold leading-none">
               {formatJackpot(game.jackpot, game.isMonthly)}
             </p>
-            <p className="text-[9px] font-medium text-muted-foreground mt-0.5">{formatCurrency(game.price)}</p>
+            <p className="mt-0.5 text-[9px] font-medium text-white/68">{formatCurrency(game.price)}</p>
           </div>
-          <div className="w-8 h-8 rounded-full bg-manises-blue/5 flex items-center justify-center text-manises-blue group-hover:bg-manises-blue group-hover:text-white transition-all shadow-inner shrink-0">
+          <div className="w-8 h-8 rounded-full bg-white/12 border border-white/12 flex items-center justify-center text-white transition-all shadow-inner shrink-0">
             <ChevronRight className="w-4 h-4" />
           </div>
+        </div>
         </div>
       </button>
     </PremiumTouchInteraction>

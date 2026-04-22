@@ -156,7 +156,7 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
           <div className="flex items-start justify-between">
             <GameBadge
               game={game}
-              size="md"
+              size="lg"
               tone="ghost"
               className="border-white/15 bg-white/10 shadow-[0_16px_32px_rgba(0,0,0,0.22)]"
             />
@@ -170,18 +170,14 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
           </div>
 
           <div>
-            <div className="mb-2 flex items-center gap-2">
-              <span
-                className="inline-flex rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-[0.18em] shadow-[0_8px_18px_rgba(0,0,0,0.22)]"
-                style={{ backgroundColor: identity.chipBackground, color: identity.chipText }}
-              >
-                {identity.badgeLabel}
-              </span>
+            <h3 className="text-[1.05rem] font-black text-white tracking-tight leading-none mb-1.5">{identity.shortName}</h3>
+            <div className="flex items-center gap-2 text-[11px]">
+              <p className="font-black text-manises-gold tabular-nums">
+                {formatJackpot(game.jackpot, game.isMonthly)}
+              </p>
+              <span className="text-white/28">·</span>
+              <p className="font-bold text-white/72">{formatCurrency(game.price)}</p>
             </div>
-            <h3 className="text-base font-black text-white tracking-tight leading-none mb-1">{identity.shortName}</h3>
-            <p className="text-[14px] font-black text-manises-gold tabular-nums">
-              {formatJackpot(game.jackpot, game.isMonthly)}
-            </p>
           </div>
         </div>
       </button>
