@@ -8,6 +8,7 @@ import { Input } from '@/shared/ui/Input';
 import { Button } from '@/shared/ui/Button';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { formatDate, formatCurrency, cn } from '@/shared/lib/utils';
+import { getBusinessDate } from '@/shared/lib/timezone';
 import {
   Ticket as TicketIcon,
   Search,
@@ -48,7 +49,7 @@ function getTicketCode(ticketId: string) {
 function getTicketResultMatch(ticket: Ticket, results: any[]) {
   return results.find((result) => (
     result.gameId === ticket.gameId &&
-    ticket.drawDate === result.date.split('T')[0]
+    ticket.drawDate === getBusinessDate(result.date)
   )) ?? null;
 }
 

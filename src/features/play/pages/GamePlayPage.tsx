@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getBusinessDate } from '@/shared/lib/timezone';
 import { motion, AnimatePresence } from 'motion/react';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { Button } from '@/shared/ui/Button';
@@ -244,7 +245,7 @@ export function GamePlayPage() {
   }, [game.id, maxWeeksSelectable]);
 
   useEffect(() => {
-    const fallbackDrawDate = new Date(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw).toISOString();
+    const fallbackDrawDate = getBusinessDate(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw);
 
     if (!supportsTimeSelection) {
       setSelectedDrawDates([fallbackDrawDate]);
@@ -392,8 +393,9 @@ export function GamePlayPage() {
     }
     if (isOverBalance) { toast.error('Saldo insuficiente'); return; }
 
-    const drawDates = (selectedDrawDates.length > 0 ? selectedDrawDates : [new Date(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw).toISOString()])
-      .map((draw) => new Date(draw).toISOString().split('T')[0]);
+    const drawDates = selectedDrawDates.length > 0 
+      ? selectedDrawDates 
+      : [getBusinessDate(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw)];
     const drawDate = drawDates[0];
     
     // 321: Preparamos la selección para el hook
