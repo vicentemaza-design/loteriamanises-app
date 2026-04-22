@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getBusinessDate } from '@/shared/lib/timezone';
 import { motion, AnimatePresence } from 'motion/react';
@@ -137,6 +137,27 @@ export function GamePlayPage() {
     );
   }
 
+  const isNationalLottery = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
+  const isQuiniela = game.id === 'quiniela';
+
+  // Próximas 5 fechas para lotería nacional
+  const availableNationalDates = useMemo(() => {
+    if (!isNationalLottery || (gameId !== 'loteria-nacional-jueves' && gameId !== 'loteria-nacional-sabado')) return [];
+    
+    // Usamos el primer sorteo disponible como base
+    const baseDraw = (gameId === 'loteria-nacional-jueves') 
+      ? nextWeekdayIso(4, 21) // Jueves 21:00
+      : nextWeekdayIso(6, 13); // Sábado 13:00
+      
+    const dates = [baseDraw];
+    for (let i = 1; i < 5; i++) {
+      const d = new Date(baseDraw);
+      d.setDate(d.getDate() + (i * 7));
+      dates.push(d.toISOString());
+    }
+    return dates;
+  }, [isNationalLottery, gameId]);
+
   // Resetear estados cuando cambia el juego para evitar arrastrar selecciones o precios incorrectos
   useEffect(() => {
     setSelectedNumbers([]);
@@ -149,13 +170,19 @@ export function GamePlayPage() {
     if (gameId === 'loteria-nacional-jueves') setSelectedNationalDrawId('jueves');
     else if (gameId === 'loteria-nacional-sabado') setSelectedNationalDrawId('sabado');
     else setSelectedNationalDrawId('especial');
-  }, [gameId]);
 
-  const isNationalLottery = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
-  const isQuiniela = game.id === 'quiniela';
+    // Inicializar fechas de sorteo
+    if (isNationalLottery && availableNationalDates.length > 0) {
+      setSelectedDrawDates([availableNationalDates[0]]);
+    } else {
+      setSelectedDrawDates([]);
+    }
+  }, [gameId, availableNationalDates, isNationalLottery]);
+
   const isStructuredGame = Boolean(game.selectionRange) || isNationalLottery || isQuiniela;
   const drawScheduleConfig = getDrawScheduleConfig(game.type);
-  const supportsTimeSelection = Boolean(drawScheduleConfig?.supportsMultipleDrawSelection) && !isNationalLottery && !isQuiniela;
+  const supportsTimeSelection = (Boolean(drawScheduleConfig?.supportsMultipleDrawSelection) && !isQuiniela) || 
+                               (isNationalLottery && (gameId === 'loteria-nacional-jueves' || gameId === 'loteria-nacional-sabado'));
 
   if (!isStructuredGame) {
     return (
@@ -1050,45 +1077,95 @@ export function GamePlayPage() {
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {SCHEDULE_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => setTimeMode(option.id)}
-                    className={cn(
-                      'rounded-2xl border px-3 py-3 text-left transition-all',
-                      timeMode === option.id
-                        ? 'border-manises-blue bg-[linear-gradient(180deg,rgba(10,71,146,0.06)_0%,rgba(10,71,146,0.10)_100%)] shadow-[0_12px_24px_rgba(10,71,146,0.10)]'
-                        : 'border-white bg-white/90 shadow-[0_8px_18px_rgba(15,23,42,0.04)] hover:border-manises-blue/20'
-                    )}
-                  >
-                    <p className={cn(
-                      'text-[11px] font-black uppercase tracking-[0.12em]',
-                      timeMode === option.id ? 'text-manises-blue' : 'text-slate-500'
-                    )}>
-                      {option.label}
-                    </p>
-                  </button>
-                ))}
-              </div>
-
-              {timeMode === 'custom_weeks' && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {Array.from({ length: maxWeeksSelectable - 1 }, (_, index) => index + 2).map((weeks) => (
-                    <button
-                      key={weeks}
-                      onClick={() => setSelectedWeeksCount(weeks)}
-                      className={cn(
-                        'rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] transition-all',
-                        selectedWeeksCount === weeks
-                          ? 'border-manises-gold bg-amber-50 text-manises-blue shadow-[0_8px_18px_rgba(184,134,11,0.10)]'
-                          : 'border-white bg-white text-slate-500 shadow-[0_6px_14px_rgba(15,23,42,0.04)] hover:border-manises-gold/40'
-                      )}
-                    >
-                      {weeks} semanas
-                    </button>
-                  ))}
+              {/* UI Específica para Lotería Nacional: Selección explícita de sorteos */}
+              {isNationalLottery ? (
+                <div className="mt-4 space-y-2">
+                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400 mb-2">Sorteos Disponibles (Próximas 5 semanas)</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {availableNationalDates.map((dateIso) => {
+                      const isSelected = selectedDrawDates.includes(dateIso);
+                      const dateObj = new Date(dateIso);
+                      return (
+                        <button
+                          key={dateIso}
+                          onClick={() => {
+                            setSelectedDrawDates(prev => {
+                              if (prev.includes(dateIso)) {
+                                if (prev.length === 1) return prev; // Al menos uno seleccionado
+                                return prev.filter(d => d !== dateIso);
+                              }
+                              return [...prev, dateIso].sort();
+                            });
+                          }}
+                          className={cn(
+                            'flex items-center justify-between rounded-2xl border px-4 py-3 transition-all',
+                            isSelected
+                              ? 'border-manises-blue bg-manises-blue/[0.03] shadow-sm'
+                              : 'border-slate-100 bg-white/50'
+                          )}
+                        >
+                          <div className="flex flex-col items-start">
+                            <span className={cn("text-xs font-black", isSelected ? "text-manises-blue" : "text-slate-700")}>
+                              {dateObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                              Sorteo Ordinario
+                            </span>
+                          </div>
+                          <div className={cn(
+                            "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                            isSelected ? "bg-manises-blue border-manises-blue" : "border-slate-200 bg-white"
+                          )}>
+                            {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
+              ) : (
+                <>
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    {SCHEDULE_OPTIONS.map((option) => (
+                      <button
+                        key={option.id}
+                        onClick={() => setTimeMode(option.id)}
+                        className={cn(
+                          'rounded-2xl border px-3 py-3 text-left transition-all',
+                          timeMode === option.id
+                            ? 'border-manises-blue bg-[linear-gradient(180deg,rgba(10,71,146,0.06)_0%,rgba(10,71,146,0.10)_100%)] shadow-[0_12px_24px_rgba(10,71,146,0.10)]'
+                            : 'border-white bg-white/90 shadow-[0_8px_18px_rgba(15,23,42,0.04)] hover:border-manises-blue/20'
+                        )}
+                      >
+                        <p className={cn(
+                          'text-[11px] font-black uppercase tracking-[0.12em]',
+                          timeMode === option.id ? 'text-manises-blue' : 'text-slate-500'
+                        )}>
+                          {option.label}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+
+                  {timeMode === 'custom_weeks' && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {Array.from({ length: maxWeeksSelectable - 1 }, (_, index) => index + 2).map((weeks) => (
+                        <button
+                          key={weeks}
+                          onClick={() => setSelectedWeeksCount(weeks)}
+                          className={cn(
+                            'rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] transition-all',
+                            selectedWeeksCount === weeks
+                              ? 'border-manises-gold bg-amber-50 text-manises-blue shadow-[0_8px_18px_rgba(184,134,11,0.10)]'
+                              : 'border-white bg-white text-slate-500 shadow-[0_6px_14px_rgba(15,23,42,0.04)] hover:border-manises-gold/40'
+                          )}
+                        >
+                          {weeks} semanas
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
 
               <div className="mt-4 rounded-2xl border border-manises-blue/10 bg-white/80 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
@@ -1258,8 +1335,11 @@ export function GamePlayPage() {
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Importe Total
               </p>
-              <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
-                {formatCurrency(drawPrice)} x {drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}
+              <p className="mt-0.5 text-[10px] font-medium text-muted-foreground leading-tight">
+                {isNationalLottery 
+                  ? `${selectedNationalQuantity} ${selectedNationalQuantity === 1 ? 'décimo' : 'décimos'} x ${drawsCount} ${drawsCount === 1 ? 'sorteo' : 'sorteos'}`
+                  : `${formatCurrency(drawPrice)} x ${drawsCount} ${drawsCount === 1 ? 'sorteo' : 'sorteos'}`
+                }
               </p>
               <div className="mt-1 flex items-baseline gap-1.5">
                 <p className="text-[1.35rem] font-black tabular-nums leading-none" style={theme.title}>
