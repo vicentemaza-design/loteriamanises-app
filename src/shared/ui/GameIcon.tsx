@@ -50,12 +50,12 @@ const iconMap: Partial<Record<GameType, Record<IconVariant, string>>> = {
     white: laQuinielaWhite,
   },
   navidad: {
-    color: elGordoRed,
-    white: elGordoWhite,
+    color: loteriaNacionalBlue,
+    white: loteriaNacionalWhite,
   },
   nino: {
-    color: euromillonesBlue,
-    white: euromillonesWhite,
+    color: loteriaNacionalBlue,
+    white: loteriaNacionalWhite,
   },
 };
 

@@ -20,6 +20,7 @@ import type { ResultDto } from '@/services/api/contracts/results.contracts';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
+import { getGameIdentity } from '@/shared/lib/game-identity';
 
 gsap.registerPlugin(useGSAP);
 
@@ -64,7 +65,18 @@ const DEMO_TICKETS: Ticket[] = [
   },
 ];
 
-const GAME_FILTERS = ['Todos', ...LOTTERY_GAMES.map(g => g.name)];
+const GAME_FILTERS = [
+  { key: 'Todos', label: 'Todos' },
+  ...LOTTERY_GAMES.map((game) => ({
+    key: game.name,
+    label: getGameIdentity(game).shortName,
+    game,
+  })),
+];
+
+function hasGameFilter(filter: (typeof GAME_FILTERS)[number]): filter is Extract<(typeof GAME_FILTERS)[number], { game: NonNullable<unknown> }> {
+  return 'game' in filter;
+}
 
 export function ResultsPage() {
   const { user, isDemo } = useAuth();
@@ -120,21 +132,37 @@ export function ResultsPage() {
 
       {/* Filtros horizontales — Limpio y Funcional */}
       <div className="flex gap-3 overflow-x-auto scrollbar-hide py-2 -mx-4 px-4">
-        {GAME_FILTERS.map(f => (
-          <PremiumTouchInteraction key={f} scale={0.95}>
-            <button
-              onClick={() => setActiveFilter(f)}
-              className={cn(
-                'filter-chip text-[11px] font-bold px-5 py-2.5 rounded-xl whitespace-nowrap border transition-all shrink-0 uppercase tracking-widest',
-                activeFilter === f
-                  ? 'bg-manises-blue text-white border-manises-blue shadow-md'
-                  : 'bg-white text-manises-blue/60 border-manises-blue/5 hover:border-manises-blue/20'
-              )}
-            >
-              {f}
-            </button>
-          </PremiumTouchInteraction>
-        ))}
+        {GAME_FILTERS.map((filter) => {
+          const identity = hasGameFilter(filter) ? getGameIdentity(filter.game) : null;
+
+          return (
+            <PremiumTouchInteraction key={filter.key} scale={0.95}>
+              <button
+                onClick={() => setActiveFilter(filter.key)}
+                className={cn(
+                  'filter-chip inline-flex items-center gap-2 text-[11px] font-bold px-4 py-2.5 rounded-xl whitespace-nowrap border transition-all shrink-0 uppercase tracking-widest',
+                  activeFilter === filter.key
+                    ? 'bg-manises-blue text-white border-manises-blue shadow-md'
+                    : 'bg-white text-manises-blue/60 border-manises-blue/5 hover:border-manises-blue/20'
+                )}
+              >
+                {identity ? (
+                  <>
+                    <span
+                      className="inline-flex rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.14em]"
+                      style={{ backgroundColor: identity.chipBackground, color: identity.chipText }}
+                    >
+                      {identity.badgeLabel}
+                    </span>
+                    <span>{filter.label}</span>
+                  </>
+                ) : (
+                  filter.label
+                )}
+              </button>
+            </PremiumTouchInteraction>
+          );
+        })}
       </div>
 
       {/* Resultados */}
@@ -156,6 +184,7 @@ export function ResultsPage() {
         {!isLoading && !error && filtered.map((result, index) => {
           const game = LOTTERY_GAMES.find(g => g.id === result.gameId);
           if (!game) return null;
+          const identity = getGameIdentity(game);
           const theme = getGameTheme(game);
           
           const userTicketsForSort = tickets.filter(t => 
@@ -175,8 +204,16 @@ export function ResultsPage() {
                   <div className="flex items-center gap-3">
                     <GameBadge game={game} size="sm" />
                     <div>
-                      <div className="inline-flex items-center px-2 py-0.5 rounded-pill border text-[9px] font-bold uppercase tracking-wider mb-1" style={theme.chip}>
-                        {game.name}
+                      <div className="mb-1 flex flex-wrap items-center gap-1.5">
+                        <div className="inline-flex items-center px-2 py-0.5 rounded-pill border text-[9px] font-bold uppercase tracking-wider" style={theme.chip}>
+                          {identity.shortName}
+                        </div>
+                        <span
+                          className="inline-flex rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.16em]"
+                          style={{ backgroundColor: identity.chipBackground, color: identity.chipText }}
+                        >
+                          {identity.badgeLabel}
+                        </span>
                       </div>
                       <p className="text-[10px] text-muted-foreground font-medium mt-0.5">
                         {formatDate(result.date)}

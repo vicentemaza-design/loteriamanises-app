@@ -32,6 +32,7 @@ import { useResults } from '@/features/results/hooks/useResults';
 import { ComparisonModal } from '@/features/results/components/ComparisonModal';
 import { toast } from 'sonner';
 import type { Ticket } from '@/shared/types/domain';
+import { getGameIdentity } from '@/shared/lib/game-identity';
 
 gsap.registerPlugin(useGSAP);
 
@@ -329,6 +330,7 @@ export function TicketsPage() {
                 const orderDatesSummary = getOrderDatesSummary(ticket);
                 const orderTotal = getOrderTotal(ticket);
                 const orderDrawLabel = orderDates.length === 1 ? 'Fecha' : 'Fechas';
+                const identity = getGameIdentity(game);
 
                 return (
                   <PremiumTouchInteraction key={ticket.id} scale={0.985}>
@@ -344,12 +346,21 @@ export function TicketsPage() {
 
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <h3 className="truncate text-[13px] font-black uppercase leading-tight text-manises-blue">{game.name}</h3>
+                                <h3 className="truncate text-[13px] font-black uppercase leading-tight text-manises-blue">{identity.shortName}</h3>
                                 {ticket.isSubscription && <Sparkles className="h-3 w-3 shrink-0 fill-current text-manises-gold" />}
                                 {ticket.hasInsurance && <Shield className="h-3 w-3 shrink-0 text-manises-gold" />}
                               </div>
 
-                              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                              <div className="mt-1">
+                                <span
+                                  className="inline-flex rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.16em]"
+                                  style={{ backgroundColor: identity.chipBackground, color: identity.chipText }}
+                                >
+                                  {identity.badgeLabel}
+                                </span>
+                              </div>
+
+                              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                                 <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{formatDate(ticket.drawDate)}</p>
                                 <span className="text-slate-300">·</span>
                                 <p className="text-[11px] font-black text-manises-blue">{formatCurrency(ticket.price ?? 0)}</p>
@@ -551,7 +562,7 @@ export function TicketsPage() {
                                   <div className="mt-2 space-y-1.5 text-[11px] font-medium text-slate-600">
                                     <p><span className="font-black text-manises-blue">Combinación:</span> {nationalTicket ? `Número ${ticketDisplayNumber}` : `${ticket.numbers.join(', ')}${ticket.stars?.length ? ` · Estrellas ${ticket.stars.join(', ')}` : ''}`}</p>
                                     {nationalTicket && (
-                                      <p><span className="font-black text-manises-blue">Producto:</span> {game.name}{ticket.metadata?.nationalDrawLabel ? ` · Sorteo de ${ticket.metadata.nationalDrawLabel}` : ''}</p>
+                                      <p><span className="font-black text-manises-blue">Producto:</span> {identity.shortName}{ticket.metadata?.nationalDrawLabel ? ` · Sorteo de ${ticket.metadata.nationalDrawLabel}` : ''}</p>
                                     )}
                                     {nationalTicket && (
                                       <p><span className="font-black text-manises-blue">{orderDrawLabel}:</span> {orderDates.map((date) => formatDate(date)).join(' · ')}</p>

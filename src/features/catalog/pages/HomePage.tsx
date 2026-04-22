@@ -18,11 +18,12 @@ import {
 } from 'iconoir-react/regular';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
-import { GameIcon } from '@/shared/ui/GameIcon';
+import { GameBadge } from '@/shared/ui/GameBadge';
 import { ScannerModal } from '@/shared/ui/ScannerModal';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { useInstallPrompt } from '@/shared/hooks/useInstallPrompt';
 import { useLotteryGames } from '@/shared/hooks/useLotteryGames';
+import { getGameIdentity } from '@/shared/lib/game-identity';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { useMemo, useRef, useState } from 'react';
@@ -116,6 +117,7 @@ function HeroJackpot({ jackpot, isMonthly }: { jackpot: number; isMonthly?: bool
 
 // ─── Sub-component: BentoGameCard ────────────────────────────────────────────
 function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof useLotteryGames>['games'][0]; onClick: () => void }) {
+  const identity = getGameIdentity(game);
   const imageByGameId: Record<string, string> = {
     primitiva: primitivaJoy,
     bonoloto: joySecondary,
@@ -152,10 +154,11 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
 
         <div className="relative h-full p-4 flex flex-col justify-between">
           <div className="flex items-start justify-between">
-            <GameIcon
-              gameType={game.type}
-              variant="white"
-              className="w-7 h-7 drop-shadow-[0_3px_10px_rgba(0,0,0,0.65)]"
+            <GameBadge
+              game={game}
+              size="md"
+              tone="ghost"
+              className="border-white/15 bg-white/10 shadow-[0_16px_32px_rgba(0,0,0,0.22)]"
             />
             {cd.isPast ? (
               <span className="text-[8px] font-black text-white/40 uppercase tracking-tighter">Sorteo pasado</span>
@@ -167,7 +170,15 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
           </div>
 
           <div>
-            <h3 className="text-base font-black text-white tracking-tight leading-none mb-1">{game.name}</h3>
+            <div className="mb-2 flex items-center gap-2">
+              <span
+                className="inline-flex rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-[0.18em] shadow-[0_8px_18px_rgba(0,0,0,0.22)]"
+                style={{ backgroundColor: identity.chipBackground, color: identity.chipText }}
+              >
+                {identity.badgeLabel}
+              </span>
+            </div>
+            <h3 className="text-base font-black text-white tracking-tight leading-none mb-1">{identity.shortName}</h3>
             <p className="text-[14px] font-black text-manises-gold tabular-nums">
               {formatJackpot(game.jackpot, game.isMonthly)}
             </p>

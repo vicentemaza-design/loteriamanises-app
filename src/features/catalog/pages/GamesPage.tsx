@@ -10,10 +10,11 @@ import {
   Clock
 } from 'lucide-react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
-import { GameIcon } from '@/shared/ui/GameIcon';
+import { GameBadge } from '@/shared/ui/GameBadge';
 import { formatJackpot, formatCurrency, formatDrawTime, getCountdown } from '@/shared/lib/utils';
 import { useLotteryGames } from '@/shared/hooks/useLotteryGames';
 import type { LotteryGame } from '@/shared/types/domain';
+import { getGameIdentity } from '@/shared/lib/game-identity';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
@@ -31,6 +32,7 @@ gsap.registerPlugin(useGSAP);
 
 // ─── Sub-component: TodayGameCard ─────────────────────────────────────────────
 function TodayGameCard({ game, onClick }: { key?: Key; game: LotteryGame; onClick: () => void }) {
+  const identity = getGameIdentity(game);
   const imageMap: Record<string, string> = {
     primitiva: primitivaJoy,
     'loteria-nacional-jueves': loteriaJuevesLuck,
@@ -57,11 +59,17 @@ function TodayGameCard({ game, onClick }: { key?: Key; game: LotteryGame; onClic
 
         <div className="relative h-full p-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shrink-0">
-              <GameIcon gameType={game.type} variant="white" className="w-8 h-8" />
-            </div>
+            <GameBadge game={game} size="lg" tone="ghost" className="shadow-2xl shrink-0" />
             <div>
-              <h3 className="text-white text-xl font-black tracking-tight leading-none mb-1">{game.name}</h3>
+              <div className="mb-1.5">
+                <span
+                  className="inline-flex rounded-full px-2 py-1 text-[9px] font-black uppercase tracking-[0.18em]"
+                  style={{ backgroundColor: identity.chipBackground, color: identity.chipText }}
+                >
+                  {identity.badgeLabel}
+                </span>
+              </div>
+              <h3 className="text-white text-xl font-black tracking-tight leading-none mb-1">{identity.shortName}</h3>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black text-manises-gold uppercase tracking-widest">Bote</span>
                 <span className="text-lg font-black text-white tabular-nums">
@@ -83,6 +91,7 @@ function TodayGameCard({ game, onClick }: { key?: Key; game: LotteryGame; onClic
 
 // ─── Sub-component: UpcomingGameRow ──────────────────────────────────────────
 function UpcomingGameRow({ game, onClick }: { key?: Key; game: LotteryGame; onClick: () => void }) {
+  const identity = getGameIdentity(game);
   return (
     <PremiumTouchInteraction scale={0.97}>
       <button
@@ -90,14 +99,17 @@ function UpcomingGameRow({ game, onClick }: { key?: Key; game: LotteryGame; onCl
         className="weekly-game-card w-full bg-white/70 backdrop-blur-md border border-gray-100 rounded-2xl p-4 flex items-center justify-between shadow-sm transition-all group"
       >
         <div className="flex items-center gap-3.5 flex-1 min-w-0">
-          <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg"
-            style={{ backgroundColor: game.color }}
-          >
-            <GameIcon gameType={game.type} variant="white" className="w-5 h-5" />
-          </div>
+          <GameBadge game={game} size="sm" tone="soft" />
           <div className="min-w-0">
-            <h3 className="font-black text-manises-blue text-sm truncate">{game.name}</h3>
+            <div className="mb-1">
+              <span
+                className="inline-flex rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.16em]"
+                style={{ backgroundColor: identity.chipBackground, color: identity.chipText }}
+              >
+                {identity.badgeLabel}
+              </span>
+            </div>
+            <h3 className="font-black text-manises-blue text-sm truncate">{identity.shortName}</h3>
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
               {formatDrawTime(game.nextDraw)}
             </p>
