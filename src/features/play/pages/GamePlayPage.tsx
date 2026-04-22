@@ -876,6 +876,7 @@ export function GamePlayPage() {
                   drawLabel={selectedNationalDraw.label}
                   drawDate={selectedNationalDraw.nextDraw}
                   price={selectedNationalDraw.decimoPrice}
+                  gameId={game.id}
                   drawType={
                     game.id === 'loteria-navidad' ? 'navidad' :
                     game.id === 'loteria-nino' ? 'nino' :
