@@ -34,6 +34,7 @@ import primitivaJoyV2 from '@/assets/images/primitiva_joy_v2.jpg';
 import joySecondary from '@/assets/images/joy_secondary.png';
 import loteriaNacionalHero from '@/assets/images/loteria_nacional.jpg';
 import loteriaJuevesLuck from '@/assets/images/loteria_jueves_luck.jpg';
+import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
 import quinielaHero from '@/assets/quiniela_hero.jpg';
 import adminFacade from '@/assets/images/administracion_manises.webp';
 
@@ -122,7 +123,7 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
     'loteria-nacional-sabado': loteriaNacionalHero,
     quiniela: quinielaHero,
     gordo: primitivaJoyV2,
-    'loteria-navidad': headerWinner,
+    'loteria-navidad': loteriaNavidadHero,
     'loteria-nino': primitivaJoyV2,
   };
   const image = imageByGameId[game.id] ?? joySecondary;

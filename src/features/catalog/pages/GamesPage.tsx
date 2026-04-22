@@ -23,6 +23,7 @@ import joySecondary from '@/assets/images/joy_secondary.png';
 import primitivaJoy from '@/assets/images/primitiva_joy.png';
 import loteriaNacionalHero from '@/assets/images/loteria_nacional.jpg';
 import loteriaJuevesLuck from '@/assets/images/loteria_jueves_luck.jpg';
+import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
 import headerWinner from '@/assets/images/header_winner.jpg';
 import primitivaJoyV2 from '@/assets/images/primitiva_joy_v2.jpg';
 
@@ -34,7 +35,7 @@ function TodayGameCard({ game, onClick }: { key?: Key; game: LotteryGame; onClic
     primitiva: primitivaJoy,
     'loteria-nacional-jueves': loteriaJuevesLuck,
     'loteria-nacional-sabado': loteriaNacionalHero,
-    'loteria-navidad': headerWinner,
+    'loteria-navidad': loteriaNavidadHero,
     'loteria-nino': primitivaJoyV2,
   };
   const image = imageMap[game.id] ?? joySecondary;
