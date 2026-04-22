@@ -137,6 +137,20 @@ export function GamePlayPage() {
     );
   }
 
+  // Resetear estados cuando cambia el juego para evitar arrastrar selecciones o precios incorrectos
+  useEffect(() => {
+    setSelectedNumbers([]);
+    setSelectedStars([]);
+    setSelectedNationalNumber(null);
+    setSelectedNationalQuantity(1);
+    setHasInsurance(false);
+    
+    // Sincronizar sorteo nacional por defecto
+    if (gameId === 'loteria-nacional-jueves') setSelectedNationalDrawId('jueves');
+    else if (gameId === 'loteria-nacional-sabado') setSelectedNationalDrawId('sabado');
+    else setSelectedNationalDrawId('especial');
+  }, [gameId]);
+
   const isNationalLottery = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
   const isQuiniela = game.id === 'quiniela';
   const isStructuredGame = Boolean(game.selectionRange) || isNationalLottery || isQuiniela;
@@ -203,15 +217,8 @@ export function GamePlayPage() {
     }
   }
 
-  const drawPrice = isNationalLottery
-    ? (NATIONAL_DRAW_CONFIG.find(d => d.id === selectedNationalDrawId)?.decimoPrice ?? 3) * selectedNationalQuantity
-    : calculateTotalPrice(game.price, betsCount, false);
-  const drawsCount = Math.max(selectedDrawDates.length, 1);
-  const basePrice = drawPrice * drawsCount;
-  const totalPrice = basePrice + (hasInsurance ? INSURANCE_PRICE : 0);
-  const isOverBalance = profile ? profile.balance < totalPrice : false;
-  const availableBalance = profile?.balance ?? 0;
-  const remainingBalance = Math.max(availableBalance - totalPrice, 0);
+
+
 
   const nationalDraws = (game.id === 'loteria-nacional-jueves' || game.id === 'loteria-nacional-sabado')
     ? NATIONAL_DRAW_CONFIG.filter(d => {
@@ -233,6 +240,18 @@ export function GamePlayPage() {
         nextDraw: game.nextDraw
       }];
   const selectedNationalDraw = nationalDraws.find((draw) => draw.id === selectedNationalDrawId) ?? nationalDraws[0];
+  
+  const drawPrice = isNationalLottery
+    ? (selectedNationalDraw?.decimoPrice ?? game.price ?? 3) * selectedNationalQuantity
+    : calculateTotalPrice(game.price, betsCount, false);
+  
+  const drawsCount = Math.max(selectedDrawDates.length, 1);
+  const basePrice = drawPrice * drawsCount;
+  const totalPrice = basePrice + (hasInsurance ? INSURANCE_PRICE : 0);
+  const isOverBalance = profile ? profile.balance < totalPrice : false;
+  const availableBalance = profile?.balance ?? 0;
+  const remainingBalance = Math.max(availableBalance - totalPrice, 0);
+  
   const selectedNationalTicket = NATIONAL_NUMBER_POOL.find((ticket) => ticket.number === selectedNationalNumber);
   const maxNationalQuantity = selectedNationalTicket?.available ?? 1;
   const nationalPotentialFirstPrize = selectedNationalDraw.firstPrize * selectedNationalQuantity;
