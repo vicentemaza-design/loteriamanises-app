@@ -132,10 +132,10 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
   const cd = getCountdown(game.nextDraw);
   const isNationalLottery = game.id.includes('loteria-nacional') || game.type === 'navidad' || game.type === 'nino';
   const imageStyle = isNationalLottery
-    ? { filter: 'grayscale(0.18) brightness(0.68) contrast(1.08)' }
-    : { filter: 'grayscale(0.4) brightness(0.54) contrast(1.04)' };
-  const imageOpacity = isNationalLottery ? 0.52 : 0.4;
-  const colorOverlayOpacity = isNationalLottery ? 0.5 : 0.62;
+    ? { filter: 'grayscale(0.1) brightness(0.7) contrast(1.06)' }
+    : { filter: 'grayscale(0.44) brightness(0.52) contrast(1.03)' };
+  const imageOpacity = isNationalLottery ? 0.46 : 0.34;
+  const colorOverlayOpacity = isNationalLottery ? 0.54 : 0.66;
 
   return (
     <PremiumTouchInteraction scale={0.96}>
@@ -152,7 +152,7 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
         <div className="absolute inset-0" style={{ backgroundColor: game.color, mixBlendMode: 'multiply', opacity: colorOverlayOpacity }} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/32 to-transparent" />
 
-        <div className="relative h-full p-4 flex flex-col justify-between">
+        <div className="relative h-full p-4.5 flex flex-col justify-between">
           <div className="flex items-start justify-between">
             <GameBadge
               game={game}
@@ -161,22 +161,22 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
               className="border-white/15 bg-white/10 shadow-[0_16px_32px_rgba(0,0,0,0.22)]"
             />
             {cd.isPast ? (
-              <span className="text-[8px] font-black text-white/40 uppercase tracking-tighter">Sorteo pasado</span>
+              <span className="rounded-full border border-white/10 bg-black/15 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] text-white/42 backdrop-blur-sm">Sorteo pasado</span>
             ) : (
-              <span className="text-[9px] font-black text-white/60 uppercase tracking-tighter">
+              <span className="rounded-full border border-white/10 bg-black/15 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.14em] text-white/68 backdrop-blur-sm">
                 {formatDrawTime(game.nextDraw)}
               </span>
             )}
           </div>
 
           <div>
-            <h3 className="text-[1.05rem] font-black text-white tracking-tight leading-none mb-1.5">{identity.shortName}</h3>
-            <div className="flex items-center gap-2 text-[11px]">
-              <p className="font-black text-manises-gold tabular-nums">
+            <h3 className="text-[1.08rem] font-black text-white tracking-tight leading-none mb-2">{identity.shortName}</h3>
+            <div className="flex items-end gap-2.5 text-[11px]">
+              <p className="font-black text-manises-gold tabular-nums leading-none">
                 {formatJackpot(game.jackpot, game.isMonthly)}
               </p>
-              <span className="text-white/28">·</span>
-              <p className="font-bold text-white/72">{formatCurrency(game.price)}</p>
+              <span className="pb-[1px] text-white/24">·</span>
+              <p className="pb-[1px] font-semibold text-white/74">{formatCurrency(game.price)}</p>
             </div>
           </div>
         </div>
