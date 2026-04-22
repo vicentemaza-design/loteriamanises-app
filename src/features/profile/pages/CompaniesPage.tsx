@@ -1,5 +1,5 @@
 import { BriefcaseBusiness, Building2, Mail, Phone, Users } from 'lucide-react';
-import companiesHero from '@/assets/images/loteria de empresas.jpg';
+import companiesHero from '@/assets/images/loteria_de_empresas.jpg';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { premiumDemoData } from '@/features/profile/data/premium-demo';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';

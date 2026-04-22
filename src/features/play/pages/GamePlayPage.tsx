@@ -33,6 +33,8 @@ import { GameInfoSheet } from '../components/GameInfoSheet';
 import { QuinielaProfessionalSelector } from '../components/QuinielaProfessionalSelector';
 import { ReductionSystemSelector } from '../components/ReductionSystemSelector';
 import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
+import { NationalTicketVisual, type NationalDrawType } from '../components/NationalTicketVisual';
+import { Trophy as TrophyIcon } from 'lucide-react';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
 import { getDrawsForCurrentWeek, getUpcomingDraws, groupDrawsByWeek } from '../lib/draw-schedule';
 
@@ -133,7 +135,7 @@ export function GamePlayPage() {
     );
   }
 
-  const isNationalLottery = game.id === 'loteria-nacional';
+  const isNationalLottery = game.id === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
   const isQuiniela = game.id === 'quiniela';
   const isStructuredGame = Boolean(game.selectionRange) || isNationalLottery || isQuiniela;
   const drawScheduleConfig = getDrawScheduleConfig(game.type);
@@ -209,10 +211,21 @@ export function GamePlayPage() {
   const availableBalance = profile?.balance ?? 0;
   const remainingBalance = Math.max(availableBalance - totalPrice, 0);
 
-  const nationalDraws = NATIONAL_DRAW_CONFIG.map((draw) => ({
-    ...draw,
-    nextDraw: nextWeekdayIso(draw.weekday, draw.hour),
-  }));
+  const nationalDraws = game.id === 'loteria-nacional' 
+    ? NATIONAL_DRAW_CONFIG.map((draw) => ({
+        ...draw,
+        nextDraw: nextWeekdayIso(draw.weekday, draw.hour),
+      }))
+    : [{
+        id: 'especial' as NationalDrawId,
+        label: game.name,
+        weekday: new Date(game.nextDraw).getDay(),
+        hour: new Date(game.nextDraw).getHours(),
+        decimoPrice: game.price,
+        firstPrize: game.jackpot,
+        secondPrize: game.jackpot * 0.2, // Fallback
+        nextDraw: game.nextDraw
+      }];
   const selectedNationalDraw = nationalDraws.find((draw) => draw.id === selectedNationalDrawId) ?? nationalDraws[0];
   const selectedNationalTicket = NATIONAL_NUMBER_POOL.find((ticket) => ticket.number === selectedNationalNumber);
   const maxNationalQuantity = selectedNationalTicket?.available ?? 1;
@@ -836,105 +849,99 @@ export function GamePlayPage() {
             )}
           </>
         ) : (
-          <>
-            <div className="space-y-4 rounded-[1.7rem] border border-manises-blue/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(244,248,255,0.98)_100%)] p-4 shadow-[0_18px_42px_rgba(10,71,146,0.10)]" style={theme.surface}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-black text-base text-manises-blue">Tu Selección</h2>
-                  <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-manises-blue/70">
-                    Sorteo y décimos
-                  </p>
-                </div>
+          <div className="space-y-8">
+            {/* Cabecera Informativa con Visual del Décimo */}
+            <section className="flex flex-col gap-6">
+              <div>
+                <h2 className="font-black text-base text-manises-blue">Configuración de tu jugada</h2>
+                <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-manises-blue/70">
+                  Visualiza y personaliza tu décimo
+                </p>
               </div>
 
-              <div className="flex items-center gap-3 rounded-2xl border border-manises-blue/12 bg-[linear-gradient(180deg,#ffffff_0%,#f7faff_100%)] p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-manises-blue/60">Administración oficial</p>
-                  <p className="mt-0.5 text-sm font-black text-manises-blue">Décimos disponibles para compra online</p>
-                  <p className="mt-1 text-[10px] font-semibold text-muted-foreground">Juego responsable +18</p>
-                </div>
-                <div className="h-[64px] w-[108px] shrink-0 overflow-hidden rounded-xl border border-manises-blue/15 shadow-[0_10px_20px_rgba(10,71,146,0.12)]">
-                  <img
-                    src={loteriaTicketVisual}
-                    alt="Billete de lotería nacional"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              </div>
+              {/* TICKET VISUAL - EL CORAZÓN DE LA EXPERIENCIA NACIONAL */}
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="stagger-item"
+              >
+                <NationalTicketVisual
+                  number={selectedNationalNumber}
+                  drawLabel={selectedNationalDraw.label}
+                  drawDate={selectedNationalDraw.nextDraw}
+                  price={selectedNationalDraw.decimoPrice}
+                  drawType={
+                    game.id === 'loteria-navidad' ? 'navidad' :
+                    game.id === 'loteria-nino' ? 'nino' :
+                    'ordinary'
+                  }
+                />
+              </motion.div>
 
-              <div className="grid grid-cols-2 gap-2">
-                {nationalDraws.map((draw) => {
-                  const active = draw.id === selectedNationalDrawId;
-                  return (
-                    <button
-                      key={draw.id}
-                      onClick={() => setSelectedNationalDrawId(draw.id)}
-                      className={`rounded-2xl border p-3 text-left transition-all ${
-                        active
-                          ? 'border-manises-blue bg-[linear-gradient(160deg,#0a4792_0%,#083d7d_100%)] shadow-[0_14px_28px_rgba(10,71,146,0.24)]'
-                          : 'border-white bg-white/95 shadow-[0_10px_24px_rgba(15,23,42,0.05)] hover:border-manises-blue/20 hover:shadow-[0_14px_28px_rgba(15,23,42,0.08)]'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <p className={`text-sm font-black ${active ? 'text-white' : 'text-manises-blue'}`}>{draw.label}</p>
-                        {active && (
-                          <span className="rounded-full border border-white/25 bg-white/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
-                            Activo
-                          </span>
+              {/* Selector de Sorteo (Jueves / Sábado) - SOLO SI ES LOTERÍA NACIONAL ORDINARIA */}
+              {game.id === 'loteria-nacional' && (
+                <div className="grid grid-cols-2 gap-3">
+                  {nationalDraws.map((draw) => {
+                    const active = draw.id === selectedNationalDrawId;
+                    return (
+                      <button
+                        key={draw.id}
+                        onClick={() => {
+                          setSelectedNationalDrawId(draw.id);
+                        }}
+                        className={cn(
+                          "relative flex flex-col gap-1 rounded-2xl border-2 p-4 text-left transition-all",
+                          active
+                            ? "border-manises-blue bg-manises-blue/[0.03] shadow-md"
+                            : "border-slate-100 bg-white hover:border-manises-blue/20"
                         )}
-                      </div>
-                      <p className={`text-[10px] font-medium mt-0.5 ${active ? 'text-white/75' : 'text-muted-foreground'}`}>{formatDrawTime(draw.nextDraw)}</p>
-                      <p className={`text-xs font-black mt-1 ${active ? 'text-[#F2CD74]' : 'text-[#B8860B]'}`}>
-                        {formatCurrency(draw.decimoPrice)} / décimo
-                      </p>
-                      {active && (
-                        <p className="text-[10px] font-semibold text-white/80 mt-1">
-                          1º: {formatCurrency(draw.firstPrize)} · 2º: {formatCurrency(draw.secondPrize)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={cn("text-xs font-black uppercase tracking-widest", active ? "text-manises-blue" : "text-slate-400")}>
+                            {draw.label}
+                          </span>
+                          {active && <CheckCircle className="w-4 h-4 text-manises-blue" />}
+                        </div>
+                        <p className={cn("text-lg font-black leading-none mt-1", active ? "text-manises-blue" : "text-slate-900")}>
+                          {formatCurrency(draw.decimoPrice)}
                         </p>
-                      )}
-                    </button>
-                  );
-                })}
+                        <p className="text-[10px] font-medium text-slate-500 mt-1">
+                          {formatDrawTime(draw.nextDraw)}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            {/* Selector de Números */}
+            <section className="space-y-4">
+              <div className="flex items-center justify-between px-1">
+                <h2 className="font-black text-sm text-manises-blue">Números en administración</h2>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost" size="sm"
+                    className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-slate-400"
+                    onClick={handleClear}
+                  >
+                    Limpiar
+                  </Button>
+                  <Button
+                    variant="outline" size="sm"
+                    className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest border-manises-gold/40 text-manises-gold bg-manises-gold/5"
+                    onClick={handleRandom}
+                  >
+                    Aleatorio
+                  </Button>
+                </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button
-                  variant="outline" size="sm"
-                  className="rounded-lg font-semibold text-xs px-4 border-gray-200 text-gray-500 hover:bg-gray-50"
-                  onClick={handleClear}
-                >
-                  <RefreshCircle className="w-3.5 h-3.5 mr-1.5" /> Limpiar
-                </Button>
-                <Button
-                  variant="outline" size="sm"
-                  className="rounded-lg font-semibold text-xs px-4 border-manises-blue/20 bg-manises-blue/5 text-manises-blue hover:bg-manises-blue/10"
-                  onClick={handleRandom}
-                >
-                  <Spark className="w-3.5 h-3.5 mr-1.5" /> Número aleatorio
-                </Button>
-              </div>
-
-              <p className="text-[10px] font-semibold text-manises-blue/70">
-                Terminaciones y reintegro se comprueban automáticamente en resultados.
-              </p>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-3 px-1">
-                <h2 className="font-black text-sm" style={theme.title}>Décimos disponibles</h2>
-                <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  {selectedNationalNumber ? `Seleccionado: ${selectedNationalNumber}` : 'Elige tu número'}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 {NATIONAL_NUMBER_POOL.map((ticket) => {
                   const active = ticket.number === selectedNationalNumber;
-                  const demandLabel = ticket.available <= 4 ? 'Alta demanda' : ticket.available <= 7 ? 'Demanda media' : 'Disponible';
-                  const demandClass = ticket.available <= 4
-                    ? 'bg-red-50 text-red-600 border-red-100'
-                    : ticket.available <= 7
-                      ? 'bg-amber-50 text-amber-700 border-amber-100'
-                      : 'bg-emerald-50 text-emerald-700 border-emerald-100';
+                  const isLowStock = ticket.available <= 4;
+                  
                   return (
                     <button
                       key={ticket.number}
@@ -942,63 +949,79 @@ export function GamePlayPage() {
                         setSelectedNationalNumber(ticket.number);
                         setSelectedNationalQuantity((qty) => Math.min(qty, ticket.available));
                       }}
-                      className={`relative overflow-hidden rounded-2xl border p-3 text-left transition-all ${
+                      className={cn(
+                        "group relative overflow-hidden rounded-2xl border-2 p-4 text-left transition-all",
                         active
-                          ? 'border-manises-blue bg-[linear-gradient(160deg,#0a4792_0%,#0c56b1_100%)] text-white shadow-[0_14px_28px_rgba(10,71,146,0.28)]'
-                          : 'border-white bg-white/95 shadow-[0_10px_24px_rgba(15,23,42,0.05)] hover:border-manises-blue/20 hover:shadow-[0_14px_28px_rgba(15,23,42,0.08)]'
-                      }`}
+                          ? "border-manises-blue bg-manises-blue text-white shadow-manises"
+                          : "border-slate-100 bg-white hover:border-manises-blue/20"
+                      )}
                     >
-                      <div className="relative z-10">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className={`text-lg font-black tracking-wider ${active ? 'text-white' : 'text-manises-blue'}`}>{ticket.number}</p>
-                          <span className={`rounded-full border px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${active ? 'border-white/25 bg-white/15 text-white' : demandClass}`}>
-                            {demandLabel}
-                          </span>
-                        </div>
-                        <p className={`text-[10px] font-semibold uppercase tracking-wider ${active ? 'text-white/80' : 'text-muted-foreground'}`}>
-                          Stock: {ticket.available} décimos
-                        </p>
+                      <p className={cn(
+                        "text-2xl font-black tracking-widest",
+                        active ? "text-white" : "text-manises-blue"
+                      )}>
+                        {ticket.number}
+                      </p>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className={cn(
+                          "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full border",
+                          active 
+                            ? "bg-white/15 border-white/20 text-white" 
+                            : isLowStock ? "bg-red-50 border-red-100 text-red-600" : "bg-slate-50 border-slate-100 text-slate-500"
+                        )}>
+                          {isLowStock ? 'Últimos' : 'Disponibles'}
+                        </span>
+                        <span className={cn(
+                          "text-[10px] font-bold",
+                          active ? "text-white/60" : "text-slate-400"
+                        )}>
+                          Stock: {ticket.available}
+                        </span>
                       </div>
                     </button>
                   );
                 })}
               </div>
-            </div>
+            </section>
 
-            {selectedNationalTicket && (
-              <div className="flex flex-col gap-3 rounded-[1.6rem] border border-manises-blue/12 bg-[linear-gradient(180deg,#ffffff_0%,#f6f9ff_100%)] p-4 shadow-[0_16px_36px_rgba(10,71,146,0.10)]">
-                <div className="flex items-start justify-between gap-3">
+            {/* Cantidad y Resumen */}
+            {selectedNationalNumber && (
+              <motion.section
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="rounded-[2rem] border border-manises-blue/10 bg-white p-6 shadow-xl"
+              >
+                <div className="flex items-center justify-between mb-6">
                   <div>
-                    <p className="text-xs font-black text-manises-blue uppercase tracking-wider">Ticket seleccionado</p>
-                    <p className="text-2xl font-black tracking-[0.10em] text-manises-blue mt-0.5">{selectedNationalTicket.number}</p>
-                    <p className="text-[10px] text-muted-foreground font-medium mt-1">
-                      Máximo disponible: {selectedNationalTicket.available} décimos
-                    </p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tu compra</p>
+                    <h3 className="text-xl font-black text-manises-blue mt-1">
+                      {selectedNationalQuantity} {selectedNationalQuantity === 1 ? 'décimo' : 'décimos'}
+                    </h3>
                   </div>
-                  <div className="min-w-[92px] rounded-2xl bg-[linear-gradient(160deg,#0a4792_0%,#0c56b1_100%)] px-3 py-2 text-right text-white shadow-[0_10px_22px_rgba(10,71,146,0.24)]">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">Total</p>
-                    <p className="text-lg font-black leading-none">{formatCurrency(selectedNationalDraw.decimoPrice * selectedNationalQuantity)}</p>
+                  <div className="text-right">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Subtotal</p>
+                    <p className="text-2xl font-black text-manises-blue mt-1">
+                      {formatCurrency(selectedNationalDraw.decimoPrice * selectedNationalQuantity)}
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between rounded-2xl border border-manises-blue/10 bg-white/80 px-3 py-2.5">
-                  <p className="text-[11px] font-black text-manises-blue uppercase tracking-wider">Cantidad</p>
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between p-2 bg-slate-50 rounded-2xl">
+                  <span className="ml-2 text-xs font-black text-slate-500 uppercase tracking-widest">Ajustar cantidad</span>
+                  <div className="flex items-center gap-3">
                     <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-9 w-9 rounded-xl"
-                      onClick={() => setSelectedNationalQuantity((qty) => Math.max(1, qty - 1))}
+                      variant="ghost" size="icon"
+                      className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
+                      onClick={() => setSelectedNationalQuantity(q => Math.max(1, q - 1))}
                       disabled={selectedNationalQuantity <= 1}
                     >
                       -
                     </Button>
-                    <span className="min-w-10 text-center font-black text-lg text-manises-blue">{selectedNationalQuantity}</span>
+                    <span className="w-6 text-center font-black text-lg text-manises-blue">{selectedNationalQuantity}</span>
                     <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-9 w-9 rounded-xl"
-                      onClick={() => setSelectedNationalQuantity((qty) => Math.min(maxNationalQuantity, qty + 1))}
+                      variant="ghost" size="icon"
+                      className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
+                      onClick={() => setSelectedNationalQuantity(q => Math.min(maxNationalQuantity, q + 1))}
                       disabled={selectedNationalQuantity >= maxNationalQuantity}
                     >
                       +
@@ -1006,12 +1029,15 @@ export function GamePlayPage() {
                   </div>
                 </div>
 
-                <p className="text-[10px] font-semibold text-manises-blue/70">
-                  Si este número fuera 1º premio: cobrarías {formatCurrency(nationalPotentialFirstPrize)}.
-                </p>
-              </div>
+                <div className="mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3">
+                  <TrophyIcon className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <p className="text-[11px] font-semibold text-emerald-800 leading-snug">
+                    Si este número resulta premiado con el <span className="font-black">Gordo</span>, cobrarías un total de <span className="font-black">{formatCurrency(nationalPotentialFirstPrize)}</span>.
+                  </p>
+                </div>
+              </motion.section>
             )}
-          </>
+          </div>
         )}
           </motion.div>
         </AnimatePresence>
