@@ -53,6 +53,7 @@ export function ScannerModal({ isOpen, onClose }: ScannerModalProps) {
               <Sparkles className="w-4 h-4 text-manises-gold" />
             </div>
             <h2 className="text-white font-bold text-base">Escanear Boleto</h2>
+            <span className="text-[8px] font-black bg-white/10 text-white/40 px-1.5 py-0.5 rounded border border-white/5 uppercase tracking-widest">Simulación</span>
           </div>
           <button 
             onClick={onClose}

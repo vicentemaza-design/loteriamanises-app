@@ -144,7 +144,7 @@ export const LOTTERY_GAMES: LotteryGame[] = [
     colorEnd: '#1e293b',
     icon: 'Landmark',
     price: 3.00,
-    description: 'Sorteo ordinario de los jueves',
+    description: 'Sorteo del Jueves: ¡300.000€ a la serie!',
     frequency: 'Jueves',
     technicalMode: 'simple',
     systemFamily: 'direct',

@@ -53,7 +53,7 @@ const DEMO_TICKETS: Ticket[] = [
   {
     id: 'demo-3',
     userId: 'demo-user',
-    gameId: 'loteria-nacional',
+    gameId: 'loteria-nacional-sabado',
     gameType: 'loteria-nacional',
     numbers: [6, 9, 8, 4, 4],
     drawDate: '2026-04-11',

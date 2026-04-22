@@ -883,43 +883,8 @@ export function GamePlayPage() {
                   }
                 />
               </motion.div>
-
-              {/* Selector de Sorteo (Jueves / Sábado) - SOLO SI EL ID NO ES ESPECÍFICO */}
-              {(game.id === 'loteria-nacional') && (
-                <div className="grid grid-cols-2 gap-3">
-                  {nationalDraws.map((draw) => {
-                    const active = draw.id === selectedNationalDrawId;
-                    return (
-                      <button
-                        key={draw.id}
-                        onClick={() => {
-                          setSelectedNationalDrawId(draw.id);
-                        }}
-                        className={cn(
-                          "relative flex flex-col gap-1 rounded-2xl border-2 p-4 text-left transition-all",
-                          active
-                            ? "border-manises-blue bg-manises-blue/[0.03] shadow-md"
-                            : "border-slate-100 bg-white hover:border-manises-blue/20"
-                        )}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className={cn("text-xs font-black uppercase tracking-widest", active ? "text-manises-blue" : "text-slate-400")}>
-                            {draw.label}
-                          </span>
-                          {active && <CheckCircle className="w-4 h-4 text-manises-blue" />}
-                        </div>
-                        <p className={cn("text-lg font-black leading-none mt-1", active ? "text-manises-blue" : "text-slate-900")}>
-                          {formatCurrency(draw.decimoPrice)}
-                        </p>
-                        <p className="text-[10px] font-medium text-slate-500 mt-1">
-                          {formatDrawTime(draw.nextDraw)}
-                        </p>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
             </section>
+
 
             {/* Selector de Números */}
             <section className="space-y-4">
