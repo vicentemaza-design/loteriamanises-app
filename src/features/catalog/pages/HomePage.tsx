@@ -346,12 +346,13 @@ export function HomePage() {
   const bentoGames = useMemo(() => {
     const baseGames = upcomingGames.filter((game) => game.id !== featuredGame.id);
     
-    // Priorizamos Jueves, Sábado, Navidad y Niño para que siempre aparezcan si están activos
-    const priorityIds = ['loteria-nacional-jueves', 'loteria-nacional-sabado', 'loteria-navidad', 'loteria-nino'];
-    const priorityGames = baseGames.filter(g => priorityIds.includes(g.id));
+    // Priorizamos Primitiva y Bonoloto primero, luego los nacionales
+    const priorityIds = ['primitiva', 'bonoloto', 'loteria-nacional-jueves', 'loteria-nacional-sabado', 'loteria-navidad', 'loteria-nino'];
+    const priorityGames = baseGames.filter(g => priorityIds.includes(g.id))
+      .sort((a, b) => priorityIds.indexOf(a.id) - priorityIds.indexOf(b.id));
     const otherGames = baseGames.filter(g => !priorityIds.includes(g.id));
     
-    // Combinamos mostrando primero los de prioridad (hasta 4 o más si queremos expandir la rejilla)
+    // Combinamos mostrando primero los de prioridad
     return [...priorityGames, ...otherGames].slice(0, 6); // Ampliamos a 6 para dar cabida a la nueva oferta
   }, [upcomingGames, featuredGame]);
 
