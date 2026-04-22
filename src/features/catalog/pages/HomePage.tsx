@@ -33,6 +33,7 @@ import primitivaJoy from '@/assets/images/primitiva_joy.png';
 import primitivaJoyV2 from '@/assets/images/primitiva_joy_v2.jpg';
 import joySecondary from '@/assets/images/joy_secondary.png';
 import loteriaNacionalHero from '@/assets/images/loteria_nacional.jpg';
+import loteriaJuevesLuck from '@/assets/images/loteria_jueves_luck.jpg';
 import quinielaHero from '@/assets/quiniela_hero.jpg';
 import adminFacade from '@/assets/images/administracion_manises.webp';
 
@@ -117,7 +118,7 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
   const imageByGameId: Record<string, string> = {
     primitiva: primitivaJoy,
     bonoloto: joySecondary,
-    'loteria-nacional-jueves': loteriaNacionalHero,
+    'loteria-nacional-jueves': loteriaJuevesLuck,
     'loteria-nacional-sabado': loteriaNacionalHero,
     quiniela: quinielaHero,
     gordo: primitivaJoyV2,
