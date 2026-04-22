@@ -54,7 +54,7 @@ function getTicketResultMatch(ticket: Ticket, results: any[]) {
 }
 
 function getMatchedValues(ticket: Ticket, result: any | null) {
-  if (!result || ticket.gameId === 'loteria-nacional') {
+  if (!result || ticket.gameType === 'loteria-nacional' || ticket.gameType === 'navidad' || ticket.gameType === 'nino') {
     return { numbers: [] as number[], stars: [] as number[] };
   }
 

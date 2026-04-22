@@ -54,6 +54,22 @@ export const DRAW_SCHEDULE_CONFIG: Partial<Record<GameType, DrawScheduleConfig>>
     supportsMultipleDrawSelection: false,
     supportsSubscription: false,
   },
+  navidad: {
+    drawWeekdays: [2], // 22 de diciembre
+    drawHour: 9,
+    drawMinute: 0,
+    maxWeeksSelectable: 1,
+    supportsMultipleDrawSelection: false,
+    supportsSubscription: false,
+  },
+  nino: {
+    drawWeekdays: [2], // 6 de enero
+    drawHour: 12,
+    drawMinute: 0,
+    maxWeeksSelectable: 1,
+    supportsMultipleDrawSelection: false,
+    supportsSubscription: false,
+  },
   quiniela: {
     drawWeekdays: [],
     drawHour: 18,

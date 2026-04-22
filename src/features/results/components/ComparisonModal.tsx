@@ -48,7 +48,7 @@ function evaluateNationalTicket(
 export function ComparisonModal({ isOpen, onClose, result, userTickets }: ComparisonModalProps) {
   const game = LOTTERY_GAMES.find(g => g.id === result.gameId);
   if (!game) return null;
-  const isNationalLottery = result.gameId === 'loteria-nacional';
+  const isNationalLottery = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
 
   return (
     <AnimatePresence>

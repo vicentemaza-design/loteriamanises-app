@@ -196,7 +196,7 @@ export function ResultsPage() {
                   </PremiumTouchInteraction>
                 </div>
 
-                {result.gameId !== 'loteria-nacional' ? (
+                {LOTTERY_GAMES.find(g => g.id === result.gameId)?.type !== 'loteria-nacional' ? (
                   <div className="flex flex-wrap gap-2 mb-3">
                     {result.numbers.map((n: any, i: number) => (
                       <NumberBall key={i} number={n} variant="default" size="sm" />
@@ -242,7 +242,7 @@ export function ResultsPage() {
                 <div className="flex items-center gap-1.5 pt-3 border-t border-border">
                   <TrendingUp className="w-3 h-3 text-muted-foreground" />
                   <span className="text-[10px] text-muted-foreground font-medium">
-                    {result.gameId === 'loteria-nacional' ? 'Premio principal por décimo: ' : 'Siguiente sorteo: '}
+                    {LOTTERY_GAMES.find(g => g.id === result.gameId)?.type === 'loteria-nacional' ? 'Premio principal por décimo: ' : 'Siguiente sorteo: '}
                     <span className="font-bold" style={theme.title}>
                       {(result.jackpotNext || 0) >= 1_000_000
                         ? `${((result.jackpotNext || 0) / 1_000_000).toFixed(0)}M €`

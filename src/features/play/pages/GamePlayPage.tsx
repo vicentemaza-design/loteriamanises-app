@@ -137,7 +137,7 @@ export function GamePlayPage() {
     );
   }
 
-  const isNationalLottery = game.id === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
+  const isNationalLottery = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
   const isQuiniela = game.id === 'quiniela';
   const isStructuredGame = Boolean(game.selectionRange) || isNationalLottery || isQuiniela;
   const drawScheduleConfig = getDrawScheduleConfig(game.type);
