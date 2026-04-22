@@ -21,6 +21,9 @@ import {
   CheckCircle2,
   CalendarDays,
   ReceiptText,
+  Hash,
+  Wallet,
+  Target,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTickets } from '../hooks/useTickets';
@@ -102,6 +105,27 @@ function getOrderTotal(ticket: Ticket) {
   return typeof ticket.metadata?.orderTotalPrice === 'number' ? ticket.metadata.orderTotalPrice : ticket.price;
 }
 
+function getScrutinyTone(ticket: Ticket, result: any | null) {
+  if (!result) {
+    return {
+      label: 'Sin resumen',
+      helper: 'Detalle completo pendiente de integración',
+    };
+  }
+
+  if (ticket.status === 'pending') {
+    return {
+      label: 'Resumen disponible',
+      helper: 'Resultado cargado, escrutinio completo pendiente',
+    };
+  }
+
+  return {
+    label: 'Ver resumen',
+    helper: 'Lectura disponible con el modelo actual',
+  };
+}
+
 function QuickActionButton({
   icon: Icon,
   label,
@@ -170,10 +194,10 @@ function ScrutinyFallbackModal({
               Jugada {getTicketCode(state.ticket.id)}
             </p>
             <p className="mt-1 text-sm font-medium leading-relaxed text-slate-600">
-              Todavía no existe un resultado compatible o un escrutinio detallado asociado a esta jugada en el modelo actual.
+              No hay un resultado compatible para esta jugada o el detalle de escrutinio todavía no está integrado en el frontend actual.
             </p>
             <p className="mt-3 text-[11px] font-semibold text-slate-500">
-              Fecha del sorteo: {formatDate(state.ticket.drawDate)}
+              Resumen disponible: código, fecha, importe y estado de la jugada.
             </p>
           </div>
 
@@ -313,7 +337,7 @@ export function TicketsPage() {
               />
             </div>
           ) : (
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-2">
               {displayed.map((ticket) => {
                 const game = LOTTERY_GAMES.find((entry) => entry.id === ticket.gameId);
                 if (!game) return null;
@@ -331,43 +355,41 @@ export function TicketsPage() {
                 const orderTotal = getOrderTotal(ticket);
                 const orderDrawLabel = orderDates.length === 1 ? 'Fecha' : 'Fechas';
                 const identity = getGameIdentity(game);
+                const scrutinyTone = getScrutinyTone(ticket, matchingResult);
+                const matchedValuesSummary = [
+                  matched.numbers.length > 0 ? matched.numbers.join(', ') : '',
+                  matched.stars.length > 0 ? `Estrellas ${matched.stars.join(', ')}` : '',
+                ].filter(Boolean).join(' · ');
 
                 return (
                   <PremiumTouchInteraction key={ticket.id} scale={0.985}>
                     <div className="ticket-card relative overflow-hidden rounded-[1.5rem] border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition-all">
                       <div className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: game.color }} />
 
-                      <div className="p-3.5 pl-4">
-                        <div className="flex items-start gap-3">
+                      <div className="p-3 pl-3.5">
+                        <div className="flex items-start gap-2.5">
                           <div className="flex min-w-0 flex-1 items-start gap-2.5">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-md" style={{ backgroundColor: game.color }}>
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-md" style={{ backgroundColor: game.color }}>
                               <GameBadge game={game} size="sm" variant="white" />
                             </div>
 
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5">
-                                <h3 className="truncate text-[13px] font-black uppercase leading-tight text-manises-blue">{identity.shortName}</h3>
+                                <h3 className="truncate text-[12px] font-black uppercase leading-tight text-manises-blue">{identity.shortName}</h3>
                                 {ticket.isSubscription && <Sparkles className="h-3 w-3 shrink-0 fill-current text-manises-gold" />}
                                 {ticket.hasInsurance && <Shield className="h-3 w-3 shrink-0 text-manises-gold" />}
                               </div>
 
-                              <div className="mt-1">
-                                <span
-                                  className="inline-flex rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.16em]"
-                                  style={{ backgroundColor: identity.chipBackground, color: identity.chipText }}
-                                >
-                                  {identity.badgeLabel}
-                                </span>
-                              </div>
-
-                              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                              <div className="mt-1 flex flex-wrap items-center gap-1.5">
                                 <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{formatDate(ticket.drawDate)}</p>
                                 <span className="text-slate-300">·</span>
                                 <p className="text-[11px] font-black text-manises-blue">{formatCurrency(ticket.price ?? 0)}</p>
+                                <span className="text-slate-300">·</span>
+                                <StatusBadge status={ticket.status} className="px-1.5 py-0 text-[9px]" />
                               </div>
 
                               {nationalTicket && (
-                                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                                   <span className="inline-flex items-center rounded-full border border-manises-blue/10 bg-manises-blue/[0.04] px-2 py-0.5 text-[10px] font-black text-manises-blue">
                                     Nº {ticketDisplayNumber}
                                   </span>
@@ -383,27 +405,31 @@ export function TicketsPage() {
                               )}
 
                               {nationalTicket && (
-                                <p className="mt-2 text-[11px] font-semibold leading-relaxed text-slate-500">
+                                <p className="mt-1.5 text-[10px] font-semibold leading-relaxed text-slate-500">
                                   {orderDrawLabel}: {orderDatesSummary}
                                 </p>
                               )}
 
-                              <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                                <StatusBadge status={ticket.status} className="px-2 py-0.5 text-[9px]" />
-                                {hasResolvedDraw && totalHits > 0 && (
-                                  <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-red-700">
-                                    <CheckCircle2 className="h-3 w-3" />
+                              {hasResolvedDraw && totalHits > 0 && (
+                                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-emerald-700">
+                                    <Target className="h-3 w-3" />
                                     {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'}
                                   </span>
-                                )}
-                              </div>
+                                  {matchedValuesSummary && (
+                                    <span className="text-[10px] font-semibold text-emerald-700">
+                                      {matchedValuesSummary}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
 
                           <button
                             type="button"
                             onClick={() => setExpandedIds((current) => current.includes(ticket.id) ? current.filter((id) => id !== ticket.id) : [...current, ticket.id])}
-                            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white text-manises-blue transition-all hover:border-manises-blue/20 hover:bg-manises-blue/[0.04]"
+                            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white text-manises-blue transition-all hover:border-manises-blue/20 hover:bg-manises-blue/[0.04]"
                             aria-expanded={isExpanded}
                             aria-label={isExpanded ? 'Ocultar detalle' : 'Mostrar detalle'}
                           >
@@ -411,7 +437,7 @@ export function TicketsPage() {
                           </button>
                         </div>
 
-                        <div className="mt-3 flex items-center justify-between gap-2">
+                        <div className="mt-2.5 flex items-center justify-between gap-2">
                           <div className="min-w-0 flex-1 overflow-hidden">
                             {nationalTicket ? (
                               <div className="rounded-2xl border border-manises-blue/10 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] px-3 py-2.5">
@@ -437,12 +463,12 @@ export function TicketsPage() {
                                         size="sm"
                                         className={cn(
                                           'h-7 w-7 text-[11px]',
-                                          isHit && 'border-red-200 bg-red-50 text-red-700 ring-1 ring-red-300'
+                                          isHit && 'border-emerald-200 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-300 ring-offset-1'
                                         )}
                                       />
                                       {isHit && (
-                                        <span className="absolute -right-1 -top-1 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-red-600 px-1 text-[8px] font-black leading-none text-white">
-                                          A
+                                        <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[8px] font-black leading-none text-white">
+                                          ✓
                                         </span>
                                       )}
                                     </div>
@@ -458,12 +484,12 @@ export function TicketsPage() {
                                         size="sm"
                                         className={cn(
                                           'h-7 w-7 text-[11px]',
-                                          isHit && 'border-red-200 bg-red-50 text-red-700 ring-1 ring-red-300 shadow-none'
+                                          isHit && 'border-emerald-200 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-300 ring-offset-1 shadow-none'
                                         )}
                                       />
                                       {isHit && (
-                                        <span className="absolute -right-1 -top-1 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-red-600 px-1 text-[8px] font-black leading-none text-white">
-                                          A
+                                        <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[8px] font-black leading-none text-white">
+                                          ✓
                                         </span>
                                       )}
                                     </div>
@@ -518,31 +544,53 @@ export function TicketsPage() {
                               className="overflow-hidden"
                             >
                               <div className="mt-3 rounded-2xl border border-gray-100 bg-slate-50/85 p-3">
-                                <div className="grid grid-cols-2 gap-2.5">
-                                  {nationalTicket && (
-                                    <div className="rounded-xl border border-white bg-white/90 p-2.5">
-                                      <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Número</p>
-                                      <p className="mt-1 text-[12px] font-black tracking-[0.18em] text-manises-blue">{ticketDisplayNumber}</p>
+                                <div className="rounded-xl border border-white bg-white/90 p-3">
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0">
+                                      <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Combinación</p>
+                                      <p className="mt-1 text-[13px] font-black text-manises-blue">
+                                        {nationalTicket ? `Número ${ticketDisplayNumber}` : ticket.numbers.join(', ')}
+                                      </p>
+                                      {!nationalTicket && ticket.stars?.length ? (
+                                        <p className="mt-1 text-[11px] font-semibold text-slate-500">Estrellas {ticket.stars.join(', ')}</p>
+                                      ) : null}
                                     </div>
-                                  )}
+                                    <StatusBadge status={ticket.status} className="px-2 py-0.5 text-[9px]" />
+                                  </div>
+                                </div>
+
+                                <div className="mt-2.5 grid grid-cols-2 gap-2.5">
+                                  <div className="rounded-xl border border-white bg-white/90 p-2.5">
+                                    <div className="flex items-center gap-1.5 text-slate-400">
+                                      <CalendarDays className="h-3.5 w-3.5" />
+                                      <p className="text-[9px] font-black uppercase tracking-[0.14em]">Fecha</p>
+                                    </div>
+                                    <p className="mt-1 text-[12px] font-black text-manises-blue">{formatDate(ticket.drawDate)}</p>
+                                  </div>
+                                  <div className="rounded-xl border border-white bg-white/90 p-2.5">
+                                    <div className="flex items-center gap-1.5 text-slate-400">
+                                      <Wallet className="h-3.5 w-3.5" />
+                                      <p className="text-[9px] font-black uppercase tracking-[0.14em]">Importe</p>
+                                    </div>
+                                    <p className="mt-1 text-[12px] font-black text-manises-blue">{formatCurrency(ticket.price ?? 0)}</p>
+                                  </div>
+                                  <div className="rounded-xl border border-white bg-white/90 p-2.5">
+                                    <div className="flex items-center gap-1.5 text-slate-400">
+                                      <Hash className="h-3.5 w-3.5" />
+                                      <p className="text-[9px] font-black uppercase tracking-[0.14em]">Código</p>
+                                    </div>
+                                    <p className="mt-1 text-[12px] font-black text-manises-blue">{getTicketCode(ticket.id)}</p>
+                                  </div>
+                                  <div className="rounded-xl border border-white bg-white/90 p-2.5">
+                                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Producto</p>
+                                    <p className="mt-1 text-[12px] font-black text-manises-blue">{identity.shortName}</p>
+                                  </div>
                                   {nationalTicket && nationalQuantity && (
                                     <div className="rounded-xl border border-white bg-white/90 p-2.5">
                                       <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Cantidad</p>
                                       <p className="mt-1 text-[12px] font-black text-manises-blue">{nationalQuantity} {nationalQuantity === 1 ? 'décimo' : 'décimos'}</p>
                                     </div>
                                   )}
-                                  <div className="rounded-xl border border-white bg-white/90 p-2.5">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Código</p>
-                                    <p className="mt-1 text-[12px] font-black text-manises-blue">{getTicketCode(ticket.id)}</p>
-                                  </div>
-                                  <div className="rounded-xl border border-white bg-white/90 p-2.5">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Sorteo</p>
-                                    <p className="mt-1 text-[12px] font-black text-manises-blue">{formatDate(ticket.drawDate)}</p>
-                                  </div>
-                                  <div className="rounded-xl border border-white bg-white/90 p-2.5">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Importe</p>
-                                    <p className="mt-1 text-[12px] font-black text-manises-blue">{formatCurrency(ticket.price ?? 0)}</p>
-                                  </div>
                                   <div className="rounded-xl border border-white bg-white/90 p-2.5">
                                     <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Pedido</p>
                                     <p className="mt-1 truncate text-[12px] font-black text-manises-blue">{ticket.orderId ? ticket.orderId.slice(-8).toUpperCase() : 'Individual'}</p>
@@ -551,16 +599,16 @@ export function TicketsPage() {
 
                                 <div className="mt-2.5 rounded-xl border border-white bg-white/90 p-2.5">
                                   <div className="flex items-center justify-between gap-2">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Detalle técnico</p>
-                                    {hasResolvedDraw && (
-                                      <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.12em] text-red-700">
+                                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Resumen útil</p>
+                                    {matchingResult ? (
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">
                                         <CalendarDays className="h-3.5 w-3.5" />
-                                        Sorteo resuelto
+                                        Resumen disponible
                                       </span>
-                                    )}
+                                    ) : null}
                                   </div>
                                   <div className="mt-2 space-y-1.5 text-[11px] font-medium text-slate-600">
-                                    <p><span className="font-black text-manises-blue">Combinación:</span> {nationalTicket ? `Número ${ticketDisplayNumber}` : `${ticket.numbers.join(', ')}${ticket.stars?.length ? ` · Estrellas ${ticket.stars.join(', ')}` : ''}`}</p>
+                                    <p><span className="font-black text-manises-blue">Estado:</span> {ticket.status === 'pending' ? 'Pendiente de sorteo o validación' : ticket.status === 'won' ? 'Premiada' : 'Sin premio en el modelo actual'}</p>
                                     {nationalTicket && (
                                       <p><span className="font-black text-manises-blue">Producto:</span> {identity.shortName}{ticket.metadata?.nationalDrawLabel ? ` · Sorteo de ${ticket.metadata.nationalDrawLabel}` : ''}</p>
                                     )}
@@ -570,7 +618,9 @@ export function TicketsPage() {
                                     {nationalTicket && (
                                       <p><span className="font-black text-manises-blue">Total del pedido:</span> {formatCurrency(orderTotal)}</p>
                                     )}
-                                    <p><span className="font-black text-manises-blue">Columnas:</span> 1 combinación registrada en el modelo actual</p>
+                                    {!nationalTicket && (
+                                      <p><span className="font-black text-manises-blue">Apuesta registrada:</span> 1 combinación en el modelo actual</p>
+                                    )}
                                     <p><span className="font-black text-manises-blue">Creada:</span> {formatDate(ticket.createdAt)}</p>
                                     {(ticket.hasInsurance || ticket.isSubscription) && (
                                       <p><span className="font-black text-manises-blue">Extras:</span> {ticket.hasInsurance ? 'Seguro' : ''}{ticket.hasInsurance && ticket.isSubscription ? ' · ' : ''}{ticket.isSubscription ? 'Abono' : ''}</p>
@@ -579,14 +629,17 @@ export function TicketsPage() {
                                 </div>
 
                                 {hasResolvedDraw && totalHits > 0 && (
-                                  <div className="mt-2.5 rounded-xl border border-red-200 bg-red-50 p-2.5">
+                                  <div className="mt-2.5 rounded-xl border border-emerald-200 bg-emerald-50 p-2.5">
                                     <div className="flex items-center gap-2">
-                                      <ReceiptText className="h-4 w-4 text-red-700" />
-                                      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-red-700">Aciertos detectados</p>
+                                      <ReceiptText className="h-4 w-4 text-emerald-700" />
+                                      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-700">Aciertos detectados</p>
                                     </div>
-                                    <p className="mt-1 text-[11px] font-semibold text-red-800">
-                                      Esta jugada marca {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'} sobre el resultado disponible.
+                                    <p className="mt-1 text-[11px] font-semibold text-emerald-800">
+                                      Esta jugada marca {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'} en el resumen disponible.
                                     </p>
+                                    {matchedValuesSummary && (
+                                      <p className="mt-1 text-[10px] font-medium text-emerald-700">{matchedValuesSummary}</p>
+                                    )}
                                   </div>
                                 )}
 
@@ -594,12 +647,20 @@ export function TicketsPage() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="h-10 rounded-xl border-manises-blue/15 bg-white px-3 text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue"
+                                    className={cn(
+                                      'h-10 rounded-xl bg-white px-3 text-[11px] font-black uppercase tracking-[0.12em]',
+                                      matchingResult
+                                        ? 'border-manises-blue/15 text-manises-blue'
+                                        : 'border-slate-200 text-slate-500'
+                                    )}
                                     onClick={() => setScrutinyState({ ticket, result: matchingResult })}
                                   >
                                     <ScrollText className="mr-1.5 h-3.5 w-3.5" />
-                                    Escrutinio
+                                    {scrutinyTone.label}
                                   </Button>
+                                  <div className="inline-flex h-10 items-center rounded-xl border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-500">
+                                    {scrutinyTone.helper}
+                                  </div>
                                   {ticket.status === 'won' && ticket.prize != null && (
                                     <div className="inline-flex h-10 items-center rounded-xl border border-emerald-100 bg-emerald-50 px-3 text-[11px] font-black uppercase tracking-[0.12em] text-emerald-700">
                                       Premio {formatCurrency(ticket.prize)}
