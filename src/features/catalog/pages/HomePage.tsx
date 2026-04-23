@@ -156,21 +156,23 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
           <div className="flex items-start justify-between">
             <GameBadge
               game={game}
-              size="md"
+              size="sm"
               tone="ghost"
-              className="border-white/15 bg-white/10 shadow-[0_16px_32px_rgba(0,0,0,0.22)]"
+              className="border-white/10 bg-white/5 backdrop-blur-md shadow-none opacity-90"
             />
             {cd.isPast ? (
-              <span className="rounded-full border border-white/10 bg-black/15 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] text-white/42 backdrop-blur-sm">Sorteo pasado</span>
+              <span className="rounded-full border border-white/10 bg-black/15 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] text-white/42 backdrop-blur-sm whitespace-nowrap">
+                Pasado
+              </span>
             ) : (
-              <span className="rounded-full border border-white/10 bg-black/15 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.14em] text-white/68 backdrop-blur-sm">
-                {formatDrawTime(game.nextDraw)}
+              <span className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.14em] text-white/80 backdrop-blur-sm whitespace-nowrap">
+                {formatDrawTime(game.nextDraw).replace(' · ', ' ')}
               </span>
             )}
           </div>
 
           <div>
-            <h3 className="text-[1.08rem] font-black text-white tracking-tight leading-none mb-2">{identity.shortName}</h3>
+            <h3 className="text-[1.12rem] font-black text-white tracking-tight leading-none mb-1.5">{identity.shortName}</h3>
             <div className="flex items-end gap-2.5 text-[11px]">
               <p className="font-black text-manises-gold tabular-nums leading-none">
                 {formatJackpot(game.jackpot, game.isMonthly)}
