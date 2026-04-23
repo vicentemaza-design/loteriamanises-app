@@ -25,7 +25,7 @@ const sizeMap = {
 export const GameBadge = React.forwardRef<HTMLDivElement, GameBadgeProps>(
   ({ game, size = 'md', tone = 'soft', className, style, ...props }, ref) => {
     const identity = getGameIdentity(game);
-    const iconSize = size === 'xs' ? 'w-5.5 h-5.5' : size === 'sm' ? 'w-8 h-8' : size === 'md' ? 'w-10 h-10' : 'w-12 h-12';
+    const iconSize = size === 'xs' ? 'w-4.5 h-4.5' : size === 'sm' ? 'w-5.5 h-5.5' : size === 'md' ? 'w-7 h-7' : 'w-8.5 h-8.5';
     const iconVariant = tone === 'solid' || tone === 'ghost' ? 'white' : 'color';
     const toneClassName =
       tone === 'solid'

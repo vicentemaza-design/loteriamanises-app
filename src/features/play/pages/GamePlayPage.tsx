@@ -621,7 +621,7 @@ export function GamePlayPage() {
               <NavArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-2">
-              <GameBadge game={game} size="sm" className="w-8 h-8 rounded-lg shadow-none bg-white/10" />
+              <GameBadge game={game} size="xs" tone="ghost" className="shadow-none" />
               <div>
                 <h1 className="font-bold text-base leading-tight">{game.name}</h1>
               <p className="text-[10px] text-white/60 font-medium">
