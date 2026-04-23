@@ -688,7 +688,7 @@ export function GamePlayPage() {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <PlaySessionIndicator />
+            <PlaySessionIndicator variant="header" />
             <Button
               variant="ghost" size="icon"
               className="text-white/70 hover:text-white hover:bg-white/15 w-9 h-9 rounded-xl"
