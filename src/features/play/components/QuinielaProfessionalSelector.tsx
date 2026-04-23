@@ -12,6 +12,7 @@ interface QuinielaMatch {
 interface Props {
   mode: 'simple' | 'reduced';
   reducedType?: QuinielaReducedType;
+  initialSelection?: Array<{ id: number; value: QuinielaMatch['result'] }>;
   onSelectionChange: (selection: QuinielaMatch[]) => void;
 }
 
@@ -33,7 +34,7 @@ const INITIAL_MATCHES: QuinielaMatch[] = [
   { id: 15, home: 'Pleno al 15', away: '(M - G)', result: null },
 ];
 
-export function QuinielaProfessionalSelector({ mode, reducedType, onSelectionChange }: Props) {
+export function QuinielaProfessionalSelector({ mode, reducedType, initialSelection, onSelectionChange }: Props) {
   const [matches, setMatches] = useState<QuinielaMatch[]>(INITIAL_MATCHES);
   
   const doublesCount = matches.filter(m => ['1X', '12', 'X2'].includes(m.result || '')).length;
@@ -44,6 +45,20 @@ export function QuinielaProfessionalSelector({ mode, reducedType, onSelectionCha
   useEffect(() => {
     onSelectionChange(matches);
   }, [matches, onSelectionChange]);
+
+  useEffect(() => {
+    if (!initialSelection || initialSelection.length === 0) {
+      setMatches(INITIAL_MATCHES);
+      return;
+    }
+
+    setMatches(
+      INITIAL_MATCHES.map((match) => ({
+        ...match,
+        result: initialSelection.find((item) => item.id === match.id)?.value ?? null,
+      }))
+    );
+  }, [initialSelection]);
 
   const toggleResult = (matchId: number, val: '1' | 'X' | '2') => {
     setMatches(prev => prev.map(m => {

@@ -33,12 +33,13 @@ export function AppRouter() {
         <Route path="/register" element={<RegisterPage />} />
       </Route>
 
-      <Route element={<RequireAuth />}>
-        <Route element={<PrivateLayout />}>
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/games" element={<GamesPage />} />
-          <Route path="/play/:gameId" element={<GamePlayPage />} />
-          <Route path="/results" element={<ResultsPage />} />
+      <Route element={<PrivateLayout />}>
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/games" element={<GamesPage />} />
+        <Route path="/play/:gameId" element={<GamePlayPage />} />
+        <Route path="/results" element={<ResultsPage />} />
+
+        <Route element={<RequireAuth />}>
           <Route path="/tickets" element={<TicketsPage />} />
           
           <Route path="/profile" element={<ProfilePage />} />

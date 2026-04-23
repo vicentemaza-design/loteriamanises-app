@@ -71,16 +71,20 @@ function mapDraftToDto(draft: PlayDraft) {
 }
 
 export function usePlaySessionConfirm() {
-  const { user } = useAuth();
-  const { session, drafts, closeReview, markConfirming, resolveConfirmFailure, resolveConfirmSuccess } = usePlaySession();
+  const { user, isDemo } = useAuth();
+  const { session, drafts, closeReview, markConfirming, resolveConfirmFailure, resolveConfirmPartial, resolveConfirmSuccess } = usePlaySession();
   const summary = usePlaySessionSummary();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const confirm = async () => {
+    if (!user && !isDemo) {
+      return { ok: false, needsAuth: true };
+    }
+
     const validDrafts = drafts.filter((draft) => draft.status === 'valid' || draft.status === 'editing');
     if (validDrafts.length === 0) {
       resolveConfirmFailure('No hay jugadas válidas para confirmar.');
-      return false;
+      return { ok: false, needsAuth: false };
     }
 
     try {
@@ -98,17 +102,26 @@ export function usePlaySessionConfirm() {
 
       if (!response.success) {
         resolveConfirmFailure(response.error || 'No se pudo confirmar la sesión.');
-        return false;
+        return { ok: false, needsAuth: false };
+      }
+
+      if (response.failures && response.failures.length > 0) {
+        const failureMessage = response.failures.length === 1
+          ? response.failures[0].reason
+          : `${response.failures.length} jugadas no se pudieron confirmar.`;
+        resolveConfirmPartial(response.confirmedDraftIds ?? [], failureMessage);
+        toast.error(failureMessage);
+        return { ok: false, needsAuth: false };
       }
 
       resolveConfirmSuccess(response.confirmedDraftIds ?? validDrafts.map((draft) => draft.id));
       closeReview();
       toast.success(`Jugadas confirmadas: ${validDrafts.length}`);
-      return true;
+      return { ok: true, needsAuth: false };
     } catch (error) {
       console.error('[usePlaySessionConfirm] Unexpected error:', error);
       resolveConfirmFailure('Ocurrió un problema inesperado al confirmar tus jugadas.');
-      return false;
+      return { ok: false, needsAuth: false };
     } finally {
       setIsSubmitting(false);
     }

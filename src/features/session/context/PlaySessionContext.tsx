@@ -20,6 +20,7 @@ export interface PlaySessionContextValue {
   closeReview: () => void;
   markConfirming: () => void;
   resolveConfirmSuccess: (confirmedDraftIds: string[]) => void;
+  resolveConfirmPartial: (confirmedDraftIds: string[], message: string) => void;
   resolveConfirmFailure: (message: string) => void;
   refreshDraftStatuses: () => void;
 }

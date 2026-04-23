@@ -191,6 +191,16 @@ export function PlaySessionProvider({ children }: { children: React.ReactNode })
     });
   }, [state.session.drafts]);
 
+  const resolveConfirmPartial = React.useCallback((confirmedDraftIds: string[], message: string) => {
+    const confirmedSet = new Set(confirmedDraftIds);
+    dispatch({
+      type: 'replaceDrafts',
+      drafts: state.session.drafts.filter((draft) => !confirmedSet.has(draft.id)),
+      status: 'failed',
+      errorMessage: message,
+    });
+  }, [state.session.drafts]);
+
   const resolveConfirmFailure = React.useCallback((message: string) => {
     dispatch({ type: 'markFailed', message });
   }, []);
@@ -218,6 +228,7 @@ export function PlaySessionProvider({ children }: { children: React.ReactNode })
     closeReview,
     markConfirming,
     resolveConfirmSuccess,
+    resolveConfirmPartial,
     resolveConfirmFailure,
     refreshDraftStatuses,
   }), [
@@ -229,6 +240,7 @@ export function PlaySessionProvider({ children }: { children: React.ReactNode })
     openReview,
     refreshDraftStatuses,
     removeDraft,
+    resolveConfirmPartial,
     resolveConfirmFailure,
     resolveConfirmSuccess,
     state.errorMessage,

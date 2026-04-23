@@ -103,7 +103,7 @@ export function GamePlayPage() {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, profile, isDemo } = useAuth();
+  const { profile } = useAuth();
   const { drafts, addDrafts, updateDraft } = usePlaySession();
   const game = LOTTERY_GAMES.find(g => g.id === gameId);
   const editingDraftId = (location.state as GamePlayLocationState | null)?.playDraftId;
@@ -181,6 +181,7 @@ export function GamePlayPage() {
   useEffect(() => {
     setSelectedNumbers([]);
     setSelectedStars([]);
+    setQuinielaMatches([]);
     setSelectedNationalNumber(null);
     setSelectedNationalQuantity(1);
     setHasInsurance(false);
@@ -221,15 +222,6 @@ export function GamePlayPage() {
 
     if (editingDraft.selection.type === 'quiniela') {
       setSelectedReductionSystemId(editingDraft.selection.systemId ?? 'reducida_1');
-      setQuinielaMatches((current) => current.map((match) => {
-        const nextMatch = editingDraft.selection.type === 'quiniela'
-          ? editingDraft.selection.matches.find((item) => item.id === match.id)
-          : undefined;
-        return {
-          ...match,
-          result: nextMatch?.value ?? null,
-        };
-      }));
       return;
     }
 
@@ -579,10 +571,6 @@ export function GamePlayPage() {
   }
 
   const handlePlay = async () => {
-    if (!user && !isDemo) { 
-      toast.error('Sesión requerida'); 
-      return; 
-    }
     if (!canPlay)           { 
       if (isQuiniela && !isQuinielaValid && mode === 'reduced') {
         const config = QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType];
@@ -594,7 +582,6 @@ export function GamePlayPage() {
       }
       return; 
     }
-    if (isOverBalance) { toast.error('Saldo insuficiente'); return; }
 
     const draftSelection = buildSelection();
     if (!draftSelection) {
@@ -881,6 +868,7 @@ export function GamePlayPage() {
             <QuinielaProfessionalSelector 
               mode={mode} 
               reducedType={mode === 'reduced' ? selectedReductionSystemId as QuinielaReducedType : undefined}
+              initialSelection={editingDraft?.selection.type === 'quiniela' ? editingDraft.selection.matches : undefined}
               onSelectionChange={(m) => setQuinielaMatches(m)}
             />
           </>

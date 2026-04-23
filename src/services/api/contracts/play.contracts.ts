@@ -52,6 +52,7 @@ export interface SubmitPlaySessionResponseDto {
   success: boolean;
   confirmedDraftIds?: string[];
   ticketIds?: string[];
+  failures?: Array<{ draftId: string; reason: string }>;
   error?: string;
 }
 

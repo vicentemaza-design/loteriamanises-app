@@ -11,15 +11,16 @@ import { usePlaySessionConfirm } from '../hooks/usePlaySessionConfirm';
 
 export function PlaySessionTray() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { user, isDemo, profile } = useAuth();
   const { drafts, status, errorMessage, closeReview, openReview, removeDraft } = usePlaySession();
   const summary = usePlaySessionSummary();
   const { confirm, isSubmitting } = usePlaySessionConfirm();
 
   const isOpen = status === 'reviewing' || status === 'confirming' || status === 'failed';
+  const canAttemptCheckout = Boolean(user || isDemo);
   const availableBalance = profile?.balance ?? 0;
   const remainingBalance = Math.max(availableBalance - summary.totalAmount, 0);
-  const isOverBalance = availableBalance < summary.totalAmount;
+  const isOverBalance = canAttemptCheckout && availableBalance < summary.totalAmount;
 
   return (
     <AnimatePresence>
@@ -81,14 +82,16 @@ export function PlaySessionTray() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Saldo disponible</p>
-                    <p className="mt-1 text-lg font-black text-manises-blue">{formatCurrency(availableBalance)}</p>
+                    <p className="mt-1 text-lg font-black text-manises-blue">
+                      {canAttemptCheckout ? formatCurrency(availableBalance) : 'Inicia sesión'}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
-                      {isOverBalance ? 'Déficit actual' : 'Saldo restante'}
+                      {canAttemptCheckout ? (isOverBalance ? 'Déficit actual' : 'Saldo restante') : 'Siguiente paso'}
                     </p>
                     <p className={`mt-1 text-lg font-black ${isOverBalance ? 'text-rose-700' : 'text-emerald-700'}`}>
-                      {isOverBalance ? formatCurrency(summary.totalAmount - availableBalance) : formatCurrency(remainingBalance)}
+                      {canAttemptCheckout ? (isOverBalance ? formatCurrency(summary.totalAmount - availableBalance) : formatCurrency(remainingBalance)) : 'Accede para pagar'}
                     </p>
                   </div>
                 </div>
@@ -100,16 +103,20 @@ export function PlaySessionTray() {
                   </div>
                   <Button
                     className="h-12 rounded-2xl bg-manises-blue px-5 text-white"
-                    disabled={!summary.canConfirm || isOverBalance || isSubmitting}
-                    onClick={() => {
+                    disabled={!summary.canConfirm || (canAttemptCheckout && isOverBalance) || isSubmitting}
+                    onClick={async () => {
                       if (status !== 'reviewing' && status !== 'failed') {
                         openReview();
                         return;
                       }
-                      void confirm();
+                      const result = await confirm();
+                      if (result.needsAuth) {
+                        closeReview();
+                        navigate('/');
+                      }
                     }}
                   >
-                    {isSubmitting ? 'Procesando...' : `Participar · ${formatCurrency(summary.totalAmount)}`}
+                    {isSubmitting ? 'Procesando...' : canAttemptCheckout ? `Participar · ${formatCurrency(summary.totalAmount)}` : 'Inicia sesión para participar'}
                     {!isSubmitting && <NavArrowRight className="h-4 w-4" />}
                   </Button>
                 </div>
