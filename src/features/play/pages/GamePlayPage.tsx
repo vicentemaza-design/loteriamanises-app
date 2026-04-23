@@ -29,7 +29,7 @@ import { QuinielaProfessionalSelector } from '../components/QuinielaProfessional
 import { ReductionSystemSelector } from '../components/ReductionSystemSelector';
 import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
 import { NationalTicketVisual, type NationalDrawType } from '../components/NationalTicketVisual';
-import { Trophy as TrophyIcon } from 'lucide-react';
+import { Trophy as TrophyIcon, CheckCircle } from 'lucide-react';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
 import { getDrawsForCurrentWeek, getUpcomingDraws, groupDrawsByWeek } from '../lib/draw-schedule';
 import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
