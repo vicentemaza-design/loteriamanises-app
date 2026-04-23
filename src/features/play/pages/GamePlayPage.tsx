@@ -15,7 +15,8 @@ import {
   ArrowRight,
   JournalPage,
   InfoCircle,
-  WarningTriangle
+  WarningTriangle,
+  Calendar,
 } from 'iconoir-react/regular';
 import { toast } from 'sonner';
 import { generateRandomPlay } from '@/features/play/services/play.service';
@@ -1264,13 +1265,14 @@ export function GamePlayPage() {
                     <button
                       onClick={() => setTimeMode(timeMode === 'specific_days' ? 'next_draw' : 'specific_days')}
                       className={cn(
-                        "text-[9px] font-black uppercase tracking-[0.14em] transition-all px-3 py-1 rounded-full border",
-                        timeMode === 'specific_days' 
-                          ? "text-manises-blue border-manises-blue/20 bg-manises-blue/5" 
-                          : "text-slate-400 border-transparent hover:text-slate-600"
+                        "inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] transition-all px-3.5 py-1.5 rounded-full border",
+                        timeMode === 'specific_days'
+                          ? "text-manises-blue border-manises-blue/25 bg-manises-blue/5"
+                          : "text-slate-500 border-slate-200 bg-slate-50/80 hover:text-slate-700 hover:border-slate-300"
                       )}
                     >
-                      {timeMode === 'specific_days' ? '← Volver a selección rápida' : 'O elegir días concretos...'}
+                      {timeMode !== 'specific_days' && <Calendar className="w-3 h-3" />}
+                      {timeMode === 'specific_days' ? '← Volver a selección rápida' : 'Elegir días concretos'}
                     </button>
                   </div>
 
@@ -1301,12 +1303,19 @@ export function GamePlayPage() {
                                 }}
                                 className="flex flex-col items-center gap-2"
                               >
-                                <div className={cn(
-                                  "relative w-11 h-11 rounded-full flex flex-col items-center justify-center transition-all border",
-                                  isSelected 
-                                    ? "bg-manises-blue border-manises-blue text-white shadow-md shadow-manises-blue/10 scale-105" 
-                                    : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
-                                )}>
+                                <div
+                                  className={cn(
+                                    "relative w-11 h-11 rounded-full flex flex-col items-center justify-center transition-all border",
+                                    isSelected
+                                      ? "text-white scale-105"
+                                      : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
+                                  )}
+                                  style={isSelected ? {
+                                    background: `linear-gradient(145deg, ${game.color}dd 0%, ${game.color} 100%)`,
+                                    borderColor: game.color,
+                                    boxShadow: `0 3px 10px -1px ${game.color}44`,
+                                  } : undefined}
+                                >
                                   <span className={cn("text-[9px] font-black uppercase leading-none mb-0.5", isSelected ? "text-white/70" : "text-slate-300")}>
                                     {draw.label.substring(0, 1)}
                                   </span>
@@ -1314,7 +1323,10 @@ export function GamePlayPage() {
                                     {dayNumber}
                                   </span>
                                 </div>
-                                <span className={cn("text-[8px] font-bold uppercase tracking-tighter", isSelected ? "text-manises-blue" : "text-slate-400")}>
+                                <span
+                                  className={cn("text-[8px] font-bold uppercase tracking-tighter", isSelected ? "" : "text-slate-400")}
+                                  style={isSelected ? { color: game.color } : undefined}
+                                >
                                   {draw.label.substring(0, 3)}
                                 </span>
                               </button>

@@ -153,7 +153,13 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
         <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/32 to-transparent" />
 
         <div className="relative h-full p-4.5 flex flex-col justify-between">
-          <div className="flex justify-end">
+          <div className="flex items-start justify-between">
+            <GameBadge
+              game={game}
+              size="sm"
+              tone="ghost"
+              className="border-white/10 bg-white/5 backdrop-blur-md shadow-none opacity-90"
+            />
             {cd.isPast ? (
               <span className="rounded-full border border-white/10 bg-black/15 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] text-white/42 backdrop-blur-sm whitespace-nowrap">
                 Pasado
@@ -166,12 +172,6 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
           </div>
 
           <div>
-            <GameBadge
-              game={game}
-              size="sm"
-              tone="ghost"
-              className="border-white/10 bg-white/5 backdrop-blur-md shadow-none opacity-90 mb-2.5"
-            />
             <h3 className="text-[1.12rem] font-black text-white tracking-tight leading-none mb-1.5">{identity.shortName}</h3>
             <div className="flex items-end gap-2.5 text-[11px]">
               <p className="font-black text-manises-gold tabular-nums leading-none">
