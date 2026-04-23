@@ -1,9 +1,9 @@
 import { Trash, EditPencil } from 'iconoir-react/regular';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { formatCurrency, formatDate } from '@/shared/lib/utils';
-import { getGameIdentity } from '@/shared/lib/game-identity';
 import { Button } from '@/shared/ui/Button';
 import { cn } from '@/shared/lib/utils';
+import { GameBadge } from '@/shared/ui/GameBadge';
 import type { PlayDraft } from '../types/session.types';
 
 function renderSelectionLabel(draft: PlayDraft) {
@@ -36,33 +36,36 @@ export function PlayDraftItem({
   onRemove: () => void;
 }) {
   const game = LOTTERY_GAMES.find((entry) => entry.id === draft.gameId);
-  const identity = getGameIdentity({
+  const gameDisplay = game ?? {
     id: draft.gameId,
-    type: draft.gameType,
     name: draft.gameName,
-  });
+    type: draft.gameType,
+    color: '#0a4792',
+    colorEnd: '#1e3a8a',
+    icon: '',
+    jackpot: 0,
+    nextDraw: draft.drawDate,
+    price: draft.unitPrice,
+  };
 
   return (
     <div className="rounded-[1.6rem] border border-slate-200/80 bg-white px-4 py-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span
-              className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em]"
-              style={{ background: identity.chipBackground, color: identity.chipText }}
-            >
-              {identity.badgeLabel}
-            </span>
-            <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
-              {formatDate(draft.drawDate)}
-            </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start gap-3">
+            <GameBadge game={gameDisplay} size="xs" tone="soft" className="mt-0.5 shadow-none" />
+            <div className="min-w-0">
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                {formatDate(draft.drawDate)}
+              </span>
+              <h3 className="mt-1 text-sm font-black text-manises-blue">
+                {game?.name ?? draft.gameName}
+              </h3>
+              <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
+                {renderSelectionLabel(draft)}
+              </p>
+            </div>
           </div>
-          <h3 className="mt-2 text-sm font-black text-manises-blue">
-            {game?.name ?? draft.gameName}
-          </h3>
-          <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
-            {renderSelectionLabel(draft)}
-          </p>
         </div>
 
         <div className="text-right">
