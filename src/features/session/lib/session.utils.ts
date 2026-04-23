@@ -1,9 +1,12 @@
 import type { GameSelection, PlayDraft, PlaySession, PlaySessionStatus } from '../types/session.types';
+import { getBusinessDate, getTodayBusinessDate } from '@/shared/lib/timezone';
 
 const SESSION_STORAGE_KEY = 'play_session_v1';
 
-function isPastDraw(drawDate: string) {
-  return new Date(drawDate).getTime() <= Date.now();
+function isPastDraw(drawDate: string): boolean {
+  const today = getTodayBusinessDate();
+  const normalized = drawDate.length === 10 ? drawDate : getBusinessDate(drawDate);
+  return normalized < today;
 }
 
 function sortObjectKeys(value: unknown): unknown {
