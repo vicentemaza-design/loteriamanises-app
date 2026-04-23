@@ -18,14 +18,14 @@ const GAME_IDENTITY_MAP: Record<string, GameIdentity> = {
   },
   primitiva: {
     shortName: 'Primitiva',
-    badgeLabel: '6/49',
+    badgeLabel: '6',
     surfaceTint: 'rgba(22,163,74,0.15)',
     chipBackground: 'rgba(220,252,231,0.96)',
     chipText: '#166534',
   },
   bonoloto: {
     shortName: 'Bonoloto',
-    badgeLabel: '6/49',
+    badgeLabel: '6',
     surfaceTint: 'rgba(8,145,178,0.15)',
     chipBackground: 'rgba(207,250,254,0.96)',
     chipText: '#0f766e',
