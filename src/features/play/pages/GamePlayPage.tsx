@@ -581,10 +581,6 @@ export function GamePlayPage() {
   }
 
   const handlePlay = async () => {
-    if (!user && !isDemo) { 
-      toast.error('Sesión requerida'); 
-      return; 
-    }
     if (!canPlay)           { 
       if (isQuiniela && !isQuinielaValid && mode === 'reduced') {
         const config = QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType];
@@ -596,7 +592,6 @@ export function GamePlayPage() {
       }
       return; 
     }
-    if (isOverBalance) { toast.error('Saldo insuficiente'); return; }
 
     const draftSelection = buildSelection();
     if (!draftSelection) {
