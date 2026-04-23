@@ -414,7 +414,7 @@ export function HomePage() {
             <div className="flex items-start justify-between gap-3">
               <span className="hero-badge px-3.5 py-2 rounded-full bg-manises-gold text-manises-blue text-[10px] font-black uppercase tracking-[0.18em] flex items-center gap-2 shadow-lg">
                 <Sparkles className="w-3.5 h-3.5 fill-current" />
-                Sorteo Maestre
+                Sorteo destacado
               </span>
               <HeroTimeChip iso={featuredGame.nextDraw} />
             </div>
