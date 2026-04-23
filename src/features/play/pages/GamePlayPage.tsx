@@ -1,14 +1,18 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getBusinessDate } from '@/shared/lib/timezone';
 import { motion, AnimatePresence } from 'motion/react';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { Button } from '@/shared/ui/Button';
 import { GameBadge } from '@/shared/ui/GameBadge';
-import { 
+import {
   NavArrowLeft,
   RefreshCircle,
   Spark,
+  CheckCircle,
+  ShareAndroid,
+  ArrowRight,
+  JournalPage,
   ShieldCheck,
   BrightStar,
   InfoCircle,
@@ -16,6 +20,7 @@ import {
 } from 'iconoir-react/regular';
 import { toast } from 'sonner';
 import { generateRandomPlay } from '@/features/play/services/play.service';
+import { usePlay } from '../hooks/usePlay';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { cn, formatCurrency, formatDate, formatDrawTime } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
@@ -32,10 +37,9 @@ import { NationalTicketVisual, type NationalDrawType } from '../components/Natio
 import { Trophy as TrophyIcon } from 'lucide-react';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
 import { getDrawsForCurrentWeek, getUpcomingDraws, groupDrawsByWeek } from '../lib/draw-schedule';
-import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
-import { distributeAmount } from '@/features/session/lib/session.utils';
-import type { GameSelection, PlayDraft } from '@/features/session/types/session.types';
+import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
+import type { PlayDraft } from '@/features/session/types/session.types';
 
 const INSURANCE_PRICE = 0.50;
 const DEFAULT_CUSTOM_WEEKS = 2;
@@ -58,9 +62,9 @@ const NATIONAL_DRAW_CONFIG: Array<{
   firstPrize: number;
   secondPrize: number;
 }> = [
-  { id: 'jueves', label: 'Jueves', weekday: 4, hour: 21, decimoPrice: 3, firstPrize: 30_000, secondPrize: 6_000 },
-  { id: 'sabado', label: 'Sábado', weekday: 6, hour: 13, decimoPrice: 6, firstPrize: 60_000, secondPrize: 12_000 },
-];
+    { id: 'jueves', label: 'Jueves', weekday: 4, hour: 21, decimoPrice: 3, firstPrize: 30_000, secondPrize: 6_000 },
+    { id: 'sabado', label: 'Sábado', weekday: 6, hour: 13, decimoPrice: 6, firstPrize: 60_000, secondPrize: 12_000 },
+  ];
 
 const NATIONAL_NUMBER_POOL = [
   { number: '69844', available: 8 },
@@ -95,29 +99,20 @@ interface QuinielaMatch {
   result: string | null;
 }
 
-interface GamePlayLocationState {
-  playDraftId?: string;
-}
-
 export function GamePlayPage() {
   const { gameId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { profile } = useAuth();
-  const { drafts, addDrafts, updateDraft } = usePlaySession();
+  const { user, profile, isDemo } = useAuth();
+  const { placeBet, isSubmitting, showSuccess, error, reset } = usePlay();
+  const { addDrafts } = usePlaySession();
   const game = LOTTERY_GAMES.find(g => g.id === gameId);
-  const editingDraftId = (location.state as GamePlayLocationState | null)?.playDraftId;
-  const editingDraft = useMemo(
-    () => drafts.find((draft) => draft.id === editingDraftId),
-    [drafts, editingDraftId]
-  );
 
   const availableModes: PlayMode[] = game ? getAvailableModesForGame(game.id) : ['simple'];
 
   const [mode, setMode] = useState<PlayMode>(availableModes[0]);
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
-  const [selectedStars, setSelectedStars]     = useState<number[]>([]);
-  
+  const [selectedStars, setSelectedStars] = useState<number[]>([]);
+
   // Quiniela & Nacional Específico
   const [quinielaMatches, setQuinielaMatches] = useState<QuinielaMatch[]>([]);
   const [selectedReductionSystemId, setSelectedReductionSystemId] = useState<string>('reducida_1');
@@ -153,12 +148,12 @@ export function GamePlayPage() {
   // Próximas 5 fechas para lotería nacional
   const availableNationalDates = useMemo(() => {
     if (!isNationalLottery || !isExplicitNationalProduct) return [];
-    
+
     // Usamos el primer sorteo disponible como base
-    const baseDraw = (gameId === 'loteria-nacional-jueves') 
+    const baseDraw = (gameId === 'loteria-nacional-jueves')
       ? nextWeekdayIso(4, 21) // Jueves 21:00
       : nextWeekdayIso(6, 13); // Sábado 13:00
-      
+
     const dates = [baseDraw];
     for (let i = 1; i < 5; i++) {
       const d = new Date(baseDraw);
@@ -181,12 +176,10 @@ export function GamePlayPage() {
   useEffect(() => {
     setSelectedNumbers([]);
     setSelectedStars([]);
-    setQuinielaMatches([]);
     setSelectedNationalNumber(null);
     setSelectedNationalQuantity(1);
     setHasInsurance(false);
-    setIsSubscription(false);
-    
+
     // Sincronizar sorteo nacional por defecto
     if (gameId === 'loteria-nacional-jueves') setSelectedNationalDrawId('jueves');
     else if (gameId === 'loteria-nacional-sabado') setSelectedNationalDrawId('sabado');
@@ -199,53 +192,6 @@ export function GamePlayPage() {
       setSelectedDrawDates([]);
     }
   }, [gameId, availableNationalDates, isNationalLottery]);
-
-  useEffect(() => {
-    if (!editingDraft || editingDraft.gameId !== game.id) {
-      return;
-    }
-
-    setMode((editingDraft.mode as PlayMode) ?? availableModes[0]);
-    setHasInsurance(editingDraft.hasInsurance);
-    setIsSubscription(editingDraft.isSubscription);
-    setSelectedDrawDates([editingDraft.drawDate]);
-    setTimeMode('next_draw');
-    setSelectedWeeksCount(DEFAULT_CUSTOM_WEEKS);
-
-    if (editingDraft.selection.type === 'national') {
-      setSelectedNationalNumber(editingDraft.selection.number);
-      setSelectedNationalQuantity(editingDraft.quantity);
-      setSelectedNumbers([]);
-      setSelectedStars([]);
-      return;
-    }
-
-    if (editingDraft.selection.type === 'quiniela') {
-      setSelectedReductionSystemId(editingDraft.selection.systemId ?? 'reducida_1');
-      return;
-    }
-
-    if ('numbers' in editingDraft.selection) {
-      setSelectedNumbers(editingDraft.selection.numbers);
-    }
-
-    if (editingDraft.selection.type === 'euromillones') {
-      setSelectedStars(editingDraft.selection.stars);
-      return;
-    }
-
-    if (editingDraft.selection.type === 'gordo') {
-      setSelectedStars([editingDraft.selection.key]);
-      return;
-    }
-
-    if (editingDraft.selection.type === 'eurodreams') {
-      setSelectedStars([editingDraft.selection.dream]);
-      return;
-    }
-
-    setSelectedStars([]);
-  }, [availableModes, editingDraft, game.id]);
 
   useEffect(() => {
     if (!isExplicitNationalProduct) return;
@@ -266,8 +212,8 @@ export function GamePlayPage() {
 
   const isStructuredGame = Boolean(game.selectionRange) || isNationalLottery || isQuiniela;
   const drawScheduleConfig = getDrawScheduleConfig(game.type);
-  const supportsTimeSelection = (Boolean(drawScheduleConfig?.supportsMultipleDrawSelection) && !isQuiniela) || 
-                               (isNationalLottery && isExplicitNationalProduct);
+  const supportsTimeSelection = (Boolean(drawScheduleConfig?.supportsMultipleDrawSelection) && !isQuiniela) ||
+    (isNationalLottery && isExplicitNationalProduct);
 
   if (!isStructuredGame) {
     return (
@@ -334,36 +280,36 @@ export function GamePlayPage() {
 
   const nationalDraws = (game.id === 'loteria-nacional-jueves' || game.id === 'loteria-nacional-sabado')
     ? NATIONAL_DRAW_CONFIG.filter(d => {
-        if (game.id === 'loteria-nacional-jueves') return d.id === 'jueves';
-        if (game.id === 'loteria-nacional-sabado') return d.id === 'sabado';
-        return true;
-      }).map((draw) => ({
-        ...draw,
-        nextDraw: nextWeekdayIso(draw.weekday, draw.hour),
-      }))
+      if (game.id === 'loteria-nacional-jueves') return d.id === 'jueves';
+      if (game.id === 'loteria-nacional-sabado') return d.id === 'sabado';
+      return true;
+    }).map((draw) => ({
+      ...draw,
+      nextDraw: nextWeekdayIso(draw.weekday, draw.hour),
+    }))
     : [{
-        id: 'especial' as NationalDrawId,
-        label: game.name,
-        weekday: new Date(game.nextDraw).getDay(),
-        hour: new Date(game.nextDraw).getHours(),
-        decimoPrice: game.price,
-        firstPrize: game.jackpot,
-        secondPrize: game.jackpot * 0.2, // Fallback
-        nextDraw: game.nextDraw
-      }];
+      id: 'especial' as NationalDrawId,
+      label: game.name,
+      weekday: new Date(game.nextDraw).getDay(),
+      hour: new Date(game.nextDraw).getHours(),
+      decimoPrice: game.price,
+      firstPrize: game.jackpot,
+      secondPrize: game.jackpot * 0.2, // Fallback
+      nextDraw: game.nextDraw
+    }];
   const selectedNationalDraw = nationalDraws.find((draw) => draw.id === selectedNationalDrawId) ?? nationalDraws[0];
-  
+
   const drawPrice = isNationalLottery
     ? (selectedNationalDraw?.decimoPrice ?? game.price ?? 3) * selectedNationalQuantity
     : calculateTotalPrice(game.price, betsCount, false);
-  
+
   const drawsCount = Math.max(effectiveSelectedDrawDates.length, 1);
   const basePrice = drawPrice * drawsCount;
   const totalPrice = basePrice + (hasInsurance ? INSURANCE_PRICE : 0);
   const isOverBalance = profile ? profile.balance < totalPrice : false;
   const availableBalance = profile?.balance ?? 0;
   const remainingBalance = Math.max(availableBalance - totalPrice, 0);
-  
+
   const selectedNationalTicket = NATIONAL_NUMBER_POOL.find((ticket) => ticket.number === selectedNationalNumber);
   const maxNationalQuantity = selectedNationalTicket?.available ?? 1;
   const nationalPotentialFirstPrize = selectedNationalDraw.firstPrize * selectedNationalQuantity;
@@ -498,7 +444,7 @@ export function GamePlayPage() {
     const text = isNationalLottery
       ? `¡Acabo de jugar ${nationalShare} en Lotería Manises! ¡A por el premio!`
       : `¡Acabo de jugar a la ${game.name} en Lotería Manises! Mis números: ${selectedNumbers.join(', ')}${selectedStars.length > 0 ? ' + ' + selectedStars.join(', ') : ''}. ¡A por el bote! 🍀`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -515,13 +461,13 @@ export function GamePlayPage() {
     }
   };
 
-  const isQuinielaValid = isQuiniela 
+  const isQuinielaValid = isQuiniela
     ? quinielaMatches.every(m => m.result !== null) && (
-        mode !== 'reduced' || (
-          quinielaMatches.filter(m => ['1X', '12', 'X2'].includes(m.result)).length === QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType].dobles &&
-          quinielaMatches.filter(m => m.result === '1X2').length === QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType].triples
-        )
+      mode !== 'reduced' || (
+        quinielaMatches.filter(m => ['1X', '12', 'X2'].includes(m.result)).length === QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType].dobles &&
+        quinielaMatches.filter(m => m.result === '1X2').length === QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType].triples
       )
+    )
     : false;
 
   const hasValidStarSelection = range.stars
@@ -534,83 +480,46 @@ export function GamePlayPage() {
       ? isQuinielaValid
       : selectedNumbers.length >= minNums && selectedNumbers.length <= maxNums && hasValidStarSelection && isSupportedReducedSelection && betsCount > 0;
 
-  function buildSelection(): GameSelection | null {
-    if (isNationalLottery && selectedNationalNumber) {
-      return {
-        type: 'national',
-        number: selectedNationalNumber,
-        drawLabel: selectedNationalDraw.label,
-      };
+  // Manejo de errores del hook
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
     }
-
-    if (isQuiniela) {
-      return {
-        type: 'quiniela',
-        matches: quinielaMatches.map((match) => ({ id: match.id, value: match.result })),
-        systemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
-      };
-    }
-
-    if (game.type === 'euromillones') {
-      return { type: 'euromillones', numbers: selectedNumbers, stars: selectedStars };
-    }
-
-    if (game.type === 'gordo') {
-      return { type: 'gordo', numbers: selectedNumbers, key: selectedStars[0] ?? 0 };
-    }
-
-    if (game.type === 'eurodreams') {
-      return { type: 'eurodreams', numbers: selectedNumbers, dream: selectedStars[0] ?? 0 };
-    }
-
-    if (game.type === 'bonoloto') {
-      return { type: 'bonoloto', numbers: selectedNumbers };
-    }
-
-    return { type: 'primitiva', numbers: selectedNumbers };
-  }
+  }, [error]);
 
   const handlePlay = async () => {
-    if (!canPlay)           { 
+    if (!user && !isDemo) {
+      toast.error('Sesión requerida');
+      return;
+    }
+    if (!canPlay) {
       if (isQuiniela && !isQuinielaValid && mode === 'reduced') {
         const config = QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType];
         toast.error(`Requisitos: ${config.dobles}D y ${config.triples}T`);
       } else if (mode === 'reduced' && !isSupportedReducedSelection) {
         toast.error('La selección actual no encaja en una fila válida de la tabla reducida');
       } else {
-        toast.error('Completa tu apuesta'); 
+        toast.error('Completa tu apuesta');
       }
-      return; 
-    }
-
-    const draftSelection = buildSelection();
-    if (!draftSelection) {
-      toast.error('No se ha podido construir la jugada.');
       return;
     }
+    if (isOverBalance) { toast.error('Saldo insuficiente'); return; }
 
     const drawDates = effectiveSelectedDrawDates.length > 0
-      ? effectiveSelectedDrawDates 
+      ? effectiveSelectedDrawDates
       : [getBusinessDate(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw)];
-    if (editingDraft && drawDates.length !== 1) {
-      toast.error('La edición de una jugada existente solo admite un sorteo.');
-      return;
-    }
+    const drawDate = drawDates[0];
 
-    const distributedTotals = distributeAmount(totalPrice, drawDates.length);
-    const nextDrafts: PlayDraft[] = drawDates.map((drawDate, index) => ({
-      id: editingDraft && index === 0 ? editingDraft.id : crypto.randomUUID(),
+    // 321: Preparamos la selección para el hook
+    const selection = {
       gameId: game.id,
-      gameName: game.name,
       gameType: game.type,
-      drawDate,
-      selection: draftSelection,
-      quantity: isNationalLottery ? selectedNationalQuantity : 1,
-      unitPrice: isNationalLottery ? game.price : drawPrice,
-      totalPrice: distributedTotals[index] ?? distributedTotals[0] ?? totalPrice,
-      addedAt: editingDraft && index === 0 ? editingDraft.addedAt : new Date().toISOString(),
-      status: 'valid',
       mode,
+      drawDate,
+      drawDates,
+      scheduleMode: supportsTimeSelection ? timeMode : 'next_draw',
+      weeksCount: supportsTimeSelection ? (timeMode === 'custom_weeks' ? selectedWeeksCount : timeMode === 'two_weeks' ? 2 : 1) : 1,
+      price: totalPrice,
       betsCount,
       hasInsurance,
       isSubscription,
@@ -618,41 +527,91 @@ export function GamePlayPage() {
         technicalMode: game.technicalMode,
         systemFamily: game.systemFamily,
         drawsCount: drawDates.length,
-        scheduleMode: supportsTimeSelection ? timeMode : 'next_draw',
-        weeksCount: supportsTimeSelection ? (timeMode === 'custom_weeks' ? selectedWeeksCount : timeMode === 'two_weeks' ? 2 : 1) : 1,
         orderDrawDates: drawDates,
         orderTotalPrice: totalPrice,
+      }
+    };
+    if (isNationalLottery && selectedNationalNumber) {
+      Object.assign(selection, {
+        numbers: selectedNationalNumber.split('').map(Number),
+        stars: []
+      });
+      Object.assign(selection.metadata, {
         nationalNumber: selectedNationalNumber,
         nationalQuantity: selectedNationalQuantity,
         nationalDrawLabel: selectedNationalDraw.label,
-      },
-    }));
-
-    if (editingDraft) {
-      const result = updateDraft(editingDraft.id, nextDrafts[0]);
-      if (result.duplicate) {
-        toast.error('Ya tienes esta jugada añadida.');
-        return;
-      }
-      navigate(location.pathname, { replace: true, state: null });
-      toast.success('Jugada actualizada.');
-      return;
+      });
+    } else if (isQuiniela) {
+      Object.assign(selection, {
+        selections: quinielaMatches.map(m => ({ id: m.id, val: m.result })),
+        systemId: mode === 'reduced' ? selectedReductionSystemId : undefined
+      });
+    } else {
+      Object.assign(selection, {
+        numbers: selectedNumbers,
+        stars: selectedStars
+      });
     }
 
-    const result = addDrafts(nextDrafts);
-    if (result.addedCount > 0) {
-      toast.success(result.addedCount === 1 ? 'Jugada añadida.' : `${result.addedCount} jugadas añadidas.`);
-    }
-    if (result.duplicateCount > 0) {
-      toast.error(result.duplicateCount === 1 ? 'Ya tenías esa jugada en la sesión.' : `${result.duplicateCount} jugadas duplicadas no se añadieron.`);
-    }
+    addDrafts([selection as unknown as PlayDraft]);
+    toast.success('¡Añadido a tus jugadas!');
+    handleClear();
   };
 
   return (
-    <div 
+    <div
       className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-36"
       style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 64px)' }}
     >
+      {/* Success Overlay - MEJORA MILOTO: Feedback visual y compartir */}
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 text-center"
+          >
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', damping: 15 }}
+              className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center mb-6"
+            >
+              <CheckCircle className="w-12 h-12 text-emerald-500" />
+            </motion.div>
+
+            <h2 className="text-2xl font-black text-manises-blue uppercase tracking-tight mb-2">¡Apuesta Confirmada!</h2>
+            <p className="text-sm text-muted-foreground font-medium mb-8 max-w-[280px]">
+              Tu jugada para la {game.name} ha sido procesada correctamente. ¡Mucha suerte!
+            </p>
+
+            <div className="w-full max-w-sm flex flex-col gap-3">
+              <Button
+                onClick={handleShare}
+                className="w-full h-14 bg-manises-blue text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-manises"
+              >
+                <ShareAndroid className="w-5 h-5" /> Compartir con amigos
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => navigate('/tickets')}
+                className="w-full h-14 border-2 border-manises-blue/10 text-manises-blue font-bold rounded-2xl flex items-center justify-center gap-2"
+              >
+                <JournalPage className="w-5 h-5" /> Ver mis jugadas
+              </Button>
+
+              <button
+                onClick={() => navigate('/')}
+                className="mt-4 text-[11px] font-black text-manises-blue/40 uppercase tracking-widest hover:text-manises-blue flex items-center justify-center gap-1 transition-colors"
+              >
+                Volver al inicio <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div
         className="fixed top-0 left-0 right-0 z-40 text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+64px)] flex flex-col justify-end"
         style={{ background: `linear-gradient(135deg, ${game.color}, ${game.colorEnd ?? game.color})` }}
@@ -668,17 +627,17 @@ export function GamePlayPage() {
               <NavArrowLeft className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-2">
-              <GameBadge game={game} size="xs" tone="ghost" className="shadow-none" />
+              <GameBadge game={game} size="sm" className="w-8 h-8 rounded-lg shadow-none bg-white/10" />
               <div>
                 <h1 className="font-bold text-base leading-tight">{game.name}</h1>
-              <p className="text-[10px] text-white/60 font-medium">
-                {formatDrawTime(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw)}
-              </p>
+                <p className="text-[10px] text-white/60 font-medium">
+                  {formatDrawTime(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw)}
+                </p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <PlaySessionIndicator variant="header" />
+          <div className="flex items-center gap-1">
+            <PlaySessionIndicator />
             <Button
               variant="ghost" size="icon"
               className="text-white/70 hover:text-white hover:bg-white/15 w-9 h-9 rounded-xl"
@@ -697,11 +656,11 @@ export function GamePlayPage() {
         onClose={() => setIsInfoOpen(false)}
         content={helpContent}
       />
-      
+
       <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-5 p-4 pt-3">
         {/* Selector de Modo (Solo si hay varios disponibles) */}
         {!isNationalLottery && (
-          <GameModeSelector 
+          <GameModeSelector
             gameType={game.type}
             availableModes={availableModes}
             currentMode={mode}
@@ -718,7 +677,7 @@ export function GamePlayPage() {
 
         {/* Advertencia de Saldo Insuficiente */}
         {isOverBalance && (
-          <motion.div 
+          <motion.div
             variants={sectionFadeUp}
             initial="hidden"
             animate="visible"
@@ -726,7 +685,7 @@ export function GamePlayPage() {
           >
             <WarningTriangle className="w-5 h-5 text-red-500 shrink-0" />
             <p className="text-[10px] font-bold text-red-700 uppercase tracking-tight leading-normal">
-              Saldo insuficiente ({formatCurrency(profile?.balance ?? 0)}). <br/>
+              Saldo insuficiente ({formatCurrency(profile?.balance ?? 0)}). <br />
               Necesitas {formatCurrency(totalPrice)} para jugar esta variante.
             </p>
           </motion.div>
@@ -769,11 +728,10 @@ export function GamePlayPage() {
                 )}
                 {selectedNumbers.length > 0 && (
                   <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${
-                      isSupportedReducedSelection
+                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${isSupportedReducedSelection
                         ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
                         : 'border border-amber-200 bg-amber-50 text-amber-900'
-                    }`}
+                      }`}
                   >
                     {isSupportedReducedSelection ? 'Fila válida' : 'Ajusta la fila'}
                   </span>
@@ -845,324 +803,319 @@ export function GamePlayPage() {
             exit="exit"
             className="space-y-6"
           >
-        {isQuiniela ? (
-          <>
-            <AnimatePresence mode="wait" initial={false}>
-              {mode === 'reduced' && (
-                <motion.div
-                  key={`quiniela-reduced-${selectedReductionSystemId}`}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0, transition: { duration: 0.2, ease: MOTION_EASE_OUT } }}
-                  exit={{ opacity: 0, y: -6, transition: { duration: 0.16, ease: MOTION_EASE_OUT } }}
-                  className="space-y-3"
-                >
-                  <ReductionSystemSelector
-                    systems={reductionSystems}
-                    currentSystemId={selectedReductionSystemId}
-                    onChange={(systemId) => setSelectedReductionSystemId(systemId)}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {isQuiniela ? (
+              <>
+                <AnimatePresence mode="wait" initial={false}>
+                  {mode === 'reduced' && (
+                    <motion.div
+                      key={`quiniela-reduced-${selectedReductionSystemId}`}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0, transition: { duration: 0.2, ease: MOTION_EASE_OUT } }}
+                      exit={{ opacity: 0, y: -6, transition: { duration: 0.16, ease: MOTION_EASE_OUT } }}
+                      className="space-y-3"
+                    >
+                      <ReductionSystemSelector
+                        systems={reductionSystems}
+                        currentSystemId={selectedReductionSystemId}
+                        onChange={(systemId) => setSelectedReductionSystemId(systemId)}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-            <QuinielaProfessionalSelector 
-              mode={mode} 
-              reducedType={mode === 'reduced' ? selectedReductionSystemId as QuinielaReducedType : undefined}
-              initialSelection={editingDraft?.selection.type === 'quiniela' ? editingDraft.selection.matches : undefined}
-              onSelectionChange={(m) => setQuinielaMatches(m)}
-            />
-          </>
-        ) : !isNationalLottery ? (
-          <>
-            {/* ---- Selección visual ---- */}
-            <div className="flex flex-col items-center gap-4 rounded-[1.6rem] border border-white/70 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] surface-neo-soft" style={theme.surface}>
-              {/* Números seleccionados */}
-              <div className="flex flex-wrap justify-center gap-2.5">
-                {(mode === 'reduced'
-                  ? Array.from({ length: Math.max(minNums, selectedNumbers.length || minNums) })
-                  : Array.from({ length: maxNums })
-                ).map((_, i) => (
-                  <motion.div
-                    key={`slot-${i}`}
-                    animate={{ scale: selectedNumbers[i] ? 1 : 0.95 }}
-                    className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-base border-2 transition-colors ${
-                      selectedNumbers[i]
-                        ? 'shadow-sm'
-                        : 'bg-white border-dashed border-gray-200 text-gray-200'
-                    }`}
-                    style={selectedNumbers[i] ? theme.selectedNumber : undefined}
-                  >
-                    {selectedNumbers[i] ?? ''}
-                  </motion.div>
-                ))}
-
-                {maxStars > 0 && (
-                  <div className="flex gap-2.5 border-l-2 border-gray-200 pl-3 ml-1">
-                    {Array.from({ length: mode === 'reduced' ? minStars : maxStars }).map((_, i) => (
+                <QuinielaProfessionalSelector
+                  mode={mode}
+                  reducedType={mode === 'reduced' ? selectedReductionSystemId as QuinielaReducedType : undefined}
+                  onSelectionChange={(m) => setQuinielaMatches(m)}
+                />
+              </>
+            ) : !isNationalLottery ? (
+              <>
+                {/* ---- Selección visual ---- */}
+                <div className="flex flex-col items-center gap-4 rounded-[1.6rem] border border-white/70 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] surface-neo-soft" style={theme.surface}>
+                  {/* Números seleccionados */}
+                  <div className="flex flex-wrap justify-center gap-2.5">
+                    {(mode === 'reduced'
+                      ? Array.from({ length: Math.max(minNums, selectedNumbers.length || minNums) })
+                      : Array.from({ length: maxNums })
+                    ).map((_, i) => (
                       <motion.div
-                        key={`star-slot-${i}`}
-                        animate={{ scale: selectedStars[i] ? 1 : 0.95 }}
-                        className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-base border-2 transition-colors ${
-                          selectedStars[i]
-                            ? 'bg-manises-gold border-manises-gold text-manises-blue shadow-gold'
-                            : 'bg-white border-dashed border-yellow-200 text-yellow-200'
-                        }`}
+                        key={`slot-${i}`}
+                        animate={{ scale: selectedNumbers[i] ? 1 : 0.95 }}
+                        className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-base border-2 transition-colors ${selectedNumbers[i]
+                            ? 'shadow-sm'
+                            : 'bg-white border-dashed border-gray-200 text-gray-200'
+                          }`}
+                        style={selectedNumbers[i] ? theme.selectedNumber : undefined}
                       >
-                        {selectedStars[i] ?? ''}
+                        {selectedNumbers[i] ?? ''}
                       </motion.div>
                     ))}
+
+                    {maxStars > 0 && (
+                      <div className="flex gap-2.5 border-l-2 border-gray-200 pl-3 ml-1">
+                        {Array.from({ length: mode === 'reduced' ? minStars : maxStars }).map((_, i) => (
+                          <motion.div
+                            key={`star-slot-${i}`}
+                            animate={{ scale: selectedStars[i] ? 1 : 0.95 }}
+                            className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-base border-2 transition-colors ${selectedStars[i]
+                                ? 'bg-manises-gold border-manises-gold text-manises-blue shadow-gold'
+                                : 'bg-white border-dashed border-yellow-200 text-yellow-200'
+                              }`}
+                          >
+                            {selectedStars[i] ?? ''}
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Acciones */}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline" size="sm"
+                      className="rounded-lg font-semibold text-xs px-4 border-gray-200 text-gray-500 hover:bg-gray-50"
+                      onClick={handleClear}
+                    >
+                      <RefreshCircle className="w-3.5 h-3.5 mr-1.5" /> Limpiar
+                    </Button>
+                    <Button
+                      variant="outline" size="sm"
+                      className="rounded-lg font-semibold text-xs px-4 border-manises-gold/50 text-manises-gold hover:bg-manises-gold/5"
+                      onClick={handleRandom}
+                    >
+                      <Spark className="w-3.5 h-3.5 mr-1.5" /> Aleatorio
+                    </Button>
+                  </div>
+                </div>
+
+                {/* ---- Grid de números ---- */}
+                <div>
+                  <div className="flex items-center justify-between mb-3 px-1">
+                    <h2 className="font-bold text-sm" style={theme.title}>Números</h2>
+                    <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                      {selectedNumbers.length}/{mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-7 gap-2">
+                    {Array.from({ length: totalNums }, (_, i) => i + 1).map(n => {
+                      const isSelected = selectedNumbers.includes(n);
+                      return (
+                        <button
+                          key={n}
+                          onClick={() => toggleNumber(n)}
+                          className={`aspect-square rounded-xl flex items-center justify-center border font-bold text-sm transition-all active:scale-90 ${isSelected
+                              ? 'scale-95 border-transparent shadow-[0_10px_20px_rgba(10,71,146,0.14)]'
+                              : 'border-gray-100 bg-white/80 text-manises-blue/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-manises-blue/30 hover:bg-manises-blue/5'
+                            }`}
+                          style={isSelected ? theme.selectedAccent : undefined}
+                          aria-pressed={isSelected}
+                          aria-label={`Número ${n}`}
+                        >
+                          {n}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* ---- Grid de estrellas ---- */}
+                {maxStars > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-3 px-1">
+                      <h2 className="font-bold text-sm" style={theme.title}>
+                        {game.type === 'gordo' ? 'Clave' : 'Estrellas'}
+                      </h2>
+                      <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                        {selectedStars.length}/{maxStars}
+                      </span>
+                    </div>
+                    <div className={`grid gap-2 ${totalStars <= 9 ? 'grid-cols-5' : 'grid-cols-6'}`}>
+                      {starValues.map(n => {
+                        const isSelected = selectedStars.includes(n);
+                        return (
+                          <button
+                            key={n}
+                            onClick={() => toggleStar(n)}
+                            className={`aspect-square rounded-xl flex items-center justify-center border font-bold text-sm transition-all active:scale-90 ${isSelected
+                                ? 'border-transparent bg-manises-gold text-manises-blue shadow-gold scale-95'
+                                : 'border-amber-100 bg-white text-amber-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-amber-300 hover:bg-amber-50'
+                              }`}
+                            aria-pressed={isSelected}
+                            aria-label={game.type === 'gordo' ? `Clave ${n}` : `Estrella ${n}`}
+                          >
+                            {n}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
-              </div>
-
-              {/* Acciones */}
-              <div className="flex gap-2">
-                <Button
-                  variant="outline" size="sm"
-                  className="rounded-lg font-semibold text-xs px-4 border-gray-200 text-gray-500 hover:bg-gray-50"
-                  onClick={handleClear}
-                >
-                  <RefreshCircle className="w-3.5 h-3.5 mr-1.5" /> Limpiar
-                </Button>
-                <Button
-                  variant="outline" size="sm"
-                  className="rounded-lg font-semibold text-xs px-4 border-manises-gold/50 text-manises-gold hover:bg-manises-gold/5"
-                  onClick={handleRandom}
-                >
-                  <Spark className="w-3.5 h-3.5 mr-1.5" /> Aleatorio
-                </Button>
-              </div>
-            </div>
-
-            {/* ---- Grid de números ---- */}
-            <div>
-              <div className="flex items-center justify-between mb-3 px-1">
-                <h2 className="font-bold text-sm" style={theme.title}>Números</h2>
-                <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                  {selectedNumbers.length}/{mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
-                </span>
-              </div>
-              <div className="grid grid-cols-7 gap-2">
-                {Array.from({ length: totalNums }, (_, i) => i + 1).map(n => {
-                  const isSelected = selectedNumbers.includes(n);
-                  return (
-                    <button
-                      key={n}
-                      onClick={() => toggleNumber(n)}
-                      className={`aspect-square rounded-xl flex items-center justify-center border font-bold text-sm transition-all active:scale-90 ${
-                        isSelected
-                          ? 'scale-95 border-transparent shadow-[0_10px_20px_rgba(10,71,146,0.14)]'
-                          : 'border-gray-100 bg-white/80 text-manises-blue/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-manises-blue/30 hover:bg-manises-blue/5'
-                      }`}
-                      style={isSelected ? theme.selectedAccent : undefined}
-                      aria-pressed={isSelected}
-                      aria-label={`Número ${n}`}
-                    >
-                      {n}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* ---- Grid de estrellas ---- */}
-            {maxStars > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <h2 className="font-bold text-sm" style={theme.title}>
-                    {game.type === 'gordo' ? 'Clave' : 'Estrellas'}
-                  </h2>
-                  <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                    {selectedStars.length}/{maxStars}
-                  </span>
-                </div>
-                <div className={`grid gap-2 ${totalStars <= 9 ? 'grid-cols-5' : 'grid-cols-6'}`}>
-                  {starValues.map(n => {
-                    const isSelected = selectedStars.includes(n);
-                    return (
-                      <button
-                        key={n}
-                        onClick={() => toggleStar(n)}
-                        className={`aspect-square rounded-xl flex items-center justify-center border font-bold text-sm transition-all active:scale-90 ${
-                          isSelected
-                            ? 'border-transparent bg-manises-gold text-manises-blue shadow-gold scale-95'
-                            : 'border-amber-100 bg-white text-amber-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-amber-300 hover:bg-amber-50'
-                        }`}
-                        aria-pressed={isSelected}
-                        aria-label={game.type === 'gordo' ? `Clave ${n}` : `Estrella ${n}`}
-                      >
-                        {n}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="space-y-8">
-            {/* Cabecera Informativa con Visual del Décimo */}
-            <section className="flex flex-col gap-6">
-              <div>
-                <h2 className="font-black text-base text-manises-blue">Configuración de tu jugada</h2>
-                <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-manises-blue/70">
-                  Visualiza y personaliza tu décimo
-                </p>
-              </div>
-
-              {/* TICKET VISUAL - EL CORAZÓN DE LA EXPERIENCIA NACIONAL */}
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="stagger-item"
-              >
-                <NationalTicketVisual
-                  number={selectedNationalNumber}
-                  drawLabel={selectedNationalDraw.label}
-                  drawDate={selectedNationalDraw.nextDraw}
-                  price={selectedNationalDraw.decimoPrice}
-                  gameId={game.id}
-                  drawType={
-                    game.id === 'loteria-navidad' ? 'navidad' :
-                    game.id === 'loteria-nino' ? 'nino' :
-                    'ordinary'
-                  }
-                />
-              </motion.div>
-            </section>
-
-
-            {/* Selector de Números */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between px-1">
-                <h2 className="font-black text-sm text-manises-blue">Números en administración</h2>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost" size="sm"
-                    className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-slate-400"
-                    onClick={handleClear}
-                  >
-                    Limpiar
-                  </Button>
-                  <Button
-                    variant="outline" size="sm"
-                    className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest border-manises-gold/40 text-manises-gold bg-manises-gold/5"
-                    onClick={handleRandom}
-                  >
-                    Aleatorio
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                {NATIONAL_NUMBER_POOL.map((ticket) => {
-                  const active = ticket.number === selectedNationalNumber;
-                  const isLowStock = ticket.available <= 4;
-                  
-                  return (
-                    <button
-                      key={ticket.number}
-                      onClick={() => {
-                        setSelectedNationalNumber(ticket.number);
-                        setSelectedNationalQuantity((qty) => Math.min(qty, ticket.available));
-                      }}
-                      className={cn(
-                        "group relative overflow-hidden rounded-2xl border-2 p-4 text-left transition-all",
-                        active
-                          ? "border-manises-blue bg-manises-blue text-white shadow-manises"
-                          : "border-slate-100 bg-white hover:border-manises-blue/20"
-                      )}
-                    >
-                      <p className={cn(
-                        "text-2xl font-black tracking-widest",
-                        active ? "text-white" : "text-manises-blue"
-                      )}>
-                        {ticket.number}
-                      </p>
-                      <div className="mt-2 flex items-center justify-between">
-                        <span className={cn(
-                          "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full border",
-                          active 
-                            ? "bg-white/15 border-white/20 text-white" 
-                            : isLowStock ? "bg-red-50 border-red-100 text-red-600" : "bg-slate-50 border-slate-100 text-slate-500"
-                        )}>
-                          {isLowStock ? 'Últimos' : 'Disponibles'}
-                        </span>
-                        <span className={cn(
-                          "text-[10px] font-bold",
-                          active ? "text-white/60" : "text-slate-400"
-                        )}>
-                          Stock: {ticket.available}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* Cantidad y Resumen */}
-            {selectedNationalNumber && (
-              <motion.section
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                className="rounded-[2rem] border border-manises-blue/10 bg-white p-6 shadow-xl"
-              >
-                <div className="flex items-center justify-between mb-6">
+              </>
+            ) : (
+              <div className="space-y-8">
+                {/* Cabecera Informativa con Visual del Décimo */}
+                <section className="flex flex-col gap-6">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tu compra</p>
-                    <h3 className="text-xl font-black text-manises-blue mt-1">
-                      {selectedNationalQuantity} {selectedNationalQuantity === 1 ? 'décimo' : 'décimos'}
-                    </h3>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Subtotal</p>
-                    <p className="text-2xl font-black text-manises-blue mt-1">
-                      {formatCurrency(selectedNationalDraw.decimoPrice * selectedNationalQuantity)}
+                    <h2 className="font-black text-base text-manises-blue">Configuración de tu jugada</h2>
+                    <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-manises-blue/70">
+                      Visualiza y personaliza tu décimo
                     </p>
                   </div>
-                </div>
 
-                <div className="flex items-center justify-between p-2 bg-slate-50 rounded-2xl">
-                  <div className="ml-2">
-                    <span className="text-xs font-black uppercase tracking-widest text-slate-500">Ajustar cantidad</span>
-                    <p className="mt-1 text-[11px] font-semibold text-slate-500">
-                      Máximo {maxNationalQuantity} {maxNationalQuantity === 1 ? 'décimo disponible' : 'décimos disponibles'} para el número {selectedNationalNumber}.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="ghost" size="icon"
-                      className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
-                      onClick={() => setSelectedNationalQuantity(q => Math.max(1, q - 1))}
-                      disabled={selectedNationalQuantity <= 1}
-                      aria-label="Restar un décimo"
-                    >
-                      -
-                    </Button>
-                    <span className="w-6 text-center font-black text-lg text-manises-blue">{selectedNationalQuantity}</span>
-                    <Button
-                      variant="ghost" size="icon"
-                      className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
-                      onClick={() => setSelectedNationalQuantity(q => Math.min(maxNationalQuantity, q + 1))}
-                      disabled={selectedNationalQuantity >= maxNationalQuantity}
-                      aria-label="Sumar un décimo"
-                    >
-                      +
-                    </Button>
-                  </div>
-                </div>
+                  {/* TICKET VISUAL - EL CORAZÓN DE LA EXPERIENCIA NACIONAL */}
+                  <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="stagger-item"
+                  >
+                    <NationalTicketVisual
+                      number={selectedNationalNumber}
+                      drawLabel={selectedNationalDraw.label}
+                      drawDate={selectedNationalDraw.nextDraw}
+                      price={selectedNationalDraw.decimoPrice}
+                      gameId={game.id}
+                      drawType={
+                        game.id === 'loteria-navidad' ? 'navidad' :
+                          game.id === 'loteria-nino' ? 'nino' :
+                            'ordinary'
+                      }
+                    />
+                  </motion.div>
+                </section>
 
-                <div className="mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3">
-                  <TrophyIcon className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <p className="text-[11px] font-semibold text-emerald-800 leading-snug">
-                    Si este número resulta premiado con el <span className="font-black">Gordo</span>, cobrarías un total de <span className="font-black">{formatCurrency(nationalPotentialFirstPrize)}</span>.
-                  </p>
-                </div>
-              </motion.section>
+
+                {/* Selector de Números */}
+                <section className="space-y-4">
+                  <div className="flex items-center justify-between px-1">
+                    <h2 className="font-black text-sm text-manises-blue">Números en administración</h2>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost" size="sm"
+                        className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-slate-400"
+                        onClick={handleClear}
+                      >
+                        Limpiar
+                      </Button>
+                      <Button
+                        variant="outline" size="sm"
+                        className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest border-manises-gold/40 text-manises-gold bg-manises-gold/5"
+                        onClick={handleRandom}
+                      >
+                        Aleatorio
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {NATIONAL_NUMBER_POOL.map((ticket) => {
+                      const active = ticket.number === selectedNationalNumber;
+                      const isLowStock = ticket.available <= 4;
+
+                      return (
+                        <button
+                          key={ticket.number}
+                          onClick={() => {
+                            setSelectedNationalNumber(ticket.number);
+                            setSelectedNationalQuantity((qty) => Math.min(qty, ticket.available));
+                          }}
+                          className={cn(
+                            "group relative overflow-hidden rounded-2xl border-2 p-4 text-left transition-all",
+                            active
+                              ? "border-manises-blue bg-manises-blue text-white shadow-manises"
+                              : "border-slate-100 bg-white hover:border-manises-blue/20"
+                          )}
+                        >
+                          <p className={cn(
+                            "text-2xl font-black tracking-widest",
+                            active ? "text-white" : "text-manises-blue"
+                          )}>
+                            {ticket.number}
+                          </p>
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className={cn(
+                              "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full border",
+                              active
+                                ? "bg-white/15 border-white/20 text-white"
+                                : isLowStock ? "bg-red-50 border-red-100 text-red-600" : "bg-slate-50 border-slate-100 text-slate-500"
+                            )}>
+                              {isLowStock ? 'Últimos' : 'Disponibles'}
+                            </span>
+                            <span className={cn(
+                              "text-[10px] font-bold",
+                              active ? "text-white/60" : "text-slate-400"
+                            )}>
+                              Stock: {ticket.available}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+
+                {/* Cantidad y Resumen */}
+                {selectedNationalNumber && (
+                  <motion.section
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="rounded-[2rem] border border-manises-blue/10 bg-white p-6 shadow-xl"
+                  >
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tu compra</p>
+                        <h3 className="text-xl font-black text-manises-blue mt-1">
+                          {selectedNationalQuantity} {selectedNationalQuantity === 1 ? 'décimo' : 'décimos'}
+                        </h3>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Subtotal</p>
+                        <p className="text-2xl font-black text-manises-blue mt-1">
+                          {formatCurrency(selectedNationalDraw.decimoPrice * selectedNationalQuantity)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-2 bg-slate-50 rounded-2xl">
+                      <div className="ml-2">
+                        <span className="text-xs font-black uppercase tracking-widest text-slate-500">Ajustar cantidad</span>
+                        <p className="mt-1 text-[11px] font-semibold text-slate-500">
+                          Máximo {maxNationalQuantity} {maxNationalQuantity === 1 ? 'décimo disponible' : 'décimos disponibles'} para el número {selectedNationalNumber}.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          variant="ghost" size="icon"
+                          className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
+                          onClick={() => setSelectedNationalQuantity(q => Math.max(1, q - 1))}
+                          disabled={selectedNationalQuantity <= 1}
+                          aria-label="Restar un décimo"
+                        >
+                          -
+                        </Button>
+                        <span className="w-6 text-center font-black text-lg text-manises-blue">{selectedNationalQuantity}</span>
+                        <Button
+                          variant="ghost" size="icon"
+                          className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
+                          onClick={() => setSelectedNationalQuantity(q => Math.min(maxNationalQuantity, q + 1))}
+                          disabled={selectedNationalQuantity >= maxNationalQuantity}
+                          aria-label="Sumar un décimo"
+                        >
+                          +
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3">
+                      <TrophyIcon className="w-5 h-5 text-emerald-600 shrink-0" />
+                      <p className="text-[11px] font-semibold text-emerald-800 leading-snug">
+                        Si este número resulta premiado con el <span className="font-black">Gordo</span>, cobrarías un total de <span className="font-black">{formatCurrency(nationalPotentialFirstPrize)}</span>.
+                      </p>
+                    </div>
+                  </motion.section>
+                )}
+              </div>
             )}
-          </div>
-        )}
           </motion.div>
         </AnimatePresence>
 
@@ -1306,19 +1259,17 @@ export function GamePlayPage() {
 
         {/* ---- SECCIÓN LAGUINDA: Seguro y Abono ---- */}
         <div className="mt-2 space-y-3">
-          <motion.div 
+          <motion.div
             whileTap={{ scale: 0.98 }}
             onClick={() => setHasInsurance(!hasInsurance)}
-            className={`relative overflow-hidden rounded-[1.55rem] border-2 p-4 transition-all cursor-pointer ${
-              hasInsurance 
-                ? 'border-manises-gold bg-[linear-gradient(180deg,#fff9e9_0%,#fff4cf_100%)] shadow-[0_16px_34px_rgba(184,134,11,0.16)]' 
+            className={`relative overflow-hidden rounded-[1.55rem] border-2 p-4 transition-all cursor-pointer ${hasInsurance
+                ? 'border-manises-gold bg-[linear-gradient(180deg,#fff9e9_0%,#fff4cf_100%)] shadow-[0_16px_34px_rgba(184,134,11,0.16)]'
                 : 'border-white bg-white/85 shadow-[0_10px_24px_rgba(15,23,42,0.05)] hover:border-gray-200'
-            }`}
+              }`}
           >
             <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
-                hasInsurance ? 'bg-manises-gold text-manises-blue' : 'bg-gray-100 text-gray-400'
-              }`}>
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${hasInsurance ? 'bg-manises-gold text-manises-blue' : 'bg-gray-100 text-gray-400'
+                }`}>
                 <ShieldCheck className="w-7 h-7" />
               </div>
               <div className="flex-1">
@@ -1442,7 +1393,7 @@ export function GamePlayPage() {
                 Importe Total
               </p>
               <p className="mt-0.5 text-[10px] font-medium text-muted-foreground leading-tight">
-                {isNationalLottery 
+                {isNationalLottery
                   ? `${selectedNationalQuantity} ${selectedNationalQuantity === 1 ? 'décimo' : 'décimos'} x ${drawsCount} ${drawsCount === 1 ? 'sorteo' : 'sorteos'}`
                   : `${formatCurrency(drawPrice)} x ${drawsCount} ${drawsCount === 1 ? 'sorteo' : 'sorteos'}`
                 }
@@ -1453,38 +1404,38 @@ export function GamePlayPage() {
                 </p>
               </div>
             </div>
-          <AnimatePresence mode="wait">
-            <Button
-              className={`h-12 flex-1 rounded-2xl font-bold text-sm shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-all active:scale-[0.98] ${
-                canPlay
-                  ? 'text-white'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-              style={canPlay ? theme.cta : undefined}
-              onClick={handlePlay}
-              disabled={!canPlay}
-            >
-              {canPlay
-                ? drawsCount > 1
-                  ? `Añadir ${drawsCount} jugadas`
+            <AnimatePresence mode="wait">
+              <Button
+                className={`h-12 flex-1 rounded-2xl font-bold text-sm shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-all active:scale-[0.98] ${canPlay
+                    ? 'text-white'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                style={canPlay ? theme.cta : undefined}
+                onClick={handlePlay}
+                disabled={isSubmitting || !canPlay}
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Procesando...
+                  </span>
+                ) : canPlay
+                  ? drawsCount > 1
+                    ? `Confirmar ${drawsCount} sorteos`
+                    : isNationalLottery
+                      ? `Reservar ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'}`
+                      : `Confirmar ${betsCount} ${betsCount === 1 ? 'apuesta' : 'apuestas'}`
                   : isNationalLottery
-                  ? editingDraft
-                    ? `Actualizar ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'}`
-                    : `Añadir ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'}`
-                  : editingDraft
-                    ? 'Actualizar jugada'
-                    : `Añadir ${betsCount} ${betsCount === 1 ? 'jugada' : 'jugadas'}`
-                : isNationalLottery
-                  ? 'Elige un décimo'
-                  : isQuiniela
-                    ? 'Completa los 15 partidos'
-                    : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' nums' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
-              }
-            </Button>
-          </AnimatePresence>
+                    ? 'Elige un décimo'
+                    : isQuiniela
+                      ? 'Completa los 15 partidos'
+                      : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' nums' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
+                }
+              </Button>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }
