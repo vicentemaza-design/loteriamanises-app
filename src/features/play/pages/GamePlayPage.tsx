@@ -1277,11 +1277,11 @@ export function GamePlayPage() {
                           : "text-slate-400 border-transparent hover:text-slate-600"
                       )}
                     >
-                      {timeMode === 'specific_days' ? '← Volver a modos rápidos' : 'O elegir días concretos...'}
+                      {timeMode === 'specific_days' ? '← Volver a selección rápida' : 'O elegir días concretos...'}
                     </button>
                   </div>
 
-                  {/* GRID DE DÍAS ULTRA-COMPACTO */}
+                  {/* GRID DE DÍAS REFINADO (TÁCTIL Y CLARO) */}
                   <AnimatePresence>
                     {timeMode === 'specific_days' && (
                       <motion.div
@@ -1290,9 +1290,10 @@ export function GamePlayPage() {
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden"
                       >
-                        <div className="mt-4 grid grid-cols-7 gap-2 pb-1">
+                        <div className="mt-4 grid grid-cols-7 gap-1.5 pb-1">
                           {currentWeekDraws.map((draw) => {
                             const isSelected = selectedDrawDates.includes(draw.drawDate);
+                            const dayNumber = new Date(draw.drawDate).getDate();
                             return (
                               <button
                                 key={draw.drawDate}
@@ -1305,17 +1306,24 @@ export function GamePlayPage() {
                                     return [...prev, draw.drawDate].sort();
                                   });
                                 }}
-                                className="flex flex-col items-center gap-1.5"
+                                className="flex flex-col items-center gap-2"
                               >
                                 <div className={cn(
-                                  "w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-black transition-all border",
+                                  "relative w-11 h-11 rounded-full flex flex-col items-center justify-center transition-all border",
                                   isSelected 
-                                    ? "bg-manises-blue border-manises-blue text-white shadow-sm" 
+                                    ? "bg-manises-blue border-manises-blue text-white shadow-md shadow-manises-blue/10 scale-105" 
                                     : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
                                 )}>
-                                  {draw.label.substring(0, 1).toUpperCase()}
+                                  <span className={cn("text-[9px] font-black uppercase leading-none mb-0.5", isSelected ? "text-white/70" : "text-slate-300")}>
+                                    {draw.label.substring(0, 1)}
+                                  </span>
+                                  <span className="text-[13px] font-black leading-none">
+                                    {dayNumber}
+                                  </span>
                                 </div>
-                                <span className="text-[8px] font-bold text-slate-400 uppercase">{draw.label.substring(0, 3)}</span>
+                                <span className={cn("text-[8px] font-bold uppercase tracking-tighter", isSelected ? "text-manises-blue" : "text-slate-400")}>
+                                  {draw.label.substring(0, 3)}
+                                </span>
                               </button>
                             );
                           })}
