@@ -256,9 +256,9 @@ function PremiumEditorialCard({
       ? {
           badge: 'bg-manises-gold text-manises-blue',
           cta: 'bg-manises-gold/90 text-manises-blue backdrop-blur-md border border-white/20',
-          glow: 'rgba(245,197,24,0.12)',
+          glow: 'rgba(245,197,24,0.16)',
           border: 'border-manises-gold/20',
-          overlay: 'bg-[linear-gradient(135deg,rgba(10,71,146,0.92)_0%,rgba(8,63,132,0.75)_50%,rgba(213,227,242,0.12)_100%)]'
+          overlay: 'bg-[linear-gradient(135deg,rgba(68,38,0,0.92)_0%,rgba(100,56,0,0.70)_48%,rgba(245,197,24,0.07)_100%)]'
         }
       : accent === 'blue'
       ? {
@@ -509,8 +509,8 @@ export function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <PremiumEditorialCard
-            badge="B2B Navidad"
-            title="Loteria de Navidad Empresas"
+            badge="PARA EMPRESAS"
+            title="Lotería de Navidad para empresas"
             description="Gestiona participaciones y reparto interno con una experiencia pensada para equipos."
             cta="Módulo empresas"
             image={adminFacade}
@@ -521,12 +521,12 @@ export function HomePage() {
             onClick={() => navigate('/profile/companies')}
           />
           <PremiumEditorialCard
-            badge="Numero Fiel"
-            title="Abonarte a un numero"
-            description="Convierte tu numero favorito en un abono estable y olvídate de renovar."
+            badge="Número Fiel"
+            title="Abónate a tu número"
+            description="Convierte tu número favorito en un abono estable y olvídate de renovar cada semana."
             cta="Ver abonos"
             image={loteriaNacionalHero}
-            imageAlt="Abonos a numero de loteria"
+            imageAlt="Abonos a número de lotería"
             icon={Landmark}
             accent="gold"
             stats={['Persistente', 'Semanal']}
