@@ -1,6 +1,6 @@
 import type { UserProfile } from '@/shared/types/domain';
 import type { ResultDto } from '../contracts/results.contracts';
-import type { CreateBetRequestDto, CreateBetResponseDto } from '../contracts/play.contracts';
+import type { CreateBetRequestDto, CreateBetResponseDto, SubmitPlaySessionRequestDto, SubmitPlaySessionResponseDto } from '../contracts/play.contracts';
 import type { TicketDto } from '../contracts/tickets.contracts';
 import type { WalletBalanceDto, WalletMovementDto } from '../contracts/wallet.contracts';
 
@@ -32,6 +32,7 @@ export interface IApiProvider {
   // Play
   play: {
     placeBet: (betData: CreateBetRequestDto & { userId: string }) => Promise<CreateBetResponseDto>;
+    submitPlaySession: (payload: SubmitPlaySessionRequestDto) => Promise<SubmitPlaySessionResponseDto>;
     calculatePrice: (gameId: string, selection: Record<string, any>) => Promise<number>;
   };
 

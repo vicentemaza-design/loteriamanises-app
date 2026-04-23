@@ -4,6 +4,9 @@ import { AnimatePresence } from 'motion/react';
 import { Header } from '@/shared/layout/Header';
 import { BottomNav } from '@/shared/layout/BottomNav';
 import { AppLock } from '@/app/components/AppLock';
+import { PlaySessionProvider } from '@/features/session/context/PlaySessionProvider';
+import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
+import { PlaySessionTray } from '@/features/session/components/PlaySessionTray';
 
 // Rutas donde se oculta el BottomNav (flujos de pantalla completa)
 const HIDE_BOTTOM_NAV_PATTERNS = ['/play/'];
@@ -30,36 +33,42 @@ export function PrivateLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="app-shell h-dvh font-sans text-manises-blue flex flex-col overflow-hidden">
-      <AnimatePresence>
-        {isLocked && (
-          <AppLock onUnlock={() => setIsLocked(false)} />
-        )}
-      </AnimatePresence>
+    <PlaySessionProvider>
+      <div className="app-shell h-dvh font-sans text-manises-blue flex flex-col overflow-hidden">
+        <AnimatePresence>
+          {isLocked && (
+            <AppLock onUnlock={() => setIsLocked(false)} />
+          )}
+        </AnimatePresence>
 
-      {!isLocked && (
-        <>
-          {/* Header limpio sin props de scroll */}
-          {!hideNav && <Header />}
-          
-          <main
-            ref={mainRef}
-            className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scrollbar-hide ${
-              hideNav ? 'pt-0 pb-0' : 'pb-nav-safe'
-            }`}
-            style={!hideNav ? { paddingTop: 'var(--header-height)' } : undefined}
-          >
-            {/* Capas sutiles de profundidad para el canvas unificado */}
-            <div className="absolute inset-x-0 top-0 h-96 section-wash pointer-events-none opacity-40" />
+        {!isLocked && (
+          <>
+            {!hideNav && <Header />}
             
-            <div key={location.pathname} className="relative w-full min-h-full">
-              <Outlet />
-            </div>
-          </main>
+            <main
+              ref={mainRef}
+              className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scrollbar-hide ${
+                hideNav ? 'pt-0 pb-0' : 'pb-nav-safe'
+              }`}
+              style={!hideNav ? { paddingTop: 'var(--header-height)' } : undefined}
+            >
+              <div className="absolute inset-x-0 top-0 h-96 section-wash pointer-events-none opacity-40" />
+              
+              <div key={location.pathname} className="relative w-full min-h-full">
+                <Outlet />
+              </div>
+            </main>
 
-          {!hideNav && <BottomNav />}
-        </>
-      )}
-    </div>
+            {!hideNav && (
+              <>
+                <PlaySessionIndicator variant="fab" />
+                <BottomNav />
+              </>
+            )}
+            <PlaySessionTray />
+          </>
+        )}
+      </div>
+    </PlaySessionProvider>
   );
 }

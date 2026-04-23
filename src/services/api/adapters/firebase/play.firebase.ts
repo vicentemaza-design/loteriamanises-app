@@ -1,6 +1,11 @@
 import { db } from '@/shared/config/firebase';
 import { collection, doc, runTransaction, serverTimestamp } from 'firebase/firestore';
-import type { CreateBetRequestDto, CreateBetResponseDto } from '../../contracts/play.contracts';
+import type {
+  CreateBetRequestDto,
+  CreateBetResponseDto,
+  SubmitPlaySessionRequestDto,
+  SubmitPlaySessionResponseDto,
+} from '../../contracts/play.contracts';
 
 /**
  * Firebase Play Adapter
@@ -91,4 +96,11 @@ export async function placeBetFirebase(dto: CreateBetRequestDto & { userId: stri
       error: error instanceof Error ? error.message : 'Error interno al procesar el pago'
     };
   }
+}
+
+export async function submitPlaySessionFirebase(_payload: SubmitPlaySessionRequestDto): Promise<SubmitPlaySessionResponseDto> {
+  return {
+    success: false,
+    error: 'submitPlaySessionFirebase todavía no está implementado.',
+  };
 }

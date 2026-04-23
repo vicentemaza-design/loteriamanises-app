@@ -1,7 +1,7 @@
 import type { IApiProvider } from '../../providers/api.provider';
 import { getLatestResultsMock, getResultByIdMock } from './results.mock';
 import { getUserTicketsMock, getTicketByIdMock } from './tickets.mock';
-import { placeBetMock } from './play.mock';
+import { placeBetMock, submitPlaySessionMock } from './play.mock';
 import { getBalanceMock, getMovementsMock, topUpMock } from './wallet.mock';
 
 /**
@@ -27,6 +27,7 @@ export class MockAdapter implements IApiProvider {
 
   play = {
     placeBet: placeBetMock,
+    submitPlaySession: submitPlaySessionMock,
     calculatePrice: async () => 0, // Out of scope for this sprint's logic recalculation
   };
 

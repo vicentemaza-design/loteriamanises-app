@@ -1,5 +1,5 @@
 import type { IApiProvider } from '../../providers/api.provider';
-import { placeBetFirebase } from './play.firebase';
+import { placeBetFirebase, submitPlaySessionFirebase } from './play.firebase';
 import { getLatestResultsFirebase, getResultByIdFirebase } from './results.firebase';
 import { getUserTicketsFirebase, getTicketByIdFirebase } from './tickets.firebase';
 import { getBalanceFirebase, getMovementsFirebase, topUpFirebase } from './wallet.firebase';
@@ -36,6 +36,7 @@ export class FirebaseAdapter implements IApiProvider {
   // Play
   play = {
     placeBet: placeBetFirebase,
+    submitPlaySession: submitPlaySessionFirebase,
     calculatePrice: async (_gameId: string, _selection: Record<string, any>) => 0, // Logic remains in domain services for now
   };
 
