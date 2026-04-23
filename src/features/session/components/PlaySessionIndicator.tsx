@@ -44,20 +44,22 @@ export function PlaySessionIndicator({ variant = 'fab' }: { variant?: 'fab' | 'h
       onClick={openReview}
       className={cn(
         'fixed bottom-[calc(env(safe-area-inset-bottom,0px)+72px)] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-3 overflow-hidden rounded-[1.65rem]',
-        'border border-manises-blue/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(245,248,255,0.94)_100%)] px-3.5 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.2)] backdrop-blur-2xl'
+        'border border-white/38 bg-[linear-gradient(180deg,rgba(255,255,255,0.28)_0%,rgba(255,255,255,0.16)_100%)] px-3.5 py-3 shadow-[0_18px_42px_rgba(15,23,42,0.18)] backdrop-blur-[22px]'
       )}
       aria-label={`Abrir tus jugadas: ${summary.draftCount} jugadas, ${formatCurrency(summary.totalAmount)}`}
     >
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.72)_0%,rgba(255,255,255,0)_38%)]" />
-      <div className="absolute -right-8 top-0 h-16 w-16 rounded-full bg-manises-blue/[0.05] blur-2xl" />
-      <div className="relative flex h-11 w-11 items-center justify-center rounded-[1rem] border border-manises-blue/10 bg-[linear-gradient(180deg,#0a4792_0%,#0d56b3_100%)] text-white shadow-[0_12px_24px_rgba(10,71,146,0.24)]">
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.34)_0%,rgba(255,255,255,0.08)_42%,rgba(255,255,255,0.04)_100%)]" />
+      <div className="absolute inset-[1px] rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0)_36%)]" />
+      <div className="absolute -right-8 top-0 h-16 w-16 rounded-full bg-manises-blue/[0.06] blur-2xl" />
+      <div className="absolute left-5 top-0 h-10 w-24 rounded-full bg-white/14 blur-2xl" />
+      <div className="relative flex h-11 w-11 items-center justify-center rounded-[1rem] border border-manises-blue/12 bg-[linear-gradient(180deg,rgba(10,71,146,0.96)_0%,rgba(13,86,179,0.92)_100%)] text-white shadow-[0_12px_24px_rgba(10,71,146,0.22)]">
         <ShoppingBagArrowUp className="h-[1.15rem] w-[1.15rem]" />
       </div>
       <div className="relative min-w-0 text-left leading-none">
-        <p className="text-[8px] font-black uppercase tracking-[0.16em] text-slate-400">Tus jugadas</p>
+        <p className="text-[8px] font-black uppercase tracking-[0.16em] text-slate-500">Tus jugadas</p>
         <div className="mt-1.5 flex items-baseline gap-2">
           <p className="text-[0.98rem] font-black text-manises-blue">{formatCurrency(summary.totalAmount)}</p>
-          <span className="text-[11px] font-bold text-slate-500">
+          <span className="text-[11px] font-bold text-slate-600/90">
             {summary.draftCount} {summary.draftCount === 1 ? 'jugada' : 'jugadas'}
           </span>
         </div>
