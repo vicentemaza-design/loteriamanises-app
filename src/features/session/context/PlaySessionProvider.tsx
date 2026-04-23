@@ -104,11 +104,22 @@ export function PlaySessionProvider({ children }: { children: React.ReactNode })
   }, [state.errorMessage, state.session.drafts, state.session.status]);
 
   const addDrafts = React.useCallback((incomingDrafts: PlayDraft[]): AddDraftResult => {
-    const existingSignatures = new Set(state.session.drafts.map(getDraftSignature));
-    const acceptedDrafts = incomingDrafts.filter((draft) => !existingSignatures.has(getDraftSignature(draft)));
+    const knownSignatures = new Set(state.session.drafts.map(getDraftSignature));
+    const acceptedDrafts: PlayDraft[] = [];
+    let duplicateCount = 0;
+
+    for (const draft of incomingDrafts) {
+      const signature = getDraftSignature(draft);
+      if (knownSignatures.has(signature)) {
+        duplicateCount += 1;
+        continue;
+      }
+      knownSignatures.add(signature);
+      acceptedDrafts.push(draft);
+    }
 
     if (acceptedDrafts.length === 0) {
-      return { addedCount: 0, duplicateCount: incomingDrafts.length };
+      return { addedCount: 0, duplicateCount };
     }
 
     dispatch({
@@ -120,7 +131,7 @@ export function PlaySessionProvider({ children }: { children: React.ReactNode })
 
     return {
       addedCount: acceptedDrafts.length,
-      duplicateCount: incomingDrafts.length - acceptedDrafts.length,
+      duplicateCount,
     };
   }, [state.session.drafts]);
 

@@ -24,9 +24,9 @@ function splitAmountAcrossDraws(totalAmount: number, drawsCount: number): number
   });
 }
 
-function buildTicketsForBet(dto: CreateBetRequestDto, userId: string): TicketDto[] {
+function buildTicketsForBet(dto: CreateBetRequestDto, userId: string, orderIdOverride?: string): TicketDto[] {
   const drawDates = dto.drawDates && dto.drawDates.length > 0 ? dto.drawDates : [dto.drawDate];
-  const orderId = `mock-order-${Math.random().toString(36).slice(2, 10)}`;
+  const orderId = orderIdOverride ?? `mock-order-${Math.random().toString(36).slice(2, 10)}`;
   const distributedPrices = splitAmountAcrossDraws(dto.price, drawDates.length);
   const createdAt = new Date().toISOString();
 
@@ -96,7 +96,11 @@ export async function submitPlaySessionMock(payload: SubmitPlaySessionRequestDto
     console.log('[MockAdapter] Submitting play session:', payload);
 
     setTimeout(() => {
-      const tickets = payload.items.flatMap((item) => buildTicketsForBet(mapSessionItemToBetDto(item), payload.userId));
+      // Una sesión debe comportarse como una única operación atómica: mismo orderId en todos los tickets.
+      const sessionOrderId = `mock-session-${payload.sessionId.slice(0, 10)}`;
+      const tickets = payload.items.flatMap((item) =>
+        buildTicketsForBet(mapSessionItemToBetDto(item), payload.userId, sessionOrderId)
+      );
       appendMockTickets(tickets);
 
       resolve({
