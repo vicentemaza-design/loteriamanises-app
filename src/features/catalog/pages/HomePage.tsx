@@ -18,11 +18,12 @@ import {
 } from 'iconoir-react/regular';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
-import { GameIcon } from '@/shared/ui/GameIcon';
+import { GameBadge } from '@/shared/ui/GameBadge';
 import { ScannerModal } from '@/shared/ui/ScannerModal';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { useInstallPrompt } from '@/shared/hooks/useInstallPrompt';
 import { useLotteryGames } from '@/shared/hooks/useLotteryGames';
+import { getGameIdentity } from '@/shared/lib/game-identity';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { useMemo, useRef, useState } from 'react';
@@ -33,6 +34,8 @@ import primitivaJoy from '@/assets/images/primitiva_joy.png';
 import primitivaJoyV2 from '@/assets/images/primitiva_joy_v2.jpg';
 import joySecondary from '@/assets/images/joy_secondary.png';
 import loteriaNacionalHero from '@/assets/images/loteria_nacional.jpg';
+import loteriaJuevesLuck from '@/assets/images/loteria_jueves_luck.jpg';
+import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
 import quinielaHero from '@/assets/quiniela_hero.jpg';
 import adminFacade from '@/assets/images/administracion_manises.webp';
 
@@ -114,23 +117,25 @@ function HeroJackpot({ jackpot, isMonthly }: { jackpot: number; isMonthly?: bool
 
 // ─── Sub-component: BentoGameCard ────────────────────────────────────────────
 function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof useLotteryGames>['games'][0]; onClick: () => void }) {
+  const identity = getGameIdentity(game);
   const imageByGameId: Record<string, string> = {
     primitiva: primitivaJoy,
     bonoloto: joySecondary,
-    'loteria-nacional': loteriaNacionalHero,
+    'loteria-nacional-jueves': loteriaJuevesLuck,
+    'loteria-nacional-sabado': loteriaNacionalHero,
     quiniela: quinielaHero,
     gordo: primitivaJoyV2,
-    'loteria-navidad': headerWinner,
+    'loteria-navidad': loteriaNavidadHero,
     'loteria-nino': primitivaJoyV2,
   };
   const image = imageByGameId[game.id] ?? joySecondary;
   const cd = getCountdown(game.nextDraw);
-  const isNationalLottery = game.id === 'loteria-nacional';
+  const isNationalLottery = game.id.includes('loteria-nacional') || game.type === 'navidad' || game.type === 'nino';
   const imageStyle = isNationalLottery
-    ? { filter: 'grayscale(0.18) brightness(0.68) contrast(1.08)' }
-    : { filter: 'grayscale(0.4) brightness(0.54) contrast(1.04)' };
-  const imageOpacity = isNationalLottery ? 0.52 : 0.4;
-  const colorOverlayOpacity = isNationalLottery ? 0.5 : 0.62;
+    ? { filter: 'grayscale(0.1) brightness(0.7) contrast(1.06)' }
+    : { filter: 'grayscale(0.44) brightness(0.52) contrast(1.03)' };
+  const imageOpacity = isNationalLottery ? 0.46 : 0.34;
+  const colorOverlayOpacity = isNationalLottery ? 0.54 : 0.66;
 
   return (
     <PremiumTouchInteraction scale={0.96}>
@@ -147,27 +152,32 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
         <div className="absolute inset-0" style={{ backgroundColor: game.color, mixBlendMode: 'multiply', opacity: colorOverlayOpacity }} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/88 via-black/32 to-transparent" />
 
-        <div className="relative h-full p-4 flex flex-col justify-between">
+        <div className="relative h-full p-4.5 flex flex-col justify-between">
           <div className="flex items-start justify-between">
-            <GameIcon
-              gameType={game.type}
-              variant="white"
-              className="w-7 h-7 drop-shadow-[0_3px_10px_rgba(0,0,0,0.65)]"
+            <GameBadge
+              game={game}
+              size="lg"
+              tone="ghost"
+              className="border-white/15 bg-white/10 shadow-[0_16px_32px_rgba(0,0,0,0.22)]"
             />
             {cd.isPast ? (
-              <span className="text-[8px] font-black text-white/40 uppercase tracking-tighter">Sorteo pasado</span>
+              <span className="rounded-full border border-white/10 bg-black/15 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] text-white/42 backdrop-blur-sm">Sorteo pasado</span>
             ) : (
-              <span className="text-[9px] font-black text-white/60 uppercase tracking-tighter">
+              <span className="rounded-full border border-white/10 bg-black/15 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.14em] text-white/68 backdrop-blur-sm">
                 {formatDrawTime(game.nextDraw)}
               </span>
             )}
           </div>
 
           <div>
-            <h3 className="text-base font-black text-white tracking-tight leading-none mb-1">{game.name}</h3>
-            <p className="text-[14px] font-black text-manises-gold tabular-nums">
-              {formatJackpot(game.jackpot, game.isMonthly)}
-            </p>
+            <h3 className="text-[1.08rem] font-black text-white tracking-tight leading-none mb-2">{identity.shortName}</h3>
+            <div className="flex items-end gap-2.5 text-[11px]">
+              <p className="font-black text-manises-gold tabular-nums leading-none">
+                {formatJackpot(game.jackpot, game.isMonthly)}
+              </p>
+              <span className="pb-[1px] text-white/24">·</span>
+              <p className="pb-[1px] font-semibold text-white/74">{formatCurrency(game.price)}</p>
+            </div>
           </div>
         </div>
       </button>
@@ -339,16 +349,18 @@ export function HomePage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  // Los 4 juegos del bento
+  // Los juegos destacados en el bento (priorizamos los nacionales e inmediatos)
   const bentoGames = useMemo(() => {
     const baseGames = upcomingGames.filter((game) => game.id !== featuredGame.id);
-    const firstFour = baseGames.slice(0, 4);
-    const loteriaNacional = baseGames.find((game) => game.id === 'loteria-nacional');
-    if (!loteriaNacional || firstFour.some(g => g.id === 'loteria-nacional')) return firstFour;
-    const updated = [...firstFour];
-    const dropIdx = updated.findIndex(g => g.id === 'eurodreams') !== -1 ? updated.findIndex(g => g.id === 'eurodreams') : 3;
-    updated[dropIdx] = loteriaNacional;
-    return updated;
+    
+    // Priorizamos Primitiva y Bonoloto primero, luego los nacionales
+    const priorityIds = ['primitiva', 'bonoloto', 'loteria-nacional-jueves', 'loteria-nacional-sabado', 'loteria-navidad', 'loteria-nino'];
+    const priorityGames = baseGames.filter(g => priorityIds.includes(g.id))
+      .sort((a, b) => priorityIds.indexOf(a.id) - priorityIds.indexOf(b.id));
+    const otherGames = baseGames.filter(g => !priorityIds.includes(g.id));
+    
+    // Combinamos mostrando primero los de prioridad
+    return [...priorityGames, ...otherGames].slice(0, 6); // Ampliamos a 6 para dar cabida a la nueva oferta
   }, [upcomingGames, featuredGame]);
 
   useGSAP(() => {
@@ -386,7 +398,7 @@ export function HomePage() {
 
       {/* ── Hero Section ──────────────────────────────────────── */}
       <section className="px-4">
-        <div className="hero-card relative h-[440px] rounded-[2.5rem] overflow-hidden shadow-xl shadow-manises/10 group transition-all duration-500">
+        <div className="hero-card relative h-[520px] rounded-[2.5rem] overflow-hidden shadow-xl shadow-manises/10 group transition-all duration-500">
           <div className="absolute inset-0">
             <img
               src={headerWinner}
@@ -396,31 +408,31 @@ export function HomePage() {
             {/* Overlay para contraste - Solución sugerida en auditoría */}
             <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(10,71,146,0.92)_0%,rgba(10,71,146,0.5)_40%,transparent_100%)]" />
           </div>
-
-          <div className="relative h-full p-8 flex flex-col">
-            <div className="flex items-start justify-between mb-auto">
+ 
+          <div className="relative flex h-full flex-col px-7 pb-7 pt-8">
+            <div className="flex items-start justify-between gap-3">
               <span className="hero-badge px-3.5 py-2 rounded-full bg-manises-gold text-manises-blue text-[10px] font-black uppercase tracking-[0.18em] flex items-center gap-2 shadow-lg">
                 <Sparkles className="w-3.5 h-3.5 fill-current" />
                 Sorteo Maestre
               </span>
               <HeroTimeChip iso={featuredGame.nextDraw} />
             </div>
-
-            <div className="mb-6">
-              <h1 className="hero-title text-[2.5rem] font-black text-white tracking-tighter leading-[0.9] mb-3 drop-shadow-md">
+ 
+            <div className="mt-14 max-w-[16.5rem] space-y-4">
+              <h1 className="hero-title text-[2.6rem] font-black text-white tracking-tighter leading-[0.88] drop-shadow-md">
                 {featuredGame.name}
               </h1>
-              <p className="hero-tagline text-white/80 text-[14px] font-bold tracking-tight max-w-[240px] leading-snug">
+              <p className="hero-tagline max-w-[15rem] text-[14px] font-bold leading-[1.45] tracking-tight text-white/78">
                 {featuredGame.description ?? 'El bote que puede cambiar tu vida para siempre.'}
               </p>
             </div>
-
-            <div className="hero-box bg-white/10 backdrop-blur-2xl rounded-[2.25rem] p-7 border border-white/20 shadow-2xl flex flex-col items-center text-center">
-              <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.25em] mb-3">Bote Estimado</p>
-              <div className="mb-7">
+ 
+            <div className="hero-box mt-auto max-w-[21.5rem] rounded-[2rem] border border-white/16 bg-white/8 p-6 shadow-2xl backdrop-blur-2xl">
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/56">Bote Estimado</p>
+              <div className="mt-3">
                 <HeroJackpot jackpot={featuredGame.jackpot} isMonthly={featuredGame.isMonthly} />
               </div>
-              <PremiumTouchInteraction scale={0.97} className="w-full">
+              <PremiumTouchInteraction scale={0.97} className="mt-6 w-full">
                 <Button
                   onClick={() => navigate(`/play/${featuredGame.id}`)}
                   className="w-full h-14 bg-white text-manises-blue hover:bg-manises-gold hover:text-white font-black rounded-2xl shadow-xl transition-all gap-2 text-base"

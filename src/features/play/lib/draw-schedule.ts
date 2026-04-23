@@ -1,5 +1,6 @@
 import type { GameType } from '@/shared/types/domain';
 import { getDrawScheduleConfig } from '@/features/play/config/draw-schedule.config';
+import { getBusinessDate } from '@/shared/lib/timezone';
 
 export interface ScheduledDraw {
   gameId: GameType;
@@ -64,7 +65,7 @@ export function getUpcomingDraws(gameId: GameType, fromDate: Date | string, week
 
       draws.push({
         gameId,
-        drawDate: scheduledDate.toISOString(),
+        drawDate: getBusinessDate(scheduledDate),
         label: scheduledDate.toLocaleDateString('es-ES', {
           weekday: 'long',
           day: 'numeric',

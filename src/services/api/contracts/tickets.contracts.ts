@@ -1,4 +1,4 @@
-import type { GameType } from '@/shared/types/domain';
+import type { GameType, TicketMetadata } from '@/shared/types/domain';
 import type { ApiResponseDto } from './common.contracts';
 
 /**
@@ -19,6 +19,7 @@ export interface TicketDto {
   hasInsurance?: boolean;
   isSubscription?: boolean;
   orderId?: string;
+  metadata?: TicketMetadata;
   createdAt: string;
 }
 

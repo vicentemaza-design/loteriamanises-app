@@ -1,6 +1,6 @@
 import type { ElementType } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Trophy, Wallet } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/shared/lib/utils';
+import { formatCurrency, formatDate, cn } from '@/shared/lib/utils';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';
 import { PremiumActionRow } from '../components/PremiumActionRow';
@@ -102,7 +102,3 @@ export function MovementsPage() {
   );
 }
 
-// Utility check for cn inside the component closure
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ');
-}

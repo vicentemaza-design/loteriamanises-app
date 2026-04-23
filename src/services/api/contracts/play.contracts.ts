@@ -33,6 +33,29 @@ export interface CreateBetResponseDto {
   error?: string;
 }
 
+export interface SubmitPlaySessionItemDto extends CreateBetRequestDto {
+  draftId: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export interface SubmitPlaySessionRequestDto {
+  sessionId: string;
+  userId: string;
+  paymentMethod: 'wallet';
+  totalAmount: number;
+  items: SubmitPlaySessionItemDto[];
+}
+
+export interface SubmitPlaySessionResponseDto {
+  success: boolean;
+  confirmedDraftIds?: string[];
+  ticketIds?: string[];
+  failures?: Array<{ draftId: string; reason: string }>;
+  error?: string;
+}
+
 export interface QuotePlayRequestDto {
   gameId: string;
   selection: {
@@ -50,3 +73,4 @@ export interface QuotePlayResponseDto {
 
 export type PlaceBetResponseDto = ApiResponseDto<CreateBetResponseDto>;
 export type QuotePlayApiResponseDto = ApiResponseDto<QuotePlayResponseDto>;
+export type SubmitPlaySessionApiResponseDto = ApiResponseDto<SubmitPlaySessionResponseDto>;

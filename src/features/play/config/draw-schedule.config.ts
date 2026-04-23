@@ -1,6 +1,12 @@
 import type { GameType } from '@/shared/types/domain';
 
-export type ScheduleMode = 'next_draw' | 'current_week' | 'two_weeks' | 'custom_weeks';
+export type ScheduleMode = 
+  | 'next_draw' 
+  | 'full_week' 
+  | 'specific_days' 
+  | 'current_week' // Legacy
+  | 'two_weeks'    // Legacy
+  | 'custom_weeks'; // Legacy
 
 export interface DrawScheduleConfig {
   drawWeekdays: number[];
@@ -51,6 +57,22 @@ export const DRAW_SCHEDULE_CONFIG: Partial<Record<GameType, DrawScheduleConfig>>
     drawHour: 12,
     drawMinute: 0,
     maxWeeksSelectable: DEFAULT_MAX_WEEKS_SELECTABLE,
+    supportsMultipleDrawSelection: false,
+    supportsSubscription: false,
+  },
+  navidad: {
+    drawWeekdays: [2], // 22 de diciembre
+    drawHour: 9,
+    drawMinute: 0,
+    maxWeeksSelectable: 1,
+    supportsMultipleDrawSelection: false,
+    supportsSubscription: false,
+  },
+  nino: {
+    drawWeekdays: [2], // 6 de enero
+    drawHour: 12,
+    drawMinute: 0,
+    maxWeeksSelectable: 1,
     supportsMultipleDrawSelection: false,
     supportsSubscription: false,
   },

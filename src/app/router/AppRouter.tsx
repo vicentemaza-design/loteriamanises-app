@@ -19,7 +19,7 @@ import { FavoritesPage } from '@/features/profile/pages/FavoritesPage';
 import { SubscriptionsPage } from '@/features/profile/pages/SubscriptionsPage';
 import { MovementsPage } from '@/features/profile/pages/MovementsPage';
 import { WithdrawalsPage } from '@/features/profile/pages/WithdrawalsPage';
-import { HelpSupportPage } from '@/features/profile/pages/HelpSupportPage';
+import { HelpPage } from '@/features/profile/pages/HelpPage';
 import { CompaniesPage } from '@/features/profile/pages/CompaniesPage';
 import { TechnicalMatrixPage } from '@/features/admin/pages/TechnicalMatrixPage';
 
@@ -33,12 +33,13 @@ export function AppRouter() {
         <Route path="/register" element={<RegisterPage />} />
       </Route>
 
-      <Route element={<RequireAuth />}>
-        <Route element={<PrivateLayout />}>
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/games" element={<GamesPage />} />
-          <Route path="/play/:gameId" element={<GamePlayPage />} />
-          <Route path="/results" element={<ResultsPage />} />
+      <Route element={<PrivateLayout />}>
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/games" element={<GamesPage />} />
+        <Route path="/play/:gameId" element={<GamePlayPage />} />
+        <Route path="/results" element={<ResultsPage />} />
+
+        <Route element={<RequireAuth />}>
           <Route path="/tickets" element={<TicketsPage />} />
           
           <Route path="/profile" element={<ProfilePage />} />
@@ -49,7 +50,7 @@ export function AppRouter() {
           <Route path="/profile/subscriptions" element={<SubscriptionsPage />} />
           <Route path="/profile/movements" element={<MovementsPage />} />
           <Route path="/profile/withdrawals" element={<WithdrawalsPage />} />
-          <Route path="/profile/help" element={<HelpSupportPage />} />
+          <Route path="/profile/help" element={<HelpPage />} />
           <Route path="/profile/companies" element={<CompaniesPage />} />
           <Route path="/profile/settings" element={<SettingsPage />} />
           <Route path="/profile/matrix" element={<TechnicalMatrixPage />} />

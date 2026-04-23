@@ -28,7 +28,7 @@ function evaluateNationalTicket(
   ticketDigits: string,
   result: ComparisonModalProps['result']
 ): { label: string; prize: number; isWinner: boolean } {
-  const first = result.firstPrizeNumber ?? '';
+  const first = result.firstPrizeNumber ?? (Array.isArray(result.numbers) ? result.numbers.join('') : '');
   const second = result.secondPrizeNumber ?? '';
   const decimoPrice = result.decimoPrice ?? 6;
   const last = ticketDigits.slice(-1);
@@ -48,7 +48,9 @@ function evaluateNationalTicket(
 export function ComparisonModal({ isOpen, onClose, result, userTickets }: ComparisonModalProps) {
   const game = LOTTERY_GAMES.find(g => g.id === result.gameId);
   if (!game) return null;
-  const isNationalLottery = result.gameId === 'loteria-nacional';
+  const isNationalLottery = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
+  const firstPrizeNumber = result.firstPrizeNumber ?? (Array.isArray(result.numbers) ? result.numbers.join('') : '');
+  const hasDetailedNationalResult = Boolean(firstPrizeNumber || result.secondPrizeNumber || result.reintegros?.length);
 
   return (
     <AnimatePresence>
@@ -74,8 +76,8 @@ export function ComparisonModal({ isOpen, onClose, result, userTickets }: Compar
               <div className="flex items-center gap-3">
                 <GameBadge game={game} size="sm" />
                 <div>
-                  <h3 className="font-black text-manises-blue">Comprobar Jugadas</h3>
-                  <p className="text-[10px] text-muted-foreground font-medium">Sorteo {formatDate(result.date)}</p>
+                  <h3 className="font-black text-manises-blue">Resumen de escrutinio</h3>
+                  <p className="text-[10px] text-muted-foreground font-medium">Lectura disponible del sorteo {formatDate(result.date)}</p>
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
@@ -88,7 +90,7 @@ export function ComparisonModal({ isOpen, onClose, result, userTickets }: Compar
               <section>
                 <div className="flex items-center gap-2 mb-4">
                   <Trophy className="w-4 h-4 text-manises-gold" />
-                  <h4 className="text-xs font-black uppercase tracking-widest text-manises-blue">Combinación Ganadora</h4>
+                  <h4 className="text-xs font-black uppercase tracking-widest text-manises-blue">Resultado disponible</h4>
                 </div>
                 {!isNationalLottery ? (
                   <div className="flex flex-wrap gap-2.5 p-4 bg-[linear-gradient(135deg,rgba(10,25,47,0.06)_0%,rgba(227,182,87,0.10)_100%)] rounded-2xl border border-manises-blue/10 justify-center">
@@ -103,20 +105,29 @@ export function ComparisonModal({ isOpen, onClose, result, userTickets }: Compar
                   <div className="p-4 bg-[linear-gradient(135deg,rgba(10,25,47,0.08)_0%,rgba(227,182,87,0.12)_100%)] rounded-2xl border border-manises-blue/12 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">1º Premio</span>
-                      <span className="font-black text-xl text-manises-blue tracking-[0.08em]">{result.firstPrizeNumber}</span>
+                      <span className="font-black text-xl text-manises-blue tracking-[0.08em]">{firstPrizeNumber || 'Pendiente'}</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">2º Premio</span>
-                      <span className="font-black text-base text-manises-blue tracking-[0.08em]">{result.secondPrizeNumber}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Reintegros</span>
-                      {result.reintegros?.map((digit) => (
-                        <span key={digit} className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-white border border-manises-blue/15 px-2 text-[10px] font-black text-manises-blue">
-                          {digit}
-                        </span>
-                      ))}
-                    </div>
+                    {result.secondPrizeNumber && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">2º Premio</span>
+                        <span className="font-black text-base text-manises-blue tracking-[0.08em]">{result.secondPrizeNumber}</span>
+                      </div>
+                    )}
+                    {result.reintegros?.length ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Reintegros</span>
+                        {result.reintegros.map((digit) => (
+                          <span key={digit} className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-white border border-manises-blue/15 px-2 text-[10px] font-black text-manises-blue">
+                            {digit}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                    {!hasDetailedNationalResult && (
+                      <p className="text-[11px] font-medium text-muted-foreground">
+                        Escrutinio simplificado en demo. El desglose oficial detallado llegará con la integración real.
+                      </p>
+                    )}
                   </div>
                 )}
               </section>
@@ -124,7 +135,7 @@ export function ComparisonModal({ isOpen, onClose, result, userTickets }: Compar
               {/* Mis Boletos */}
               <section className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-black uppercase tracking-widest text-manises-blue">Mis Boletos ({userTickets.length})</h4>
+                  <h4 className="text-xs font-black uppercase tracking-widest text-manises-blue">Mis jugadas ({userTickets.length})</h4>
                 </div>
                 
                 {userTickets.length === 0 ? (
@@ -210,7 +221,7 @@ export function ComparisonModal({ isOpen, onClose, result, userTickets }: Compar
 
             {/* Sticky footer */}
             <div className="p-6 bg-[linear-gradient(180deg,rgba(10,25,47,0.03)_0%,rgba(10,25,47,0.06)_100%)] backdrop-blur-sm border-t border-gray-100 italic text-[10px] text-center text-muted-foreground">
-              Resultados provisionales. Verifique siempre su boleto en la administración.
+              Resumen frontend disponible. El escrutinio completo por categorías sigue pendiente de integración.
             </div>
           </motion.div>
         </div>

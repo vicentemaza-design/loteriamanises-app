@@ -10,10 +10,11 @@ import {
   Clock
 } from 'lucide-react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
-import { GameIcon } from '@/shared/ui/GameIcon';
+import { GameBadge } from '@/shared/ui/GameBadge';
 import { formatJackpot, formatCurrency, formatDrawTime, getCountdown } from '@/shared/lib/utils';
 import { useLotteryGames } from '@/shared/hooks/useLotteryGames';
 import type { LotteryGame } from '@/shared/types/domain';
+import { getGameIdentity } from '@/shared/lib/game-identity';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
@@ -21,12 +22,25 @@ import { useGSAP } from '@gsap/react';
 import adminManises from '@/assets/images/administracion_manises.webp';
 import joySecondary from '@/assets/images/joy_secondary.png';
 import primitivaJoy from '@/assets/images/primitiva_joy.png';
+import loteriaNacionalHero from '@/assets/images/loteria_nacional.jpg';
+import loteriaJuevesLuck from '@/assets/images/loteria_jueves_luck.jpg';
+import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
+import headerWinner from '@/assets/images/header_winner.jpg';
+import primitivaJoyV2 from '@/assets/images/primitiva_joy_v2.jpg';
 
 gsap.registerPlugin(useGSAP);
 
 // ─── Sub-component: TodayGameCard ─────────────────────────────────────────────
 function TodayGameCard({ game, onClick }: { key?: Key; game: LotteryGame; onClick: () => void }) {
-  const image = game.id === 'primitiva' ? primitivaJoy : joySecondary;
+  const identity = getGameIdentity(game);
+  const imageMap: Record<string, string> = {
+    primitiva: primitivaJoy,
+    'loteria-nacional-jueves': loteriaJuevesLuck,
+    'loteria-nacional-sabado': loteriaNacionalHero,
+    'loteria-navidad': loteriaNavidadHero,
+    'loteria-nino': primitivaJoyV2,
+  };
+  const image = imageMap[game.id] ?? joySecondary;
 
   return (
     <PremiumTouchInteraction scale={0.98}>
@@ -45,23 +59,29 @@ function TodayGameCard({ game, onClick }: { key?: Key; game: LotteryGame; onClic
 
         <div className="relative h-full p-5 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl shrink-0">
-              <GameIcon gameType={game.type} variant="white" className="w-8 h-8" />
-            </div>
+            <GameBadge game={game} size="lg" tone="ghost" className="shadow-2xl shrink-0" />
             <div>
-              <h3 className="text-white text-xl font-black tracking-tight leading-none mb-1">{game.name}</h3>
+              <div className="mb-1.5">
+                <span
+                  className="inline-flex rounded-full px-2 py-1 text-[8px] font-bold uppercase tracking-[0.16em]"
+                  style={{ backgroundColor: identity.chipBackground, color: identity.chipText }}
+                >
+                  {identity.badgeLabel}
+                </span>
+              </div>
+              <h3 className="text-white text-xl font-black tracking-tight leading-none mb-1">{identity.shortName}</h3>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-manises-gold uppercase tracking-widest">Bote</span>
-                <span className="text-lg font-black text-white tabular-nums">
+                <span className="text-[10px] font-bold text-manises-gold uppercase tracking-[0.14em]">Bote</span>
+                <span className="text-lg font-black text-white/96 tabular-nums">
                   {formatJackpot(game.jackpot, game.isMonthly)}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 flex flex-col items-center shrink-0">
-            <Clock className="w-3.5 h-3.5 text-white/60 mb-1" />
-            <span className="text-[9px] font-black text-white uppercase">{formatDrawTime(game.nextDraw)}</span>
+          <div className="bg-white/10 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-white/10 flex flex-col items-center shrink-0">
+            <Clock className="w-3.5 h-3.5 text-white/54 mb-1.5" />
+            <span className="text-[9px] font-bold text-white/82 uppercase tracking-[0.12em]">{formatDrawTime(game.nextDraw)}</span>
           </div>
         </div>
       </button>
@@ -71,36 +91,62 @@ function TodayGameCard({ game, onClick }: { key?: Key; game: LotteryGame; onClic
 
 // ─── Sub-component: UpcomingGameRow ──────────────────────────────────────────
 function UpcomingGameRow({ game, onClick }: { key?: Key; game: LotteryGame; onClick: () => void }) {
+  const identity = getGameIdentity(game);
+  const imageMap: Record<string, string> = {
+    primitiva: primitivaJoy,
+    bonoloto: joySecondary,
+    gordo: primitivaJoyV2,
+    quiniela: headerWinner,
+    'loteria-nacional-jueves': loteriaJuevesLuck,
+    'loteria-nacional-sabado': loteriaNacionalHero,
+    'loteria-navidad': loteriaNavidadHero,
+    'loteria-nino': primitivaJoyV2,
+  };
+  const image = imageMap[game.id] ?? joySecondary;
+  const isNationalGame = game.id === 'loteria-nacional-jueves' || game.id === 'loteria-nacional-sabado' || game.id === 'loteria-navidad' || game.id === 'loteria-nino';
+  const imageFilter = game.id === 'loteria-navidad'
+    ? 'grayscale(0.18) brightness(0.62) contrast(1.04)'
+    : game.id === 'loteria-nino'
+      ? 'grayscale(0.26) brightness(0.6) contrast(1.02)'
+      : isNationalGame
+        ? 'grayscale(0.34) brightness(0.56) contrast(1.02)'
+        : 'grayscale(0.82) brightness(0.5)';
   return (
     <PremiumTouchInteraction scale={0.97}>
       <button
         onClick={onClick}
-        className="weekly-game-card w-full bg-white/70 backdrop-blur-md border border-gray-100 rounded-2xl p-4 flex items-center justify-between shadow-sm transition-all group"
+        className="weekly-game-card relative w-full overflow-hidden rounded-[1.6rem] border border-white/10 p-[1.05rem] text-left shadow-lg transition-all group"
       >
-        <div className="flex items-center gap-3.5 flex-1 min-w-0">
-          <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg"
-            style={{ backgroundColor: game.color }}
-          >
-            <GameIcon gameType={game.type} variant="white" className="w-5 h-5" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="font-black text-manises-blue text-sm truncate">{game.name}</h3>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-              {formatDrawTime(game.nextDraw)}
-            </p>
-          </div>
-        </div>
+        <img
+          src={image}
+          alt={game.name}
+          className="absolute inset-0 h-full w-full object-cover opacity-[0.15] transition-transform duration-700 group-hover:scale-105"
+          style={{ filter: imageFilter }}
+        />
+        <div className="absolute inset-0" style={{ backgroundColor: game.color, mixBlendMode: 'multiply', opacity: isNationalGame ? 0.74 : 0.8 }} />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/58 via-black/18 to-transparent" />
 
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-[11px] font-black text-manises-gold leading-none">
-              {formatJackpot(game.jackpot, game.isMonthly)}
-            </p>
-            <p className="text-[9px] font-medium text-muted-foreground mt-0.5">{formatCurrency(game.price)}</p>
+        <div className="relative flex items-center justify-between gap-5">
+          <div className="flex min-w-0 flex-1 items-center gap-3.5">
+            <GameBadge game={game} size="md" tone="ghost" className="border-white/15 bg-white/10 shadow-[0_14px_28px_rgba(0,0,0,0.2)]" />
+            <div className="min-w-0">
+              <h3 className="truncate text-[0.96rem] font-black leading-none text-white">{identity.shortName}</h3>
+              <p className="mt-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/68">
+                {formatDrawTime(game.nextDraw)}
+              </p>
+            </div>
           </div>
-          <div className="w-8 h-8 rounded-full bg-manises-blue/5 flex items-center justify-center text-manises-blue group-hover:bg-manises-blue group-hover:text-white transition-all shadow-inner shrink-0">
-            <ChevronRight className="w-4 h-4" />
+
+          <div className="flex shrink-0 items-center gap-3.5 pl-2">
+            <div className="min-w-[4.85rem] text-right">
+              <p className="text-[11px] font-black leading-none text-manises-gold">
+                {formatJackpot(game.jackpot, game.isMonthly)}
+              </p>
+              <p className="mt-1 text-[9px] font-medium text-white/66">{formatCurrency(game.price)}</p>
+            </div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/12 bg-white/12 text-white/92 shadow-inner shrink-0">
+              <ChevronRight className="w-4 h-4" />
+            </div>
           </div>
         </div>
       </button>

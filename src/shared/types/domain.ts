@@ -9,6 +9,21 @@ export type GameType =
   | 'eurodreams'
   | 'quiniela';
 
+export interface TicketMetadata {
+  technicalMode?: string;
+  systemFamily?: string;
+  drawsCount?: number;
+  scheduleMode?: string;
+  weeksCount?: number;
+  drawIndex?: number;
+  orderDrawDates?: string[];
+  orderTotalPrice?: number;
+  nationalNumber?: string;
+  nationalQuantity?: number;
+  nationalDrawLabel?: string;
+  [key: string]: unknown;
+}
+
 export interface LotteryGame {
   id: string;
   name: string;
@@ -50,6 +65,7 @@ export interface Ticket {
   hasInsurance?: boolean; // Laguinda feature: Recubera el 20% de impuestos
   isSubscription?: boolean; // Recurring bet
   orderId?: string;
+  metadata?: TicketMetadata;
   createdAt: string;
 }
 
