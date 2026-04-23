@@ -156,7 +156,7 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
           <div className="flex items-start justify-between">
             <GameBadge
               game={game}
-              size="lg"
+              size="md"
               tone="ghost"
               className="border-white/15 bg-white/10 shadow-[0_16px_32px_rgba(0,0,0,0.22)]"
             />

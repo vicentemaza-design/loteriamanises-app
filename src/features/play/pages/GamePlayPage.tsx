@@ -1283,7 +1283,7 @@ export function GamePlayPage() {
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden"
                       >
-                        <div className="mt-4 grid grid-cols-7 gap-1.5 pb-1">
+                        <div className="mt-3 grid grid-cols-7 gap-1.5 px-1 pt-1 pb-2">
                           {currentWeekDraws.map((draw) => {
                             const isSelected = selectedDrawDates.includes(draw.drawDate);
                             const dayNumber = new Date(draw.drawDate).getDate();
