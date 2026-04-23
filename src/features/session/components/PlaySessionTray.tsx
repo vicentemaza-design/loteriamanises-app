@@ -66,16 +66,15 @@ export function PlaySessionTray() {
 
               <div className="mt-5 flex max-h-[44vh] flex-col gap-3 overflow-y-auto pr-1">
                 {drafts.map((draft) => (
-                  <div key={draft.id}>
-                    <PlayDraftItem
-                      draft={draft}
-                      onEdit={() => {
-                        closeReview();
-                        navigate(`/play/${draft.gameId}`, { state: { playDraftId: draft.id } });
-                      }}
-                      onRemove={() => removeDraft(draft.id)}
-                    />
-                  </div>
+                  <PlayDraftItem
+                    key={draft.id}
+                    draft={draft}
+                    onEdit={() => {
+                      closeReview();
+                      navigate(`/play/${draft.gameId}`, { state: { playDraftId: draft.id } });
+                    }}
+                    onRemove={() => removeDraft(draft.id)}
+                  />
                 ))}
               </div>
 
