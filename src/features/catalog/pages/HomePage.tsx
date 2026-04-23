@@ -398,7 +398,7 @@ export function HomePage() {
 
       {/* ── Hero Section ──────────────────────────────────────── */}
       <section className="px-4">
-        <div className="hero-card relative h-[480px] rounded-[2.5rem] overflow-hidden shadow-xl shadow-manises/10 group transition-all duration-500">
+        <div className="hero-card relative h-[520px] rounded-[2.5rem] overflow-hidden shadow-xl shadow-manises/10 group transition-all duration-500">
           <div className="absolute inset-0">
             <img
               src={headerWinner}
@@ -409,8 +409,8 @@ export function HomePage() {
             <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(10,71,146,0.92)_0%,rgba(10,71,146,0.5)_40%,transparent_100%)]" />
           </div>
  
-          <div className="relative h-full p-10 flex flex-col">
-            <div className="flex items-start justify-between mb-auto">
+          <div className="relative flex h-full flex-col px-7 pb-7 pt-8">
+            <div className="flex items-start justify-between gap-3">
               <span className="hero-badge px-3.5 py-2 rounded-full bg-manises-gold text-manises-blue text-[10px] font-black uppercase tracking-[0.18em] flex items-center gap-2 shadow-lg">
                 <Sparkles className="w-3.5 h-3.5 fill-current" />
                 Sorteo Maestre
@@ -418,21 +418,21 @@ export function HomePage() {
               <HeroTimeChip iso={featuredGame.nextDraw} />
             </div>
  
-            <div className="mb-10">
-              <h1 className="hero-title text-[2.5rem] font-black text-white tracking-tighter leading-[0.9] mb-3 drop-shadow-md">
+            <div className="mt-14 max-w-[16.5rem] space-y-4">
+              <h1 className="hero-title text-[2.6rem] font-black text-white tracking-tighter leading-[0.88] drop-shadow-md">
                 {featuredGame.name}
               </h1>
-              <p className="hero-tagline text-white/80 text-[14px] font-bold tracking-tight max-w-[240px] leading-snug">
+              <p className="hero-tagline max-w-[15rem] text-[14px] font-bold leading-[1.45] tracking-tight text-white/78">
                 {featuredGame.description ?? 'El bote que puede cambiar tu vida para siempre.'}
               </p>
             </div>
  
-            <div className="hero-box bg-white/10 backdrop-blur-2xl rounded-[2.25rem] p-10 border border-white/20 shadow-2xl flex flex-col items-center text-center">
-              <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.25em] mb-5">Bote Estimado</p>
-              <div className="mb-10">
+            <div className="hero-box mt-auto max-w-[21.5rem] rounded-[2rem] border border-white/16 bg-white/8 p-6 shadow-2xl backdrop-blur-2xl">
+              <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/56">Bote Estimado</p>
+              <div className="mt-3">
                 <HeroJackpot jackpot={featuredGame.jackpot} isMonthly={featuredGame.isMonthly} />
               </div>
-              <PremiumTouchInteraction scale={0.97} className="w-full">
+              <PremiumTouchInteraction scale={0.97} className="mt-6 w-full">
                 <Button
                   onClick={() => navigate(`/play/${featuredGame.id}`)}
                   className="w-full h-14 bg-white text-manises-blue hover:bg-manises-gold hover:text-white font-black rounded-2xl shadow-xl transition-all gap-2 text-base"
