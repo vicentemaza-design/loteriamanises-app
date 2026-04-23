@@ -427,9 +427,9 @@ export function HomePage() {
               </p>
             </div>
 
-            <div className="hero-box bg-white/10 backdrop-blur-2xl rounded-[2.25rem] p-7 border border-white/20 shadow-2xl flex flex-col items-center text-center">
-              <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.25em] mb-3">Bote Estimado</p>
-              <div className="mb-7">
+            <div className="hero-box bg-white/10 backdrop-blur-2xl rounded-[2.25rem] p-9 border border-white/20 shadow-2xl flex flex-col items-center text-center">
+              <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.25em] mb-4">Bote Estimado</p>
+              <div className="mb-8">
                 <HeroJackpot jackpot={featuredGame.jackpot} isMonthly={featuredGame.isMonthly} />
               </div>
               <PremiumTouchInteraction scale={0.97} className="w-full">
