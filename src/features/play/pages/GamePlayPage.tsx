@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getBusinessDate } from '@/shared/lib/timezone';
 import { motion, AnimatePresence } from 'motion/react';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
@@ -39,7 +39,10 @@ import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config
 import { getDrawsForCurrentWeek, getUpcomingDraws, groupDrawsByWeek } from '../lib/draw-schedule';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
-import type { PlayDraft } from '@/features/session/types/session.types';
+import { distributeAmount } from '@/features/session/lib/session.utils';
+import type { GameSelection, PlayDraft } from '@/features/session/types/session.types';
+
+interface GamePlayLocationState { playDraftId?: string; }
 
 const INSURANCE_PRICE = 0.50;
 const DEFAULT_CUSTOM_WEEKS = 2;
@@ -102,10 +105,15 @@ interface QuinielaMatch {
 export function GamePlayPage() {
   const { gameId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, profile, isDemo } = useAuth();
-  const { placeBet, isSubmitting, showSuccess, error, reset } = usePlay();
-  const { addDrafts } = usePlaySession();
+  const { drafts, addDrafts, updateDraft } = usePlaySession();
   const game = LOTTERY_GAMES.find(g => g.id === gameId);
+  const editingDraftId = (location.state as GamePlayLocationState | null)?.playDraftId;
+  const editingDraft = useMemo(
+    () => drafts.find((draft) => draft.id === editingDraftId),
+    [drafts, editingDraftId]
+  );
 
   const availableModes: PlayMode[] = game ? getAvailableModesForGame(game.id) : ['simple'];
 
@@ -192,6 +200,62 @@ export function GamePlayPage() {
       setSelectedDrawDates([]);
     }
   }, [gameId, availableNationalDates, isNationalLottery]);
+
+  useEffect(() => {
+    if (!editingDraft || editingDraft.gameId !== gameId) {
+      return;
+    }
+
+    setMode((editingDraft.mode as PlayMode) ?? availableModes[0]);
+    setHasInsurance(editingDraft.hasInsurance);
+    setIsSubscription(editingDraft.isSubscription);
+    setSelectedDrawDates([editingDraft.drawDate]);
+    setTimeMode('next_draw');
+    setSelectedWeeksCount(DEFAULT_CUSTOM_WEEKS);
+
+    if (editingDraft.selection.type === 'national') {
+      setSelectedNationalNumber(editingDraft.selection.number);
+      setSelectedNationalQuantity(editingDraft.quantity);
+      setSelectedNumbers([]);
+      setSelectedStars([]);
+      return;
+    }
+
+    if (editingDraft.selection.type === 'quiniela') {
+      setSelectedReductionSystemId(editingDraft.selection.systemId ?? 'reducida_1');
+      setQuinielaMatches((current) => current.map((match) => {
+        const nextMatch = editingDraft.selection.type === 'quiniela'
+          ? editingDraft.selection.matches.find((item) => item.id === match.id)
+          : undefined;
+        return {
+          ...match,
+          result: nextMatch?.value ?? null,
+        };
+      }));
+      return;
+    }
+
+    if ('numbers' in editingDraft.selection) {
+      setSelectedNumbers(editingDraft.selection.numbers);
+    }
+
+    if (editingDraft.selection.type === 'euromillones') {
+      setSelectedStars(editingDraft.selection.stars);
+      return;
+    }
+
+    if (editingDraft.selection.type === 'gordo') {
+      setSelectedStars([editingDraft.selection.key]);
+      return;
+    }
+
+    if (editingDraft.selection.type === 'eurodreams') {
+      setSelectedStars([editingDraft.selection.dream]);
+      return;
+    }
+
+    setSelectedStars([]);
+  }, [availableModes, editingDraft, gameId]);
 
   useEffect(() => {
     if (!isExplicitNationalProduct) return;
@@ -480,46 +544,88 @@ export function GamePlayPage() {
       ? isQuinielaValid
       : selectedNumbers.length >= minNums && selectedNumbers.length <= maxNums && hasValidStarSelection && isSupportedReducedSelection && betsCount > 0;
 
-  // Manejo de errores del hook
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
+  function buildSelection(): GameSelection | null {
+    if (isNationalLottery && selectedNationalNumber) {
+      return {
+        type: 'national',
+        number: selectedNationalNumber,
+        drawLabel: selectedNationalDraw.label,
+      };
     }
-  }, [error]);
+
+    if (isQuiniela) {
+      return {
+        type: 'quiniela',
+        matches: quinielaMatches.map((match) => ({ id: match.id, value: match.result })),
+        systemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
+      };
+    }
+
+    if (game.type === 'euromillones') {
+      return { type: 'euromillones', numbers: selectedNumbers, stars: selectedStars };
+    }
+
+    if (game.type === 'gordo') {
+      return { type: 'gordo', numbers: selectedNumbers, key: selectedStars[0] ?? 0 };
+    }
+
+    if (game.type === 'eurodreams') {
+      return { type: 'eurodreams', numbers: selectedNumbers, dream: selectedStars[0] ?? 0 };
+    }
+
+    if (game.type === 'bonoloto') {
+      return { type: 'bonoloto', numbers: selectedNumbers };
+    }
+
+    return { type: 'primitiva', numbers: selectedNumbers };
+  }
 
   const handlePlay = async () => {
-    if (!user && !isDemo) {
-      toast.error('Sesión requerida');
-      return;
+    if (!user && !isDemo) { 
+      toast.error('Sesión requerida'); 
+      return; 
     }
-    if (!canPlay) {
+    if (!canPlay)           { 
       if (isQuiniela && !isQuinielaValid && mode === 'reduced') {
         const config = QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType];
         toast.error(`Requisitos: ${config.dobles}D y ${config.triples}T`);
       } else if (mode === 'reduced' && !isSupportedReducedSelection) {
         toast.error('La selección actual no encaja en una fila válida de la tabla reducida');
       } else {
-        toast.error('Completa tu apuesta');
+        toast.error('Completa tu apuesta'); 
       }
-      return;
+      return; 
     }
     if (isOverBalance) { toast.error('Saldo insuficiente'); return; }
 
-    const drawDates = effectiveSelectedDrawDates.length > 0
-      ? effectiveSelectedDrawDates
-      : [getBusinessDate(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw)];
-    const drawDate = drawDates[0];
+    const draftSelection = buildSelection();
+    if (!draftSelection) {
+      toast.error('No se ha podido construir la jugada.');
+      return;
+    }
 
-    // 321: Preparamos la selección para el hook
-    const selection = {
+    const drawDates = effectiveSelectedDrawDates.length > 0
+      ? effectiveSelectedDrawDates 
+      : [getBusinessDate(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw)];
+    if (editingDraft && drawDates.length !== 1) {
+      toast.error('La edición de una jugada existente solo admite un sorteo.');
+      return;
+    }
+
+    const distributedTotals = distributeAmount(totalPrice, drawDates.length);
+    const nextDrafts: PlayDraft[] = drawDates.map((drawDate, index) => ({
+      id: editingDraft && index === 0 ? editingDraft.id : crypto.randomUUID(),
       gameId: game.id,
+      gameName: game.name,
       gameType: game.type,
-      mode,
       drawDate,
-      drawDates,
-      scheduleMode: supportsTimeSelection ? timeMode : 'next_draw',
-      weeksCount: supportsTimeSelection ? (timeMode === 'custom_weeks' ? selectedWeeksCount : timeMode === 'two_weeks' ? 2 : 1) : 1,
-      price: totalPrice,
+      selection: draftSelection,
+      quantity: isNationalLottery ? selectedNationalQuantity : 1,
+      unitPrice: isNationalLottery ? game.price : drawPrice,
+      totalPrice: distributedTotals[index] ?? distributedTotals[0] ?? totalPrice,
+      addedAt: editingDraft && index === 0 ? editingDraft.addedAt : new Date().toISOString(),
+      status: 'valid',
+      mode,
       betsCount,
       hasInsurance,
       isSubscription,
@@ -527,35 +633,34 @@ export function GamePlayPage() {
         technicalMode: game.technicalMode,
         systemFamily: game.systemFamily,
         drawsCount: drawDates.length,
+        scheduleMode: supportsTimeSelection ? timeMode : 'next_draw',
+        weeksCount: supportsTimeSelection ? (timeMode === 'custom_weeks' ? selectedWeeksCount : timeMode === 'two_weeks' ? 2 : 1) : 1,
         orderDrawDates: drawDates,
         orderTotalPrice: totalPrice,
-      }
-    };
-    if (isNationalLottery && selectedNationalNumber) {
-      Object.assign(selection, {
-        numbers: selectedNationalNumber.split('').map(Number),
-        stars: []
-      });
-      Object.assign(selection.metadata, {
         nationalNumber: selectedNationalNumber,
         nationalQuantity: selectedNationalQuantity,
         nationalDrawLabel: selectedNationalDraw.label,
-      });
-    } else if (isQuiniela) {
-      Object.assign(selection, {
-        selections: quinielaMatches.map(m => ({ id: m.id, val: m.result })),
-        systemId: mode === 'reduced' ? selectedReductionSystemId : undefined
-      });
-    } else {
-      Object.assign(selection, {
-        numbers: selectedNumbers,
-        stars: selectedStars
-      });
+      },
+    }));
+
+    if (editingDraft) {
+      const result = updateDraft(editingDraft.id, nextDrafts[0]);
+      if (result.duplicate) {
+        toast.error('Ya tienes esta jugada añadida.');
+        return;
+      }
+      navigate(location.pathname, { replace: true, state: null });
+      toast.success('Jugada actualizada.');
+      return;
     }
 
-    addDrafts([selection as unknown as PlayDraft]);
-    toast.success('¡Añadido a tus jugadas!');
-    handleClear();
+    const result = addDrafts(nextDrafts);
+    if (result.addedCount > 0) {
+      toast.success(result.addedCount === 1 ? 'Jugada añadida.' : `${result.addedCount} jugadas añadidas.`);
+    }
+    if (result.duplicateCount > 0) {
+      toast.error(result.duplicateCount === 1 ? 'Ya tenías esa jugada en la sesión.' : `${result.duplicateCount} jugadas duplicadas no se añadieron.`);
+    }
   };
 
   return (
@@ -563,55 +668,6 @@ export function GamePlayPage() {
       className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-36"
       style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 64px)' }}
     >
-      {/* Success Overlay - MEJORA MILOTO: Feedback visual y compartir */}
-      <AnimatePresence>
-        {showSuccess && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 text-center"
-          >
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', damping: 15 }}
-              className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center mb-6"
-            >
-              <CheckCircle className="w-12 h-12 text-emerald-500" />
-            </motion.div>
-
-            <h2 className="text-2xl font-black text-manises-blue uppercase tracking-tight mb-2">¡Apuesta Confirmada!</h2>
-            <p className="text-sm text-muted-foreground font-medium mb-8 max-w-[280px]">
-              Tu jugada para la {game.name} ha sido procesada correctamente. ¡Mucha suerte!
-            </p>
-
-            <div className="w-full max-w-sm flex flex-col gap-3">
-              <Button
-                onClick={handleShare}
-                className="w-full h-14 bg-manises-blue text-white font-bold rounded-2xl flex items-center justify-center gap-2 shadow-manises"
-              >
-                <ShareAndroid className="w-5 h-5" /> Compartir con amigos
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => navigate('/tickets')}
-                className="w-full h-14 border-2 border-manises-blue/10 text-manises-blue font-bold rounded-2xl flex items-center justify-center gap-2"
-              >
-                <JournalPage className="w-5 h-5" /> Ver mis jugadas
-              </Button>
-
-              <button
-                onClick={() => navigate('/')}
-                className="mt-4 text-[11px] font-black text-manises-blue/40 uppercase tracking-widest hover:text-manises-blue flex items-center justify-center gap-1 transition-colors"
-              >
-                Volver al inicio <ArrowRight className="w-3 h-3" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div
         className="fixed top-0 left-0 right-0 z-40 text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+64px)] flex flex-col justify-end"
         style={{ background: `linear-gradient(135deg, ${game.color}, ${game.colorEnd ?? game.color})` }}
@@ -1412,19 +1468,18 @@ export function GamePlayPage() {
                   }`}
                 style={canPlay ? theme.cta : undefined}
                 onClick={handlePlay}
-                disabled={isSubmitting || !canPlay}
+                disabled={!canPlay}
               >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Procesando...
-                  </span>
-                ) : canPlay
+                {canPlay
                   ? drawsCount > 1
-                    ? `Confirmar ${drawsCount} sorteos`
+                    ? `Añadir ${drawsCount} jugadas`
                     : isNationalLottery
-                      ? `Reservar ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'}`
-                      : `Confirmar ${betsCount} ${betsCount === 1 ? 'apuesta' : 'apuestas'}`
+                      ? editingDraft
+                        ? `Actualizar ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'}`
+                        : `Añadir ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'}`
+                      : editingDraft
+                        ? 'Actualizar jugada'
+                        : `Añadir ${betsCount} ${betsCount === 1 ? 'jugada' : 'jugadas'}`
                   : isNationalLottery
                     ? 'Elige un décimo'
                     : isQuiniela
