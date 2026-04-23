@@ -1,3 +1,4 @@
+import React from 'react';
 import { Trash, EditPencil } from 'iconoir-react/regular';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { formatCurrency, formatDate } from '@/shared/lib/utils';
@@ -34,7 +35,8 @@ export function PlayDraftItem({
   draft: PlayDraft;
   onEdit: () => void;
   onRemove: () => void;
-}) {
+  key?: React.Key;
+}): React.ReactElement {
   const game = LOTTERY_GAMES.find((entry) => entry.id === draft.gameId);
   const gameDisplay = game ?? {
     id: draft.gameId,

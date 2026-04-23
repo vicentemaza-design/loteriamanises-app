@@ -9,6 +9,7 @@ import {
   NavArrowLeft,
   RefreshCircle,
   Spark,
+  Sparks as Sparkles,
   CheckCircle,
   ShareAndroid,
   ArrowRight,
@@ -1204,121 +1205,83 @@ export function GamePlayPage() {
         </AnimatePresence>
 
         {supportsTimeSelection && (
-          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible" className="space-y-3">
-            <div className="rounded-[1.6rem] border border-manises-blue/10 bg-[linear-gradient(180deg,#ffffff_0%,#f5f8ff_100%)] p-4 shadow-[0_16px_38px_rgba(15,23,42,0.06)]">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Planificación</p>
-                  <h3 className="mt-1 text-sm font-black text-manises-blue">¿Cuándo quieres jugar?</h3>
-                  <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
-                    Elige el próximo sorteo o agrupa varios sorteos futuros sin cambiar tu selección actual.
-                  </p>
-                </div>
-                <div className="rounded-xl border border-manises-blue/10 bg-white/80 px-3 py-2 text-right shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
-                  <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Sorteos</p>
-                  <p className="mt-0.5 text-lg font-black text-manises-blue">{drawsCount}</p>
-                </div>
+          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
+            <div className="rounded-[1.4rem] border border-slate-200/50 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-3.5 px-0.5">
+                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Planificación</span>
+                <span className="text-[9px] font-bold text-manises-blue/60 uppercase">{drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}</span>
               </div>
 
-              {/* UI Específica para Lotería Nacional: Selección explícita de sorteos */}
               {isNationalLottery ? (
-                <div className="mt-4 space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400 mb-2">Sorteos Disponibles (Próximas 5 semanas)</p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {availableNationalDates.map((dateIso) => {
-                      const isSelected = effectiveSelectedDrawDates.includes(dateIso);
-                      const dateObj = new Date(dateIso);
-                      return (
-                        <button
-                          key={dateIso}
-                          onClick={() => {
-                            setSelectedDrawDates(prev => {
-                              if (prev.includes(dateIso)) {
-                                if (prev.length === 1) return prev; // Al menos uno seleccionado
-                                return prev.filter(d => d !== dateIso);
-                              }
-                              return [...prev, dateIso].sort();
-                            });
-                          }}
-                          className={cn(
-                            'flex items-center justify-between rounded-2xl border px-4 py-3 transition-all',
-                            isSelected
-                              ? 'border-manises-blue bg-manises-blue/[0.03] shadow-sm'
-                              : 'border-slate-100 bg-white/50'
-                          )}
-                        >
-                          <div className="flex flex-col items-start">
-                            <span className={cn("text-xs font-black", isSelected ? "text-manises-blue" : "text-slate-700")}>
-                              {dateObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-                            </span>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                              Sorteo Ordinario
-                            </span>
-                          </div>
-                          <div className={cn(
-                            "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
-                            isSelected ? "bg-manises-blue border-manises-blue" : "border-slate-200 bg-white"
-                          )}>
-                            {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
+                <div className="space-y-1.5">
+                  {availableNationalDates.map((dateIso) => {
+                    const isSelected = selectedDrawDates.includes(dateIso);
+                    return (
+                      <button
+                        key={dateIso}
+                        onClick={() => setSelectedDrawDates([dateIso])}
+                        className={cn(
+                          'flex items-center justify-between rounded-xl border px-3.5 py-2.5 transition-all w-full',
+                          isSelected ? 'border-manises-blue bg-manises-blue/[0.03]' : 'border-slate-100 bg-slate-50/50'
+                        )}
+                      >
+                        <span className={cn("text-[12px] font-black tracking-tight", isSelected ? "text-manises-blue" : "text-slate-600")}>
+                          {new Date(dateIso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        </span>
+                        <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center", isSelected ? "bg-manises-blue border-manises-blue" : "border-slate-300 bg-white")}>
+                          {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               ) : (
                 <>
-                  {/* NIVEL 1: Selección Compacta */}
-                  <div className="mt-4 flex p-1 bg-slate-100/50 rounded-2xl border border-slate-200/40">
-                    {SCHEDULE_OPTIONS.map((option) => {
+                  {/* SELECTOR BINARIO PRINCIPAL */}
+                  <div className="relative flex rounded-xl border border-slate-200/60 bg-slate-100/40 p-1">
+                    {[
+                      { id: 'next_draw', label: 'Próximo sorteo' },
+                      { id: 'full_week', label: 'Toda la semana' }
+                    ].map((option) => {
                       const active = timeMode === option.id;
                       return (
                         <button
                           key={option.id}
-                          onClick={() => setTimeMode(option.id)}
+                          onClick={() => setTimeMode(option.id as any)}
                           className={cn(
-                            'flex-1 py-2 px-1 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all',
-                            active 
-                              ? 'bg-white text-manises-blue shadow-sm border border-slate-200/50'
-                              : 'text-slate-400 hover:text-slate-600 border border-transparent'
+                            'relative flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all z-10',
+                            active ? 'text-manises-blue' : 'text-slate-500'
                           )}
                         >
-                          {option.label}
+                          {active && (
+                            <motion.div
+                              layoutId="activeTimeMode"
+                              className="absolute inset-0 rounded-lg bg-white shadow-sm border border-slate-200/50"
+                              transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
+                            />
+                          )}
+                          <span className="relative z-20">{option.label}</span>
                         </button>
                       );
                     })}
                   </div>
 
-                  {/* AVISO CONTEXTUAL (BANNER INTELIGENTE) */}
-                  <AnimatePresence>
-                    {showSmartBanner && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="mt-3 p-3 rounded-2xl bg-manises-blue/5 border border-manises-blue/10 flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-lg bg-manises-blue/10 flex items-center justify-center">
-                              <CheckCircle className="w-3.5 h-3.5 text-manises-blue" />
-                            </div>
-                            <p className="text-[10px] font-bold text-manises-blue/80">
-                              ¿Quieres jugar toda la semana?
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => setTimeMode('full_week')}
-                            className="px-3 py-1.5 rounded-lg bg-manises-blue text-white text-[9px] font-black uppercase tracking-widest hover:bg-manises-blue/90 transition-colors"
-                          >
-                            Activar
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {/* ACCIÓN SECUNDARIA: PERSONALIZAR */}
+                  <div className="mt-3 flex justify-center">
+                    <button
+                      onClick={() => setTimeMode(timeMode === 'specific_days' ? 'next_draw' : 'specific_days')}
+                      className={cn(
+                        "text-[9px] font-black uppercase tracking-[0.14em] transition-all px-3 py-1 rounded-full border",
+                        timeMode === 'specific_days' 
+                          ? "text-manises-blue border-manises-blue/20 bg-manises-blue/5" 
+                          : "text-slate-400 border-transparent hover:text-slate-600"
+                      )}
+                    >
+                      {timeMode === 'specific_days' ? '← Volver a modos rápidos' : 'O elegir días concretos...'}
+                    </button>
+                  </div>
 
-                  {/* NIVEL 2: Personalización bajo demanda */}
+                  {/* GRID DE DÍAS ULTRA-COMPACTO */}
                   <AnimatePresence>
                     {timeMode === 'specific_days' && (
                       <motion.div
@@ -1327,43 +1290,35 @@ export function GamePlayPage() {
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden"
                       >
-                        <div className="mt-4 space-y-2 pb-2">
-                          <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400 mb-1 px-1">Selecciona los días deseados</p>
-                          <div className="grid grid-cols-1 gap-2">
-                            {currentWeekDraws.map((draw) => {
-                              const isSelected = selectedDrawDates.includes(draw.drawDate);
-                              return (
-                                <button
-                                  key={draw.drawDate}
-                                  onClick={() => {
-                                    setSelectedDrawDates(prev => {
-                                      if (prev.includes(draw.drawDate)) {
-                                        if (prev.length === 1) return prev;
-                                        return prev.filter(d => d !== draw.drawDate);
-                                      }
-                                      return [...prev, draw.drawDate].sort();
-                                    });
-                                  }}
-                                  className={cn(
-                                    'flex items-center justify-between rounded-xl border px-3 py-2.5 transition-all',
-                                    isSelected
-                                      ? 'border-manises-blue bg-manises-blue/[0.03]'
-                                      : 'border-slate-100 bg-white/40 opacity-70 hover:opacity-100'
-                                  )}
-                                >
-                                  <span className={cn("text-xs font-bold", isSelected ? "text-manises-blue" : "text-slate-600")}>
-                                    {draw.label}
-                                  </span>
-                                  <div className={cn(
-                                    "w-4.5 h-4.5 rounded-full border flex items-center justify-center transition-all",
-                                    isSelected ? "bg-manises-blue border-manises-blue" : "border-slate-300 bg-white"
-                                  )}>
-                                    {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
-                                  </div>
-                                </button>
-                              );
-                            })}
-                          </div>
+                        <div className="mt-4 grid grid-cols-7 gap-2 pb-1">
+                          {currentWeekDraws.map((draw) => {
+                            const isSelected = selectedDrawDates.includes(draw.drawDate);
+                            return (
+                              <button
+                                key={draw.drawDate}
+                                onClick={() => {
+                                  setSelectedDrawDates(prev => {
+                                    if (prev.includes(draw.drawDate)) {
+                                      if (prev.length === 1) return prev;
+                                      return prev.filter(d => d !== draw.drawDate);
+                                    }
+                                    return [...prev, draw.drawDate].sort();
+                                  });
+                                }}
+                                className="flex flex-col items-center gap-1.5"
+                              >
+                                <div className={cn(
+                                  "w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-black transition-all border",
+                                  isSelected 
+                                    ? "bg-manises-blue border-manises-blue text-white shadow-sm" 
+                                    : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
+                                )}>
+                                  {draw.label.substring(0, 1).toUpperCase()}
+                                </div>
+                                <span className="text-[8px] font-bold text-slate-400 uppercase">{draw.label.substring(0, 3)}</span>
+                              </button>
+                            );
+                          })}
                         </div>
                       </motion.div>
                     )}
@@ -1371,35 +1326,22 @@ export function GamePlayPage() {
                 </>
               )}
 
-              <div className="mt-4 rounded-2xl border border-manises-blue/10 bg-white/80 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.85)]">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue">Sorteos incluidos</p>
-                  <p className="text-[11px] font-semibold text-slate-500">
-                    {formatCurrency(drawPrice)} x {drawsCount} sorteos
-                  </p>
-                </div>
-
-                <div className="mt-3 space-y-2">
-                  {Object.entries(groupedSelectedDraws).map(([weekLabel, draws]) => (
-                    <div key={weekLabel}>
-                      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">{weekLabel}</p>
-                      <div className="mt-1 flex flex-wrap gap-2">
-                        {draws.map((draw) => (
-                          <span
-                            key={draw.drawDate}
-                            className="inline-flex items-center rounded-full border border-manises-blue/12 bg-manises-blue/[0.05] px-2.5 py-1 text-[10px] font-bold text-manises-blue"
-                          >
-                            {formatDate(draw.drawDate)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+              {/* RESUMEN ULTRA-LIGERO */}
+              <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">
+                  Jugando: <span className="text-manises-blue">{drawsCount} sorteos</span>
+                </p>
+                <div className="flex gap-1">
+                  {effectiveSelectedDrawDates.slice(0, 3).map(date => (
+                    <span key={date} className="w-1.5 h-1.5 rounded-full bg-manises-blue/20" />
                   ))}
+                  {effectiveSelectedDrawDates.length > 3 && <span className="text-[8px] font-black text-manises-blue/40">+</span>}
                 </div>
               </div>
             </div>
           </motion.div>
         )}
+
 
         {/* ---- SECCIÓN LAGUINDA: Seguro y Abono ---- */}
         <div className="mt-2 space-y-3">
