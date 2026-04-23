@@ -14,8 +14,6 @@ import {
   ShareAndroid,
   ArrowRight,
   JournalPage,
-  ShieldCheck,
-  BrightStar,
   InfoCircle,
   WarningTriangle
 } from 'iconoir-react/regular';
@@ -45,7 +43,6 @@ import type { GameSelection, PlayDraft } from '@/features/session/types/session.
 
 interface GamePlayLocationState { playDraftId?: string; }
 
-const INSURANCE_PRICE = 0.50;
 const DEFAULT_CUSTOM_WEEKS = 2;
 
 const SCHEDULE_OPTIONS: Array<{ id: ScheduleMode; label: string }> = [
@@ -134,7 +131,6 @@ export function GamePlayPage() {
   const [selectedDrawDates, setSelectedDrawDates] = useState<string[]>([]);
 
   // Features Laguinda Style
-  const [hasInsurance, setHasInsurance] = useState(false);
   const [isSubscription, setIsSubscription] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
@@ -186,7 +182,6 @@ export function GamePlayPage() {
     setSelectedStars([]);
     setSelectedNationalNumber(null);
     setSelectedNationalQuantity(1);
-    setHasInsurance(false);
 
     // Sincronizar sorteo nacional por defecto
     if (gameId === 'loteria-nacional-jueves') setSelectedNationalDrawId('jueves');
@@ -207,7 +202,6 @@ export function GamePlayPage() {
     }
 
     setMode((editingDraft.mode as PlayMode) ?? availableModes[0]);
-    setHasInsurance(editingDraft.hasInsurance);
     setIsSubscription(editingDraft.isSubscription);
     
     // Reconstrucción inteligente de la intención temporal (UI mapping)
@@ -386,7 +380,7 @@ export function GamePlayPage() {
 
   const drawsCount = Math.max(effectiveSelectedDrawDates.length, 1);
   const basePrice = drawPrice * drawsCount;
-  const totalPrice = basePrice + (hasInsurance ? INSURANCE_PRICE : 0);
+  const totalPrice = basePrice;
   const isOverBalance = profile ? profile.balance < totalPrice : false;
   const availableBalance = profile?.balance ?? 0;
   const remainingBalance = Math.max(availableBalance - totalPrice, 0);
@@ -642,7 +636,6 @@ export function GamePlayPage() {
       status: 'valid',
       mode,
       betsCount,
-      hasInsurance,
       isSubscription,
       metadata: {
         technicalMode: game.technicalMode,
@@ -1351,39 +1344,8 @@ export function GamePlayPage() {
         )}
 
 
-        {/* ---- SECCIÓN LAGUINDA: Seguro y Abono ---- */}
+        {/* ---- SECCIÓN LAGUINDA: Abono ---- */}
         <div className="mt-2 space-y-3">
-          <motion.div
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setHasInsurance(!hasInsurance)}
-            className={`relative overflow-hidden rounded-[1.55rem] border-2 p-4 transition-all cursor-pointer ${hasInsurance
-                ? 'border-manises-gold bg-[linear-gradient(180deg,#fff9e9_0%,#fff4cf_100%)] shadow-[0_16px_34px_rgba(184,134,11,0.16)]'
-                : 'border-white bg-white/85 shadow-[0_10px_24px_rgba(15,23,42,0.05)] hover:border-gray-200'
-              }`}
-          >
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${hasInsurance ? 'bg-manises-gold text-manises-blue' : 'bg-gray-100 text-gray-400'
-                }`}>
-                <ShieldCheck className="w-7 h-7" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm text-manises-blue">Seguro de Lotería</h3>
-                  <span className={`text-xs font-black ${hasInsurance ? 'text-manises-blue' : 'text-gray-400'}`}>
-                    + {formatCurrency(INSURANCE_PRICE)}
-                  </span>
-                </div>
-                <p className="text-[10px] text-muted-foreground font-medium leading-relaxed mt-0.5">
-                  Recupera el 100% de tu premio (20% de impuestos de Hacienda) si ganas más de 40.000€.
-                </p>
-              </div>
-            </div>
-            {hasInsurance && (
-              <div className="absolute top-0 right-0 p-1">
-                <BrightStar className="h-3 w-3 text-manises-gold" />
-              </div>
-            )}
-          </motion.div>
 
           <motion.div
             variants={{
