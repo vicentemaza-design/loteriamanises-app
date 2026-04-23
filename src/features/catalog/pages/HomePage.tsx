@@ -18,7 +18,7 @@ import {
 } from 'iconoir-react/regular';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
-import { GameBadge } from '@/shared/ui/GameBadge';
+import { GameIcon } from '@/shared/ui/GameIcon';
 import { ScannerModal } from '@/shared/ui/ScannerModal';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { useInstallPrompt } from '@/shared/hooks/useInstallPrompt';
@@ -154,11 +154,10 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
 
         <div className="relative h-full p-4.5 flex flex-col justify-between">
           <div className="flex items-start justify-between">
-            <GameBadge
-              game={game}
-              size="sm"
-              tone="ghost"
-              className="border-white/10 bg-white/5 backdrop-blur-md shadow-none opacity-90"
+            <GameIcon
+              gameType={game.type}
+              variant="white"
+              className="w-7 h-7 opacity-85 drop-shadow-[0_2px_8px_rgba(0,0,0,0.18)]"
             />
             {cd.isPast ? (
               <span className="rounded-full border border-white/10 bg-black/15 px-2.5 py-1 text-[8px] font-black uppercase tracking-[0.16em] text-white/42 backdrop-blur-sm whitespace-nowrap">
