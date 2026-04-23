@@ -36,7 +36,7 @@ import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_2
 import { NationalTicketVisual, type NationalDrawType } from '../components/NationalTicketVisual';
 import { Trophy as TrophyIcon } from 'lucide-react';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
-import { getDrawsForCurrentWeek, getUpcomingDraws, groupDrawsByWeek } from '../lib/draw-schedule';
+import { getDrawsForCurrentWeek, getUpcomingDraws, groupDrawsByWeek, type ScheduledDraw } from '../lib/draw-schedule';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
 import { distributeAmount } from '@/features/session/lib/session.utils';
@@ -49,9 +49,8 @@ const DEFAULT_CUSTOM_WEEKS = 2;
 
 const SCHEDULE_OPTIONS: Array<{ id: ScheduleMode; label: string }> = [
   { id: 'next_draw', label: 'Próximo sorteo' },
-  { id: 'current_week', label: 'Semana en curso' },
-  { id: 'two_weeks', label: 'Dos semanas' },
-  { id: 'custom_weeks', label: 'Varias semanas' },
+  { id: 'full_week', label: 'Toda la semana' },
+  { id: 'specific_days', label: 'Elegir días' },
 ];
 
 type NationalDrawId = 'jueves' | 'sabado';
@@ -209,8 +208,25 @@ export function GamePlayPage() {
     setMode((editingDraft.mode as PlayMode) ?? availableModes[0]);
     setHasInsurance(editingDraft.hasInsurance);
     setIsSubscription(editingDraft.isSubscription);
-    setSelectedDrawDates([editingDraft.drawDate]);
-    setTimeMode('next_draw');
+    
+    // Reconstrucción inteligente de la intención temporal (UI mapping)
+    const draftDates = editingDraft.metadata?.orderDrawDates || [editingDraft.drawDate];
+    setSelectedDrawDates(draftDates);
+    
+    const currentWeekDraws = getDrawsForCurrentWeek(game.type, new Date());
+    const currentWeekDates = currentWeekDraws.map(d => d.drawDate);
+    
+    if (draftDates.length === 1) {
+      setTimeMode('next_draw');
+    } else if (
+      draftDates.length === currentWeekDates.length && 
+      draftDates.every(d => currentWeekDates.includes(d))
+    ) {
+      setTimeMode('full_week');
+    } else {
+      setTimeMode('specific_days');
+    }
+    
     setSelectedWeeksCount(DEFAULT_CUSTOM_WEEKS);
 
     if (editingDraft.selection.type === 'national') {
@@ -426,18 +442,21 @@ export function GamePlayPage() {
       return;
     }
 
-    let resolvedDraws = getUpcomingDraws(game.type, new Date(), 1);
-
-    if (timeMode === 'current_week') {
+    let resolvedDraws: ScheduledDraw[] = [];
+    
+    if (timeMode === 'next_draw') {
+      resolvedDraws = getUpcomingDraws(game.type, new Date(), 1).slice(0, 1);
+    } else if (timeMode === 'full_week') {
       resolvedDraws = getDrawsForCurrentWeek(game.type, new Date());
-    }
-
-    if (timeMode === 'two_weeks') {
-      resolvedDraws = getUpcomingDraws(game.type, new Date(), 2);
-    }
-
-    if (timeMode === 'custom_weeks') {
-      resolvedDraws = getUpcomingDraws(game.type, new Date(), selectedWeeksCount);
+    } else if (timeMode === 'specific_days') {
+      // En modo manual, no sobreescribimos automáticamente salvo que esté vacío
+      if (selectedDrawDates.length > 0) return;
+      resolvedDraws = getUpcomingDraws(game.type, new Date(), 1).slice(0, 1);
+    } else if (timeMode === 'current_week') { // Legacy
+      resolvedDraws = getDrawsForCurrentWeek(game.type, new Date());
+    } else { // Legacy two_weeks, custom_weeks
+      const weeks = timeMode === 'two_weeks' ? 2 : selectedWeeksCount;
+      resolvedDraws = getUpcomingDraws(game.type, new Date(), weeks);
     }
 
     const nextDrawDates = resolvedDraws.map((draw) => draw.drawDate);
@@ -657,6 +676,20 @@ export function GamePlayPage() {
       toast.error(result.duplicateCount === 1 ? 'Ya tenías esa jugada en la sesión.' : `${result.duplicateCount} jugadas duplicadas no se añadieron.`);
     }
   };
+
+  // Lógica computada para el selector temporal simplificado
+  const currentWeekDraws = useMemo(() => getDrawsForCurrentWeek(game.type, new Date()), [game.type]);
+  const currentWeekDates = useMemo(() => currentWeekDraws.map(d => d.drawDate), [currentWeekDraws]);
+  const isFullWeekSelected = useMemo(() => 
+    effectiveSelectedDrawDates.length === currentWeekDates.length && 
+    effectiveSelectedDrawDates.every(d => currentWeekDates.includes(d)),
+    [effectiveSelectedDrawDates, currentWeekDates]
+  );
+  
+  const showSmartBanner = timeMode === 'specific_days' && 
+                          !isFullWeekSelected && 
+                          effectiveSelectedDrawDates.length >= 2 &&
+                          effectiveSelectedDrawDates.length < currentWeekDates.length;
 
   return (
     <div
@@ -1235,46 +1268,106 @@ export function GamePlayPage() {
                 </div>
               ) : (
                 <>
-                  <div className="mt-4 grid grid-cols-2 gap-2">
-                    {SCHEDULE_OPTIONS.map((option) => (
-                      <button
-                        key={option.id}
-                        onClick={() => setTimeMode(option.id)}
-                        className={cn(
-                          'rounded-2xl border px-3 py-3 text-left transition-all',
-                          timeMode === option.id
-                            ? 'border-manises-blue bg-[linear-gradient(180deg,rgba(10,71,146,0.06)_0%,rgba(10,71,146,0.10)_100%)] shadow-[0_12px_24px_rgba(10,71,146,0.10)]'
-                            : 'border-white bg-white/90 shadow-[0_8px_18px_rgba(15,23,42,0.04)] hover:border-manises-blue/20'
-                        )}
-                      >
-                        <p className={cn(
-                          'text-[11px] font-black uppercase tracking-[0.12em]',
-                          timeMode === option.id ? 'text-manises-blue' : 'text-slate-500'
-                        )}>
-                          {option.label}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-
-                  {timeMode === 'custom_weeks' && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {Array.from({ length: maxWeeksSelectable - 1 }, (_, index) => index + 2).map((weeks) => (
+                  {/* NIVEL 1: Selección Compacta */}
+                  <div className="mt-4 flex p-1 bg-slate-100/50 rounded-2xl border border-slate-200/40">
+                    {SCHEDULE_OPTIONS.map((option) => {
+                      const active = timeMode === option.id;
+                      return (
                         <button
-                          key={weeks}
-                          onClick={() => setSelectedWeeksCount(weeks)}
+                          key={option.id}
+                          onClick={() => setTimeMode(option.id)}
                           className={cn(
-                            'rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] transition-all',
-                            selectedWeeksCount === weeks
-                              ? 'border-manises-gold bg-amber-50 text-manises-blue shadow-[0_8px_18px_rgba(184,134,11,0.10)]'
-                              : 'border-white bg-white text-slate-500 shadow-[0_6px_14px_rgba(15,23,42,0.04)] hover:border-manises-gold/40'
+                            'flex-1 py-2 px-1 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all',
+                            active 
+                              ? 'bg-white text-manises-blue shadow-sm border border-slate-200/50'
+                              : 'text-slate-400 hover:text-slate-600 border border-transparent'
                           )}
                         >
-                          {weeks} semanas
+                          {option.label}
                         </button>
-                      ))}
-                    </div>
-                  )}
+                      );
+                    })}
+                  </div>
+
+                  {/* AVISO CONTEXTUAL (BANNER INTELIGENTE) */}
+                  <AnimatePresence>
+                    {showSmartBanner && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-3 p-3 rounded-2xl bg-manises-blue/5 border border-manises-blue/10 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-manises-blue/10 flex items-center justify-center">
+                              <CheckCircle className="w-3.5 h-3.5 text-manises-blue" />
+                            </div>
+                            <p className="text-[10px] font-bold text-manises-blue/80">
+                              ¿Quieres jugar toda la semana?
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setTimeMode('full_week')}
+                            className="px-3 py-1.5 rounded-lg bg-manises-blue text-white text-[9px] font-black uppercase tracking-widest hover:bg-manises-blue/90 transition-colors"
+                          >
+                            Activar
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* NIVEL 2: Personalización bajo demanda */}
+                  <AnimatePresence>
+                    {timeMode === 'specific_days' && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-4 space-y-2 pb-2">
+                          <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400 mb-1 px-1">Selecciona los días deseados</p>
+                          <div className="grid grid-cols-1 gap-2">
+                            {currentWeekDraws.map((draw) => {
+                              const isSelected = selectedDrawDates.includes(draw.drawDate);
+                              return (
+                                <button
+                                  key={draw.drawDate}
+                                  onClick={() => {
+                                    setSelectedDrawDates(prev => {
+                                      if (prev.includes(draw.drawDate)) {
+                                        if (prev.length === 1) return prev;
+                                        return prev.filter(d => d !== draw.drawDate);
+                                      }
+                                      return [...prev, draw.drawDate].sort();
+                                    });
+                                  }}
+                                  className={cn(
+                                    'flex items-center justify-between rounded-xl border px-3 py-2.5 transition-all',
+                                    isSelected
+                                      ? 'border-manises-blue bg-manises-blue/[0.03]'
+                                      : 'border-slate-100 bg-white/40 opacity-70 hover:opacity-100'
+                                  )}
+                                >
+                                  <span className={cn("text-xs font-bold", isSelected ? "text-manises-blue" : "text-slate-600")}>
+                                    {draw.label}
+                                  </span>
+                                  <div className={cn(
+                                    "w-4.5 h-4.5 rounded-full border flex items-center justify-center transition-all",
+                                    isSelected ? "bg-manises-blue border-manises-blue" : "border-slate-300 bg-white"
+                                  )}>
+                                    {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </>
               )}
 

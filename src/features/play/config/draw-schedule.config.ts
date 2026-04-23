@@ -1,6 +1,12 @@
 import type { GameType } from '@/shared/types/domain';
 
-export type ScheduleMode = 'next_draw' | 'current_week' | 'two_weeks' | 'custom_weeks';
+export type ScheduleMode = 
+  | 'next_draw' 
+  | 'full_week' 
+  | 'specific_days' 
+  | 'current_week' // Legacy
+  | 'two_weeks'    // Legacy
+  | 'custom_weeks'; // Legacy
 
 export interface DrawScheduleConfig {
   drawWeekdays: number[];
