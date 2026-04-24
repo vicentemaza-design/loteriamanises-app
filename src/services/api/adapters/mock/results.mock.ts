@@ -19,8 +19,6 @@ export const MOCK_RESULTS_DATA: ResultDto[] = [
     gameType: 'primitiva',
     date: '2026-04-08T21:30:00Z',
     numbers: [4, 15, 22, 31, 40, 49],
-    complementario: 12,
-    reintegro: 5,
     jackpotNext: 12_500_000,
   },
   {
@@ -28,8 +26,6 @@ export const MOCK_RESULTS_DATA: ResultDto[] = [
     gameType: 'bonoloto',
     date: '2026-04-09T21:30:00Z',
     numbers: [1, 8, 14, 25, 33, 42],
-    complementario: 3,
-    reintegro: 0,
     jackpotNext: 1_200_000,
   },
   {
