@@ -18,7 +18,7 @@ const GAME_IDENTITY_MAP: Record<string, GameIdentity> = {
   },
   primitiva: {
     shortName: 'Primitiva',
-    badgeLabel: '6',
+    badgeLabel: '6+2',
     surfaceTint: 'rgba(22,163,74,0.15)',
     chipBackground: 'rgba(220,252,231,0.96)',
     chipText: '#166534',
