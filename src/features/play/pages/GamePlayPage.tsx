@@ -428,8 +428,8 @@ export function GamePlayPage() {
           text,
           url: window.location.origin
         });
-      } catch (err) {
-        console.log('Error al compartir:', err);
+      } catch {
+        // AbortError expected when user cancels the share sheet
       }
     } else {
       navigator.clipboard.writeText(text);
@@ -1070,7 +1070,7 @@ export function GamePlayPage() {
               </div>
 
               {isNationalLottery ? (
-                  <div className="space-y-1.5">
+                <div className="space-y-1.5">
                   {availableNationalDates.map((dateIso) => {
                     const isSelected = effectiveSelectedDrawDates.includes(dateIso);
                     return (
