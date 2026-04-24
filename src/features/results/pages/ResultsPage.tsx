@@ -181,6 +181,12 @@ export function ResultsPage() {
           </div>
         )}
 
+        {!isLoading && !error && filtered.length === 0 && (
+          <div className="p-8 text-center">
+            <p className="text-xs text-muted-foreground font-medium">No hay resultados para este filtro.</p>
+          </div>
+        )}
+
         {!isLoading && !error && filtered.map((result, index) => {
           const game = LOTTERY_GAMES.find(g => g.id === result.gameId);
           if (!game) return null;
