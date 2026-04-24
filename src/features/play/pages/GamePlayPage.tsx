@@ -25,9 +25,9 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { cn, formatCurrency, formatDate, formatDrawTime } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { MOTION_EASE_OUT, panelSwap, sectionFadeUp } from '@/shared/lib/motion';
-import { calculateMultipleBets, calculateTotalPrice, QUINIELA_REDUCED_TABLES, QuinielaReducedType } from '../lib/bet-calculator';
+import { QUINIELA_REDUCED_TABLES, QuinielaReducedType } from '../lib/bet-calculator';
 import { getGameHelpContent } from '../lib/game-help';
-import { getAvailableModesForGame, getModeDefinition, getReductionSystem, getReductionSystemsForMode, quotePlay, type PlayMode } from '../lib/play-matrix';
+import { getAvailableModesForGame, getModeDefinition, getReductionSystem, getReductionSystemsForMode, type PlayMode } from '../lib/play-matrix';
 import { GameModeSelector } from '../components/GameModeSelector';
 import { GameInfoSheet } from '../components/GameInfoSheet';
 import { QuinielaProfessionalSelector } from '../components/QuinielaProfessionalSelector';
@@ -36,11 +36,18 @@ import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_2
 import { NationalTicketVisual, type NationalDrawType } from '../components/NationalTicketVisual';
 import { Trophy as TrophyIcon } from 'lucide-react';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
-import { getDrawsForCurrentWeek, getUpcomingDraws, groupDrawsByWeek, type ScheduledDraw } from '../lib/draw-schedule';
+import { getDrawsForCurrentWeek, groupDrawsByWeek } from '../lib/draw-schedule';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
-import { distributeAmount } from '@/features/session/lib/session.utils';
-import type { GameSelection, PlayDraft } from '@/features/session/types/session.types';
+import { buildGameSelection } from '@/features/play/application/build-game-selection';
+import { buildPlayDrafts } from '@/features/play/application/build-play-drafts';
+import { resolvePlayPricing } from '@/features/play/application/resolve-play-pricing';
+import {
+  getAvailableNationalDrawDates,
+  getNextWeekdayIso,
+  inferScheduleModeFromDrawDates,
+  resolveDrawDates,
+} from '@/features/play/application/resolve-draw-dates';
 
 interface GamePlayLocationState { playDraftId?: string; }
 
@@ -77,21 +84,6 @@ const NATIONAL_NUMBER_POOL = [
   { number: '58264', available: 9 },
   { number: '11038', available: 6 },
 ];
-
-function nextWeekdayIso(targetWeekday: number, hour: number): string {
-  const now = new Date();
-  const currentWeekday = now.getDay();
-  const delta = (targetWeekday - currentWeekday + 7) % 7;
-  const date = new Date(now);
-  date.setDate(now.getDate() + delta);
-  date.setHours(hour, 0, 0, 0);
-
-  if (date <= now) {
-    date.setDate(date.getDate() + 7);
-  }
-
-  return date.toISOString();
-}
 
 interface QuinielaMatch {
   id: number;
@@ -150,32 +142,9 @@ export function GamePlayPage() {
   const isQuiniela = game.id === 'quiniela';
   const isExplicitNationalProduct = gameId === 'loteria-nacional-jueves' || gameId === 'loteria-nacional-sabado';
 
-  // Próximas 5 fechas para lotería nacional
   const availableNationalDates = useMemo(() => {
-    if (!isNationalLottery || !isExplicitNationalProduct) return [];
-
-    // Usamos el primer sorteo disponible como base
-    const baseDraw = (gameId === 'loteria-nacional-jueves')
-      ? nextWeekdayIso(4, 21) // Jueves 21:00
-      : nextWeekdayIso(6, 13); // Sábado 13:00
-
-    const dates = [baseDraw];
-    for (let i = 1; i < 5; i++) {
-      const d = new Date(baseDraw);
-      d.setDate(d.getDate() + (i * 7));
-      dates.push(d.toISOString());
-    }
-    return dates;
+    return getAvailableNationalDrawDates(gameId, isNationalLottery, isExplicitNationalProduct);
   }, [isExplicitNationalProduct, isNationalLottery, gameId]);
-
-  const effectiveSelectedDrawDates = useMemo(() => {
-    if (!isExplicitNationalProduct) return selectedDrawDates;
-
-    const validDates = selectedDrawDates.filter((drawDate) => availableNationalDates.includes(drawDate));
-    if (validDates.length > 0) return validDates;
-
-    return availableNationalDates.length > 0 ? [availableNationalDates[0]] : [];
-  }, [availableNationalDates, isExplicitNationalProduct, selectedDrawDates]);
 
   // Resetear estados cuando cambia el juego para evitar arrastrar selecciones o precios incorrectos
   useEffect(() => {
@@ -206,23 +175,11 @@ export function GamePlayPage() {
     setIsSubscription(editingDraft.isSubscription);
     
     // Reconstrucción inteligente de la intención temporal (UI mapping)
-    const draftDates = editingDraft.metadata?.orderDrawDates || [editingDraft.drawDate];
+    const draftDates = Array.isArray(editingDraft.metadata?.orderDrawDates)
+      ? editingDraft.metadata.orderDrawDates.filter((drawDate): drawDate is string => typeof drawDate === 'string')
+      : [editingDraft.drawDate];
     setSelectedDrawDates(draftDates);
-    
-    const currentWeekDraws = getDrawsForCurrentWeek(game.type, new Date());
-    const currentWeekDates = currentWeekDraws.map(d => d.drawDate);
-    
-    if (draftDates.length === 1) {
-      setTimeMode('next_draw');
-    } else if (
-      draftDates.length === currentWeekDates.length && 
-      draftDates.every(d => currentWeekDates.includes(d))
-    ) {
-      setTimeMode('full_week');
-    } else {
-      setTimeMode('specific_days');
-    }
-    
+    setTimeMode(inferScheduleModeFromDrawDates(draftDates, game.type));
     setSelectedWeeksCount(DEFAULT_CUSTOM_WEEKS);
 
     if (editingDraft.selection.type === 'national') {
@@ -268,23 +225,6 @@ export function GamePlayPage() {
 
     setSelectedStars([]);
   }, [availableModes, editingDraft, gameId]);
-
-  useEffect(() => {
-    if (!isExplicitNationalProduct) return;
-
-    setSelectedDrawDates((current) => {
-      const validDates = current.filter((drawDate) => availableNationalDates.includes(drawDate));
-      const nextDates = validDates.length > 0
-        ? validDates
-        : availableNationalDates.length > 0
-          ? [availableNationalDates[0]]
-          : [];
-
-      return current.length === nextDates.length && current.every((drawDate, index) => drawDate === nextDates[index])
-        ? current
-        : nextDates;
-    });
-  }, [availableNationalDates, isExplicitNationalProduct]);
 
   const isStructuredGame = Boolean(game.selectionRange) || isNationalLottery || isQuiniela;
   const drawScheduleConfig = getDrawScheduleConfig(game.type);
@@ -333,27 +273,6 @@ export function GamePlayPage() {
   const theme = getGameTheme(game);
   const maxWeeksSelectable = drawScheduleConfig?.maxWeeksSelectable ?? DEFAULT_CUSTOM_WEEKS;
 
-  // --- CÁLCULO DE APUESTAS (NÚCLEO MATEMÁTICO) ---
-  let betsCount = 1;
-  if (isQuiniela && mode === 'reduced') {
-    betsCount = QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType].bets;
-  } else if (!isNationalLottery && !isQuiniela) {
-    betsCount = quotePlay({
-      game,
-      mode,
-      numbersCount: selectedNumbers.length,
-      starsCount: selectedStars.length,
-      reducedSystemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
-    }).betsCount;
-
-    if (mode === 'multiple' && betsCount === 0) {
-      betsCount = calculateMultipleBets(selectedNumbers.length, selectedStars.length, game.type);
-    }
-  }
-
-
-
-
   const nationalDraws = (game.id === 'loteria-nacional-jueves' || game.id === 'loteria-nacional-sabado')
     ? NATIONAL_DRAW_CONFIG.filter(d => {
       if (game.id === 'loteria-nacional-jueves') return d.id === 'jueves';
@@ -361,7 +280,7 @@ export function GamePlayPage() {
       return true;
     }).map((draw) => ({
       ...draw,
-      nextDraw: nextWeekdayIso(draw.weekday, draw.hour),
+      nextDraw: getNextWeekdayIso(draw.weekday, draw.hour),
     }))
     : [{
       id: 'especial' as NationalDrawId,
@@ -374,14 +293,43 @@ export function GamePlayPage() {
       nextDraw: game.nextDraw
     }];
   const selectedNationalDraw = nationalDraws.find((draw) => draw.id === selectedNationalDrawId) ?? nationalDraws[0];
-
-  const drawPrice = isNationalLottery
-    ? (selectedNationalDraw?.decimoPrice ?? game.price ?? 3) * selectedNationalQuantity
-    : calculateTotalPrice(game.price, betsCount, false);
-
+  const drawDateResolution = useMemo(() => resolveDrawDates({
+    gameType: game.type,
+    gameNextDraw: game.nextDraw,
+    isNationalLottery,
+    isExplicitNationalProduct,
+    supportsTimeSelection,
+    scheduleMode: timeMode,
+    selectedDrawDates,
+    selectedWeeksCount,
+    selectedNationalDrawNextDraw: selectedNationalDraw.nextDraw,
+    availableNationalDates,
+  }), [
+    availableNationalDates,
+    game.nextDraw,
+    game.type,
+    isExplicitNationalProduct,
+    isNationalLottery,
+    selectedDrawDates,
+    selectedNationalDraw.nextDraw,
+    selectedWeeksCount,
+    supportsTimeSelection,
+    timeMode,
+  ]);
+  const effectiveSelectedDrawDates = drawDateResolution.drawDates;
   const drawsCount = Math.max(effectiveSelectedDrawDates.length, 1);
-  const basePrice = drawPrice * drawsCount;
-  const totalPrice = basePrice;
+  const { betsCount, drawPrice, totalPrice } = resolvePlayPricing({
+    game,
+    isNationalLottery,
+    isQuiniela,
+    mode,
+    selectedNumbersCount: selectedNumbers.length,
+    selectedStarsCount: selectedStars.length,
+    selectedReductionSystemId,
+    selectedNationalQuantity,
+    selectedNationalDraw,
+    drawsCount,
+  });
   const isOverBalance = profile ? profile.balance < totalPrice : false;
   const availableBalance = profile?.balance ?? 0;
   const remainingBalance = Math.max(availableBalance - totalPrice, 0);
@@ -417,57 +365,6 @@ export function GamePlayPage() {
     setTimeMode('next_draw');
     setSelectedWeeksCount(Math.min(DEFAULT_CUSTOM_WEEKS, maxWeeksSelectable));
   }, [game.id, maxWeeksSelectable]);
-
-  useEffect(() => {
-    const fallbackDrawDate = getBusinessDate(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw);
-
-    if (!supportsTimeSelection) {
-      setSelectedDrawDates([fallbackDrawDate]);
-      return;
-    }
-
-    if (isExplicitNationalProduct) {
-      setSelectedDrawDates((current) => {
-        const validDates = current.filter((drawDate) => availableNationalDates.includes(drawDate));
-        return validDates.length > 0
-          ? validDates
-          : availableNationalDates.length > 0
-            ? [availableNationalDates[0]]
-            : [fallbackDrawDate];
-      });
-      return;
-    }
-
-    let resolvedDraws: ScheduledDraw[] = [];
-    
-    if (timeMode === 'next_draw') {
-      resolvedDraws = getUpcomingDraws(game.type, new Date(), 1).slice(0, 1);
-    } else if (timeMode === 'full_week') {
-      resolvedDraws = getDrawsForCurrentWeek(game.type, new Date());
-    } else if (timeMode === 'specific_days') {
-      // En modo manual, no sobreescribimos automáticamente salvo que esté vacío
-      if (selectedDrawDates.length > 0) return;
-      resolvedDraws = getUpcomingDraws(game.type, new Date(), 1).slice(0, 1);
-    } else if (timeMode === 'current_week') { // Legacy
-      resolvedDraws = getDrawsForCurrentWeek(game.type, new Date());
-    } else { // Legacy two_weeks, custom_weeks
-      const weeks = timeMode === 'two_weeks' ? 2 : selectedWeeksCount;
-      resolvedDraws = getUpcomingDraws(game.type, new Date(), weeks);
-    }
-
-    const nextDrawDates = resolvedDraws.map((draw) => draw.drawDate);
-    setSelectedDrawDates(nextDrawDates.length > 0 ? nextDrawDates : [fallbackDrawDate]);
-  }, [
-    game.nextDraw,
-    game.type,
-    availableNationalDates,
-    isExplicitNationalProduct,
-    isNationalLottery,
-    selectedNationalDraw.nextDraw,
-    selectedWeeksCount,
-    supportsTimeSelection,
-    timeMode,
-  ]);
 
   const toggleNumber = (n: number) => {
     setSelectedNumbers(prev =>
@@ -559,42 +456,6 @@ export function GamePlayPage() {
       ? isQuinielaValid
       : selectedNumbers.length >= minNums && selectedNumbers.length <= maxNums && hasValidStarSelection && isSupportedReducedSelection && betsCount > 0;
 
-  function buildSelection(): GameSelection | null {
-    if (isNationalLottery && selectedNationalNumber) {
-      return {
-        type: 'national',
-        number: selectedNationalNumber,
-        drawLabel: selectedNationalDraw.label,
-      };
-    }
-
-    if (isQuiniela) {
-      return {
-        type: 'quiniela',
-        matches: quinielaMatches.map((match) => ({ id: match.id, value: match.result })),
-        systemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
-      };
-    }
-
-    if (game.type === 'euromillones') {
-      return { type: 'euromillones', numbers: selectedNumbers, stars: selectedStars };
-    }
-
-    if (game.type === 'gordo') {
-      return { type: 'gordo', numbers: selectedNumbers, key: selectedStars[0] ?? 0 };
-    }
-
-    if (game.type === 'eurodreams') {
-      return { type: 'eurodreams', numbers: selectedNumbers, dream: selectedStars[0] ?? 0 };
-    }
-
-    if (game.type === 'bonoloto') {
-      return { type: 'bonoloto', numbers: selectedNumbers };
-    }
-
-    return { type: 'primitiva', numbers: selectedNumbers };
-  }
-
   const handlePlay = async () => {
     if (!canPlay)           { 
       if (isQuiniela && !isQuinielaValid && mode === 'reduced') {
@@ -608,7 +469,18 @@ export function GamePlayPage() {
       return; 
     }
 
-    const draftSelection = buildSelection();
+    const draftSelection = buildGameSelection({
+      game,
+      isNationalLottery,
+      isQuiniela,
+      mode,
+      selectedNumbers,
+      selectedStars,
+      quinielaMatches,
+      selectedReductionSystemId,
+      selectedNationalNumber,
+      selectedNationalDraw,
+    });
     if (!draftSelection) {
       toast.error('No se ha podido construir la jugada.');
       return;
@@ -622,35 +494,26 @@ export function GamePlayPage() {
       return;
     }
 
-    const distributedTotals = distributeAmount(totalPrice, drawDates.length);
-    const nextDrafts: PlayDraft[] = drawDates.map((drawDate, index) => ({
-      id: editingDraft && index === 0 ? editingDraft.id : crypto.randomUUID(),
-      gameId: game.id,
-      gameName: game.name,
-      gameType: game.type,
-      drawDate,
+    const nextDrafts = buildPlayDrafts({
+      game,
       selection: draftSelection,
+      drawDates,
+      totalPrice,
+      unitPrice: isNationalLottery ? selectedNationalDraw.decimoPrice : drawPrice,
       quantity: isNationalLottery ? selectedNationalQuantity : 1,
-      unitPrice: isNationalLottery ? game.price : drawPrice,
-      totalPrice: distributedTotals[index] ?? distributedTotals[0] ?? totalPrice,
-      addedAt: editingDraft && index === 0 ? editingDraft.addedAt : new Date().toISOString(),
-      status: 'valid',
       mode,
       betsCount,
       isSubscription,
-      metadata: {
-        technicalMode: game.technicalMode,
-        systemFamily: game.systemFamily,
-        drawsCount: drawDates.length,
-        scheduleMode: supportsTimeSelection ? timeMode : 'next_draw',
-        weeksCount: supportsTimeSelection ? (timeMode === 'custom_weeks' ? selectedWeeksCount : timeMode === 'two_weeks' ? 2 : 1) : 1,
-        orderDrawDates: drawDates,
-        orderTotalPrice: totalPrice,
-        nationalNumber: selectedNationalNumber,
-        nationalQuantity: selectedNationalQuantity,
-        nationalDrawLabel: selectedNationalDraw.label,
-      },
-    }));
+      supportsTimeSelection,
+      timeMode: drawDateResolution.scheduleMode,
+      weeksCount: drawDateResolution.weeksCount,
+      selectedNationalNumber,
+      selectedNationalQuantity,
+      selectedNationalDraw,
+      editingDraft: editingDraft
+        ? { id: editingDraft.id, addedAt: editingDraft.addedAt }
+        : undefined,
+    });
 
     if (editingDraft) {
       const result = updateDraft(editingDraft.id, nextDrafts[0]);
@@ -1207,9 +1070,9 @@ export function GamePlayPage() {
               </div>
 
               {isNationalLottery ? (
-                <div className="space-y-1.5">
+                  <div className="space-y-1.5">
                   {availableNationalDates.map((dateIso) => {
-                    const isSelected = selectedDrawDates.includes(dateIso);
+                    const isSelected = effectiveSelectedDrawDates.includes(dateIso);
                     return (
                       <button
                         key={dateIso}
