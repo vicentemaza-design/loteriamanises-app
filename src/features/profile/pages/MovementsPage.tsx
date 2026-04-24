@@ -9,7 +9,7 @@ import { useMovements } from '@/features/wallet/hooks/useMovements';
 import { MovementRowSkeleton } from '@/shared/ui/Skeleton';
 
 export function MovementsPage() {
-  const { movements, isLoading } = useMovements();
+  const { movements, isLoading, error } = useMovements();
   
   const deposits = movements.filter((item) => item.type === 'deposit').reduce((sum, item) => sum + item.amount, 0);
   const prizes = movements.filter((item) => item.type === 'prize').reduce((sum, item) => sum + item.amount, 0);
@@ -53,7 +53,11 @@ export function MovementsPage() {
         <section className="space-y-3">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Actividad reciente</p>
           <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border/50">
-            {isLoading ? (
+            {error ? (
+              <div className="p-8 text-center bg-red-50 rounded-2xl border border-red-100">
+                <p className="text-xs text-red-600 font-bold">{error}</p>
+              </div>
+            ) : isLoading ? (
               Array.from({ length: 5 }).map((_, i) => <MovementRowSkeleton key={i} />)
             ) : movements.length === 0 ? (
               <div className="p-12 text-center space-y-2">
