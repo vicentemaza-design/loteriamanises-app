@@ -18,7 +18,6 @@ import {
   Lock,
   LockSlash,
   Repeat,
-  DatabaseScript,
 } from 'iconoir-react/regular';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { formatCurrency } from '@/shared/lib/utils';
@@ -78,7 +77,7 @@ export function ProfilePage() {
       ],
     },
     {
-      title: 'Premium Demo',
+      title: 'Mi actividad',
       items: [
         { icon: Heart,          label: 'Jugadas favoritas',    detail: null, color: 'text-rose-600', bg: 'bg-rose-50', onClick: () => navigate('/profile/favorites') },
         { icon: RefreshCircle,  label: 'Mis abonos',           detail: null, color: 'text-amber-600', bg: 'bg-amber-50', onClick: () => navigate('/profile/subscriptions') },
@@ -103,12 +102,6 @@ export function ProfilePage() {
           onClick: toggleLock
         },
         { icon: ShieldCheck, label: 'Seguridad biométrica',detail: null, color: 'text-purple-600',  bg: 'bg-purple-50', onClick: () => toast.info('Biometría disponible en App Nativa.') },
-      ],
-    },
-    {
-      title: 'Auditoría de Producción',
-      items: [
-        { icon: DatabaseScript, label: 'Matriz Técnica (Fase 1)', detail: null, color: 'text-indigo-600', bg: 'bg-indigo-50', onClick: () => navigate('/profile/matrix') },
       ],
     },
     {
