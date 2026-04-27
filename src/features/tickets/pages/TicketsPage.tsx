@@ -504,89 +504,50 @@ export function TicketsPage() {
                             >
                               <div className="mt-3 rounded-2xl border border-gray-100 bg-slate-50/85 p-3">
                                 <div className="rounded-xl border border-white bg-white/90 p-3">
-                                  <div className="flex items-start justify-between gap-3">
-                                    <div className="min-w-0">
-                                      <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Combinación</p>
-                                      <p className="mt-1 text-[13px] font-black text-manises-blue">
-                                        {nationalTicket ? `Número ${ticketDisplayNumber}` : ticket.numbers.join(', ')}
-                                      </p>
-                                      {!nationalTicket && ticket.stars?.length ? (
-                                        <p className="mt-1 text-[11px] font-semibold text-slate-500">Estrellas {ticket.stars.join(', ')}</p>
-                                      ) : null}
-                                    </div>
-                                    <StatusBadge status={ticket.status} className="px-2 py-0.5 text-[9px]" />
-                                  </div>
+                                  <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Combinación</p>
+                                  <p className="mt-1 text-[13px] font-black text-manises-blue">
+                                    {nationalTicket ? `Número ${ticketDisplayNumber}` : ticket.numbers.join(', ')}
+                                  </p>
                                 </div>
-
-                                <div className="mt-2.5 grid grid-cols-2 gap-2.5">
-                                  <div className="rounded-xl border border-white bg-white/90 p-2.5">
+                                <div className="mt-2.5 grid grid-cols-2 gap-2">
+                                  <div className="rounded-xl border border-white/50 bg-white/40 p-2">
                                     <div className="flex items-center gap-1.5 text-slate-400">
-                                      <CalendarDays className="h-3.5 w-3.5" />
-                                      <p className="text-[9px] font-black uppercase tracking-[0.14em]">Fecha</p>
+                                      <Hash className="h-3 w-3" />
+                                      <p className="text-[8px] font-black uppercase tracking-[0.14em]">Código</p>
                                     </div>
-                                    <p className="mt-1 text-[12px] font-black text-manises-blue">{formatDate(ticket.drawDate)}</p>
+                                    <p className="mt-0.5 text-[11px] font-black text-manises-blue">{getTicketCode(ticket.id)}</p>
                                   </div>
-                                  <div className="rounded-xl border border-white bg-white/90 p-2.5">
+                                  <div className="rounded-xl border border-white/50 bg-white/40 p-2">
                                     <div className="flex items-center gap-1.5 text-slate-400">
-                                      <Wallet className="h-3.5 w-3.5" />
-                                      <p className="text-[9px] font-black uppercase tracking-[0.14em]">Importe</p>
+                                      <ReceiptText className="h-3 w-3" />
+                                      <p className="text-[8px] font-black uppercase tracking-[0.14em]">Pedido</p>
                                     </div>
-                                    <p className="mt-1 text-[12px] font-black text-manises-blue">{formatCurrency(ticket.price ?? 0)}</p>
+                                    <p className="mt-0.5 truncate text-[11px] font-black text-manises-blue">
+                                      {ticket.orderId ? ticket.orderId.slice(-8).toUpperCase() : 'Individual'}
+                                    </p>
                                   </div>
-                                  <div className="rounded-xl border border-white bg-white/90 p-2.5">
-                                    <div className="flex items-center gap-1.5 text-slate-400">
-                                      <Hash className="h-3.5 w-3.5" />
-                                      <p className="text-[9px] font-black uppercase tracking-[0.14em]">Código</p>
+                                  <div className="rounded-xl border border-white/50 bg-white/40 p-2">
+                                    <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Creada</p>
+                                    <p className="mt-0.5 text-[11px] font-black text-manises-blue">{formatDate(ticket.createdAt)}</p>
+                                  </div>
+                                  {nationalTicket && nationalQuantity ? (
+                                    <div className="rounded-xl border border-white/50 bg-white/40 p-2">
+                                      <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Décimos</p>
+                                      <p className="mt-0.5 text-[11px] font-black text-manises-blue">{nationalQuantity} ud.</p>
                                     </div>
-                                    <p className="mt-1 text-[12px] font-black text-manises-blue">{getTicketCode(ticket.id)}</p>
-                                  </div>
-                                  <div className="rounded-xl border border-white bg-white/90 p-2.5">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Producto</p>
-                                    <p className="mt-1 text-[12px] font-black text-manises-blue">{identity.shortName}</p>
-                                  </div>
-                                  {nationalTicket && nationalQuantity && (
-                                    <div className="rounded-xl border border-white bg-white/90 p-2.5">
-                                      <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Cantidad</p>
-                                      <p className="mt-1 text-[12px] font-black text-manises-blue">{nationalQuantity} {nationalQuantity === 1 ? 'décimo' : 'décimos'}</p>
+                                  ) : (
+                                    <div className="rounded-xl border border-white/50 bg-white/40 p-2">
+                                      <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Extras</p>
+                                      <p className="mt-0.5 text-[11px] font-black text-manises-blue">
+                                        {[
+                                          ticket.hasInsurance ? 'Seguro' : null,
+                                          ticket.isSubscription ? 'Abono' : null,
+                                          !ticket.hasInsurance && !ticket.isSubscription ? 'Ninguno' : null
+                                        ].filter(Boolean).join(' · ')}
+                                      </p>
                                     </div>
                                   )}
-                                  <div className="rounded-xl border border-white bg-white/90 p-2.5">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Pedido</p>
-                                    <p className="mt-1 truncate text-[12px] font-black text-manises-blue">{ticket.orderId ? ticket.orderId.slice(-8).toUpperCase() : 'Individual'}</p>
-                                  </div>
                                 </div>
-
-                                <div className="mt-2.5 rounded-xl border border-white bg-white/90 p-2.5">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Resumen útil</p>
-                                    {matchingResult ? (
-                                      <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">
-                                        <CalendarDays className="h-3.5 w-3.5" />
-                                        Resumen disponible
-                                      </span>
-                                    ) : null}
-                                  </div>
-                                  <div className="mt-2 space-y-1.5 text-[11px] font-medium text-slate-600">
-                                    <p><span className="font-black text-manises-blue">Estado:</span> {ticket.status === 'pending' ? 'Pendiente de sorteo o validación' : ticket.status === 'won' ? 'Premiada' : 'Sin premio en el modelo actual'}</p>
-                                    {nationalTicket && (
-                                      <p><span className="font-black text-manises-blue">Producto:</span> {identity.shortName}{ticket.metadata?.nationalDrawLabel ? ` · Sorteo de ${ticket.metadata.nationalDrawLabel}` : ''}</p>
-                                    )}
-                                    {nationalTicket && (
-                                      <p><span className="font-black text-manises-blue">{orderDrawLabel}:</span> {orderDates.map((date) => formatDate(date)).join(' · ')}</p>
-                                    )}
-                                    {nationalTicket && (
-                                      <p><span className="font-black text-manises-blue">Total del pedido:</span> {formatCurrency(orderTotal)}</p>
-                                    )}
-                                    {!nationalTicket && (
-                                      <p><span className="font-black text-manises-blue">Apuesta registrada:</span> 1 combinación en el modelo actual</p>
-                                    )}
-                                    <p><span className="font-black text-manises-blue">Creada:</span> {formatDate(ticket.createdAt)}</p>
-                                    {(ticket.hasInsurance || ticket.isSubscription) && (
-                                      <p><span className="font-black text-manises-blue">Extras:</span> {ticket.hasInsurance ? 'Seguro' : ''}{ticket.hasInsurance && ticket.isSubscription ? ' · ' : ''}{ticket.isSubscription ? 'Abono' : ''}</p>
-                                    )}
-                                  </div>
-                                </div>
-
                                 {hasResolvedDraw && totalHits > 0 && (
                                   <div className="mt-2.5 rounded-xl border border-emerald-200 bg-emerald-50 p-2.5">
                                     <div className="flex items-center gap-2">
@@ -602,21 +563,16 @@ export function TicketsPage() {
                                   </div>
                                 )}
 
-                                <div className="mt-3 flex flex-wrap gap-2">
+                                <div className="mt-3 flex flex-wrap items-center gap-2">
                                   <QuickActionButton
                                     icon={Repeat2}
-                                    label="Volver"
+                                    label="Repetir"
                                     onClick={() => navigate(`/play/${ticket.gameId}`)}
                                   />
                                   <QuickActionButton
                                     icon={Sparkles}
-                                    label="Abonarse"
-                                    onClick={() => {
-                                      toast.message('Acceso rápido al abono', {
-                                        description: 'Te llevamos al flujo de juego para activarlo desde la compra.',
-                                      });
-                                      navigate(`/play/${ticket.gameId}`);
-                                    }}
+                                    label="Abono"
+                                    onClick={() => navigate(`/play/${ticket.gameId}`)}
                                   />
                                   <QuickActionButton
                                     icon={Archive}
@@ -624,34 +580,24 @@ export function TicketsPage() {
                                     tone="danger"
                                     onClick={() => {
                                       setArchivedIds((current) => current.includes(ticket.id) ? current : [...current, ticket.id]);
-                                      toast.success('Jugada archivada en esta sesión');
+                                      toast.success('Jugada archivada');
                                     }}
                                   />
-                                </div>
-
-                                <div className="mt-3 flex flex-wrap gap-2">
+                                  <div className="h-4 w-px bg-slate-200 mx-1" />
                                   <Button
-                                    variant="outline"
+                                    variant="ghost"
                                     size="sm"
                                     className={cn(
-                                      'h-10 rounded-xl bg-white px-3 text-[11px] font-black uppercase tracking-[0.12em]',
+                                      'h-9 rounded-xl px-2.5 text-[10px] font-black uppercase tracking-[0.12em]',
                                       matchingResult
-                                        ? 'border-manises-blue/15 text-manises-blue'
-                                        : 'border-slate-200 text-slate-500'
+                                        ? 'bg-manises-blue/[0.04] text-manises-blue'
+                                        : 'text-slate-400'
                                     )}
                                     onClick={() => setScrutinyState({ ticket, result: matchingResult })}
                                   >
                                     <ScrollText className="mr-1.5 h-3.5 w-3.5" />
                                     {scrutinyTone.label}
                                   </Button>
-                                  <div className="inline-flex h-10 items-center rounded-xl border border-slate-200 bg-white px-3 text-[10px] font-semibold text-slate-500">
-                                    {scrutinyTone.helper}
-                                  </div>
-                                  {ticket.status === 'won' && ticket.prize != null && (
-                                    <div className="inline-flex h-10 items-center rounded-xl border border-emerald-100 bg-emerald-50 px-3 text-[11px] font-black uppercase tracking-[0.12em] text-emerald-700">
-                                      Premio {formatCurrency(ticket.prize)}
-                                    </div>
-                                  )}
                                 </div>
                               </div>
                             </motion.div>
