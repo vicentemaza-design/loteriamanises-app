@@ -803,111 +803,6 @@ export function GamePlayPage() {
           </motion.div>
         )}
 
-        {!isNationalLottery && !isQuiniela && mode === 'reduced' && reductionSystems.length > 0 && (
-          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible" className="space-y-3">
-            {!hasSufficientReducedForecast ? (
-              <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3.5">
-                <InfoCircle className="w-4 h-4 text-slate-400 shrink-0" />
-                <p className="text-[12px] font-medium text-slate-500 leading-snug">
-                  Selecciona primero tu pronóstico para ver las opciones de reducida disponibles.
-                </p>
-              </div>
-            ) : (
-              <>
-                <ReductionSystemSelector
-                  systems={reductionSystems}
-                  currentSystemId={selectedReductionSystemId}
-                  onChange={(systemId) => setSelectedReductionSystemId(systemId)}
-                />
-
-                <div className="rounded-2xl border border-manises-blue/10 bg-white px-4 py-4 shadow-sm">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Selección actual</p>
-                      <h3 className="mt-1 text-sm font-black text-manises-blue">{currentReductionSystem?.label ?? 'Reducida'}</h3>
-                      <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
-                        {currentReductionSystem?.guaranteeCondition}
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-slate-50 px-3 py-2 text-right">
-                      <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Números</p>
-                      <p className="mt-0.5 text-lg font-black text-manises-blue">{selectedNumbers.length}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="inline-flex items-center rounded-full border border-manises-blue/10 bg-manises-blue/[0.05] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-manises-blue/75">
-                      Rango válido: {supportedReducedNumbers[0]}-{supportedReducedNumbers[supportedReducedNumbers.length - 1]}
-                    </span>
-                    {game.type === 'euromillones' && (
-                      <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-amber-900">
-                        2 estrellas fijas
-                      </span>
-                    )}
-                    {selectedNumbers.length > 0 && (
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${isSupportedReducedSelection
-                            ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
-                            : 'border border-amber-200 bg-amber-50 text-amber-900'
-                          }`}
-                      >
-                        {isSupportedReducedSelection ? 'Fila válida' : 'Ajusta la fila'}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {selectedNumbers.map((number) => (
-                      <span
-                        key={number}
-                        className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-manises-blue/12 bg-manises-blue/[0.06] px-3 text-sm font-black text-manises-blue"
-                      >
-                        {number}
-                      </span>
-                    ))}
-                  </div>
-
-                  <p className="mt-3 text-[11px] font-semibold text-slate-500">
-                    Soporta {supportedReducedNumbers[0]} a {supportedReducedNumbers[supportedReducedNumbers.length - 1]} números, según la tabla oficial disponible.
-                  </p>
-                </div>
-              </>
-            )}
-          </motion.div>
-        )}
-
-        {!isNationalLottery && !isQuiniela && mode === 'reduced' && selectedNumbers.length > 0 && isSupportedReducedSelection && betsCount > 0 && (
-          <motion.div
-            variants={sectionFadeUp}
-            initial="hidden"
-            animate="visible"
-            className="rounded-xl border border-emerald-200 bg-emerald-50 p-3"
-          >
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-900">
-              Selección lista para cotizar
-            </p>
-            <p className="mt-1 text-[12px] font-medium leading-relaxed text-emerald-800">
-              Tu selección encaja en la tabla de {currentReductionSystem?.label?.toLowerCase() ?? 'reducida'} y genera {betsCount} columnas para esta variante.
-            </p>
-          </motion.div>
-        )}
-
-        {!isNationalLottery && !isQuiniela && mode === 'reduced' && selectedNumbers.length > 0 && !isSupportedReducedSelection && (
-          <motion.div
-            variants={sectionFadeUp}
-            initial="hidden"
-            animate="visible"
-            className="rounded-xl border border-amber-200 bg-amber-50 p-3"
-          >
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-amber-900">
-              Selección no compatible con esta reducida
-            </p>
-            <p className="mt-1 text-[12px] font-medium leading-relaxed text-amber-800">
-              Ajusta el total de números para que coincida con una fila soportada por la tabla del sistema.
-            </p>
-          </motion.div>
-        )}
-
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={`${game.id}-${isQuiniela ? 'quiniela' : isNationalLottery ? 'nacional' : mode}`}
@@ -1064,6 +959,111 @@ export function GamePlayPage() {
                       })}
                     </div>
                   </div>
+                )}
+
+                {mode === 'reduced' && reductionSystems.length > 0 && (
+                  <motion.div variants={sectionFadeUp} initial="hidden" animate="visible" className="space-y-3">
+                    {!hasSufficientReducedForecast ? (
+                      <div className="flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-slate-50 px-4 py-3.5">
+                        <InfoCircle className="w-4 h-4 text-slate-400 shrink-0" />
+                        <p className="text-[12px] font-medium text-slate-500 leading-snug">
+                          Selecciona primero tu pronóstico para ver las opciones de reducida disponibles.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <ReductionSystemSelector
+                          systems={reductionSystems}
+                          currentSystemId={selectedReductionSystemId}
+                          onChange={(systemId) => setSelectedReductionSystemId(systemId)}
+                        />
+
+                        <div className="rounded-2xl border border-manises-blue/10 bg-white px-4 py-4 shadow-sm">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Selección actual</p>
+                              <h3 className="mt-1 text-sm font-black text-manises-blue">{currentReductionSystem?.label ?? 'Reducida'}</h3>
+                              <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
+                                {currentReductionSystem?.guaranteeCondition}
+                              </p>
+                            </div>
+                            <div className="rounded-xl bg-slate-50 px-3 py-2 text-right">
+                              <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Números</p>
+                              <p className="mt-0.5 text-lg font-black text-manises-blue">{selectedNumbers.length}</p>
+                            </div>
+                          </div>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <span className="inline-flex items-center rounded-full border border-manises-blue/10 bg-manises-blue/[0.05] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-manises-blue/75">
+                              Rango válido: {supportedReducedNumbers[0]}-{supportedReducedNumbers[supportedReducedNumbers.length - 1]}
+                            </span>
+                            {game.type === 'euromillones' && (
+                              <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-amber-900">
+                                2 estrellas fijas
+                              </span>
+                            )}
+                            {selectedNumbers.length > 0 && (
+                              <span
+                                className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${isSupportedReducedSelection
+                                    ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
+                                    : 'border border-amber-200 bg-amber-50 text-amber-900'
+                                  }`}
+                              >
+                                {isSupportedReducedSelection ? 'Fila válida' : 'Ajusta la fila'}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {selectedNumbers.map((number) => (
+                              <span
+                                key={number}
+                                className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-manises-blue/12 bg-manises-blue/[0.06] px-3 text-sm font-black text-manises-blue"
+                              >
+                                {number}
+                              </span>
+                            ))}
+                          </div>
+
+                          <p className="mt-3 text-[11px] font-semibold text-slate-500">
+                            Soporta {supportedReducedNumbers[0]} a {supportedReducedNumbers[supportedReducedNumbers.length - 1]} números, según la tabla oficial disponible.
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </motion.div>
+                )}
+
+                {mode === 'reduced' && selectedNumbers.length > 0 && isSupportedReducedSelection && betsCount > 0 && (
+                  <motion.div
+                    variants={sectionFadeUp}
+                    initial="hidden"
+                    animate="visible"
+                    className="rounded-xl border border-emerald-200 bg-emerald-50 p-3"
+                  >
+                    <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-900">
+                      Selección lista para cotizar
+                    </p>
+                    <p className="mt-1 text-[12px] font-medium leading-relaxed text-emerald-800">
+                      Tu selección encaja en la tabla de {currentReductionSystem?.label?.toLowerCase() ?? 'reducida'} y genera {betsCount} columnas para esta variante.
+                    </p>
+                  </motion.div>
+                )}
+
+                {mode === 'reduced' && selectedNumbers.length > 0 && !isSupportedReducedSelection && (
+                  <motion.div
+                    variants={sectionFadeUp}
+                    initial="hidden"
+                    animate="visible"
+                    className="rounded-xl border border-amber-200 bg-amber-50 p-3"
+                  >
+                    <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-amber-900">
+                      Selección no compatible con esta reducida
+                    </p>
+                    <p className="mt-1 text-[12px] font-medium leading-relaxed text-amber-800">
+                      Ajusta el total de números para que coincida con una fila soportada por la tabla del sistema.
+                    </p>
+                  </motion.div>
                 )}
               </>
             ) : (
