@@ -1,13 +1,14 @@
 import type { LotteryGame } from '@/shared/types/domain';
 import type { MulticolumnState, MulticolumnSummary } from '../contracts/multicolumn-play.contract';
 import { resolvePlayPricing } from '@/features/play/application/resolve-play-pricing';
+import { inferMulticolumnPlayMode } from './infer-multicolumn-play-mode';
 
 /**
  * Calcula el resumen total del boleto multi-columna.
  * 
  * DECISIÓN TÉCNICA:
- * Una columna incompleta NO cuenta para el total de apuestas ni el precio,
- * pero invalida el boleto si se intenta persistir sin estar "limpia" (vacía).
+ * Una columna incompleta NO cuenta para el total de apuestas ni el precio.
+ * El resumen solo refleja las columnas que cumplen los requisitos mínimos del juego.
  */
 export function buildMulticolumnSummary(
   state: MulticolumnState,
@@ -25,7 +26,7 @@ export function buildMulticolumnSummary(
         game,
         isNationalLottery: false,
         isQuiniela: game.id === 'quiniela',
-        mode: col.numbers.length > (game.selectionRange?.numbers?.min ?? 5) ? 'multiple' : 'simple',
+        mode: inferMulticolumnPlayMode(game, col),
         selectedNumbersCount: col.numbers.length,
         selectedStarsCount: col.stars.length,
         selectedReductionSystemId: '',

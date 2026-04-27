@@ -5,6 +5,7 @@ import type {
   MulticolumnDraftPreview 
 } from '../contracts/multicolumn-play.contract';
 import { resolvePlayPricing } from '@/features/play/application/resolve-play-pricing';
+import { inferMulticolumnPlayMode } from './infer-multicolumn-play-mode';
 
 /**
  * Mapea una intención multi-columna a una previsualización detallada.
@@ -24,7 +25,7 @@ export function mapMulticolumnIntentToPreview(
       game,
       isNationalLottery: false,
       isQuiniela: game.id === 'quiniela',
-      mode: col.numbers.length > (game.selectionRange?.numbers?.min ?? 5) ? 'multiple' : 'simple',
+      mode: inferMulticolumnPlayMode(game, col),
       selectedNumbersCount: col.numbers.length,
       selectedStarsCount: col.stars.length,
       selectedReductionSystemId: '',

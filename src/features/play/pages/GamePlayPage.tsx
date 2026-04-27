@@ -32,6 +32,7 @@ import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlo
 import { NationalDrawSelector } from '../national/components/NationalDrawSelector';
 import { MulticolumnTicketFlow } from '../multicolumn/components/MulticolumnTicketFlow';
 import type { MulticolumnDraftIntent } from '../multicolumn/contracts/multicolumn-play.contract';
+import { inferMulticolumnPlayMode } from '../multicolumn/application/infer-multicolumn-play-mode';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
 import { getDrawsForCurrentWeek, groupDrawsByWeek } from '../lib/draw-schedule';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
@@ -562,11 +563,7 @@ export function GamePlayPage() {
 
       intent.columns.forEach((col) => {
         // 1. Construir selección individual
-        const minNumbers = game.selectionRange?.numbers?.min ?? 0;
-        const minStars = game.selectionRange?.stars?.min ?? 0;
-        const isMultiple = (minNumbers > 0 && col.numbers.length > minNumbers) || 
-                           (minStars > 0 && col.stars.length > minStars);
-        const colMode: PlayMode = isMultiple ? 'multiple' : 'simple';
+        const colMode = inferMulticolumnPlayMode(game, col);
         
         const selection = buildGameSelection({
           game,
