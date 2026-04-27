@@ -11,7 +11,8 @@ import { resolvePlayPricing } from '@/features/play/application/resolve-play-pri
  */
 export function buildMulticolumnSummary(
   state: MulticolumnState,
-  game: LotteryGame
+  game: LotteryGame,
+  drawsCount: number = 1
 ): MulticolumnSummary {
   let totalBets = 0;
   let totalPrice = 0;
@@ -30,7 +31,7 @@ export function buildMulticolumnSummary(
         selectedReductionSystemId: '',
         selectedNationalQuantity: 0,
         selectedNationalDraw: {},
-        drawsCount: 1, // El sumario es por un solo sorteo; el multiplicador de fechas se aplica en el draft final
+        drawsCount,
       });
 
       totalBets += pricing.betsCount;

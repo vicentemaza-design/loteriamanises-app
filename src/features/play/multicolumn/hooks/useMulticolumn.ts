@@ -10,13 +10,20 @@ import { generateRandomPlay } from '@/features/play/services/play.service';
  * Hook para gestionar el estado de un boleto multi-columna.
  * Centraliza la lógica de navegación entre columnas, validación y generación aleatoria.
  */
-export function useMulticolumn(game: LotteryGame, initialColumnsCount: number = 8) {
+export function useMulticolumn(
+  game: LotteryGame, 
+  initialColumnsCount: number = 8,
+  drawsCount: number = 1
+) {
   const [state, setState] = useState<MulticolumnState>(() => 
     createMulticolumnState(game, initialColumnsCount)
   );
 
   /** Resumen calculado del boleto (apuestas, precio, validez) */
-  const summary = useMemo(() => buildMulticolumnSummary(state, game), [state, game]);
+  const summary = useMemo(
+    () => buildMulticolumnSummary(state, game, drawsCount), 
+    [state, game, drawsCount]
+  );
 
   /** Cambia la columna activa en el slider/editor */
   const setActiveColumn = useCallback((index: number) => {
