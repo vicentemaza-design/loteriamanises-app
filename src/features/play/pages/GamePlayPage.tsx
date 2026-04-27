@@ -606,10 +606,23 @@ export function GamePlayPage() {
   const handlePersistNationalCart = () => {
     if (nationalCartLines.length === 0) return;
 
+    // Nota técnica: Se utiliza buildNationalCartDraftIntent para normalizar la intención.
+    // mapNationalCartIntentToPreview queda como referencia para auditoría visual/contratos, 
+    // mientras que este handler usa buildPlayDrafts como fuente final de creación.
     const intent = buildNationalCartDraftIntent(game, nationalCartLines);
     const allDrafts: PlayDraft[] = [];
+    let hasError = false;
 
     intent.lines.forEach((line) => {
+      // Calculamos drawConfig una sola vez por línea y validamos su existencia
+      const drawCfg = NATIONAL_DRAW_CONFIG.find(d => d.id === line.drawId);
+      
+      if (!drawCfg) {
+        toast.error(`Error de configuración: sorteo ${line.drawId} no encontrado.`);
+        hasError = true;
+        return;
+      }
+
       const draftSelection = buildGameSelection({
         game,
         isNationalLottery: true,
@@ -629,8 +642,8 @@ export function GamePlayPage() {
         game,
         selection: draftSelection,
         drawDates: line.drawDates,
-        totalPrice: line.quantity * (NATIONAL_DRAW_CONFIG.find(d => d.id === line.drawId)?.decimoPrice ?? 3) * line.drawDates.length,
-        unitPrice: NATIONAL_DRAW_CONFIG.find(d => d.id === line.drawId)?.decimoPrice ?? 3,
+        totalPrice: line.quantity * drawCfg.decimoPrice * line.drawDates.length,
+        unitPrice: drawCfg.decimoPrice,
         quantity: line.quantity,
         mode: 'simple',
         betsCount: 1,
@@ -646,7 +659,10 @@ export function GamePlayPage() {
       allDrafts.push(...lineDrafts);
     });
 
-    if (allDrafts.length === 0) return;
+    if (allDrafts.length === 0) {
+      if (hasError) toast.error('No se han podido añadir borradores debido a errores técnicos.');
+      return;
+    }
 
     const result = addDrafts(allDrafts);
     

@@ -76,15 +76,17 @@ export function NationalCartSummary({
         </div>
       </div>
 
-      <div className="mt-5">
-        <Button
-          className="w-full rounded-2xl bg-manises-blue text-white font-bold py-3 shadow-lg active:scale-[0.98] transition-all"
-          onClick={onPersistToSession}
-          disabled={isPersisting}
-        >
-          {isPersisting ? 'Añadiendo...' : 'Añadir selección simulada a la sesión'}
-        </Button>
-      </div>
+      {onPersistToSession && (
+        <div className="mt-5">
+          <Button
+            className="w-full rounded-2xl bg-manises-blue text-white font-bold py-3 shadow-lg active:scale-[0.98] transition-all"
+            onClick={onPersistToSession}
+            disabled={isPersisting}
+          >
+            {isPersisting ? 'Añadiendo...' : 'Añadir selección simulada a la sesión'}
+          </Button>
+        </div>
+      )}
     </section>
   );
 }
