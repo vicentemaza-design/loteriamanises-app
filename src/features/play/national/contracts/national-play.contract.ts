@@ -63,3 +63,26 @@ export interface NationalCartDraftIntent {
   gameId: string;
   gameType: string;
 }
+
+/**
+ * Previsualización de un borrador nacional antes de su persistencia.
+ * Estructuralmente compatible con PlayDraft.
+ */
+export interface NationalDraftPreview {
+  gameId: string;
+  drawDate: string;
+  number: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  drawLabel: string;
+}
+
+/**
+ * Agrupación de previsualizaciones por intención original.
+ */
+export interface NationalDraftPreviewSummary {
+  items: NationalDraftPreview[];
+  totalAmount: number;
+  totalDecimos: number;
+}
