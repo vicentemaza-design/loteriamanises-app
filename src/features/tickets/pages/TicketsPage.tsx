@@ -216,6 +216,7 @@ export function TicketsPage() {
   const { results } = useResults();
   const [tab, setTab] = useState<Tab>('activos');
   const [search, setSearch] = useState('');
+  const [gameFilter, setGameFilter] = useState<string>('all');
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   const [archivedIds, setArchivedIds] = useState<string[]>([]);
   const [scrutinyState, setScrutinyState] = useState<ScrutinyState>(null);
@@ -234,7 +235,23 @@ export function TicketsPage() {
   const visibleTickets = filteredTickets.filter((ticket) => !archivedIds.includes(ticket.id));
   const activeTickets = visibleTickets.filter((ticket) => ticket.status === 'pending');
   const historyTickets = visibleTickets.filter((ticket) => ticket.status !== 'pending');
-  const displayed = tab === 'activos' ? activeTickets : historyTickets;
+  const tabTickets = tab === 'activos' ? activeTickets : historyTickets;
+
+  const availableGames = useMemo(() => {
+    const seen = new Set<string>();
+    return tabTickets.reduce<Array<{ id: string; name: string }>>((acc, t) => {
+      if (!seen.has(t.gameId)) {
+        seen.add(t.gameId);
+        const g = LOTTERY_GAMES.find((x) => x.id === t.gameId);
+        if (g) acc.push({ id: g.id, name: getGameIdentity(g).shortName });
+      }
+      return acc;
+    }, []);
+  }, [tabTickets]);
+
+  const displayed = gameFilter === 'all'
+    ? tabTickets
+    : tabTickets.filter((t) => t.gameId === gameFilter);
 
   const resultMap = useMemo(() => {
     return new Map(displayed.map((ticket) => [ticket.id, getTicketResultMatch(ticket, results)]));
@@ -267,7 +284,7 @@ export function TicketsPage() {
 
   return (
     <>
-      <div className="flex min-h-full flex-col gap-4 overflow-x-hidden bg-background" ref={containerRef}>
+      <div className="flex min-h-full flex-col gap-4 overflow-x-hidden bg-background pb-24" ref={containerRef}>
         <section className="tickets-header space-y-4 px-5 pt-4">
           <div className="flex items-center justify-between">
             <div>
@@ -295,7 +312,7 @@ export function TicketsPage() {
             {(['activos', 'historial'] as Tab[]).map((currentTab) => (
               <PremiumTouchInteraction key={currentTab} scale={0.96} className="flex-1">
                 <button
-                  onClick={() => setTab(currentTab)}
+                  onClick={() => { setTab(currentTab); setGameFilter('all'); }}
                   className={cn(
                     'w-full rounded-xl py-2.5 text-[11px] font-black uppercase tracking-wider transition-all',
                     tab === currentTab
@@ -309,6 +326,36 @@ export function TicketsPage() {
             ))}
           </div>
         </section>
+
+        {availableGames.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-0 px-5">
+            <button
+              onClick={() => setGameFilter('all')}
+              className={cn(
+                'shrink-0 inline-flex items-center px-3.5 py-1.5 rounded-xl border text-[11px] font-bold uppercase tracking-wider transition-all',
+                gameFilter === 'all'
+                  ? 'bg-manises-blue text-white border-manises-blue shadow-sm'
+                  : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25'
+              )}
+            >
+              Todos
+            </button>
+            {availableGames.map((g) => (
+              <button
+                key={g.id}
+                onClick={() => setGameFilter(g.id)}
+                className={cn(
+                  'shrink-0 inline-flex items-center px-3.5 py-1.5 rounded-xl border text-[11px] font-bold uppercase tracking-wider transition-all',
+                  gameFilter === g.id
+                    ? 'bg-manises-blue text-white border-manises-blue shadow-sm'
+                    : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25'
+                )}
+              >
+                {g.name}
+              </button>
+            ))}
+          </div>
+        )}
 
         <section className="min-h-[400px] flex-1 px-5">
           {isLoading ? (
