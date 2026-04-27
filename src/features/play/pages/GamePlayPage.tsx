@@ -9,16 +9,14 @@ import {
   NavArrowLeft,
   RefreshCircle,
   Spark,
-  CheckCircle,
   InfoCircle,
   WarningTriangle,
   Calendar,
 } from 'iconoir-react/regular';
 import { toast } from 'sonner';
 import { generateRandomPlay } from '@/features/play/services/play.service';
-import { usePlay } from '../hooks/usePlay';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { cn, formatCurrency, formatDate, formatDrawTime } from '@/shared/lib/utils';
+import { cn, formatCurrency, formatDrawTime } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { MOTION_EASE_OUT, panelSwap, sectionFadeUp } from '@/shared/lib/motion';
 import { QUINIELA_REDUCED_TABLES, QuinielaReducedType } from '../lib/bet-calculator';
@@ -149,6 +147,7 @@ export function GamePlayPage() {
     setSelectedStars([]);
     setSelectedNationalNumber(null);
     setSelectedNationalQuantity(1);
+    setIsMulticolumnMode(false);
 
     // Sincronizar sorteo nacional por defecto
     if (gameId === 'loteria-nacional-jueves') setSelectedNationalDrawId('jueves');
@@ -170,6 +169,7 @@ export function GamePlayPage() {
 
     setMode((editingDraft.mode as PlayMode) ?? availableModes[0]);
     setIsSubscription(editingDraft.isSubscription);
+    setIsMulticolumnMode(false);
     
     // Reconstrucción inteligente de la intención temporal (UI mapping)
     const draftDates = Array.isArray(editingDraft.metadata?.orderDrawDates)
