@@ -26,4 +26,8 @@ Proporcionar una visión clara de la arquitectura actual, identificando qué pie
 - [ ] Validar compatibilidad de `motion/react` (Framer Motion) con el stack web objetivo.
 - [ ] Revisar el acoplamiento de los hooks de autenticación con Firebase.
 - [ ] Evaluar si el sistema de "Modo Demo" debe persistir en la versión web.
-- [ ] Comprobar el manejo de la zona horaria (`timezone.ts`) en navegadores de escritorio.
+## Deuda Técnica / Fase 2
+- **Multi-columna (Estilo TuLotero)**: Analizado pero NO implementado en Fase 1. Requiere un cambio profundo en el contrato de `PlayDraft` y la lógica de validación del backend para soportar múltiples apuestas independientes en un solo borrador. Queda priorizado para Fase 2.
+- **Normalización de Timezones**: Actualmente se depende de la hora del cliente; se recomienda centralizar en el servidor en Fase 2.
+- **Optimización de Bundle**: Revisar el impacto de GSAP y Framer Motion en el LCP de la versión web.
+
