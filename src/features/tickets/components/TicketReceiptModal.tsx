@@ -9,12 +9,13 @@ interface TicketReceiptModalProps {
   ticket: Ticket | null;
   onClose: () => void;
   ticketCode: string;
+  orderDatesSummary: string;
 }
 
 /**
  * Modal tipo resguardo térmico (Thermal Receipt Mock).
  */
-export function TicketReceiptModal({ ticket, onClose, ticketCode }: TicketReceiptModalProps) {
+export function TicketReceiptModal({ ticket, onClose, ticketCode, orderDatesSummary }: TicketReceiptModalProps) {
   if (!ticket) return null;
   const game = LOTTERY_GAMES.find((g) => g.id === ticket.gameId);
   const totalPrice = (ticket.metadata?.orderTotalPrice as number) || ticket.price;
@@ -55,8 +56,8 @@ export function TicketReceiptModal({ ticket, onClose, ticketCode }: TicketReceip
                   <span className="font-bold text-manises-blue">{game?.name.toUpperCase()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>FECHA SORTEO:</span>
-                  <span className="font-bold text-manises-blue">{formatDate(ticket.drawDate)}</span>
+                  <span>FECHA(S) SORTEO:</span>
+                  <span className="font-bold text-manises-blue">{orderDatesSummary || formatDate(ticket.drawDate)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>CÓDIGO:</span>

@@ -5,7 +5,6 @@ interface BallSelectionProps {
   stars?: number[];
   matchedNumbers?: number[];
   matchedStars?: number[];
-  gameColor: string;
   type?: string;
 }
 

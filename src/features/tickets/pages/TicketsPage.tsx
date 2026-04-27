@@ -470,11 +470,8 @@ export function TicketsPage() {
                 const hasResolvedDraw = ticket.status !== 'pending' && Boolean(matchingResult);
                 const nationalTicket = isNationalTicket(ticket);
                 const ticketDisplayNumber = getTicketDisplayNumber(ticket);
-                const nationalQuantity = getNationalQuantity(ticket);
-                const orderDates = getOrderDrawDates(ticket);
                 const orderDatesSummary = getOrderDatesSummary(ticket);
                 const orderTotal = getOrderTotal(ticket);
-                const orderDrawLabel = orderDates.length === 1 ? 'Fecha' : 'Fechas';
                 const identity = getGameIdentity(game);
                 const scrutinyTone = getScrutinyTone(ticket, matchingResult);
                 const matchedValuesSummary = [
@@ -577,7 +574,6 @@ export function TicketsPage() {
                                       matchedNumbers={matched.numbers}
                                       matchedStars={matched.stars}
                                       type={game.type}
-                                      gameColor={game.color}
                                     />
                                   </div>
                                 )}
@@ -699,6 +695,7 @@ export function TicketsPage() {
         ticket={receiptTicket}
         onClose={() => setReceiptTicket(null)}
         ticketCode={receiptTicket ? getTicketCode(receiptTicket.id) : ''}
+        orderDatesSummary={receiptTicket ? getOrderDatesSummary(receiptTicket) : ''}
       />
     </>
   );
