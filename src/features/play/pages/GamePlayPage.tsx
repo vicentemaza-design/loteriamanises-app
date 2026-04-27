@@ -32,6 +32,7 @@ import { NumbersGrid } from '../components/NumbersGrid';
 import { StarsGrid } from '../components/StarsGrid';
 import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
 import { NationalDrawSelector } from '../national/components/NationalDrawSelector';
+import { MulticolumnTicketFlow } from '../multicolumn/components/MulticolumnTicketFlow';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
 import { getDrawsForCurrentWeek, groupDrawsByWeek } from '../lib/draw-schedule';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
@@ -106,6 +107,7 @@ export function GamePlayPage() {
 
   // Features Laguinda Style
   const [isSubscription, setIsSubscription] = useState(false);
+  const [isMulticolumnMode, setIsMulticolumnMode] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   if (!game) {
@@ -927,8 +929,33 @@ export function GamePlayPage() {
                 setSelectedReductionSystemId(nextReductionSystems[0].id);
               }
               handleClear(); // Limpiar al cambiar de modo para evitar estados inconsistentes
+              if (m !== 'simple') setIsMulticolumnMode(false);
             }}
           />
+        )}
+
+        {/* Toggle Multi-columna (Opcional para juegos de bolas en modo simple) */}
+        {!isNationalLottery && !isQuiniela && mode === 'simple' && (
+          <div className="flex p-1 bg-slate-100/50 rounded-2xl border border-slate-200/50">
+            <button
+              onClick={() => setIsMulticolumnMode(false)}
+              className={cn(
+                "flex-1 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                !isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
+              )}
+            >
+              Selección clásica
+            </button>
+            <button
+              onClick={() => setIsMulticolumnMode(true)}
+              className={cn(
+                "flex-1 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
+              )}
+            >
+              Multi-columna
+            </button>
+          </div>
         )}
 
         {/* Advertencia de Saldo Insuficiente */}
@@ -984,8 +1011,15 @@ export function GamePlayPage() {
               </>
             ) : !isNationalLottery ? (
               <>
-                {/* ---- Selección visual ---- */}
-                <div className="flex flex-col items-center gap-4 rounded-[1.6rem] border border-white/70 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] surface-neo-soft" style={theme.surface}>
+                {isMulticolumnMode ? (
+                  <MulticolumnTicketFlow 
+                    game={game} 
+                    drawsCount={effectiveSelectedDrawDates.length} 
+                  />
+                ) : (
+                  <>
+                    {/* ---- Selección visual ---- */}
+                    <div className="flex flex-col items-center gap-4 rounded-[1.6rem] border border-white/70 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] surface-neo-soft" style={theme.surface}>
                   {/* Números seleccionados */}
                   <div className="flex flex-wrap justify-center gap-2.5">
                     {(mode === 'reduced'
@@ -1167,6 +1201,8 @@ export function GamePlayPage() {
                       Ajusta el total de números para que coincida con una fila soportada por la tabla del sistema.
                     </p>
                   </motion.div>
+                )}
+                  </>
                 )}
               </>
             ) : (
