@@ -1,4 +1,4 @@
-import { useState, useRef, type FormEvent } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { Button } from '@/shared/ui/Button';
@@ -83,16 +83,11 @@ export function AccountPage() {
   
   const [formData, setFormData] = useState({
     name: profile?.displayName || '',
-    email: profile?.email || '',
-    phone: '+34 600 000 000',
     dni: '12345678Z',
-    iban: 'ES12 3456 7890 1234 5678 9012',
     birthDate: '1990-01-01',
     address: 'Calle Mayor, 1',
     postalCode: '46940',
     municipality: 'Manises',
-    province: 'Valencia',
-    country: 'España',
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -109,8 +104,7 @@ export function AccountPage() {
     });
   }, { scope: containerRef });
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handleSaveLocal = () => {
     setIsSaving(true);
     setTimeout(() => {
       setIsSaving(false);
@@ -285,7 +279,7 @@ export function AccountPage() {
         <div className="mt-4 flex flex-col gap-4 stagger-item">
           <PremiumTouchInteraction scale={0.98}>
             <Button
-              onClick={handleSubmit}
+              onClick={handleSaveLocal}
               disabled={isSaving}
               className="w-full h-14 bg-manises-blue text-white hover:bg-manises-gold hover:text-manises-blue rounded-2xl font-black shadow-xl gap-2 transition-all border-none"
             >
