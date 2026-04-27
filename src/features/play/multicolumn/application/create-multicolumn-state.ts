@@ -16,7 +16,7 @@ export function createEmptyColumn(): MulticolumnColumn {
 
 /**
  * Inicializa el estado multi-columna para un juego específico.
- * Por defecto crea 8 columnas (estándar SELAE) si no se especifica otra cosa.
+ * Por defecto crea 8 columnas (configuración sugerida) si no se especifica otra cosa.
  */
 export function createMulticolumnState(
   game: LotteryGame,
