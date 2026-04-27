@@ -43,3 +43,23 @@ export interface NationalOrderBreakdown {
   subtotal: number;
   total: number;
 }
+
+/**
+ * Representa la intención de transformar una línea de la cesta en borradores reales.
+ */
+export interface NationalCartDraftIntentLine {
+  number: string;
+  drawId: NationalDrawId;
+  drawLabel: string;
+  drawDates: string[];
+  quantity: number;
+}
+
+/**
+ * Contrato de intención completo para la futura persistencia en PlaySession.
+ */
+export interface NationalCartDraftIntent {
+  lines: NationalCartDraftIntentLine[];
+  gameId: string;
+  gameType: string;
+}
