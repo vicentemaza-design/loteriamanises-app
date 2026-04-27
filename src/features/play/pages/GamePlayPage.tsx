@@ -612,6 +612,163 @@ export function GamePlayPage() {
           {/* salesCloseAt: pendiente de BE — mostrar hora límite de compra cuando el campo esté disponible */}
         </div>
 
+        {supportsTimeSelection && (
+          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
+            <div className="rounded-[1.4rem] border border-slate-200/50 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-3.5 px-0.5">
+                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Planificación</span>
+                <span className="text-[9px] font-bold text-manises-blue/60 uppercase">{drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}</span>
+              </div>
+
+              {isNationalLottery ? (
+                <div className="space-y-1.5">
+                  {availableNationalDates.map((dateIso) => {
+                    const isSelected = effectiveSelectedDrawDates.includes(dateIso);
+                    return (
+                      <button
+                        key={dateIso}
+                        onClick={() => setSelectedDrawDates([dateIso])}
+                        className={cn(
+                          'flex items-center justify-between rounded-xl border px-3.5 py-2.5 transition-all w-full',
+                          isSelected ? 'border-manises-blue bg-manises-blue/[0.03]' : 'border-slate-100 bg-slate-50/50'
+                        )}
+                      >
+                        <span className={cn("text-[12px] font-black tracking-tight", isSelected ? "text-manises-blue" : "text-slate-600")}>
+                          {new Date(dateIso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        </span>
+                        <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center", isSelected ? "bg-manises-blue border-manises-blue" : "border-slate-300 bg-white")}>
+                          {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <>
+                  {/* SELECTOR BINARIO PRINCIPAL */}
+                  <div className="relative flex rounded-xl border border-slate-200/60 bg-slate-100/40 p-1">
+                    {[
+                      { id: 'next_draw', label: 'Próximo sorteo' },
+                      { id: 'full_week', label: 'Toda la semana' }
+                    ].map((option) => {
+                      const active = timeMode === option.id;
+                      return (
+                        <button
+                          key={option.id}
+                          onClick={() => setTimeMode(option.id as any)}
+                          className={cn(
+                            'relative flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all z-10',
+                            active ? 'text-manises-blue' : 'text-slate-500'
+                          )}
+                        >
+                          {active && (
+                            <motion.div
+                              layoutId="activeTimeMode"
+                              className="absolute inset-0 rounded-lg bg-white shadow-sm border border-slate-200/50"
+                              transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
+                            />
+                          )}
+                          <span className="relative z-20">{option.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* ACCIÓN SECUNDARIA: PERSONALIZAR */}
+                  <div className="mt-3 flex justify-center">
+                    <button
+                      onClick={() => setTimeMode(timeMode === 'specific_days' ? 'next_draw' : 'specific_days')}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] transition-all px-3.5 py-1.5 rounded-full border",
+                        timeMode === 'specific_days'
+                          ? "text-manises-blue border-manises-blue/25 bg-manises-blue/5"
+                          : "text-slate-500 border-slate-200 bg-slate-50/80 hover:text-slate-700 hover:border-slate-300"
+                      )}
+                    >
+                      {timeMode !== 'specific_days' && <Calendar className="w-3 h-3" />}
+                      {timeMode === 'specific_days' ? '← Volver a selección rápida' : 'Elegir días concretos'}
+                    </button>
+                  </div>
+
+                  {/* GRID DE DÍAS REFINADO (TÁCTIL Y CLARO) */}
+                  <AnimatePresence>
+                    {timeMode === 'specific_days' && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-3 grid grid-cols-7 gap-1.5 px-1 pt-1 pb-2">
+                          {currentWeekDraws.map((draw) => {
+                            const isSelected = selectedDrawDates.includes(draw.drawDate);
+                            const dayNumber = new Date(draw.drawDate).getDate();
+                            return (
+                              <button
+                                key={draw.drawDate}
+                                onClick={() => {
+                                  setSelectedDrawDates(prev => {
+                                    if (prev.includes(draw.drawDate)) {
+                                      if (prev.length === 1) return prev;
+                                      return prev.filter(d => d !== draw.drawDate);
+                                    }
+                                    return [...prev, draw.drawDate].sort();
+                                  });
+                                }}
+                                className="flex flex-col items-center gap-2"
+                              >
+                                <div
+                                  className={cn(
+                                    "relative w-11 h-11 rounded-full flex flex-col items-center justify-center transition-all border",
+                                    isSelected
+                                      ? "text-white scale-105"
+                                      : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
+                                  )}
+                                  style={isSelected ? {
+                                    background: `linear-gradient(145deg, ${game.color}dd 0%, ${game.color} 100%)`,
+                                    borderColor: game.color,
+                                    boxShadow: `0 3px 10px -1px ${game.color}44`,
+                                  } : undefined}
+                                >
+                                  <span className={cn("text-[9px] font-black uppercase leading-none mb-0.5", isSelected ? "text-white/70" : "text-slate-300")}>
+                                    {draw.label.substring(0, 1)}
+                                  </span>
+                                  <span className="text-[13px] font-black leading-none">
+                                    {dayNumber}
+                                  </span>
+                                </div>
+                                <span
+                                  className={cn("text-[8px] font-bold uppercase tracking-tighter", isSelected ? "" : "text-slate-400")}
+                                  style={isSelected ? { color: game.color } : undefined}
+                                >
+                                  {draw.label.substring(0, 3)}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </>
+              )}
+
+              {/* RESUMEN ULTRA-LIGERO */}
+              <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">
+                  Jugando: <span className="text-manises-blue">{drawsCount} sorteos</span>
+                </p>
+                <div className="flex gap-1">
+                  {effectiveSelectedDrawDates.slice(0, 3).map(date => (
+                    <span key={date} className="w-1.5 h-1.5 rounded-full bg-manises-blue/20" />
+                  ))}
+                  {effectiveSelectedDrawDates.length > 3 && <span className="text-[8px] font-black text-manises-blue/40">+</span>}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Selector de Modo (Solo si hay varios disponibles) */}
         {!isNationalLottery && (
           <GameModeSelector
@@ -1072,164 +1229,6 @@ export function GamePlayPage() {
             )}
           </motion.div>
         </AnimatePresence>
-
-        {supportsTimeSelection && (
-          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
-            <div className="rounded-[1.4rem] border border-slate-200/50 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
-              <div className="flex items-center justify-between mb-3.5 px-0.5">
-                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Planificación</span>
-                <span className="text-[9px] font-bold text-manises-blue/60 uppercase">{drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}</span>
-              </div>
-
-              {isNationalLottery ? (
-                <div className="space-y-1.5">
-                  {availableNationalDates.map((dateIso) => {
-                    const isSelected = effectiveSelectedDrawDates.includes(dateIso);
-                    return (
-                      <button
-                        key={dateIso}
-                        onClick={() => setSelectedDrawDates([dateIso])}
-                        className={cn(
-                          'flex items-center justify-between rounded-xl border px-3.5 py-2.5 transition-all w-full',
-                          isSelected ? 'border-manises-blue bg-manises-blue/[0.03]' : 'border-slate-100 bg-slate-50/50'
-                        )}
-                      >
-                        <span className={cn("text-[12px] font-black tracking-tight", isSelected ? "text-manises-blue" : "text-slate-600")}>
-                          {new Date(dateIso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-                        </span>
-                        <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center", isSelected ? "bg-manises-blue border-manises-blue" : "border-slate-300 bg-white")}>
-                          {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <>
-                  {/* SELECTOR BINARIO PRINCIPAL */}
-                  <div className="relative flex rounded-xl border border-slate-200/60 bg-slate-100/40 p-1">
-                    {[
-                      { id: 'next_draw', label: 'Próximo sorteo' },
-                      { id: 'full_week', label: 'Toda la semana' }
-                    ].map((option) => {
-                      const active = timeMode === option.id;
-                      return (
-                        <button
-                          key={option.id}
-                          onClick={() => setTimeMode(option.id as any)}
-                          className={cn(
-                            'relative flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all z-10',
-                            active ? 'text-manises-blue' : 'text-slate-500'
-                          )}
-                        >
-                          {active && (
-                            <motion.div
-                              layoutId="activeTimeMode"
-                              className="absolute inset-0 rounded-lg bg-white shadow-sm border border-slate-200/50"
-                              transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
-                            />
-                          )}
-                          <span className="relative z-20">{option.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* ACCIÓN SECUNDARIA: PERSONALIZAR */}
-                  <div className="mt-3 flex justify-center">
-                    <button
-                      onClick={() => setTimeMode(timeMode === 'specific_days' ? 'next_draw' : 'specific_days')}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] transition-all px-3.5 py-1.5 rounded-full border",
-                        timeMode === 'specific_days'
-                          ? "text-manises-blue border-manises-blue/25 bg-manises-blue/5"
-                          : "text-slate-500 border-slate-200 bg-slate-50/80 hover:text-slate-700 hover:border-slate-300"
-                      )}
-                    >
-                      {timeMode !== 'specific_days' && <Calendar className="w-3 h-3" />}
-                      {timeMode === 'specific_days' ? '← Volver a selección rápida' : 'Elegir días concretos'}
-                    </button>
-                  </div>
-
-                  {/* GRID DE DÍAS REFINADO (TÁCTIL Y CLARO) */}
-                  <AnimatePresence>
-                    {timeMode === 'specific_days' && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="mt-3 grid grid-cols-7 gap-1.5 px-1 pt-1 pb-2">
-                          {currentWeekDraws.map((draw) => {
-                            const isSelected = selectedDrawDates.includes(draw.drawDate);
-                            const dayNumber = new Date(draw.drawDate).getDate();
-                            return (
-                              <button
-                                key={draw.drawDate}
-                                onClick={() => {
-                                  setSelectedDrawDates(prev => {
-                                    if (prev.includes(draw.drawDate)) {
-                                      if (prev.length === 1) return prev;
-                                      return prev.filter(d => d !== draw.drawDate);
-                                    }
-                                    return [...prev, draw.drawDate].sort();
-                                  });
-                                }}
-                                className="flex flex-col items-center gap-2"
-                              >
-                                <div
-                                  className={cn(
-                                    "relative w-11 h-11 rounded-full flex flex-col items-center justify-center transition-all border",
-                                    isSelected
-                                      ? "text-white scale-105"
-                                      : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
-                                  )}
-                                  style={isSelected ? {
-                                    background: `linear-gradient(145deg, ${game.color}dd 0%, ${game.color} 100%)`,
-                                    borderColor: game.color,
-                                    boxShadow: `0 3px 10px -1px ${game.color}44`,
-                                  } : undefined}
-                                >
-                                  <span className={cn("text-[9px] font-black uppercase leading-none mb-0.5", isSelected ? "text-white/70" : "text-slate-300")}>
-                                    {draw.label.substring(0, 1)}
-                                  </span>
-                                  <span className="text-[13px] font-black leading-none">
-                                    {dayNumber}
-                                  </span>
-                                </div>
-                                <span
-                                  className={cn("text-[8px] font-bold uppercase tracking-tighter", isSelected ? "" : "text-slate-400")}
-                                  style={isSelected ? { color: game.color } : undefined}
-                                >
-                                  {draw.label.substring(0, 3)}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </>
-              )}
-
-              {/* RESUMEN ULTRA-LIGERO */}
-              <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">
-                  Jugando: <span className="text-manises-blue">{drawsCount} sorteos</span>
-                </p>
-                <div className="flex gap-1">
-                  {effectiveSelectedDrawDates.slice(0, 3).map(date => (
-                    <span key={date} className="w-1.5 h-1.5 rounded-full bg-manises-blue/20" />
-                  ))}
-                  {effectiveSelectedDrawDates.length > 3 && <span className="text-[8px] font-black text-manises-blue/40">+</span>}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
 
         {/* ---- SECCIÓN LAGUINDA: Abono ---- */}
         <div className="mt-2 space-y-3">
