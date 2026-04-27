@@ -35,6 +35,7 @@ import { ReductionSystemSelector } from '../components/ReductionSystemSelector';
 import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
 import { NationalTicketVisual, type NationalDrawType } from '../components/NationalTicketVisual';
 import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
+import { NationalDrawSelector } from '../national/components/NationalDrawSelector';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
 import { getDrawsForCurrentWeek, groupDrawsByWeek } from '../lib/draw-schedule';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
@@ -678,28 +679,11 @@ export function GamePlayPage() {
               </div>
 
               {isNationalLottery ? (
-                <div className="space-y-1.5">
-                  {availableNationalDates.map((dateIso) => {
-                    const isSelected = effectiveSelectedDrawDates.includes(dateIso);
-                    return (
-                      <button
-                        key={dateIso}
-                        onClick={() => setSelectedDrawDates([dateIso])}
-                        className={cn(
-                          'flex items-center justify-between rounded-xl border px-3.5 py-2.5 transition-all w-full',
-                          isSelected ? 'border-manises-blue bg-manises-blue/[0.03]' : 'border-slate-100 bg-slate-50/50'
-                        )}
-                      >
-                        <span className={cn("text-[12px] font-black tracking-tight", isSelected ? "text-manises-blue" : "text-slate-600")}>
-                          {new Date(dateIso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-                        </span>
-                        <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center", isSelected ? "bg-manises-blue border-manises-blue" : "border-slate-300 bg-white")}>
-                          {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                <NationalDrawSelector
+                  availableNationalDates={availableNationalDates}
+                  effectiveSelectedDrawDates={effectiveSelectedDrawDates}
+                  onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
+                />
               ) : !isTimeSelectorExpanded ? (
                 <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-slate-50/70 px-3.5 py-3">
                   <div className="min-w-0">

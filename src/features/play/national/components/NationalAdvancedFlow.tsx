@@ -1,9 +1,10 @@
 import { motion } from 'motion/react';
 import { Button } from '@/shared/ui/Button';
-import { Spark, Trophy } from 'iconoir-react/regular';
+import { Spark } from 'iconoir-react/regular';
 import { NationalTicketVisual, type NationalDrawType } from '@/features/play/components/NationalTicketVisual';
 import { NationalSearchBar } from './NationalSearchBar';
 import { NationalNumberShowcase } from './NationalNumberShowcase';
+import { NationalTicketQuantitySelector } from './NationalTicketQuantitySelector';
 import { NationalCartSummary } from './NationalCartSummary';
 import { formatCurrency } from '@/shared/lib/utils';
 import type { 
@@ -22,7 +23,7 @@ interface NationalDrawMeta {
 }
 
 interface NationalAdvancedFlowProps {
-  game: any; // Manteniendo la prop game como base
+  game: any;
   selectedNationalDraw: NationalDrawMeta;
   selectedNationalNumber: string | null;
   selectedNationalQuantity: number;
@@ -53,9 +54,8 @@ interface NationalAdvancedFlowProps {
 }
 
 /**
- * Flujo avanzado de Lotería Nacional.
- * Componente único que agrupa toda la UI avanzada (Fase 2B.3A).
- * Reutiliza buscadores y sumarios pero mantiene el selector de cantidad inline.
+ * Flujo avanzado de Lotería Nacional (Refinado en Fase 2B.3B).
+ * Utiliza subcomponentes extraídos para mayor claridad.
  */
 export function NationalAdvancedFlow({
   game,
@@ -71,7 +71,6 @@ export function NationalAdvancedFlow({
   onRandomNationalNumber,
   onClear,
 }: NationalAdvancedFlowProps) {
-  const potentialFirstPrize = selectedNationalDraw.firstPrize * selectedNationalQuantity;
   const drawType: NationalDrawType = game.id === 'loteria-navidad' ? 'navidad' : 
                                    game.id === 'loteria-nino' ? 'nino' : 'ordinary';
 
@@ -149,75 +148,17 @@ export function NationalAdvancedFlow({
         />
       </section>
 
-      {/* Cantidad y Resumen (Inline según 2B.3A) */}
+      {/* Cantidad y Resumen (Componente extraído en 2B.3B) */}
       {selectedNationalNumber && (
-        <motion.section
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="rounded-[2rem] border border-manises-blue/10 bg-white p-6 shadow-xl"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tu compra</p>
-              <h3 className="text-xl font-black text-manises-blue mt-1">
-                {selectedNationalQuantity} {selectedNationalQuantity === 1 ? 'décimo' : 'décimos'}
-              </h3>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Subtotal</p>
-              <p className="text-2xl font-black text-manises-blue mt-1">
-                {formatCurrency(selectedNationalDraw.decimoPrice * selectedNationalQuantity)}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between p-2 bg-slate-50 rounded-2xl">
-            <div className="ml-2">
-              <span className="text-xs font-black uppercase tracking-widest text-slate-500">Ajustar cantidad</span>
-              <p className="mt-1 text-[11px] font-semibold text-slate-500">
-                Máximo {maxNationalQuantity} {maxNationalQuantity === 1 ? 'décimo disponible' : 'décimos disponibles'} para el número {selectedNationalNumber}.
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost" size="icon"
-                className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
-                onClick={() => onChangeNationalQuantity(Math.max(1, selectedNationalQuantity - 1))}
-                disabled={selectedNationalQuantity <= 1}
-                aria-label="Restar un décimo"
-              >
-                -
-              </Button>
-              <span className="w-6 text-center font-black text-lg text-manises-blue">{selectedNationalQuantity}</span>
-              <Button
-                variant="ghost" size="icon"
-                className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
-                onClick={() => onChangeNationalQuantity(Math.min(maxNationalQuantity, selectedNationalQuantity + 1))}
-                disabled={selectedNationalQuantity >= maxNationalQuantity}
-                aria-label="Sumar un décimo"
-              >
-                +
-              </Button>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3">
-            <Trophy className="w-5 h-5 text-emerald-600 shrink-0" />
-            <p className="text-[11px] font-semibold text-emerald-800 leading-snug">
-              Si este número resulta premiado con el <span className="font-black">Gordo</span>, cobrarías un total de <span className="font-black">{formatCurrency(potentialFirstPrize)}</span>.
-            </p>
-          </div>
-
-          <div className="mt-4 flex justify-end">
-            <Button
-              variant="outline"
-              className="rounded-2xl border-manises-blue/15 bg-manises-blue/[0.03] text-manises-blue"
-              onClick={nationalCart.addSelectedToCart}
-            >
-              Añadir a cesta demo
-            </Button>
-          </div>
-        </motion.section>
+        <NationalTicketQuantitySelector
+          selectedNumber={selectedNationalNumber}
+          selectedQuantity={selectedNationalQuantity}
+          maxQuantity={maxNationalQuantity}
+          decimoPrice={selectedNationalDraw.decimoPrice}
+          firstPrize={selectedNationalDraw.firstPrize}
+          onQuantityChange={onChangeNationalQuantity}
+          onAddToCart={nationalCart.addSelectedToCart}
+        />
       )}
 
       <NationalCartSummary
