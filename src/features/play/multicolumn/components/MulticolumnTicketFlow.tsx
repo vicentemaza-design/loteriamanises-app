@@ -12,6 +12,7 @@ import { MulticolumnSummary } from './MulticolumnSummary';
 interface MulticolumnTicketFlowProps {
   game: LotteryGame;
   drawsCount: number;
+  initialColumnsCount?: number;
 }
 
 /**
@@ -21,6 +22,7 @@ interface MulticolumnTicketFlowProps {
 export function MulticolumnTicketFlow({
   game,
   drawsCount,
+  initialColumnsCount = 8,
 }: MulticolumnTicketFlowProps) {
   const {
     state,
@@ -31,7 +33,7 @@ export function MulticolumnTicketFlow({
     clearAllColumns,
     randomizeActiveColumn,
     randomizeAllColumns,
-  } = useMulticolumn(game, 8, drawsCount);
+  } = useMulticolumn(game, initialColumnsCount, drawsCount);
 
   const theme = useMemo(() => getGameTheme(game), [game]);
   const activeColumn = state.columns[state.activeColumnIndex];
