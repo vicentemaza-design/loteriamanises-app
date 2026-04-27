@@ -61,11 +61,16 @@ export function MulticolumnTicketFlow({
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Slider de Navegación */}
       <section className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="font-black text-sm text-manises-blue">Tus columnas</h2>
-          <span className="text-[10px] font-bold text-manises-blue/60">
-            Desliza para navegar
-          </span>
+        <div className="flex flex-col gap-1 px-1">
+          <div className="flex items-center justify-between">
+            <h2 className="font-black text-sm text-manises-blue">Boleto multi-columna</h2>
+            <span className="text-[10px] font-black text-manises-blue/60 uppercase tracking-wider">
+              {summary.completeColumns}/{state.columns.length} completas
+            </span>
+          </div>
+          <p className="text-[10px] font-medium text-slate-500">
+            Rellena varias apuestas simples dentro del mismo boleto
+          </p>
         </div>
         <MulticolumnColumnSlider
           columnsCount={state.columns.length}
@@ -96,7 +101,8 @@ export function MulticolumnTicketFlow({
               updateActiveColumn(nextNumbers, activeColumn.stars);
             }}
             theme={theme}
-            title={`Números Columna ${state.activeColumnIndex + 1}`}
+            title={`Editando Columna ${state.activeColumnIndex + 1} de ${state.columns.length}`}
+            subtitle={activeColumn.isComplete ? "Estado: Completa" : activeColumn.numbers.length > 0 || activeColumn.stars.length > 0 ? "Estado: Incompleta" : "Estado: Vacía"}
           />
 
           {maxStars > 0 && (
@@ -117,6 +123,7 @@ export function MulticolumnTicketFlow({
               theme={theme}
               title={game.type === 'gordo' ? 'Clave' : 'Estrellas'}
               labelPrefix={game.type === 'gordo' ? 'Clave' : 'Estrella'}
+              subtitle={activeColumn.isComplete ? "Estado: Completa" : activeColumn.numbers.length > 0 || activeColumn.stars.length > 0 ? "Estado: Incompleta" : "Estado: Vacía"}
             />
           )}
         </div>

@@ -13,6 +13,7 @@ interface StarsGridProps {
   title?: string;
   labelPrefix?: string;
   gridCols?: number;
+  subtitle?: string;
 }
 
 /**
@@ -27,7 +28,8 @@ export function StarsGrid({
   theme,
   title = "Estrellas",
   labelPrefix = "Estrella",
-  gridCols
+  gridCols,
+  subtitle
 }: StarsGridProps) {
   // Lógica de columnas original de GamePlayPage
   const finalGridCols = gridCols ?? (starValues.length <= 9 ? 5 : 6);
@@ -35,9 +37,14 @@ export function StarsGrid({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between px-1">
-        <h2 className="font-bold text-sm" style={theme.title}>
-          {title}
-        </h2>
+        <div className="flex flex-col">
+          <h2 className="font-bold text-sm" style={theme.title}>
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">{subtitle}</p>
+          )}
+        </div>
         <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
           {selectedStars.length}/{maxStarsLimit}
         </span>

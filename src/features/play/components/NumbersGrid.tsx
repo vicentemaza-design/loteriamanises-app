@@ -13,6 +13,7 @@ interface NumbersGridProps {
     selectedAccent: CSSProperties;
   };
   title?: string;
+  subtitle?: string;
 }
 
 /**
@@ -25,12 +26,18 @@ export function NumbersGrid({
   maxNumbersLimit,
   onToggle,
   theme,
-  title = "Números"
+  title = "Números",
+  subtitle
 }: NumbersGridProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between px-1">
-        <h2 className="font-bold text-sm" style={theme.title}>{title}</h2>
+        <div className="flex flex-col">
+          <h2 className="font-bold text-sm" style={theme.title}>{title}</h2>
+          {subtitle && (
+            <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">{subtitle}</p>
+          )}
+        </div>
         <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
           {selectedNumbers.length}/{maxNumbersLimit}
         </span>
