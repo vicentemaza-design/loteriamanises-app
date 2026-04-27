@@ -28,6 +28,8 @@ import { GameModeSelector } from '../components/GameModeSelector';
 import { GameInfoSheet } from '../components/GameInfoSheet';
 import { QuinielaProfessionalSelector } from '../components/QuinielaProfessionalSelector';
 import { ReductionSystemSelector } from '../components/ReductionSystemSelector';
+import { NumbersGrid } from '../components/NumbersGrid';
+import { StarsGrid } from '../components/StarsGrid';
 import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
 import { NationalDrawSelector } from '../national/components/NationalDrawSelector';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
@@ -1041,66 +1043,25 @@ export function GamePlayPage() {
                 </div>
 
                 {/* ---- Grid de números ---- */}
-                <div>
-                  <div className="flex items-center justify-between mb-3 px-1">
-                    <h2 className="font-bold text-sm" style={theme.title}>Números</h2>
-                    <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                      {selectedNumbers.length}/{mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-7 gap-2">
-                    {Array.from({ length: totalNums }, (_, i) => i + 1).map(n => {
-                      const isSelected = selectedNumbers.includes(n);
-                      return (
-                        <button
-                          key={n}
-                          onClick={() => toggleNumber(n)}
-                          className={`aspect-square rounded-xl flex items-center justify-center border font-bold text-sm transition-all active:scale-90 ${isSelected
-                              ? 'scale-95 border-transparent shadow-[0_10px_20px_rgba(10,71,146,0.14)]'
-                              : 'border-gray-100 bg-white/80 text-manises-blue/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-manises-blue/30 hover:bg-manises-blue/5'
-                            }`}
-                          style={isSelected ? theme.selectedAccent : undefined}
-                          aria-pressed={isSelected}
-                          aria-label={`Número ${n}`}
-                        >
-                          {n}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                <NumbersGrid
+                  totalNums={totalNums}
+                  selectedNumbers={selectedNumbers}
+                  maxNumbersLimit={mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
+                  onToggle={toggleNumber}
+                  theme={theme}
+                />
 
                 {/* ---- Grid de estrellas ---- */}
                 {maxStars > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3 px-1">
-                      <h2 className="font-bold text-sm" style={theme.title}>
-                        {game.type === 'gordo' ? 'Clave' : 'Estrellas'}
-                      </h2>
-                      <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                        {selectedStars.length}/{maxStars}
-                      </span>
-                    </div>
-                    <div className={`grid gap-2 ${totalStars <= 9 ? 'grid-cols-5' : 'grid-cols-6'}`}>
-                      {starValues.map(n => {
-                        const isSelected = selectedStars.includes(n);
-                        return (
-                          <button
-                            key={n}
-                            onClick={() => toggleStar(n)}
-                            className={`aspect-square rounded-xl flex items-center justify-center border font-bold text-sm transition-all active:scale-90 ${isSelected
-                                ? 'border-transparent bg-manises-gold text-manises-blue shadow-gold scale-95'
-                                : 'border-amber-100 bg-white text-amber-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-amber-300 hover:bg-amber-50'
-                              }`}
-                            aria-pressed={isSelected}
-                            aria-label={game.type === 'gordo' ? `Clave ${n}` : `Estrella ${n}`}
-                          >
-                            {n}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  <StarsGrid
+                    starValues={starValues}
+                    selectedStars={selectedStars}
+                    maxStarsLimit={maxStars}
+                    onToggle={toggleStar}
+                    theme={theme}
+                    title={game.type === 'gordo' ? 'Clave' : 'Estrellas'}
+                    labelPrefix={game.type === 'gordo' ? 'Clave' : 'Estrella'}
+                  />
                 )}
 
                 {mode === 'reduced' && reductionSystems.length > 0 && (
