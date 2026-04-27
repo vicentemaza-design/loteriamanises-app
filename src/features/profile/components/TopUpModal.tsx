@@ -17,13 +17,19 @@ const AMOUNTS = [5, 10, 20, 50];
 
 export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUpModalProps) {
   const [selectedAmount, setSelectedAmount] = useState<number>(10);
+  const [isCustom, setIsCustom] = useState(false);
+  const [customValue, setCustomValue] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<'apple' | 'card' | 'bizum'>('apple');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  const effectiveAmount = isCustom ? (parseFloat(customValue) || 0) : selectedAmount;
+
   useEffect(() => {
     if (isOpen) {
       setSelectedAmount(10);
+      setIsCustom(false);
+      setCustomValue('');
       setSelectedMethod('apple');
       setIsProcessing(false);
       setIsSuccess(false);
@@ -32,12 +38,12 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
 
   const handlePay = async () => {
     setIsProcessing(true);
-    
+
     // Simulating bank delay
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
+
     try {
-      await onSuccess(selectedAmount);
+      await onSuccess(effectiveAmount);
       setIsSuccess(true);
       
       // Auto close after success
@@ -112,11 +118,11 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                     {AMOUNTS.map(amount => (
                       <PremiumTouchInteraction key={amount} scale={0.95}>
                         <button
-                          onClick={() => setSelectedAmount(amount)}
+                          onClick={() => { setSelectedAmount(amount); setIsCustom(false); }}
                           disabled={isProcessing}
                           className={`w-full h-14 rounded-2xl border-2 font-black text-lg transition-all ${
-                            selectedAmount === amount 
-                              ? 'border-manises-blue bg-manises-blue/5 text-manises-blue shadow-sm' 
+                            !isCustom && selectedAmount === amount
+                              ? 'border-manises-blue bg-manises-blue/5 text-manises-blue shadow-sm'
                               : 'border-gray-100 bg-white text-gray-500 hover:border-gray-200'
                           }`}
                         >
@@ -124,7 +130,36 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                         </button>
                       </PremiumTouchInteraction>
                     ))}
+                    <PremiumTouchInteraction scale={0.95}>
+                      <button
+                        onClick={() => { setIsCustom(true); setCustomValue(''); }}
+                        disabled={isProcessing}
+                        className={`col-span-4 w-full h-11 rounded-2xl border-2 font-bold text-sm transition-all ${
+                          isCustom
+                            ? 'border-manises-blue bg-manises-blue/5 text-manises-blue shadow-sm'
+                            : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'
+                        }`}
+                      >
+                        Otro importe
+                      </button>
+                    </PremiumTouchInteraction>
                   </div>
+                  {isCustom && (
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-manises-blue font-black text-lg">€</span>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min="1"
+                        max="500"
+                        placeholder="0.00"
+                        value={customValue}
+                        onChange={(e) => setCustomValue(e.target.value)}
+                        className="w-full h-14 pl-9 pr-4 rounded-2xl border-2 border-manises-blue bg-manises-blue/5 text-manises-blue font-black text-xl outline-none focus:ring-2 focus:ring-manises-gold/50 tabular-nums"
+                        autoFocus
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-3">
@@ -187,9 +222,9 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
 
                 <AnimatePresence mode="wait">
                   <PremiumTouchInteraction scale={0.98} className="w-full">
-                    <Button 
+                    <Button
                       onClick={handlePay}
-                      disabled={isProcessing}
+                      disabled={isProcessing || effectiveAmount <= 0}
                       className={`w-full h-14 rounded-2xl text-white font-black text-lg transition-all shadow-md ${
                         selectedMethod === 'apple' ? 'bg-black hover:bg-gray-900 border-b-4 border-gray-800' :
                         selectedMethod === 'bizum' ? 'bg-[#00c4b3] hover:bg-[#00aba0] border-b-4 border-[#009e93]' :
@@ -202,7 +237,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                         </>
                       ) : (
                         <>
-                          Recargar {formatCurrency(selectedAmount)} <ArrowRight className="w-5 h-5 ml-2 opacity-70" />
+                          Recargar {formatCurrency(effectiveAmount)} <ArrowRight className="w-5 h-5 ml-2 opacity-70" />
                         </>
                       )}
                     </Button>
