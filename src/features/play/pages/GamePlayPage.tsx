@@ -34,7 +34,7 @@ import { MulticolumnTicketFlow } from '../multicolumn/components/MulticolumnTick
 import type { MulticolumnDraftIntent } from '../multicolumn/contracts/multicolumn-play.contract';
 import { inferMulticolumnPlayMode } from '../multicolumn/application/infer-multicolumn-play-mode';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
-import { getDrawsForCurrentWeek, groupDrawsByWeek } from '../lib/draw-schedule';
+import { getDrawsForCurrentWeek, groupDrawsByWeek, getUpcomingDraws, type ScheduledDraw } from '../lib/draw-schedule';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
 import { buildGameSelection } from '@/features/play/application/build-game-selection';
@@ -103,7 +103,7 @@ export function GamePlayPage() {
   const [timeMode, setTimeMode] = useState<ScheduleMode>('next_draw');
   const [selectedWeeksCount, setSelectedWeeksCount] = useState(DEFAULT_CUSTOM_WEEKS);
   const [selectedDrawDates, setSelectedDrawDates] = useState<string[]>([]);
-  const [isTimeSelectorExpanded, setIsTimeSelectorExpanded] = useState(true);
+  const [isTimeSelectorExpanded, setIsTimeSelectorExpanded] = useState(false);
 
   // Features Laguinda Style
   const [isSubscription, setIsSubscription] = useState(false);
@@ -343,22 +343,58 @@ export function GamePlayPage() {
     totalPrice,
     reducedSystemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
   });
-  const groupedSelectedDraws = groupDrawsByWeek(
-    effectiveSelectedDrawDates.map((drawDate) => ({
-      gameId: game.type,
-      drawDate,
-      label: new Date(drawDate).toLocaleDateString('es-ES', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'short',
-      }),
-      weekLabel: new Date(drawDate).toLocaleDateString('es-ES', {
-        day: 'numeric',
-        month: 'short',
-      }),
-      isClosed: false,
-    }))
-  );
+  const allAvailableDraws = useMemo(() => {
+    if (isNationalLottery) {
+      return availableNationalDates.map((date) => ({
+        gameId: game.type,
+        drawDate: date,
+        label: new Date(date).toLocaleDateString('es-ES', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+        }),
+        weekLabel: 'Sorteos disponibles',
+        isClosed: false,
+      }));
+    }
+    return getUpcomingDraws(game.type, new Date(), 4);
+  }, [game.type, isNationalLottery, availableNationalDates]);
+
+  const groupedAllDraws = useMemo(() => groupDrawsByWeek(allAvailableDraws), [allAvailableDraws]);
+
+  const timeSelectionSummary = useMemo(() => {
+    if (effectiveSelectedDrawDates.length === 0) return 'Sin selección';
+    
+    const dates = effectiveSelectedDrawDates.map(d => {
+      const date = new Date(d);
+      const weekday = date.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
+      return `${weekday} ${date.getDate()}`;
+    });
+
+    if (dates.length <= 3) {
+      return dates.join(', ');
+    }
+    
+    return `${dates.slice(0, 3).join(', ')} +${dates.length - 3}`;
+  }, [effectiveSelectedDrawDates]);
+
+  // Auxiliares para botones de acción rápida
+  const currentWeekDraws = useMemo(() => getDrawsForCurrentWeek(game.type, new Date()), [game.type]);
+  const currentWeekDates = useMemo(() => currentWeekDraws.map(d => d.drawDate), [currentWeekDraws]);
+  
+  const nextWeekDraws = useMemo(() => {
+    const allUpcoming = getUpcomingDraws(game.type, new Date(), 2);
+    const currentWeekEnd = new Date();
+    currentWeekEnd.setDate(currentWeekEnd.getDate() + (7 - currentWeekEnd.getDay()) % 7);
+    currentWeekEnd.setHours(23, 59, 59, 999);
+    return allUpcoming.filter(d => new Date(d.drawDate) > currentWeekEnd);
+  }, [game.type]);
+  const nextWeekDates = useMemo(() => nextWeekDraws.map(d => d.drawDate), [nextWeekDraws]);
+
+  const twoWeeksDates = useMemo(() => [...currentWeekDates, ...nextWeekDates], [currentWeekDates, nextWeekDates]);
+
+  const areDatesEqual = (a: string[], b: string[]) => 
+    a.length === b.length && a.every(val => b.includes(val));
 
   useEffect(() => {
     setTimeMode('next_draw');
@@ -638,44 +674,6 @@ export function GamePlayPage() {
     }
   };
 
-  // Lógica computada para el selector temporal simplificado
-  const currentWeekDraws = useMemo(() => getDrawsForCurrentWeek(game.type, new Date()), [game.type]);
-  const currentWeekDates = useMemo(() => currentWeekDraws.map(d => d.drawDate), [currentWeekDraws]);
-  const isFullWeekSelected = useMemo(() => 
-    effectiveSelectedDrawDates.length === currentWeekDates.length && 
-    effectiveSelectedDrawDates.every(d => currentWeekDates.includes(d)),
-    [effectiveSelectedDrawDates, currentWeekDates]
-  );
-  
-  const showSmartBanner = timeMode === 'specific_days' && 
-                          !isFullWeekSelected && 
-                          effectiveSelectedDrawDates.length >= 2 &&
-                          effectiveSelectedDrawDates.length < currentWeekDates.length;
-
-  const timeSelectionSummary = useMemo(() => {
-    if (isNationalLottery) {
-      return `${drawsCount} ${drawsCount === 1 ? 'sorteo' : 'sorteos'}`;
-    }
-
-    if (timeMode === 'next_draw') {
-      return 'Próximo sorteo';
-    }
-
-    if (timeMode === 'full_week') {
-      return `Toda la semana · ${drawsCount} ${drawsCount === 1 ? 'sorteo' : 'sorteos'}`;
-    }
-
-    const selectedDays = effectiveSelectedDrawDates
-      .slice(0, 3)
-      .map((drawDate) => new Date(drawDate).toLocaleDateString('es-ES', { weekday: 'short' }))
-      .map((label) => label.replace('.', ''));
-
-    if (effectiveSelectedDrawDates.length > 3) {
-      return `Días concretos · ${selectedDays.join(', ')} +${effectiveSelectedDrawDates.length - 3}`;
-    }
-
-    return `Días concretos · ${selectedDays.join(', ')}`;
-  }, [drawsCount, effectiveSelectedDrawDates, isNationalLottery, timeMode]);
 
   const handleAddSelectedNationalToDemoCart = () => {
     if (!selectedNationalNumber) {
@@ -839,9 +837,16 @@ export function GamePlayPage() {
               <div className="flex items-center justify-between mb-2.5 px-0.5">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-3 h-3 text-manises-blue/40" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Sorteo y Planificación</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Cuándo jugar</span>
                 </div>
-                <span className="text-[9px] font-bold text-manises-blue/60 uppercase">{drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}</span>
+                {isTimeSelectorExpanded && (
+                  <button 
+                    onClick={() => setIsTimeSelectorExpanded(false)}
+                    className="text-[9px] font-bold text-manises-blue/60 uppercase hover:text-manises-blue"
+                  >
+                    Cerrar
+                  </button>
+                )}
               </div>
 
               {isNationalLottery ? (
@@ -854,160 +859,138 @@ export function GamePlayPage() {
                 <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-slate-50/70 px-3 py-2">
                   <div className="min-w-0">
                     <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
-                      {timeMode === 'next_draw' ? 'Sorteo' : 'Planificación'}
+                      {drawsCount === 1 ? '1 sorteo seleccionado' : `${drawsCount} sorteos seleccionados`}
                     </p>
-                    <p className="mt-0.5 truncate text-[12px] font-black text-manises-blue">
+                    <p className="mt-0.5 truncate text-[11px] font-black text-manises-blue">
                       {timeSelectionSummary}
                     </p>
                   </div>
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 rounded-xl px-3 text-[10px] font-black uppercase tracking-wider text-manises-blue hover:bg-manises-blue/5 shrink-0"
                     onClick={() => setIsTimeSelectorExpanded(true)}
-                    className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-800"
                   >
                     Cambiar
-                  </button>
+                  </Button>
                 </div>
               ) : (
-                <>
-                  {/* SELECTOR BINARIO PRINCIPAL */}
-                  <div className="relative flex rounded-xl border border-slate-200/60 bg-slate-100/40 p-1">
-                    {SCHEDULE_OPTIONS.filter((option) => option.id !== 'specific_days').map((option) => {
-                      const active = timeMode === option.id;
+                <div className="space-y-4">
+                  {/* Acciones rápidas */}
+                  <div className="flex flex-wrap gap-1.5 px-0.5">
+                    {[
+                      { id: 'next_draw', label: 'Próximo' },
+                      { id: 'full_week', label: 'Esta semana' },
+                      { id: 'next_week', label: 'Próxima semana' },
+                      { id: 'two_weeks', label: '2 semanas' },
+                    ].map((opt) => {
+                      let isActive = false;
+                      if (opt.id === 'next_draw') isActive = timeMode === 'next_draw';
+                      else if (opt.id === 'full_week') isActive = timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates);
+                      else if (opt.id === 'next_week') isActive = areDatesEqual(effectiveSelectedDrawDates, nextWeekDates);
+                      else if (opt.id === 'two_weeks') isActive = timeMode === 'two_weeks' || areDatesEqual(effectiveSelectedDrawDates, twoWeeksDates);
+
                       return (
                         <button
-                          key={option.id}
+                          key={opt.id}
                           onClick={() => {
-                            setTimeMode(option.id);
-                            setIsTimeSelectorExpanded(false);
+                            if (opt.id === 'next_week') {
+                              setTimeMode('specific_days');
+                              setSelectedDrawDates(nextWeekDates);
+                            } else if (opt.id === 'two_weeks') {
+                              setTimeMode('specific_days');
+                              setSelectedDrawDates(twoWeeksDates);
+                            } else {
+                              setTimeMode(opt.id as ScheduleMode);
+                              setSelectedDrawDates([]);
+                            }
                           }}
                           className={cn(
-                            'relative flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all z-10',
-                            active ? 'text-manises-blue' : 'text-slate-500'
+                            "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border",
+                            isActive
+                              ? "bg-manises-blue text-white border-manises-blue shadow-sm" 
+                              : "bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300"
                           )}
                         >
-                          {active && (
-                            <motion.div
-                              layoutId="activeTimeMode"
-                              className="absolute inset-0 rounded-lg bg-white shadow-sm border border-slate-200/50"
-                              transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
-                            />
-                          )}
-                          <span className="relative z-20">{option.label}</span>
+                          {opt.label}
                         </button>
                       );
                     })}
-                  </div>
-
-                  {/* ACCIÓN SECUNDARIA: PERSONALIZAR */}
-                  <div className="mt-3 flex justify-center">
                     <button
                       onClick={() => {
-                        if (timeMode === 'specific_days') {
-                          setTimeMode('next_draw');
-                          setIsTimeSelectorExpanded(false);
-                          return;
-                        }
-
                         setTimeMode('specific_days');
-                        setIsTimeSelectorExpanded(true);
+                        setSelectedDrawDates([]);
                       }}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] transition-all px-3.5 py-1.5 rounded-full border",
-                        timeMode === 'specific_days'
-                          ? "text-manises-blue border-manises-blue/25 bg-manises-blue/5"
-                          : "text-slate-500 border-slate-200 bg-slate-50/80 hover:text-slate-700 hover:border-slate-300"
-                      )}
+                      className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200 hover:border-slate-300 ml-auto"
                     >
-                      {timeMode !== 'specific_days' && <Calendar className="w-3 h-3" />}
-                      {timeMode === 'specific_days' ? '← Volver a selección rápida' : 'Elegir días concretos'}
+                      Limpiar
                     </button>
                   </div>
 
-                  {/* GRID DE DÍAS REFINADO (TÁCTIL Y CLARO) */}
-                  <AnimatePresence>
-                    {timeMode === 'specific_days' && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="mt-3 grid grid-cols-7 gap-1.5 px-1 pt-1 pb-2">
-                          {currentWeekDraws.map((draw) => {
-                            const isSelected = selectedDrawDates.includes(draw.drawDate);
-                            const dayNumber = new Date(draw.drawDate).getDate();
+                  {/* Selector multi-semana */}
+                  <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                    {(Object.entries(groupedAllDraws) as [string, ScheduledDraw[]][]).map(([weekLabel, draws], index) => {
+                      const displayLabel = index === 0 ? 'Esta semana' : index === 1 ? 'Próxima semana' : weekLabel;
+                      return (
+                        <div key={weekLabel} className="space-y-2">
+                          <p className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 pl-1">
+                            {displayLabel}
+                          </p>
+                        <div className="flex flex-wrap gap-2">
+                          {draws.map((draw) => {
+                            const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
                             return (
                               <button
                                 key={draw.drawDate}
                                 onClick={() => {
-                                  setSelectedDrawDates(prev => {
-                                    if (prev.includes(draw.drawDate)) {
-                                      if (prev.length === 1) return prev;
-                                      return prev.filter(d => d !== draw.drawDate);
-                                    }
-                                    return [...prev, draw.drawDate].sort();
-                                  });
+                                  setTimeMode('specific_days');
+                                  setSelectedDrawDates(prev => 
+                                    prev.includes(draw.drawDate)
+                                      ? prev.filter(d => d !== draw.drawDate)
+                                      : [...prev, draw.drawDate].sort()
+                                  );
                                 }}
-                                className="flex flex-col items-center gap-2"
+                                className={cn(
+                                  "relative flex flex-col items-center justify-center min-w-[72px] py-2 px-2 rounded-xl border transition-all",
+                                  isSelected
+                                    ? "bg-manises-blue/5 border-manises-blue shadow-[0_4px_12px_rgba(10,71,146,0.08)]"
+                                    : "bg-white border-slate-100 hover:border-slate-200"
+                                )}
                               >
-                                <div
-                                  className={cn(
-                                    "relative w-11 h-11 rounded-full flex flex-col items-center justify-center transition-all border",
-                                    isSelected
-                                      ? "text-white scale-105"
-                                      : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
-                                  )}
-                                  style={isSelected ? {
-                                    background: `linear-gradient(145deg, ${game.color}dd 0%, ${game.color} 100%)`,
-                                    borderColor: game.color,
-                                    boxShadow: `0 3px 10px -1px ${game.color}44`,
-                                  } : undefined}
-                                >
-                                  <span className={cn("text-[9px] font-black uppercase leading-none mb-0.5", isSelected ? "text-white/70" : "text-slate-300")}>
-                                    {draw.label.substring(0, 1)}
-                                  </span>
-                                  <span className="text-[13px] font-black leading-none">
-                                    {dayNumber}
-                                  </span>
-                                </div>
-                                <span
-                                  className={cn("text-[8px] font-bold uppercase tracking-tighter", isSelected ? "" : "text-slate-400")}
-                                  style={isSelected ? { color: game.color } : undefined}
-                                >
-                                  {draw.label.substring(0, 3)}
+                                {isSelected && (
+                                  <motion.div 
+                                    layoutId="selected-draw-indicator"
+                                    className="absolute inset-0 rounded-xl border-2 border-manises-blue z-0" 
+                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                  />
+                                )}
+                                <span className={cn(
+                                  "relative z-10 text-[9px] font-black uppercase tracking-tight",
+                                  isSelected ? "text-manises-blue" : "text-slate-400"
+                                )}>
+                                  {new Date(draw.drawDate).toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '')} · {formatDrawTime(draw.drawDate)}
+                                </span>
+                                <span className={cn(
+                                  "relative z-10 text-[11px] font-black",
+                                  isSelected ? "text-manises-blue" : "text-slate-600"
+                                )}>
+                                  {new Date(draw.drawDate).getDate()} {new Date(draw.drawDate).toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}
                                 </span>
                               </button>
                             );
                           })}
                         </div>
-                        <div className="flex justify-end px-1 pb-1">
-                          <button
-                            type="button"
-                            onClick={() => setIsTimeSelectorExpanded(false)}
-                            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-800"
-                          >
-                            Listo
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </>
+                      </div>
+                    );
+                  })}
+                  </div>
+                  
+                  <p className="text-[10px] font-medium text-slate-400 px-1 italic">
+                    * Puedes combinar días sueltos de distintas semanas
+                  </p>
+                </div>
               )}
 
-              {/* RESUMEN ULTRA-LIGERO */}
-              <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">
-                  Jugando: <span className="text-manises-blue">{drawsCount} sorteos</span>
-                </p>
-                <div className="flex gap-1">
-                  {effectiveSelectedDrawDates.slice(0, 3).map(date => (
-                    <span key={date} className="w-1.5 h-1.5 rounded-full bg-manises-blue/20" />
-                  ))}
-                  {effectiveSelectedDrawDates.length > 3 && <span className="text-[8px] font-black text-manises-blue/40">+</span>}
-                </div>
-              </div>
             </div>
           </motion.div>
         )}
