@@ -53,7 +53,7 @@ export function NationalDecimoCard({ ticket, displayNumber }: NationalDecimoCard
 
       <div className="border-t border-dashed border-manises-blue/10 bg-manises-blue/[0.02] p-2 text-center">
         <p className="text-[8px] font-bold uppercase tracking-widest text-manises-blue/30">
-          Custodiado en Administración Nº 6 · Manises
+          Custodia demo · Administración Nº 6 · Manises
         </p>
       </div>
     </div>

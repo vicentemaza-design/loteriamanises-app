@@ -10,15 +10,24 @@ interface TicketReceiptModalProps {
   onClose: () => void;
   ticketCode: string;
   orderDatesSummary: string;
+  selectionSummary?: string;
 }
 
 /**
  * Modal tipo resguardo térmico (Thermal Receipt Mock).
  */
-export function TicketReceiptModal({ ticket, onClose, ticketCode, orderDatesSummary }: TicketReceiptModalProps) {
+export function TicketReceiptModal({ 
+  ticket, 
+  onClose, 
+  ticketCode, 
+  orderDatesSummary,
+  selectionSummary 
+}: TicketReceiptModalProps) {
   if (!ticket) return null;
   const game = LOTTERY_GAMES.find((g) => g.id === ticket.gameId);
-  const totalPrice = (ticket.metadata?.orderTotalPrice as number) || ticket.price;
+  const totalPrice = typeof ticket.metadata?.orderTotalPrice === 'number'
+    ? ticket.metadata.orderTotalPrice
+    : ticket.price;
 
   return (
     <AnimatePresence>
@@ -68,8 +77,14 @@ export function TicketReceiptModal({ ticket, onClose, ticketCode, orderDatesSumm
               <div className="py-2">
                 <p className="mb-2 text-center text-[10px] font-bold text-slate-400">COMBINACIÓN</p>
                 <div className="text-center text-sm font-bold tracking-wider text-manises-blue">
-                  {ticket.numbers.join('  ')}
-                  {ticket.stars && ticket.stars.length > 0 && `  +  ${ticket.stars.join('  ')}`}
+                  {selectionSummary ? (
+                    selectionSummary
+                  ) : (
+                    <>
+                      {ticket.numbers.join('  ')}
+                      {ticket.stars && ticket.stars.length > 0 && `  +  ${ticket.stars.join('  ')}`}
+                    </>
+                  )}
                 </div>
               </div>
 

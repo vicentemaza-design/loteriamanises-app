@@ -217,7 +217,7 @@ function ScrutinyFallbackModal({
               No hay un resultado compatible para esta jugada o el detalle de escrutinio todavía no está integrado en el frontend actual.
             </p>
             <p className="mt-3 text-[11px] font-semibold text-slate-500">
-              Resumen disponible: código, fecha, importe y estado de la jugada.
+              Código, fecha, importe y estado de la jugada.
             </p>
           </div>
 
@@ -696,6 +696,7 @@ export function TicketsPage() {
         onClose={() => setReceiptTicket(null)}
         ticketCode={receiptTicket ? getTicketCode(receiptTicket.id) : ''}
         orderDatesSummary={receiptTicket ? getOrderDatesSummary(receiptTicket) : ''}
+        selectionSummary={receiptTicket ? getCompactSelectionSummary(receiptTicket) : ''}
       />
     </>
   );
