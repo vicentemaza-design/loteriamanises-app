@@ -7,6 +7,8 @@ interface NationalCartSummaryProps {
   breakdown: NationalOrderBreakdown;
   onRemove: (number: string, drawId: NationalCartLine['drawId']) => void;
   onClear: () => void;
+  onPersistToSession?: () => void;
+  isPersisting?: boolean;
 }
 
 export function NationalCartSummary({
@@ -14,6 +16,8 @@ export function NationalCartSummary({
   breakdown,
   onRemove,
   onClear,
+  onPersistToSession,
+  isPersisting,
 }: NationalCartSummaryProps) {
   if (lines.length === 0) {
     return null;
@@ -70,6 +74,16 @@ export function NationalCartSummary({
           <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Total demo</p>
           <p className="mt-1 text-base font-black text-manises-blue">{formatCurrency(breakdown.total)}</p>
         </div>
+      </div>
+
+      <div className="mt-5">
+        <Button
+          className="w-full rounded-2xl bg-manises-blue text-white font-bold py-3 shadow-lg active:scale-[0.98] transition-all"
+          onClick={onPersistToSession}
+          disabled={isPersisting}
+        >
+          {isPersisting ? 'Añadiendo...' : 'Añadir selección simulada a la sesión'}
+        </Button>
       </div>
     </section>
   );

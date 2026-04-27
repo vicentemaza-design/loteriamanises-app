@@ -49,6 +49,8 @@ import {
 import type { NationalDrawId } from '@/features/play/national/contracts/national-play.contract';
 import { useNationalShowcase } from '@/features/play/national/hooks/useNationalShowcase';
 import { useNationalCart } from '@/features/play/national/hooks/useNationalCart';
+import { buildNationalCartDraftIntent } from '@/features/play/national/application/build-national-cart-intent';
+import type { PlayDraft } from '@/features/session/types/session.types';
 
 
 interface GamePlayLocationState { playDraftId?: string; }
@@ -599,6 +601,62 @@ export function GamePlayPage() {
     });
 
     toast.success('Añadido a la cesta demo nacional.');
+  };
+  
+  const handlePersistNationalCart = () => {
+    if (nationalCartLines.length === 0) return;
+
+    const intent = buildNationalCartDraftIntent(game, nationalCartLines);
+    const allDrafts: PlayDraft[] = [];
+
+    intent.lines.forEach((line) => {
+      const draftSelection = buildGameSelection({
+        game,
+        isNationalLottery: true,
+        isQuiniela: false,
+        mode: 'simple',
+        selectedNumbers: [],
+        selectedStars: [],
+        quinielaMatches: [],
+        selectedReductionSystemId: '',
+        selectedNationalNumber: line.number,
+        selectedNationalDraw: { label: line.drawLabel },
+      });
+
+      if (!draftSelection) return;
+
+      const lineDrafts = buildPlayDrafts({
+        game,
+        selection: draftSelection,
+        drawDates: line.drawDates,
+        totalPrice: line.quantity * (NATIONAL_DRAW_CONFIG.find(d => d.id === line.drawId)?.decimoPrice ?? 3) * line.drawDates.length,
+        unitPrice: NATIONAL_DRAW_CONFIG.find(d => d.id === line.drawId)?.decimoPrice ?? 3,
+        quantity: line.quantity,
+        mode: 'simple',
+        betsCount: 1,
+        isSubscription: false,
+        supportsTimeSelection: true,
+        timeMode: 'specific_days',
+        weeksCount: 1,
+        selectedNationalNumber: line.number,
+        selectedNationalQuantity: line.quantity,
+        selectedNationalDraw: { label: line.drawLabel },
+      });
+
+      allDrafts.push(...lineDrafts);
+    });
+
+    if (allDrafts.length === 0) return;
+
+    const result = addDrafts(allDrafts);
+    
+    if (result.addedCount > 0) {
+      toast.success(result.addedCount === 1 ? 'Borrador añadido a tu sesión de prueba.' : `${result.addedCount} borradores añadidos a tu sesión de prueba.`);
+    }
+    
+    if (result.duplicateCount > 0) {
+      toast.error(result.duplicateCount === 1 ? '1 décimo ya estaba en tu sesión (omitido).' : `${result.duplicateCount} décimos ya estaban en tu sesión (omitidos).`);
+    }
   };
 
   return (
@@ -1154,6 +1212,7 @@ export function GamePlayPage() {
                   removeLine: removeNationalCartLine,
                   clearCart: clearNationalCart,
                   addSelectedToCart: handleAddSelectedNationalToDemoCart,
+                  onPersistToSession: handlePersistNationalCart,
                 }}
                 onSelectNationalNumber={(ticket) => {
                   setSelectedNationalNumber(ticket.number);

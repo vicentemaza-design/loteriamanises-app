@@ -44,6 +44,7 @@ interface NationalAdvancedFlowProps {
     removeLine: (number: string, drawId: any) => void;
     clearCart: () => void;
     addSelectedToCart: () => void;
+    onPersistToSession?: () => void;
   };
 
   onSelectNationalNumber: (ticket: NationalShowcaseItem) => void;
@@ -165,6 +166,7 @@ export function NationalAdvancedFlow({
         breakdown={nationalCart.breakdown}
         onRemove={nationalCart.removeLine}
         onClear={nationalCart.clearCart}
+        onPersistToSession={nationalCart.onPersistToSession}
       />
     </div>
   );
