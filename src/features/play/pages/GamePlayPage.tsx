@@ -34,7 +34,7 @@ import { QuinielaProfessionalSelector } from '../components/QuinielaProfessional
 import { ReductionSystemSelector } from '../components/ReductionSystemSelector';
 import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
 import { NationalTicketVisual, type NationalDrawType } from '../components/NationalTicketVisual';
-import { Trophy as TrophyIcon } from 'lucide-react';
+import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
 import { getDrawsForCurrentWeek, groupDrawsByWeek } from '../lib/draw-schedule';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
@@ -48,6 +48,13 @@ import {
   inferScheduleModeFromDrawDates,
   resolveDrawDates,
 } from '@/features/play/application/resolve-draw-dates';
+import {
+  NATIONAL_DRAW_CONFIG,
+} from '@/features/play/national/mocks/national-showcase.mock';
+import type { NationalDrawId } from '@/features/play/national/contracts/national-play.contract';
+import { useNationalShowcase } from '@/features/play/national/hooks/useNationalShowcase';
+import { useNationalCart } from '@/features/play/national/hooks/useNationalCart';
+
 
 interface GamePlayLocationState { playDraftId?: string; }
 
@@ -57,32 +64,6 @@ const SCHEDULE_OPTIONS: Array<{ id: ScheduleMode; label: string }> = [
   { id: 'next_draw', label: 'Próximo sorteo' },
   { id: 'full_week', label: 'Toda la semana' },
   { id: 'specific_days', label: 'Elegir días' },
-];
-
-type NationalDrawId = 'jueves' | 'sabado';
-
-const NATIONAL_DRAW_CONFIG: Array<{
-  id: NationalDrawId;
-  label: string;
-  weekday: number;
-  hour: number;
-  decimoPrice: number;
-  firstPrize: number;
-  secondPrize: number;
-}> = [
-    { id: 'jueves', label: 'Jueves', weekday: 4, hour: 21, decimoPrice: 3, firstPrize: 30_000, secondPrize: 6_000 },
-    { id: 'sabado', label: 'Sábado', weekday: 6, hour: 13, decimoPrice: 6, firstPrize: 60_000, secondPrize: 12_000 },
-  ];
-
-const NATIONAL_NUMBER_POOL = [
-  { number: '69844', available: 8 },
-  { number: '15432', available: 12 },
-  { number: '90877', available: 5 },
-  { number: '44501', available: 10 },
-  { number: '77123', available: 3 },
-  { number: '23019', available: 7 },
-  { number: '58264', available: 9 },
-  { number: '11038', available: 6 },
 ];
 
 interface QuinielaMatch {
@@ -146,6 +127,20 @@ export function GamePlayPage() {
   const availableNationalDates = useMemo(() => {
     return getAvailableNationalDrawDates(gameId, isNationalLottery, isExplicitNationalProduct);
   }, [isExplicitNationalProduct, isNationalLottery, gameId]);
+  const {
+    setDrawId: setNationalShowcaseDrawId,
+    searchState: nationalSearchState,
+    setSearchState: setNationalSearchState,
+    items: nationalShowcase,
+    totalItems: nationalShowcaseCount,
+  } = useNationalShowcase(gameId === 'loteria-nacional-sabado' ? 'sabado' : 'jueves');
+  const {
+    lines: nationalCartLines,
+    addOrUpdateLine: addOrUpdateNationalCartLine,
+    removeLine: removeNationalCartLine,
+    clearCart: clearNationalCart,
+    breakdown: nationalCartBreakdown,
+  } = useNationalCart();
 
   // Resetear estados cuando cambia el juego para evitar arrastrar selecciones o precios incorrectos
   useEffect(() => {
@@ -335,9 +330,9 @@ export function GamePlayPage() {
   const availableBalance = profile?.balance ?? 0;
   const remainingBalance = Math.max(availableBalance - totalPrice, 0);
 
-  const selectedNationalTicket = NATIONAL_NUMBER_POOL.find((ticket) => ticket.number === selectedNationalNumber);
+  const selectedNationalTicket = nationalShowcase.find((ticket) => ticket.number === selectedNationalNumber);
   const maxNationalQuantity = selectedNationalTicket?.available ?? 1;
-  const nationalPotentialFirstPrize = selectedNationalDraw.firstPrize * selectedNationalQuantity;
+
   const helpContent = getGameHelpContent({
     game,
     mode,
@@ -368,6 +363,14 @@ export function GamePlayPage() {
   }, [game.id, maxWeeksSelectable]);
 
   useEffect(() => {
+    if (!isNationalLottery) {
+      return;
+    }
+
+    setNationalShowcaseDrawId(isExplicitNationalProduct ? selectedNationalDrawId : 'especial');
+  }, [isExplicitNationalProduct, isNationalLottery, selectedNationalDrawId, setNationalShowcaseDrawId]);
+
+  useEffect(() => {
     setIsTimeSelectorExpanded(true);
   }, [game.id, editingDraftId]);
 
@@ -393,7 +396,11 @@ export function GamePlayPage() {
 
   const handleRandom = () => {
     if (isNationalLottery) {
-      const randomTicket = NATIONAL_NUMBER_POOL[Math.floor(Math.random() * NATIONAL_NUMBER_POOL.length)];
+      const randomTicket = nationalShowcase[Math.floor(Math.random() * nationalShowcase.length)];
+      if (!randomTicket) {
+        toast.error('No hay décimos disponibles en el escaparate demo.');
+        return;
+      }
       setSelectedNationalNumber(randomTicket.number);
       setSelectedNationalQuantity(Math.min(2, randomTicket.available));
       toast.success(`Décimo ${randomTicket.number} seleccionado`);
@@ -579,6 +586,25 @@ export function GamePlayPage() {
 
     return `Días concretos · ${selectedDays.join(', ')}`;
   }, [drawsCount, effectiveSelectedDrawDates, isNationalLottery, timeMode]);
+
+  const handleAddSelectedNationalToDemoCart = () => {
+    if (!selectedNationalNumber) {
+      toast.error('Selecciona antes un décimo.');
+      return;
+    }
+
+    addOrUpdateNationalCartLine({
+      number: selectedNationalNumber,
+      drawId: isExplicitNationalProduct ? selectedNationalDrawId : 'especial',
+      drawLabel: selectedNationalDraw.label,
+      drawDates: effectiveSelectedDrawDates,
+      quantity: selectedNationalQuantity,
+      unitPrice: selectedNationalDraw.decimoPrice,
+      totalPrice: selectedNationalDraw.decimoPrice * selectedNationalQuantity * drawsCount,
+    });
+
+    toast.success('Añadido a la cesta demo nacional.');
+  };
 
   return (
     <div
@@ -1131,168 +1157,34 @@ export function GamePlayPage() {
                 )}
               </>
             ) : (
-              <div className="space-y-8">
-                {/* Cabecera Informativa con Visual del Décimo */}
-                <section className="flex flex-col gap-6">
-                  <div>
-                    <h2 className="font-black text-base text-manises-blue">Configuración de tu jugada</h2>
-                    <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-manises-blue/70">
-                      Visualiza y personaliza tu décimo
-                    </p>
-                  </div>
-
-                  {/* TICKET VISUAL - EL CORAZÓN DE LA EXPERIENCIA NACIONAL */}
-                  <motion.div
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="stagger-item"
-                  >
-                    <NationalTicketVisual
-                      number={selectedNationalNumber}
-                      drawLabel={selectedNationalDraw.label}
-                      drawDate={selectedNationalDraw.nextDraw}
-                      price={selectedNationalDraw.decimoPrice}
-                      gameId={game.id}
-                      drawType={
-                        game.id === 'loteria-navidad' ? 'navidad' :
-                          game.id === 'loteria-nino' ? 'nino' :
-                            'ordinary'
-                      }
-                    />
-                  </motion.div>
-                </section>
-
-
-                {/* Selector de Números */}
-                <section className="space-y-4">
-                  <div className="flex items-center justify-between px-1">
-                    <h2 className="font-black text-sm text-manises-blue">Números en administración</h2>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost" size="sm"
-                        className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-slate-400"
-                        onClick={handleClear}
-                      >
-                        Limpiar
-                      </Button>
-                      <Button
-                        variant="outline" size="sm"
-                        className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest border-manises-gold/40 text-manises-gold bg-manises-gold/5"
-                        onClick={handleRandom}
-                      >
-                        Aleatorio
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    {NATIONAL_NUMBER_POOL.map((ticket) => {
-                      const active = ticket.number === selectedNationalNumber;
-                      const isLowStock = ticket.available <= 4;
-
-                      return (
-                        <button
-                          key={ticket.number}
-                          onClick={() => {
-                            setSelectedNationalNumber(ticket.number);
-                            setSelectedNationalQuantity((qty) => Math.min(qty, ticket.available));
-                          }}
-                          className={cn(
-                            "group relative overflow-hidden rounded-2xl border-2 p-4 text-left transition-all",
-                            active
-                              ? "border-manises-blue bg-manises-blue text-white shadow-manises"
-                              : "border-slate-100 bg-white hover:border-manises-blue/20"
-                          )}
-                        >
-                          <p className={cn(
-                            "text-2xl font-black tracking-widest",
-                            active ? "text-white" : "text-manises-blue"
-                          )}>
-                            {ticket.number}
-                          </p>
-                          <div className="mt-2 flex items-center justify-between">
-                            <span className={cn(
-                              "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full border",
-                              active
-                                ? "bg-white/15 border-white/20 text-white"
-                                : isLowStock ? "bg-red-50 border-red-100 text-red-600" : "bg-slate-50 border-slate-100 text-slate-500"
-                            )}>
-                              {isLowStock ? 'Últimos' : 'Disponibles'}
-                            </span>
-                            <span className={cn(
-                              "text-[10px] font-bold",
-                              active ? "text-white/60" : "text-slate-400"
-                            )}>
-                              Stock: {ticket.available}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </section>
-
-                {/* Cantidad y Resumen */}
-                {selectedNationalNumber && (
-                  <motion.section
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="rounded-[2rem] border border-manises-blue/10 bg-white p-6 shadow-xl"
-                  >
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tu compra</p>
-                        <h3 className="text-xl font-black text-manises-blue mt-1">
-                          {selectedNationalQuantity} {selectedNationalQuantity === 1 ? 'décimo' : 'décimos'}
-                        </h3>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Subtotal</p>
-                        <p className="text-2xl font-black text-manises-blue mt-1">
-                          {formatCurrency(selectedNationalDraw.decimoPrice * selectedNationalQuantity)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between p-2 bg-slate-50 rounded-2xl">
-                      <div className="ml-2">
-                        <span className="text-xs font-black uppercase tracking-widest text-slate-500">Ajustar cantidad</span>
-                        <p className="mt-1 text-[11px] font-semibold text-slate-500">
-                          Máximo {maxNationalQuantity} {maxNationalQuantity === 1 ? 'décimo disponible' : 'décimos disponibles'} para el número {selectedNationalNumber}.
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Button
-                          variant="ghost" size="icon"
-                          className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
-                          onClick={() => setSelectedNationalQuantity(q => Math.max(1, q - 1))}
-                          disabled={selectedNationalQuantity <= 1}
-                          aria-label="Restar un décimo"
-                        >
-                          -
-                        </Button>
-                        <span className="w-6 text-center font-black text-lg text-manises-blue">{selectedNationalQuantity}</span>
-                        <Button
-                          variant="ghost" size="icon"
-                          className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
-                          onClick={() => setSelectedNationalQuantity(q => Math.min(maxNationalQuantity, q + 1))}
-                          disabled={selectedNationalQuantity >= maxNationalQuantity}
-                          aria-label="Sumar un décimo"
-                        >
-                          +
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3">
-                      <TrophyIcon className="w-5 h-5 text-emerald-600 shrink-0" />
-                      <p className="text-[11px] font-semibold text-emerald-800 leading-snug">
-                        Si este número resulta premiado con el <span className="font-black">Gordo</span>, cobrarías un total de <span className="font-black">{formatCurrency(nationalPotentialFirstPrize)}</span>.
-                      </p>
-                    </div>
-                  </motion.section>
-                )}
-              </div>
+              <NationalAdvancedFlow
+                game={game}
+                selectedNationalDraw={selectedNationalDraw}
+                selectedNationalNumber={selectedNationalNumber}
+                selectedNationalQuantity={selectedNationalQuantity}
+                maxNationalQuantity={maxNationalQuantity}
+                drawsCount={drawsCount}
+                nationalShowcase={{
+                  items: nationalShowcase,
+                  count: nationalShowcaseCount,
+                  searchState: nationalSearchState,
+                  setSearchState: setNationalSearchState,
+                }}
+                nationalCart={{
+                  lines: nationalCartLines,
+                  breakdown: nationalCartBreakdown,
+                  removeLine: removeNationalCartLine,
+                  clearCart: clearNationalCart,
+                  addSelectedToCart: handleAddSelectedNationalToDemoCart,
+                }}
+                onSelectNationalNumber={(ticket) => {
+                  setSelectedNationalNumber(ticket.number);
+                  setSelectedNationalQuantity((qty) => Math.min(qty, ticket.available));
+                }}
+                onChangeNationalQuantity={setSelectedNationalQuantity}
+                onRandomNationalNumber={handleRandom}
+                onClear={handleClear}
+              />
             )}
           </motion.div>
         </AnimatePresence>
