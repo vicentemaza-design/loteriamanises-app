@@ -88,7 +88,10 @@ export function AccountPage() {
     iban: 'ES12 3456 7890 1234 5678 9012',
     birthDate: '1990-01-01',
     address: 'Calle Mayor, 1',
+    postalCode: '46940',
     municipality: 'Manises',
+    province: 'Valencia',
+    country: 'España',
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -120,7 +123,7 @@ export function AccountPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background pb-12" ref={containerRef}>
-      <ProfileSubHeader title="Datos y Compliance" />
+      <ProfileSubHeader title="Datos personales" />
       
       <div className="p-5 flex flex-col gap-4">
         <section className="surface-neo-soft rounded-2xl border border-white/65 p-4 stagger-item">
@@ -171,11 +174,32 @@ export function AccountPage() {
               value={formData.address}
               onChange={(value) => setFormData({ ...formData, address: value })}
             />
+            <div className="grid grid-cols-2 gap-3">
+              <Field
+                label="Código Postal"
+                icon={MapPin}
+                value={formData.postalCode}
+                onChange={(value) => setFormData({ ...formData, postalCode: value })}
+                className="tabular-nums"
+              />
+              <Field
+                label="Municipio"
+                icon={Building2}
+                value={formData.municipality}
+                onChange={(value) => setFormData({ ...formData, municipality: value })}
+              />
+            </div>
             <Field
-              label="Municipio"
+              label="Provincia"
               icon={Building2}
-              value={formData.municipality}
-              onChange={(value) => setFormData({ ...formData, municipality: value })}
+              value={formData.province}
+              onChange={(value) => setFormData({ ...formData, province: value })}
+            />
+            <Field
+              label="País"
+              icon={Building2}
+              value={formData.country}
+              onChange={(value) => setFormData({ ...formData, country: value })}
             />
           </section>
 
