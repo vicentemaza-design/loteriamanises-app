@@ -44,9 +44,9 @@ export function MulticolumnTicketFlow({
 
   // Configuración de rangos (Euromillones, Primitiva, etc.)
   const totalNums = game.selectionRange?.numbers?.total ?? 49;
-  const maxNums = game.selectionRange?.numbers?.min ?? 6;
+  const maxNums = game.selectionRange?.numbers?.max ?? game.selectionRange?.numbers?.min ?? 6;
   const totalStars = game.selectionRange?.stars?.total ?? 0;
-  const maxStars = game.selectionRange?.stars?.min ?? 0;
+  const maxStars = game.selectionRange?.stars?.max ?? game.selectionRange?.stars?.min ?? 0;
 
   // Generamos el mapeo de completitud para el slider
   const columnStatus = useMemo(() => {
@@ -101,7 +101,10 @@ export function MulticolumnTicketFlow({
 
           {maxStars > 0 && (
             <StarsGrid
-              starValues={Array.from({ length: totalStars }, (_, i) => i + 1)}
+              starValues={Array.from(
+                { length: totalStars }, 
+                (_, i) => game.type === 'gordo' ? i : i + 1
+              )}
               selectedStars={activeColumn.stars}
               maxStarsLimit={maxStars}
               onToggle={(n) => {

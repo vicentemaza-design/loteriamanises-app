@@ -578,7 +578,7 @@ export function GamePlayPage() {
           quinielaMatches: [],
           selectedReductionSystemId: '',
           selectedNationalNumber: null,
-          selectedNationalDraw: {} as any,
+          selectedNationalDraw: { label: '' },
         });
 
         if (!selection) return;
@@ -593,7 +593,7 @@ export function GamePlayPage() {
           selectedStarsCount: col.stars.length,
           selectedReductionSystemId: '',
           selectedNationalQuantity: 0,
-          selectedNationalDraw: {} as any,
+          selectedNationalDraw: {},
           drawsCount: intent.drawDates.length,
         });
 
@@ -613,7 +613,7 @@ export function GamePlayPage() {
           weeksCount: drawDateResolution.weeksCount,
           selectedNationalNumber: null,
           selectedNationalQuantity: 0,
-          selectedNationalDraw: {} as any,
+          selectedNationalDraw: { label: '' },
         });
 
         allDrafts.push(...drafts);
