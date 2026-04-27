@@ -3,6 +3,7 @@ import { ReceiptText } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { formatDate, formatCurrency } from '@/shared/lib/utils';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
+import { GameReceiptVisual } from './GameReceiptVisual';
 import type { Ticket } from '@/shared/types/domain';
 
 interface TicketReceiptModalProps {
@@ -75,17 +76,7 @@ export function TicketReceiptModal({
               </div>
 
               <div className="py-2">
-                <p className="mb-2 text-center text-[10px] font-bold text-slate-400">COMBINACIÓN</p>
-                <div className="text-center text-sm font-bold tracking-wider text-manises-blue">
-                  {selectionSummary ? (
-                    selectionSummary
-                  ) : (
-                    <>
-                      {ticket.numbers.join('  ')}
-                      {ticket.stars && ticket.stars.length > 0 && `  +  ${ticket.stars.join('  ')}`}
-                    </>
-                  )}
-                </div>
+                <GameReceiptVisual ticket={ticket} selectionSummary={selectionSummary} />
               </div>
 
               <div className="space-y-1 border-t border-dashed border-slate-200 pt-3">
