@@ -1,11 +1,12 @@
 import type { ElementType } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BadgeCheck, CheckCircle2, ChevronRight, Landmark, ShieldAlert, ShieldCheck, Trophy, WalletCards } from 'lucide-react';
+import { BadgeCheck, ChevronRight, Landmark, ShieldAlert, ShieldCheck, Trophy, WalletCards, Shield } from 'lucide-react';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { premiumDemoData } from '@/features/profile/data/premium-demo';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';
 import { PremiumActionRow } from '../components/PremiumActionRow';
 import { PremiumMetricPill } from '../components/PremiumMetricPill';
+import { toast } from 'sonner';
 
 export function WithdrawalsPage() {
   const navigate = useNavigate();
@@ -16,17 +17,19 @@ export function WithdrawalsPage() {
       <ProfileSubHeader title="Cobrar Premios" subtitle="Retiradas de saldo" />
       <div className="flex flex-col gap-5 p-4">
         
-        {/* Subtle Header */}
+        {/* Subtle Header Premium */}
         <section className="px-1 flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Saldo premiado</p>
-            <p className="text-[1.2rem] font-black text-manises-blue tracking-tight">
-              128,00 €
-              <span className="ml-2 text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Disponible</span>
-            </p>
+            <p className="text-[10px] font-black text-manises-blue/40 uppercase tracking-[0.2em]">Saldo premiado</p>
+            <div className="flex items-baseline gap-2">
+              <p className="text-2xl font-black text-emerald-600 tracking-tight tabular-nums">
+                128,00 €
+              </p>
+              <span className="text-[9px] font-black text-emerald-600/40 uppercase tracking-widest animate-pulse">Disponible</span>
+            </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600/60" />
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100 shadow-sm">
+            <Trophy className="w-5 h-5 text-emerald-600/60" />
           </div>
         </section>
 
@@ -50,21 +53,21 @@ export function WithdrawalsPage() {
                   description={withdrawal.note}
                   tone={isReady ? 'emerald' : isPending ? 'gold' : 'blue'}
                 >
-                  <div className="flex flex-col bg-muted/30 rounded-xl overflow-hidden border border-border/50">
+                  <div className="flex flex-col bg-slate-50/50 rounded-2xl overflow-hidden border border-slate-100 mt-2">
                     <PremiumActionRow
                       icon={isReady ? WalletCards : ShieldAlert}
                       title="Método de cobro"
                       description={withdrawal.methodLabel}
                       tone={isReady ? 'emerald' : 'gold'}
                     />
-                    <div className="h-px bg-border/40 mx-3" />
+                    <div className="h-px bg-slate-100 mx-3" />
                     <PremiumActionRow
                       icon={isReady ? Landmark : BadgeCheck}
                       title={isReady ? 'Solicitar transferencia' : 'Estado de verificación'}
                       description={isReady ? 'Se procesará en menos de 24h' : 'Tu documentación está siendo validada'}
                       tone={isReady ? 'blue' : 'emerald'}
                       badge={isReady ? 'Acción' : 'Info'}
-                      onClick={() => undefined}
+                      onClick={() => toast.info(isReady ? 'Solicitud de cobro: Demo · Pendiente de integración' : 'Estado de revisión: Demo Mode')}
                     />
                   </div>
                 </PremiumSectionCard>
@@ -90,12 +93,22 @@ export function WithdrawalsPage() {
           <ChevronRight className="w-4 h-4 text-manises-blue group-hover:translate-x-0.5 transition-transform" />
         </button>
 
-        {/* Security / Compliance Note */}
-        <div className="px-1 flex items-start gap-2.5 opacity-60">
-          <ShieldCheck className="w-4 h-4 text-manises-blue mt-0.5" />
-          <p className="text-[10px] font-medium text-muted-foreground leading-relaxed">
-            Todas las operaciones se realizan bajo protocolos de seguridad SSL y cumplimiento de la normativa DGOJ.
-          </p>
+        {/* Security / Compliance Note Premium */}
+        <div className="px-1 space-y-4">
+          <div className="flex items-start gap-3 p-4 rounded-2xl bg-manises-blue/5 border border-manises-blue/10">
+            <Shield className="w-5 h-5 text-manises-blue shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest leading-none">Seguridad Oficial</p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
+                Cobro de premios pendiente de integración. No se realizará ninguna retirada real de fondos. Todas las operaciones cumplen con la normativa DGOJ.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-1 opacity-30">
+            <p className="text-[9px] font-black text-manises-blue uppercase tracking-widest">
+              Demo · No se procesará pago real
+            </p>
+          </div>
         </div>
       </div>
     </div>

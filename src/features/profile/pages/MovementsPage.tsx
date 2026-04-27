@@ -65,27 +65,26 @@ export function MovementsPage() {
       <ProfileSubHeader title="Movimientos" subtitle="Historial financiero" />
       <div className="flex flex-col gap-5 p-4">
 
-        {/* Summary header */}
+        {/* Summary header Premium */}
         <section className="px-1 flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Balance de actividad</p>
-            <p className="text-[1.2rem] font-black text-manises-blue tracking-tight">
-              {formatCurrency(deposits + prizes)}
-              <span className="ml-2 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Histórico</span>
-            </p>
+            <p className="text-[10px] font-black text-manises-blue/40 uppercase tracking-[0.2em]">Balance de actividad</p>
+            <div className="flex items-baseline gap-1">
+              <p className="text-2xl font-black text-manises-blue tracking-tight tabular-nums">
+                {formatCurrency(deposits + prizes)}
+              </p>
+              <span className="text-[9px] font-black text-manises-blue/20 uppercase tracking-widest">Histórico</span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
-              className="h-9 rounded-xl bg-manises-blue text-white font-bold text-xs gap-1.5 hover:bg-manises-gold hover:text-manises-blue transition-all"
+              className="h-10 rounded-2xl bg-manises-blue text-white font-black text-[10px] gap-2 hover:bg-manises-gold hover:text-manises-blue transition-all border-none shadow-lg px-4"
               onClick={() => setIsTopUpOpen(true)}
             >
               <Plus className="w-3.5 h-3.5" />
               Recargar
             </Button>
-            <div className="w-10 h-10 rounded-xl bg-manises-blue/5 flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-manises-blue/40" />
-            </div>
           </div>
         </section>
 
@@ -156,12 +155,23 @@ export function MovementsPage() {
 
         <PremiumSectionCard
           title="Seguridad y Auditoría"
-          description="Cada movimiento cuenta con un identificador único de transacción para su seguimiento."
+          eyebrow="Compliance"
+          description="Cada movimiento cuenta con un identificador único de transacción para su seguimiento oficial."
           tone="default"
         >
-          <p className="text-[10px] text-muted-foreground/60 font-medium">
-            Los datos mostrados son a título informativo.
-          </p>
+          <div className="space-y-3">
+            <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">
+              Los datos mostrados son a título informativo. Las operaciones reales están sujetas a la validación de Loterías y Apuestas del Estado.
+            </p>
+            <div className="flex flex-col items-center gap-1 opacity-40">
+              <p className="text-[9px] font-black text-manises-blue uppercase tracking-widest">
+                Demo · Pendiente de integración
+              </p>
+              <p className="text-[8px] font-bold text-manises-blue uppercase tracking-[0.2em]">
+                No se realizará ninguna operación real
+              </p>
+            </div>
+          </div>
         </PremiumSectionCard>
       </div>
 
