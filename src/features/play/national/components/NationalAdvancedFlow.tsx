@@ -12,6 +12,7 @@ import type {
   NationalOrderBreakdown, 
   NationalSearchState 
 } from '../contracts/national-play.contract';
+import type { LotteryGame } from '@/shared/types/domain';
 
 interface NationalDrawMeta {
   id: string;
@@ -22,7 +23,7 @@ interface NationalDrawMeta {
 }
 
 interface NationalAdvancedFlowProps {
-  game: any;
+  game: LotteryGame;
   selectedNationalDraw: NationalDrawMeta;
   selectedNationalNumber: string | null;
   selectedNationalQuantity: number;
@@ -41,7 +42,7 @@ interface NationalAdvancedFlowProps {
   nationalCart: {
     lines: NationalCartLine[];
     breakdown: NationalOrderBreakdown;
-    removeLine: (number: string, drawId: any) => void;
+    removeLine: (number: string, drawId: NationalCartLine['drawId']) => void;
     clearCart: () => void;
     addSelectedToCart: () => void;
     onPersistToSession?: () => void;

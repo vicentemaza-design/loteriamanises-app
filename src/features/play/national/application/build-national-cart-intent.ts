@@ -19,6 +19,7 @@ export function buildNationalCartDraftIntent(
     drawLabel: line.drawLabel,
     drawDates: [...line.drawDates],
     quantity: line.quantity,
+    unitPrice: line.unitPrice,
   }));
 
   return {

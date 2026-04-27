@@ -64,7 +64,7 @@ export function NationalNumberShowcase({
                 'text-[10px] font-bold',
                 active ? 'text-white/60' : 'text-slate-400'
               )}>
-                Stock: {item.available}
+                Stock demo: {item.available}
               </span>
             </div>
           </button>

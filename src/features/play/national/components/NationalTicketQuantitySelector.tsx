@@ -53,7 +53,7 @@ export function NationalTicketQuantitySelector({
         <div className="ml-2">
           <span className="text-xs font-black uppercase tracking-widest text-slate-500">Ajustar cantidad</span>
           <p className="mt-1 text-[11px] font-semibold text-slate-500">
-            Máximo {maxQuantity} {maxQuantity === 1 ? 'décimo disponible' : 'décimos disponibles'} para el número {selectedNumber}.
+            Máximo demo: {maxQuantity} {maxQuantity === 1 ? 'décimo' : 'décimos'} para el número {selectedNumber}.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -84,7 +84,7 @@ export function NationalTicketQuantitySelector({
       <div className="mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3">
         <Trophy className="w-5 h-5 text-emerald-600 shrink-0" />
         <p className="text-[11px] font-semibold text-emerald-800 leading-snug">
-          Si este número resulta premiado con el <span className="font-black">Gordo</span>, cobrarías un total de{' '}
+          Si este número simulado resultara premiado con el <span className="font-black">Gordo</span>, el cálculo orientativo sería{' '}
           <span className="font-black">{formatCurrency(potentialFirstPrize)}</span>.
         </p>
       </div>

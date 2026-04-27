@@ -712,8 +712,9 @@ export function GamePlayPage() {
     intent.lines.forEach((line) => {
       // Calculamos drawConfig una sola vez por línea y validamos su existencia
       const drawCfg = NATIONAL_DRAW_CONFIG.find(d => d.id === line.drawId);
+      const unitPrice = drawCfg?.decimoPrice ?? line.unitPrice;
       
-      if (!drawCfg) {
+      if (!drawCfg && line.drawId !== 'especial') {
         toast.error(`Error de configuración: sorteo ${line.drawId} no encontrado.`);
         hasError = true;
         return;
@@ -738,8 +739,8 @@ export function GamePlayPage() {
         game,
         selection: draftSelection,
         drawDates: line.drawDates,
-        totalPrice: line.quantity * drawCfg.decimoPrice * line.drawDates.length,
-        unitPrice: drawCfg.decimoPrice,
+        totalPrice: line.quantity * unitPrice * line.drawDates.length,
+        unitPrice,
         quantity: line.quantity,
         mode: 'simple',
         betsCount: 1,
@@ -1394,7 +1395,7 @@ export function GamePlayPage() {
                   ? 'border border-manises-blue/15 bg-white/80 text-manises-blue'
                   : 'border border-manises-blue/10 bg-manises-blue/[0.05] text-manises-blue/80'
               )}>
-                {isSubscription ? 'Abono activado en esta compra' : 'Actívalo con un toque'}
+                {isSubscription ? (isNationalLottery ? 'Abono activado en esta simulación' : 'Abono activado en esta compra') : 'Actívalo con un toque'}
               </span>
               <span className="inline-flex items-center rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 text-[10px] font-bold text-slate-500">
                 Sin permanencia
@@ -1410,7 +1411,7 @@ export function GamePlayPage() {
           {/* Resumen de saldo */}
           <div className="flex items-center justify-between gap-4 px-1">
             <div className="flex flex-col">
-              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Tu saldo actual</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">{isNationalLottery ? 'Saldo demo actual' : 'Tu saldo actual'}</p>
               <p className="mt-1 text-base font-black text-manises-blue">{formatCurrency(availableBalance)}</p>
             </div>
             <div className={cn(
@@ -1420,7 +1421,7 @@ export function GamePlayPage() {
                 : 'border-emerald-200 bg-emerald-50'
             )}>
               <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
-                {isOverBalance ? 'Te falta saldo' : 'Te quedará saldo'}
+                {isNationalLottery ? (isOverBalance ? 'Falta saldo demo' : 'Saldo demo restante') : (isOverBalance ? 'Te falta saldo' : 'Te quedará saldo')}
               </p>
               <p className={cn(
                 'mt-1 text-base font-black',
@@ -1434,7 +1435,7 @@ export function GamePlayPage() {
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0 px-1">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Importe Total
+                {isNationalLottery ? 'Importe demo' : 'Importe Total'}
               </p>
               <p className="mt-0.5 text-[10px] font-medium text-muted-foreground leading-tight">
                 {isNationalLottery
@@ -1464,7 +1465,7 @@ export function GamePlayPage() {
                     : isNationalLottery
                       ? editingDraft
                         ? `Actualizar ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'}`
-                        : `Añadir ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'}`
+                        : `Añadir ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'} demo`
                       : editingDraft
                         ? 'Actualizar jugada'
                         : `Añadir ${betsCount} ${betsCount === 1 ? 'jugada' : 'jugadas'}`

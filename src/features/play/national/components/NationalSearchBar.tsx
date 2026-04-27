@@ -23,7 +23,7 @@ export function NationalSearchBar({ searchState, onChange }: NationalSearchBarPr
       <div className="mt-3 flex flex-wrap gap-2">
         {[
           { id: 'featured', label: 'Destacados' },
-          { id: 'availability', label: 'Stock' },
+          { id: 'availability', label: 'Stock demo' },
           { id: 'number', label: 'Número' },
         ].map((option) => {
           const active = searchState.sortBy === option.id;
@@ -52,7 +52,7 @@ export function NationalSearchBar({ searchState, onChange }: NationalSearchBarPr
               : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700'
           }`}
         >
-          {searchState.onlyAvailable ? 'Solo disponibles' : 'Mostrar todos'}
+          {searchState.onlyAvailable ? 'Solo demo' : 'Mostrar todos'}
         </button>
       </div>
     </div>

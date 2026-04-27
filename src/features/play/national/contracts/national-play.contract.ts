@@ -53,6 +53,7 @@ export interface NationalCartDraftIntentLine {
   drawLabel: string;
   drawDates: string[];
   quantity: number;
+  unitPrice: number;
 }
 
 /**
