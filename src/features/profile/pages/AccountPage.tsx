@@ -7,21 +7,22 @@ import {
   Save, 
   User, 
   Mail, 
-  Phone, 
   Lock, 
-  Landmark, 
   CircleCheck, 
   Shield, 
-  ChevronRight, 
-  ShieldCheck, 
   Calendar, 
   MapPin, 
-  Building2, 
   UserX, 
-  KeyRound 
+  KeyRound,
+  Bell,
+  Smartphone,
+  FileText,
+  Info
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
+import { PremiumSectionCard } from '../components/PremiumSectionCard';
+import { PremiumActionRow } from '../components/PremiumActionRow';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { cn } from '@/shared/lib/utils';
@@ -123,185 +124,180 @@ export function AccountPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background pb-12" ref={containerRef}>
-      <ProfileSubHeader title="Datos personales" />
+      <ProfileSubHeader title="Gestión de Cuenta" subtitle="Ajustes avanzados y seguridad" />
       
-      <div className="p-5 flex flex-col gap-4">
-        <section className="surface-neo-soft rounded-2xl border border-white/65 p-4 stagger-item">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-              <CircleCheck className="w-5 h-5" />
+      <div className="p-5 flex flex-col gap-6">
+        
+        {/* BLOQUE 1: DATOS PERSONALES */}
+        <section className="stagger-item">
+          <PremiumSectionCard 
+            title="Datos Personales" 
+            eyebrow="Identidad y Dirección"
+            description="Información vinculada a tu identidad legal para el cobro de premios."
+            tone="blue"
+          >
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 rounded-xl bg-emerald-50/50 p-3 border border-emerald-100/50 mb-2">
+                <CircleCheck className="w-4 h-4 text-emerald-600 mt-0.5" />
+                <p className="text-[10px] font-bold text-emerald-800 leading-tight">
+                  Perfil verificado · <span className="font-medium text-emerald-700/70 lowercase">Listo para premios mayores</span>
+                </p>
+              </div>
+
+              <div className="grid gap-3.5">
+                <Field
+                  label="Nombre Completo"
+                  icon={User}
+                  value={formData.name}
+                  onChange={(value) => setFormData({ ...formData, name: value })}
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <Field
+                    label="Fecha de Nacimiento"
+                    icon={Calendar}
+                    type="date"
+                    value={formData.birthDate}
+                    onChange={(value) => setFormData({ ...formData, birthDate: value })}
+                  />
+                  <Field
+                    label="DNI / NIE"
+                    icon={Shield}
+                    value={formData.dni}
+                    onChange={(value) => setFormData({ ...formData, dni: value })}
+                    className="uppercase"
+                  />
+                </div>
+                <Field
+                  label="Dirección Completa"
+                  icon={MapPin}
+                  value={`${formData.address}, ${formData.postalCode} ${formData.municipality}`}
+                  onChange={() => undefined}
+                  readOnly
+                  helper="Contacta con soporte para cambios de domicilio legal."
+                />
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-black text-manises-blue uppercase tracking-widest">Perfil verificado</p>
-              <p className="text-[11px] text-muted-foreground font-medium mt-1">
-                La verificación es obligatoria para el cobro de premios mayores de 2.000€.
-              </p>
-            </div>
-          </div>
+          </PremiumSectionCard>
         </section>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <section className="surface-neo-soft rounded-2xl border border-white/65 p-4 flex flex-col gap-4 stagger-item">
-            <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Identidad y Nacimiento</p>
-            <Field
-              label="Nombre Completo"
-              icon={User}
-              value={formData.name}
-              onChange={(value) => setFormData({ ...formData, name: value })}
-            />
-            <Field
-              label="Fecha de Nacimiento"
-              icon={Calendar}
-              type="date"
-              value={formData.birthDate}
-              onChange={(value) => setFormData({ ...formData, birthDate: value })}
-              helper="Debes ser mayor de 18 años para jugar."
-            />
-            <Field
-              label="DNI / NIE"
-              icon={Lock}
-              value={formData.dni}
-              onChange={(value) => setFormData({ ...formData, dni: value })}
-              className="uppercase"
-            />
-          </section>
-
-          <section className="surface-neo-soft rounded-2xl border border-white/65 p-4 flex flex-col gap-4 stagger-item">
-            <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Dirección Legal</p>
-            <Field
-              label="Dirección"
-              icon={MapPin}
-              value={formData.address}
-              onChange={(value) => setFormData({ ...formData, address: value })}
-            />
-            <div className="grid grid-cols-2 gap-3">
-              <Field
-                label="Código Postal"
-                icon={MapPin}
-                value={formData.postalCode}
-                onChange={(value) => setFormData({ ...formData, postalCode: value })}
-                className="tabular-nums"
+        {/* BLOQUE 2: PREFERENCIAS (MOCK) */}
+        <section className="stagger-item">
+          <PremiumSectionCard 
+            title="Preferencias" 
+            eyebrow="Notificaciones y Comunicaciones"
+            description="Configura cómo quieres recibir tus premios y noticias."
+            tone="gold"
+          >
+            <div className="divide-y divide-slate-100 -mx-1">
+              <PremiumActionRow
+                icon={Bell}
+                title="Resultados Push"
+                description="Aviso inmediato tras el sorteo"
+                tone="gold"
+                badge="Activado"
+                onClick={() => toast.info('Demo · Cambios visuales no persistentes')}
               />
-              <Field
-                label="Municipio"
-                icon={Building2}
-                value={formData.municipality}
-                onChange={(value) => setFormData({ ...formData, municipality: value })}
+              <PremiumActionRow
+                icon={Mail}
+                title="Resguardos por Email"
+                description="Copia digital en tu bandeja"
+                tone="blue"
+                badge="Siempre"
+                onClick={() => toast.info('Demo · Configuración de sistema')}
+              />
+              <PremiumActionRow
+                icon={Smartphone}
+                title="Botes especiales"
+                description="Alertas de premios millonarios"
+                tone="gold"
+                onClick={() => toast.info('Demo · Pendiente de integración')}
               />
             </div>
-            <Field
-              label="Provincia"
-              icon={Building2}
-              value={formData.province}
-              onChange={(value) => setFormData({ ...formData, province: value })}
-            />
-            <Field
-              label="País"
-              icon={Building2}
-              value={formData.country}
-              onChange={(value) => setFormData({ ...formData, country: value })}
-            />
-          </section>
+            <p className="mt-3 text-[9px] font-black text-center text-manises-blue/20 uppercase tracking-widest">
+              Demo · No persiste configuración
+            </p>
+          </PremiumSectionCard>
+        </section>
 
-          <section className="surface-neo-soft rounded-2xl border border-white/65 p-4 flex flex-col gap-4 stagger-item">
-            <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Contacto y cobro</p>
-            <Field
-              label="Email"
-              icon={Mail}
-              value={formData.email}
-              readOnly
-              helper="Contacta con soporte para cambiar tu email."
-              onChange={() => undefined}
-            />
-            <Field
-              label="Teléfono móvil"
-              icon={Phone}
-              type="tel"
-              value={formData.phone}
-              onChange={(value) => setFormData({ ...formData, phone: value })}
-              className="tabular-nums"
-            />
-            <Field
-              label="IBAN (Para cobro de premios)"
-              icon={Landmark}
-              value={formData.iban}
-              onChange={(value) => setFormData({ ...formData, iban: value })}
-              className="tabular-nums uppercase tracking-wider"
-            />
-          </section>
-
-          {/* Acciones de Seguridad y Compliance */}
-          <section className="space-y-3 stagger-item">
-            <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Seguridad y Cuenta</p>
-            <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border/50">
-              <button
-                type="button"
+        {/* BLOQUE 3: SEGURIDAD */}
+        <section className="stagger-item">
+          <PremiumSectionCard 
+            title="Opciones de Seguridad" 
+            eyebrow="Protección de Cuenta"
+            description="Gestiona el acceso y la seguridad de tus datos."
+            tone="violet"
+          >
+            <div className="divide-y divide-slate-100 -mx-1">
+              <PremiumActionRow
+                icon={KeyRound}
+                title="Cambiar Contraseña"
+                description="Actualizada hace 3 meses"
+                tone="violet"
                 onClick={() => handleSupportAction('Cambio de Contraseña')}
-                className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-slate-100 text-slate-600 group-hover:bg-manises-blue group-hover:text-white transition-all">
-                    <KeyRound className="w-4 h-4" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[11px] font-bold text-slate-900">Cambiar Contraseña</p>
-                    <p className="text-[9px] text-slate-500 font-medium">Último cambio: hace 3 meses</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-slate-300" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => navigate('/profile/help')}
-                className="w-full flex items-center justify-between p-4 hover:bg-purple-50/50 transition-colors group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-purple-100 text-purple-600">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[11px] font-bold text-purple-900">Juego Responsable</p>
-                    <p className="text-[9px] text-purple-600/70 font-medium">Límites, gasto y autoexclusión</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-purple-300" />
-              </button>
-
-              <button
-                type="button"
+              />
+              <PremiumActionRow
+                icon={Lock}
+                title="Acceso Seguro"
+                description="PIN de seguridad y biometría"
+                tone="violet"
+                badge="Configurado"
+                onClick={() => handleSupportAction('Gestión de Acceso')}
+              />
+              <PremiumActionRow
+                icon={UserX}
+                title="Cerrar Cuenta"
+                description="Solicitar baja del servicio"
+                tone="rose"
                 onClick={() => handleSupportAction('Baja de Cuenta')}
-                className="w-full flex items-center justify-between p-4 hover:bg-rose-50/50 transition-colors group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-rose-100 text-rose-600">
-                    <UserX className="w-4 h-4" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[11px] font-bold text-rose-900">Cerrar Cuenta</p>
-                    <p className="text-[9px] text-rose-600/70 font-medium">Solicitar baja definitiva del servicio</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-rose-300" />
-              </button>
+              />
             </div>
-          </section>
+            <p className="mt-3 text-[9px] font-black text-center text-rose-500/30 uppercase tracking-widest">
+              Demo · Acciones sujetas a soporte
+            </p>
+          </PremiumSectionCard>
+        </section>
 
-          <PremiumTouchInteraction scale={0.98} className="mt-2 stagger-item">
+        {/* BLOQUE 4: AYUDA Y LEGAL */}
+        <section className="stagger-item">
+          <PremiumSectionCard 
+            title="Ayuda y Legal" 
+            eyebrow="Compliance"
+            description="Información oficial y soporte técnico."
+            tone="default"
+          >
+            <div className="divide-y divide-slate-100 -mx-1">
+              <PremiumActionRow
+                icon={Info}
+                title="Centro de Ayuda"
+                description="Preguntas frecuentes y soporte"
+                onClick={() => navigate('/profile/help')}
+              />
+              <PremiumActionRow
+                icon={FileText}
+                title="Términos y Privacidad"
+                description="Aviso legal y gestión de datos"
+                onClick={() => navigate('/profile/help')}
+              />
+            </div>
+          </PremiumSectionCard>
+        </section>
+
+        <div className="mt-4 flex flex-col gap-4 stagger-item">
+          <PremiumTouchInteraction scale={0.98}>
             <Button
-              type="submit"
+              onClick={handleSubmit}
               disabled={isSaving}
               className="w-full h-14 bg-manises-blue text-white hover:bg-manises-gold hover:text-manises-blue rounded-2xl font-black shadow-xl gap-2 transition-all border-none"
             >
               <Save className="w-5 h-5" />
-              {isSaving ? 'Guardando...' : 'Actualizar Perfil'}
+              {isSaving ? 'Guardando...' : 'Guardar Cambios Locales'}
             </Button>
           </PremiumTouchInteraction>
-        </form>
-
-        <div className="stagger-item mt-2 flex items-center justify-center gap-2 opacity-40">
-          <Shield className="w-3.5 h-3.5 text-manises-blue" />
-          <p className="text-[9px] font-bold uppercase tracking-widest text-manises-blue">Conexión Segura SSL</p>
+          
+          <div className="flex items-center justify-center gap-2 opacity-40">
+            <Shield className="w-3.5 h-3.5 text-manises-blue" />
+            <p className="text-[9px] font-black uppercase tracking-widest text-manises-blue">Conexión Segura SSL · Demo Mode</p>
+          </div>
         </div>
       </div>
     </div>
