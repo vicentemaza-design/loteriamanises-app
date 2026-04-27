@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState, type ComponentType } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { StatusBadge } from '@/shared/ui/StatusBadge';
-import { NumberBall } from '@/shared/ui/NumberBall';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { Input } from '@/shared/ui/Input';
@@ -103,6 +102,23 @@ function getNationalQuantity(ticket: Ticket) {
 
 function getOrderTotal(ticket: Ticket) {
   return typeof ticket.metadata?.orderTotalPrice === 'number' ? ticket.metadata.orderTotalPrice : ticket.price;
+}
+
+function getCompactSelectionSummary(ticket: Ticket) {
+  if (isNationalTicket(ticket)) {
+    const number = getTicketDisplayNumber(ticket);
+    const quantity = getNationalQuantity(ticket);
+    const drawCount = getOrderDrawDates(ticket).length;
+    const quantityLabel = quantity
+      ? `${quantity} ${quantity === 1 ? 'décimo' : 'décimos'}`
+      : null;
+    const drawLabel = drawCount > 1 ? `${drawCount} sorteos` : null;
+
+    return [number ? `Nº ${number}` : null, quantityLabel, drawLabel].filter(Boolean).join(' · ');
+  }
+
+  const starsLabel = ticket.stars && ticket.stars.length > 0 ? ` + ${ticket.stars.join(', ')}` : '';
+  return `${ticket.numbers.join(', ')}${starsLabel}`;
 }
 
 function getScrutinyTone(ticket: Ticket, result: any | null) {
@@ -435,41 +451,6 @@ export function TicketsPage() {
                                 <StatusBadge status={ticket.status} className="px-1.5 py-0 text-[9px]" />
                               </div>
 
-                              {nationalTicket && (
-                                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                                  <span className="inline-flex items-center rounded-full border border-manises-blue/10 bg-manises-blue/[0.04] px-2 py-0.5 text-[10px] font-black text-manises-blue">
-                                    Nº {ticketDisplayNumber}
-                                  </span>
-                                  {nationalQuantity && (
-                                    <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-black text-slate-600">
-                                      {nationalQuantity} {nationalQuantity === 1 ? 'décimo' : 'décimos'}
-                                    </span>
-                                  )}
-                                  <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-black text-slate-600">
-                                    {orderDates.length} {orderDates.length === 1 ? 'sorteo' : 'sorteos'}
-                                  </span>
-                                </div>
-                              )}
-
-                              {nationalTicket && (
-                                <p className="mt-1.5 text-[10px] font-semibold leading-relaxed text-slate-500">
-                                  {orderDrawLabel}: {orderDatesSummary}
-                                </p>
-                              )}
-
-                              {hasResolvedDraw && totalHits > 0 && (
-                                <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-emerald-700">
-                                    <Target className="h-3 w-3" />
-                                    {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'}
-                                  </span>
-                                  {matchedValuesSummary && (
-                                    <span className="text-[10px] font-semibold text-emerald-700">
-                                      {matchedValuesSummary}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
                             </div>
                           </div>
 
@@ -484,101 +465,32 @@ export function TicketsPage() {
                           </button>
                         </div>
 
-                        <div className="mt-2.5 flex items-center justify-between gap-2">
-                          <div className="min-w-0 flex-1 overflow-hidden">
-                            {nationalTicket ? (
-                              <div className="rounded-2xl border border-manises-blue/10 bg-[linear-gradient(180deg,#f8fbff_0%,#ffffff_100%)] px-3 py-2.5">
-                                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Compra reservada</p>
-                                <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                                  <span className="text-lg font-black tracking-[0.18em] text-manises-blue">{ticketDisplayNumber}</span>
-                                  {nationalQuantity && (
-                                    <span className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">
-                                      {nationalQuantity} {nationalQuantity === 1 ? 'décimo' : 'décimos'}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="flex flex-nowrap items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-                                {ticket.numbers.map((value, index) => {
-                                  const isHit = matched.numbers.includes(value);
-                                  return (
-                                    <div key={index} className="relative">
-                                      <NumberBall
-                                        number={value}
-                                        variant="default"
-                                        size="sm"
-                                        className={cn(
-                                          'h-7 w-7 text-[11px]',
-                                          isHit && 'border-emerald-200 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-300 ring-offset-1'
-                                        )}
-                                      />
-                                      {isHit && (
-                                        <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[8px] font-black leading-none text-white">
-                                          ✓
-                                        </span>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                                {ticket.stars?.map((value, index) => {
-                                  const isHit = matched.stars.includes(value);
-                                  return (
-                                    <div key={`s-${index}`} className="relative">
-                                      <NumberBall
-                                        number={value}
-                                        variant="gold"
-                                        size="sm"
-                                        className={cn(
-                                          'h-7 w-7 text-[11px]',
-                                          isHit && 'border-emerald-200 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-300 ring-offset-1 shadow-none'
-                                        )}
-                                      />
-                                      {isHit && (
-                                        <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-emerald-600 px-1 text-[8px] font-black leading-none text-white">
-                                          ✓
-                                        </span>
-                                      )}
-                                    </div>
-                                  );
-                                })}
+                        <div className="mt-2.5 flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[12px] font-black text-manises-blue">
+                              {getCompactSelectionSummary(ticket)}
+                            </p>
+                            {hasResolvedDraw && totalHits > 0 && (
+                              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-emerald-700">
+                                  <Target className="h-3 w-3" />
+                                  {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'}
+                                </span>
+                                {matchedValuesSummary && (
+                                  <span className="truncate text-[10px] font-semibold text-emerald-700">
+                                    {matchedValuesSummary}
+                                  </span>
+                                )}
                               </div>
                             )}
                           </div>
 
                           {ticket.status === 'won' && ticket.prize != null && (
-                            <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-2.5 py-1.5 text-right">
+                            <div className="shrink-0 rounded-xl border border-emerald-100 bg-emerald-50 px-2.5 py-1.5 text-right">
                               <span className="block text-[8px] font-black uppercase tracking-[0.14em] text-emerald-600">Premio</span>
                               <span className="block text-xs font-black leading-none text-emerald-700">{formatCurrency(ticket.prize)}</span>
                             </div>
                           )}
-                        </div>
-
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <QuickActionButton
-                            icon={Repeat2}
-                            label="Volver"
-                            onClick={() => navigate(`/play/${ticket.gameId}`)}
-                          />
-                          <QuickActionButton
-                            icon={Sparkles}
-                            label="Abonarse"
-                            onClick={() => {
-                              toast.message('Acceso rápido al abono', {
-                                description: 'Te llevamos al flujo de juego para activarlo desde la compra.',
-                              });
-                              navigate(`/play/${ticket.gameId}`);
-                            }}
-                          />
-                          <QuickActionButton
-                            icon={Archive}
-                            label="Archivar"
-                            tone="danger"
-                            onClick={() => {
-                              setArchivedIds((current) => current.includes(ticket.id) ? current : [...current, ticket.id]);
-                              toast.success('Jugada archivada en esta sesión');
-                            }}
-                          />
                         </div>
 
                         <AnimatePresence initial={false}>
@@ -689,6 +601,33 @@ export function TicketsPage() {
                                     )}
                                   </div>
                                 )}
+
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                  <QuickActionButton
+                                    icon={Repeat2}
+                                    label="Volver"
+                                    onClick={() => navigate(`/play/${ticket.gameId}`)}
+                                  />
+                                  <QuickActionButton
+                                    icon={Sparkles}
+                                    label="Abonarse"
+                                    onClick={() => {
+                                      toast.message('Acceso rápido al abono', {
+                                        description: 'Te llevamos al flujo de juego para activarlo desde la compra.',
+                                      });
+                                      navigate(`/play/${ticket.gameId}`);
+                                    }}
+                                  />
+                                  <QuickActionButton
+                                    icon={Archive}
+                                    label="Archivar"
+                                    tone="danger"
+                                    onClick={() => {
+                                      setArchivedIds((current) => current.includes(ticket.id) ? current : [...current, ticket.id]);
+                                      toast.success('Jugada archivada en esta sesión');
+                                    }}
+                                  />
+                                </div>
 
                                 <div className="mt-3 flex flex-wrap gap-2">
                                   <Button
