@@ -464,11 +464,11 @@ export function GamePlayPage() {
     : true;
   const hasSufficientReducedForecast = selectedNumbers.length >= minNums && (minStars === 0 || selectedStars.length >= minStars);
 
-  const canPlay = isNationalLottery
+  const canPlay = !isMulticolumnMode && (isNationalLottery
     ? selectedNationalNumber !== null
     : isQuiniela
       ? isQuinielaValid
-      : selectedNumbers.length >= minNums && selectedNumbers.length <= maxNums && hasValidStarSelection && isSupportedReducedSelection && betsCount > 0;
+      : selectedNumbers.length >= minNums && selectedNumbers.length <= maxNums && hasValidStarSelection && isSupportedReducedSelection && betsCount > 0);
 
   const handlePlay = async () => {
     if (!canPlay)           { 
@@ -1375,11 +1375,13 @@ export function GamePlayPage() {
                       : editingDraft
                         ? 'Actualizar jugada'
                         : `Añadir ${betsCount} ${betsCount === 1 ? 'jugada' : 'jugadas'}`
-                  : isNationalLottery
-                    ? 'Elige un décimo'
-                    : isQuiniela
-                      ? 'Completa los 15 partidos'
-                      : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' nums' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
+                  : isMulticolumnMode
+                    ? 'Revisa las columnas para añadir'
+                    : isNationalLottery
+                      ? 'Elige un décimo'
+                      : isQuiniela
+                        ? 'Completa los 15 partidos'
+                        : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' nums' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
                 }
               </Button>
             </AnimatePresence>
