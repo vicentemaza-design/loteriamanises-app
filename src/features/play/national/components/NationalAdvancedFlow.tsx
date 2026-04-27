@@ -104,7 +104,7 @@ export function NationalAdvancedFlow({
       {/* Selector de Números */}
       <section className="space-y-4">
         <div className="flex items-center justify-between px-1">
-          <h2 className="font-black text-sm text-manises-blue">Números en administración</h2>
+          <h2 className="font-black text-sm text-manises-blue">Números disponibles (Simulación)</h2>
           <div className="flex gap-2">
             <Button
               variant="ghost"
@@ -133,7 +133,7 @@ export function NationalAdvancedFlow({
 
         <div className="flex items-center justify-between px-1">
           <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-            Escaparate demo
+            Escaparate simulado
           </p>
           <p className="text-[10px] font-bold text-manises-blue/70">
             {nationalShowcase.count} números

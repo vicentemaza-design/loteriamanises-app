@@ -36,7 +36,7 @@ export function NationalTicketQuantitySelector({
     >
       <div className="flex items-center justify-between mb-6">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tu compra</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Selección actual</p>
           <h3 className="text-xl font-black text-manises-blue mt-1">
             {selectedQuantity} {selectedQuantity === 1 ? 'décimo' : 'décimos'}
           </h3>
