@@ -1,11 +1,13 @@
 import { useRef } from 'react';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { Button } from '@/shared/ui/Button';
-import { Plus, MoreHorizontal, ShieldCheck } from 'lucide-react';
+import { Plus, CreditCard, Wallet, Shield } from 'lucide-react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { toast } from 'sonner';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { PremiumSectionCard } from '../components/PremiumSectionCard';
+import { PremiumActionRow } from '../components/PremiumActionRow';
 
 import visaLogo from '@/assets/games/visa.svg';
 import mastercardLogo from '@/assets/games/mastercard.svg';
@@ -43,63 +45,90 @@ export function PaymentsPage() {
       
       <div className="p-5 flex flex-col gap-6">
         
-        <section className="space-y-4">
-          <h3 className="text-xs font-black text-manises-blue uppercase tracking-widest pl-1 fade-in">Tarjetas Guardadas</h3>
-          
-          <div className="flex flex-col gap-4">
-            {cards.map(card => (
-              <PremiumTouchInteraction key={card.id} scale={0.98} className="card-item">
-                <div className={`relative h-28 rounded-2xl p-5 overflow-hidden shadow-xl bg-gradient-to-br ${card.gradient}`}>
-                  {/* Decoraciones del banco */}
-                  <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/5 rounded-full pointer-events-none" />
-                  <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-white/10 rounded-full blur-xl pointer-events-none" />
-                  
-                  <div className="relative z-10 flex flex-col h-full justify-between">
-                    <div className="flex justify-between items-start">
-                      <div className="w-12 h-8 bg-white/10 backdrop-blur-md rounded border border-white/20 p-1.5 flex items-center justify-center shadow-inner">
-                         <img src={card.logo} alt={card.brand} className="w-full h-full object-contain brightness-0 invert opacity-90" />
+        {/* BLOQUE: TARJETAS GUARDADAS */}
+        <section className="card-item">
+          <PremiumSectionCard 
+            title="Mis Tarjetas" 
+            eyebrow="Métodos de Pago"
+            description="Tarjetas vinculadas para recargas rápidas."
+            tone="blue"
+          >
+            <div className="space-y-4">
+              {cards.map(card => (
+                <PremiumTouchInteraction key={card.id} scale={0.98}>
+                  <div className={`relative h-32 rounded-2xl p-5 overflow-hidden shadow-lg bg-gradient-to-br ${card.gradient} group active:scale-[0.99] transition-transform`}>
+                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/5 rounded-full blur-xl" />
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                      <div className="flex justify-between items-start">
+                        <div className="w-10 h-7 bg-white/10 backdrop-blur-md rounded border border-white/20 p-1 flex items-center justify-center">
+                           <img src={card.logo} alt={card.brand} className="w-full h-full object-contain brightness-0 invert opacity-80" />
+                        </div>
+                        {card.isDefault && (
+                          <span className="bg-manises-gold text-manises-blue text-[8px] font-black uppercase px-2 py-0.5 rounded-full shadow-lg">
+                            Principal
+                          </span>
+                        )}
                       </div>
-                      
-                      {card.isDefault && (
-                        <span className="bg-manises-gold text-manises-blue text-[9px] font-black uppercase px-2 py-0.5 rounded-full shadow-md">
-                          Principal
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div className="flex justify-between items-end">
-                      <div className="flex gap-4 items-center">
-                        <span className="text-white/60 text-lg tracking-widest">••••</span>
-                        <span className="text-white font-bold tracking-widest">{card.last4}</span>
+                      <div>
+                        <p className="text-white font-bold tracking-[0.2em] text-sm">•••• {card.last4}</p>
+                        <p className="text-white/40 text-[9px] font-medium mt-1">CADUCA: {card.expires}</p>
                       </div>
-                      <span className="text-white/50 text-[10px] font-medium tracking-wider">
-                        {card.expires}
-                      </span>
                     </div>
                   </div>
-                </div>
-              </PremiumTouchInteraction>
-            ))}
-          </div>
+                </PremiumTouchInteraction>
+              ))}
+
+              <Button
+                variant="outline"
+                className="w-full h-12 border-dashed border-2 border-slate-200 text-manises-blue hover:border-manises-gold hover:text-manises-blue hover:bg-manises-gold/5 rounded-xl gap-2 font-black text-xs transition-all"
+                onClick={() => toast.info('Añadir tarjeta: Demo · Pendiente de integración')}
+              >
+                <Plus className="w-4 h-4" /> Añadir Nueva Tarjeta
+              </Button>
+            </div>
+          </PremiumSectionCard>
         </section>
 
-        <PremiumTouchInteraction scale={0.98} className="fade-in">
-          <Button
-            variant="outline"
-            className="w-full h-14 border-dashed border-2 border-gray-300 text-manises-blue hover:border-manises-gold hover:text-manises-blue hover:bg-manises-gold/10 rounded-2xl gap-2 font-bold transition-all shadow-sm group"
-            onClick={() => toast.info('Integración de pasarela de pagos próximamente.')}
+        {/* BLOQUE: OTROS MÉTODOS (DEMO) */}
+        <section className="fade-in">
+          <PremiumSectionCard 
+            title="Otros Métodos" 
+            eyebrow="Alternativas"
+            description="Opciones de pago adicionales en fase de pruebas."
+            tone="gold"
           >
-            <div className="w-6 h-6 rounded-full bg-manises-blue/10 flex items-center justify-center transition-transform group-hover:scale-110">
-              <Plus className="w-4 h-4 text-manises-blue" />
+            <div className="divide-y divide-slate-50 -mx-1">
+              <PremiumActionRow
+                icon={Wallet}
+                title="Apple Pay / Google Pay"
+                description="Pago rápido con biometría"
+                tone="gold"
+                badge="Demo"
+                onClick={() => toast.info('Demo · Próximamente disponible')}
+              />
+              <PremiumActionRow
+                icon={CreditCard}
+                title="Transferencia Bancaria"
+                description="Ingreso directo a cuenta oficial"
+                tone="blue"
+                onClick={() => toast.info('Demo · Próximamente disponible')}
+              />
             </div>
-            Añadir nueva tarjeta
-          </Button>
-        </PremiumTouchInteraction>
+          </PremiumSectionCard>
+        </section>
 
-        <div className="flex items-start gap-2 px-2 mt-2 fade-in">
-          <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-          <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
-             Tus datos de pago se procesan de forma segura mediante encriptación SSL de grado bancario. Lotería Manises no almacena el CVV.
+        <div className="flex flex-col gap-4 mt-2 fade-in">
+          <div className="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+            <Shield className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest">Seguridad Garantizada</p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
+                No se realizará ningún cargo real. Los datos mostrados son ejemplos visuales para demostración de interfaz segura SSL.
+              </p>
+            </div>
+          </div>
+          <p className="text-[9px] font-black text-center text-manises-blue/20 uppercase tracking-widest">
+            Demo · No se almacenan datos bancarios
           </p>
         </div>
       </div>
