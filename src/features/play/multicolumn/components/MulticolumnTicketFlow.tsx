@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { motion } from 'motion/react';
 import type { LotteryGame } from '@/shared/types/domain';
+import type { MulticolumnDraftIntent } from '../contracts/multicolumn-play.contract';
 import { useMulticolumn } from '../hooks/useMulticolumn';
+import { buildMulticolumnDraftIntent } from '../application/build-multicolumn-draft-intent';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { NumbersGrid } from '@/features/play/components/NumbersGrid';
 import { StarsGrid } from '@/features/play/components/StarsGrid';
@@ -11,8 +13,9 @@ import { MulticolumnSummary } from './MulticolumnSummary';
 
 interface MulticolumnTicketFlowProps {
   game: LotteryGame;
-  drawsCount: number;
+  drawDates: string[];
   initialColumnsCount?: number;
+  onReviewColumns?: (intent: MulticolumnDraftIntent) => void;
 }
 
 /**
@@ -21,8 +24,9 @@ interface MulticolumnTicketFlowProps {
  */
 export function MulticolumnTicketFlow({
   game,
-  drawsCount,
+  drawDates,
   initialColumnsCount = 8,
+  onReviewColumns,
 }: MulticolumnTicketFlowProps) {
   const {
     state,
@@ -33,7 +37,7 @@ export function MulticolumnTicketFlow({
     clearAllColumns,
     randomizeActiveColumn,
     randomizeAllColumns,
-  } = useMulticolumn(game, initialColumnsCount, drawsCount);
+  } = useMulticolumn(game, initialColumnsCount, drawDates.length);
 
   const theme = useMemo(() => getGameTheme(game), [game]);
   const activeColumn = state.columns[state.activeColumnIndex];
@@ -131,7 +135,12 @@ export function MulticolumnTicketFlow({
         <MulticolumnSummary
           summary={summary}
           activeColor={game.color}
-          onReview={() => {}}
+          onReview={() => {
+            if (onReviewColumns) {
+              const intent = buildMulticolumnDraftIntent(state, drawDates);
+              onReviewColumns(intent);
+            }
+          }}
         />
       </section>
     </div>

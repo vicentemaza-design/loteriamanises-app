@@ -31,6 +31,7 @@ import { StarsGrid } from '../components/StarsGrid';
 import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
 import { NationalDrawSelector } from '../national/components/NationalDrawSelector';
 import { MulticolumnTicketFlow } from '../multicolumn/components/MulticolumnTicketFlow';
+import type { MulticolumnDraftIntent } from '../multicolumn/contracts/multicolumn-play.contract';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
 import { getDrawsForCurrentWeek, groupDrawsByWeek } from '../lib/draw-schedule';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
@@ -549,6 +550,97 @@ export function GamePlayPage() {
     }
   };
 
+  /**
+   * Procesa la persistencia de un lote de columnas desde el modo multi-columna.
+   * Transforma el intent en múltiples borradores individuales.
+   */
+  const handleMulticolumnPersist = (intent: MulticolumnDraftIntent) => {
+    if (!game) return;
+
+    try {
+      const allDrafts: PlayDraft[] = [];
+
+      intent.columns.forEach((col) => {
+        // 1. Construir selección individual
+        const minNumbers = game.selectionRange?.numbers?.min ?? 0;
+        const minStars = game.selectionRange?.stars?.min ?? 0;
+        const isMultiple = (minNumbers > 0 && col.numbers.length > minNumbers) || 
+                           (minStars > 0 && col.stars.length > minStars);
+        const colMode: PlayMode = isMultiple ? 'multiple' : 'simple';
+        
+        const selection = buildGameSelection({
+          game,
+          isNationalLottery: false,
+          isQuiniela: false,
+          mode: colMode,
+          selectedNumbers: col.numbers,
+          selectedStars: col.stars,
+          quinielaMatches: [],
+          selectedReductionSystemId: '',
+          selectedNationalNumber: null,
+          selectedNationalDraw: {} as any,
+        });
+
+        if (!selection) return;
+
+        // 2. Calcular precio unitario (reutilizando resolvePlayPricing para consistencia)
+        const pricing = resolvePlayPricing({
+          game,
+          isNationalLottery: false,
+          isQuiniela: false,
+          mode: colMode,
+          selectedNumbersCount: col.numbers.length,
+          selectedStarsCount: col.stars.length,
+          selectedReductionSystemId: '',
+          selectedNationalQuantity: 0,
+          selectedNationalDraw: {} as any,
+          drawsCount: intent.drawDates.length,
+        });
+
+        // 3. Generar borradores
+        const drafts = buildPlayDrafts({
+          game,
+          selection,
+          drawDates: intent.drawDates,
+          totalPrice: pricing.totalPrice,
+          unitPrice: pricing.drawPrice,
+          quantity: 1,
+          mode: colMode,
+          betsCount: pricing.betsCount,
+          isSubscription: isSubscription,
+          supportsTimeSelection: supportsTimeSelection,
+          timeMode: drawDateResolution.scheduleMode,
+          weeksCount: drawDateResolution.weeksCount,
+          selectedNationalNumber: null,
+          selectedNationalQuantity: 0,
+          selectedNationalDraw: {} as any,
+        });
+
+        allDrafts.push(...drafts);
+      });
+
+      if (allDrafts.length === 0) {
+        toast.error('No se han podido procesar las columnas.');
+        return;
+      }
+
+      // 4. Persistir
+      const result = addDrafts(allDrafts);
+
+      // 5. Feedback refinado
+      if (result.addedCount > 0 && result.duplicateCount === 0) {
+        toast.success(result.addedCount === 1 ? 'Jugada añadida.' : `${result.addedCount} jugadas añadidas.`);
+      } else if (result.addedCount > 0 && result.duplicateCount > 0) {
+        toast.success(`${result.addedCount} añadidas (${result.duplicateCount} duplicadas).`);
+      } else if (result.addedCount === 0 && result.duplicateCount > 0) {
+        toast.error(result.duplicateCount === 1 ? 'Esta jugada ya estaba añadida.' : 'Todas las jugadas ya estaban añadidas.');
+      }
+    } catch (error) {
+      console.error('[handleMulticolumnPersist] Error:', error);
+      toast.error('Ocurrió un error al procesar las columnas.');
+    }
+  };
+
   // Lógica computada para el selector temporal simplificado
   const currentWeekDraws = useMemo(() => getDrawsForCurrentWeek(game.type, new Date()), [game.type]);
   const currentWeekDates = useMemo(() => currentWeekDraws.map(d => d.drawDate), [currentWeekDraws]);
@@ -1014,7 +1106,8 @@ export function GamePlayPage() {
                 {isMulticolumnMode ? (
                   <MulticolumnTicketFlow 
                     game={game} 
-                    drawsCount={effectiveSelectedDrawDates.length} 
+                    drawDates={effectiveSelectedDrawDates}
+                    onReviewColumns={handleMulticolumnPersist}
                   />
                 ) : (
                   <>
