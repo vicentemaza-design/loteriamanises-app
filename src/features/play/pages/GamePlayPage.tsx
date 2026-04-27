@@ -9,11 +9,7 @@ import {
   NavArrowLeft,
   RefreshCircle,
   Spark,
-  Sparks as Sparkles,
   CheckCircle,
-  ShareAndroid,
-  ArrowRight,
-  JournalPage,
   InfoCircle,
   WarningTriangle,
   Calendar,
@@ -32,8 +28,6 @@ import { GameModeSelector } from '../components/GameModeSelector';
 import { GameInfoSheet } from '../components/GameInfoSheet';
 import { QuinielaProfessionalSelector } from '../components/QuinielaProfessionalSelector';
 import { ReductionSystemSelector } from '../components/ReductionSystemSelector';
-import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
-import { NationalTicketVisual, type NationalDrawType } from '../components/NationalTicketVisual';
 import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
 import { NationalDrawSelector } from '../national/components/NationalDrawSelector';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';

@@ -6,7 +6,6 @@ import { NationalSearchBar } from './NationalSearchBar';
 import { NationalNumberShowcase } from './NationalNumberShowcase';
 import { NationalTicketQuantitySelector } from './NationalTicketQuantitySelector';
 import { NationalCartSummary } from './NationalCartSummary';
-import { formatCurrency } from '@/shared/lib/utils';
 import type { 
   NationalShowcaseItem, 
   NationalCartLine, 
