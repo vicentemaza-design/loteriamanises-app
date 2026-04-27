@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { Key } from 'react';
-import { 
-  ArrowRight, 
-  Group as Users, 
-  Shield, 
-  Wallet as CreditCard, 
+import {
+  ArrowRight,
+  Group as Users,
+  Shield,
+  Wallet as CreditCard,
   Lock,
   Sparks as Sparkles,
   Timer as Clock,
@@ -15,7 +15,10 @@ import {
   Download,
   Flash as Zap,
   Calendar,
+  Trophy,
 } from 'iconoir-react/regular';
+import { AnnouncementBanner } from '../components/AnnouncementBanner';
+import { MOCK_DELIVERED_PRIZES } from '../data/delivered-prizes.mock';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { GameIcon } from '@/shared/ui/GameIcon';
@@ -397,6 +400,9 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* ── Announcement Banner ───────────────────────────────── */}
+      <AnnouncementBanner />
+
       {/* ── Hero Section ──────────────────────────────────────── */}
       <section className="px-4">
         <div className="hero-card relative h-[520px] rounded-[2.5rem] overflow-hidden shadow-xl shadow-manises/10 group transition-all duration-500">
@@ -533,6 +539,33 @@ export function HomePage() {
             onClick={() => navigate('/profile/subscriptions')}
           />
         </div>
+      </section>
+
+      {/* ── Premios Entregados Widget ─────────────────────────── */}
+      <section className="px-6">
+        <PremiumTouchInteraction scale={0.98}>
+          <button
+            type="button"
+            onClick={() => navigate('/premios-entregados')}
+            className="w-full flex items-center gap-4 rounded-2xl bg-emerald-50 border border-emerald-100 p-4 text-left group hover:border-emerald-200 transition-all"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0">
+              <Trophy className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">
+                Premios entregados
+              </p>
+              <p className="text-sm font-bold text-emerald-900 mt-0.5">
+                {(MOCK_DELIVERED_PRIZES.reduce((s, p) => s + p.amount, 0) / 1_000_000).toFixed(1)}M € repartidos
+              </p>
+              <p className="text-[10px] text-emerald-700/60 font-medium">
+                Ver historial de nuestra administración
+              </p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-emerald-600/50 group-hover:text-emerald-600 transition-colors" />
+          </button>
+        </PremiumTouchInteraction>
       </section>
 
       {/* ── Footer Info ───────────────────────────────────────── */}

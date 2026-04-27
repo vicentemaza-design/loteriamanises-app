@@ -22,6 +22,7 @@ import { WithdrawalsPage } from '@/features/profile/pages/WithdrawalsPage';
 import { HelpPage } from '@/features/profile/pages/HelpPage';
 import { CompaniesPage } from '@/features/profile/pages/CompaniesPage';
 import { TechnicalMatrixPage } from '@/features/admin/pages/TechnicalMatrixPage';
+import { DeliveredPrizesPage } from '@/features/catalog/pages/DeliveredPrizesPage';
 
 export function AppRouter() {
   return (
@@ -35,6 +36,7 @@ export function AppRouter() {
 
       <Route element={<PrivateLayout />}>
         <Route path="/home" element={<HomePage />} />
+        <Route path="/premios-entregados" element={<DeliveredPrizesPage />} />
         <Route path="/games" element={<GamesPage />} />
         <Route path="/play/:gameId" element={<GamePlayPage />} />
         <Route path="/results" element={<ResultsPage />} />
