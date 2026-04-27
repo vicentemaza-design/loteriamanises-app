@@ -174,7 +174,7 @@ export function HelpPage() {
               <PremiumSectionCard
                 title="Legal y Privacidad"
                 eyebrow="Compliance"
-                description="LOTERÍA MANISES garantiza el tratamiento seguro según el RGPD."
+                description="Consulta enlaces informativos sobre privacidad, condiciones y gestión de datos."
                 tone="blue"
               >
                 <div className="divide-y divide-slate-100 -mx-1">

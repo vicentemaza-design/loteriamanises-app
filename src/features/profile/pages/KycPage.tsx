@@ -1,16 +1,12 @@
 import { useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, UserCheck, CreditCard, Camera, Clock, AlertCircle, ChevronRight, Info } from 'lucide-react';
+import { ShieldCheck, CreditCard, Camera, Clock } from 'lucide-react';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';
-import { PremiumActionRow } from '../components/PremiumActionRow';
-import { Button } from '@/shared/ui/Button';
 import { toast } from 'sonner';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
 export function KycPage() {
-  const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
@@ -41,11 +37,11 @@ export function KycPage() {
               </div>
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Estado actual</p>
-                <h3 className="text-xl font-black text-white">Pendiente</h3>
+                <h3 className="text-xl font-black text-white">Demo pendiente</h3>
               </div>
             </div>
             <p className="mt-4 text-[11px] text-white/60 leading-relaxed font-medium">
-              Tu cuenta está en modo limitado. Verifica tu identidad para retirar premios y aumentar límites de depósito.
+              Demo · verificación pendiente de integración. Este flujo no valida identidad ni habilita retiradas o límites reales.
             </p>
           </div>
         </section>
@@ -61,19 +57,19 @@ export function KycPage() {
             <PremiumSectionCard
               title="DNI / NIE"
               eyebrow="Paso 1"
-              description="Sube una foto clara del anverso y reverso de tu documento oficial."
+              description="Vista previa del futuro flujo documental. No permite subir DNI/NIE real en esta fase."
               tone="blue"
             >
               <div className="grid grid-cols-2 gap-3 mt-2">
                 <button 
-                  onClick={() => toast.info('Demo · Subida de frontal desactivada')}
+                  onClick={() => toast.info('Demo · No se puede subir el frontal en esta fase')}
                   className="flex flex-col items-center justify-center p-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors group"
                 >
                   <CreditCard className="w-6 h-6 text-slate-300 group-hover:text-manises-blue transition-colors mb-2" />
                   <p className="text-[9px] font-black text-slate-400 uppercase">Frontal</p>
                 </button>
                 <button 
-                  onClick={() => toast.info('Demo · Subida de reverso desactivada')}
+                  onClick={() => toast.info('Demo · No se puede subir el reverso en esta fase')}
                   className="flex flex-col items-center justify-center p-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors group"
                 >
                   <CreditCard className="w-6 h-6 text-slate-300 group-hover:text-manises-blue transition-colors mb-2" />
@@ -85,7 +81,7 @@ export function KycPage() {
             <PremiumSectionCard
               title="Verificación Facial"
               eyebrow="Paso 2"
-              description="Un breve selfie para confirmar que el documento te pertenece."
+              description="Vista previa del futuro control facial. No abre cámara ni procesa selfies reales."
               tone="gold"
             >
               <button 
@@ -93,7 +89,7 @@ export function KycPage() {
                 className="w-full flex items-center justify-center gap-3 p-4 rounded-2xl bg-manises-gold/10 border border-manises-gold/20 hover:bg-manises-gold/20 transition-all group mt-2"
               >
                 <Camera className="w-5 h-5 text-manises-blue" />
-                <p className="text-[11px] font-black text-manises-blue uppercase tracking-widest">Iniciar Selfie</p>
+                <p className="text-[11px] font-black text-manises-blue uppercase tracking-widest">Selfie demo</p>
               </button>
             </PremiumSectionCard>
           </div>
@@ -104,9 +100,9 @@ export function KycPage() {
           <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex gap-3">
             <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="text-[11px] font-black text-emerald-900 uppercase tracking-widest">Privacidad Garantizada</p>
+              <p className="text-[11px] font-black text-emerald-900 uppercase tracking-widest">Privacidad en demo</p>
               <p className="text-[10px] text-emerald-700 leading-relaxed font-medium">
-                Tus datos se procesan de forma cifrada y solo se utilizan para el cumplimiento de la normativa de juego DGOJ.
+                No se envían documentos, selfies ni datos KYC a ningún servicio externo desde esta pantalla mock.
               </p>
             </div>
           </div>

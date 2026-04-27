@@ -233,7 +233,7 @@ export function ProfilePage() {
           Receptor Oficial de Apuestas 81980 · Valencia
         </p>
         <p className="text-[9px] text-muted-foreground/40">
-          Juega con responsabilidad. +18. DGOJ. v2.0.26
+          Juega con responsabilidad. +18. Demo v2.0.26
         </p>
       </motion.div>
     </motion.div>
