@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, type ComponentType } from 'react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { Button } from '@/shared/ui/Button';
@@ -40,7 +40,7 @@ function Field({
   className,
 }: {
   label: string;
-  icon: any;
+  icon: ComponentType<{ className?: string }>;
   helper?: string;
   readOnly?: boolean;
   value: string;

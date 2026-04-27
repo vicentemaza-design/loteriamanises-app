@@ -43,8 +43,15 @@ gsap.registerPlugin(useGSAP);
 
 type Tab = 'activos' | 'historial';
 
+interface TicketResultLike {
+  gameId: string;
+  date: string;
+  numbers?: number[];
+  stars?: number[];
+}
+
 type ScrutinyState =
-  | { ticket: Ticket; result: any }
+  | { ticket: Ticket; result: TicketResultLike }
   | { ticket: Ticket; result: null }
   | null;
 
@@ -52,14 +59,14 @@ function getTicketCode(ticketId: string) {
   return ticketId.slice(-8).toUpperCase();
 }
 
-function getTicketResultMatch(ticket: Ticket, results: any[]) {
+function getTicketResultMatch(ticket: Ticket, results: TicketResultLike[]) {
   return results.find((result) => (
     result.gameId === ticket.gameId &&
     ticket.drawDate === getBusinessDate(result.date)
   )) ?? null;
 }
 
-function getMatchedValues(ticket: Ticket, result: any | null) {
+function getMatchedValues(ticket: Ticket, result: TicketResultLike | null) {
   if (!result || ticket.gameType === 'loteria-nacional' || ticket.gameType === 'navidad' || ticket.gameType === 'nino') {
     return { numbers: [] as number[], stars: [] as number[] };
   }
@@ -124,7 +131,7 @@ function getCompactSelectionSummary(ticket: Ticket) {
   return `${ticket.numbers.join(', ')}${starsLabel}`;
 }
 
-function getScrutinyTone(ticket: Ticket, result: any | null) {
+function getScrutinyTone(ticket: Ticket, result: TicketResultLike | null) {
   if (!result) {
     return {
       label: 'Sin resumen',

@@ -87,7 +87,7 @@ export function WithdrawalsPage() {
             </div>
             <div>
               <p className="text-xs font-bold text-manises-blue">Guía de pago de premios</p>
-              <p className="text-[10px] text-muted-foreground font-medium">Plazos, fiscalidad y seguridad oficial</p>
+              <p className="text-[10px] text-muted-foreground font-medium">Plazos, fiscalidad y seguridad informativa</p>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-manises-blue group-hover:translate-x-0.5 transition-transform" />
@@ -98,9 +98,9 @@ export function WithdrawalsPage() {
           <div className="flex items-start gap-3 p-4 rounded-2xl bg-manises-blue/5 border border-manises-blue/10">
             <Shield className="w-5 h-5 text-manises-blue shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest leading-none">Seguridad Oficial</p>
+              <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest leading-none">Seguridad Informativa</p>
               <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
-                Cobro de premios pendiente de integración. No se realizará ninguna retirada real de fondos. Todas las operaciones cumplen con la normativa DGOJ.
+                Cobro de premios pendiente de integración en fase real. No se realizará ninguna retirada de fondos en esta demo. Contenido orientativo.
               </p>
             </div>
           </div>

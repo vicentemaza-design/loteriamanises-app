@@ -156,12 +156,12 @@ export function MovementsPage() {
         <PremiumSectionCard
           title="Seguridad y Auditoría"
           eyebrow="Compliance"
-          description="Cada movimiento cuenta con un identificador único de transacción para su seguimiento oficial."
+          description="Cada movimiento cuenta con un identificador único de transacción para su seguimiento informativo."
           tone="default"
         >
           <div className="space-y-3">
             <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">
-              Los datos mostrados son a título informativo. Las operaciones reales están sujetas a la validación de Loterías y Apuestas del Estado.
+              Los datos mostrados son a título informativo. Las operaciones simuladas son de carácter orientativo y pendientes de integración.
             </p>
             <div className="flex flex-col items-center gap-1 opacity-40">
               <p className="text-[9px] font-black text-manises-blue uppercase tracking-widest">

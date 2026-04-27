@@ -66,7 +66,7 @@ export function HelpPage() {
     <div className="flex min-h-full flex-col bg-background pb-12" ref={containerRef}>
       <ProfileSubHeader 
         title="Ayuda y Compliance" 
-        subtitle="Juego responsable y soporte oficial"
+        subtitle="Juego responsable y soporte informativo"
       />
 
       <div className="p-5 flex flex-col gap-5">
@@ -96,7 +96,7 @@ export function HelpPage() {
               <h3 className="text-sm font-black uppercase tracking-widest text-manises-gold">Centro de Ayuda</h3>
             </div>
             <p className="text-[12px] font-medium text-white/80 leading-relaxed max-w-[80%]">
-              Tu tranquilidad es nuestra prioridad. Consulta guías oficiales y herramientas de control.
+              Tu tranquilidad es nuestra prioridad. Consulta guías informativas y herramientas de control.
             </p>
           </div>
         </section>
@@ -161,7 +161,7 @@ export function HelpPage() {
                     onClick={() => openExternal(officialLinks.responsibleGaming)}
                   >
                     <ExternalLinkIcon className="w-3.5 h-3.5" />
-                    Guía oficial de seguridad
+                    Guía de seguridad de referencia
                   </Button>
                 </div>
               </PremiumSectionCard>
@@ -212,7 +212,7 @@ export function HelpPage() {
               <div className="divide-y divide-slate-100 -mx-1">
                 {[
                   { q: '¿Cómo sé si tengo premio?', a: 'Te avisamos por email tras el escrutinio.' },
-                  { q: '¿Es seguro el pago?', a: 'Usamos pasarelas CES de alta seguridad.' },
+                  { q: '¿Es seguro el pago?', a: 'Se integrarán pasarelas seguras (pendiente de integración).' },
                   { q: '¿Tengo que recoger el décimo?', a: 'No, queda custodiado en la administración.' }
                 ].map((item, i) => (
                   <div key={i} className="py-3.5 px-3">
@@ -226,7 +226,7 @@ export function HelpPage() {
                 className="w-full h-10 text-[9px] font-black uppercase tracking-widest mt-4 rounded-xl border-slate-200"
                 onClick={() => openExternal(officialLinks.faq)}
               >
-                Ver todas las dudas oficiales
+                Ver todas las dudas informativas
               </Button>
             </PremiumSectionCard>
           </section>

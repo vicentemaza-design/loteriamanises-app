@@ -241,10 +241,10 @@ export function ResultsPage() {
 
                 {LOTTERY_GAMES.find(g => g.id === result.gameId)?.type !== 'loteria-nacional' ? (
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {result.numbers.map((n: any, i: number) => (
+                    {result.numbers.map((n: number, i: number) => (
                       <NumberBall key={i} number={n} variant="default" size="sm" />
                     ))}
-                    {result.stars?.map((s: any, i: number) => (
+                    {result.stars?.map((s: number, i: number) => (
                       <NumberBall key={`s-${i}`} number={s} variant="gold" size="sm" />
                     ))}
                     {result.complementario !== undefined && (

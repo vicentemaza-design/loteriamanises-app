@@ -109,7 +109,7 @@ export function PaymentsPage() {
               <PremiumActionRow
                 icon={CreditCard}
                 title="Transferencia Bancaria"
-                description="Ingreso directo a cuenta oficial"
+                description="Ingreso directo a cuenta de referencia"
                 tone="blue"
                 onClick={() => toast.info('Demo · Próximamente disponible')}
               />
