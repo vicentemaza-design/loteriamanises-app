@@ -600,6 +600,18 @@ export function GamePlayPage() {
       />
 
       <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-5 p-4 pt-3">
+        {/* Draw time strip — hora del sorteo visible en el cuerpo de la página */}
+        <div className="flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white/60 px-4 py-2.5 shadow-sm backdrop-blur-sm">
+          <Calendar className="w-4 h-4 text-manises-blue/50 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Próximo sorteo</p>
+            <p className="text-[12px] font-bold text-manises-blue">
+              {formatDrawTime(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw)}
+            </p>
+          </div>
+          {/* salesCloseAt: pendiente de BE — mostrar hora límite de compra cuando el campo esté disponible */}
+        </div>
+
         {/* Selector de Modo (Solo si hay varios disponibles) */}
         {!isNationalLottery && (
           <GameModeSelector
