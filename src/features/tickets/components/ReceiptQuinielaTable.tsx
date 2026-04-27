@@ -1,7 +1,7 @@
 import { cn } from '@/shared/lib/utils';
 
 interface ReceiptQuinielaTableProps {
-  picks: string[]; // ['1', 'X', '2', '1', ...]
+  picks: string[]; // ['1', 'X', '2', '1X', '12', 'X2', '1X2', ...]
   className?: string;
 }
 

@@ -28,7 +28,7 @@ export function GameReceiptVisual({ ticket, selectionSummary }: GameReceiptVisua
         <div className="space-y-6 py-4">
           <ReceiptNumbersBlock label="Combinación" numbers={numbers} />
           {stars && stars.length > 0 && (
-            <ReceiptNumbersBlock label="Sueño" numbers={[stars[0]]} variant="circle" />
+            <ReceiptNumbersBlock label="Sueño" numbers={stars} variant="circle" />
           )}
         </div>
       );
@@ -38,7 +38,7 @@ export function GameReceiptVisual({ ticket, selectionSummary }: GameReceiptVisua
         <div className="space-y-6 py-4">
           <ReceiptNumbersBlock label="Números" numbers={numbers} />
           {stars && stars.length > 0 && (
-            <ReceiptNumbersBlock label="Clave" numbers={[stars[0]]} variant="circle" />
+            <ReceiptNumbersBlock label="Clave" numbers={stars} variant="circle" />
           )}
         </div>
       );
