@@ -374,7 +374,7 @@ export function GamePlayPage() {
   }, [isExplicitNationalProduct, isNationalLottery, selectedNationalDrawId, setNationalShowcaseDrawId]);
 
   useEffect(() => {
-    setIsTimeSelectorExpanded(true);
+    setIsTimeSelectorExpanded(false);
   }, [game.id, editingDraftId]);
 
   const toggleNumber = (n: number) => {
@@ -772,13 +772,13 @@ export function GamePlayPage() {
   return (
     <div
       className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-36"
-      style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 64px)' }}
+      style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 56px)' }}
     >
       <div
-        className="fixed top-0 left-0 right-0 z-40 text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+64px)] flex flex-col justify-end"
+        className="fixed top-0 left-0 right-0 z-40 text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+56px)] flex flex-col justify-end"
         style={{ background: `linear-gradient(135deg, ${game.color}, ${game.colorEnd ?? game.color})` }}
       >
-        <div className="flex items-center justify-between px-3 py-3">
+        <div className="flex items-center justify-between px-3 py-2">
           <div className="flex items-center gap-1">
             <Button
               variant="ghost" size="icon"
@@ -819,24 +819,28 @@ export function GamePlayPage() {
         content={helpContent}
       />
 
-      <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-5 p-4 pt-3">
-        {/* Draw time strip — hora del sorteo visible en el cuerpo de la página */}
-        <div className="flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white/60 px-4 py-2.5 shadow-sm backdrop-blur-sm">
-          <Calendar className="w-4 h-4 text-manises-blue/50 shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Próximo sorteo</p>
-            <p className="text-[12px] font-bold text-manises-blue">
-              {formatDrawTime(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw)}
-            </p>
+      <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-3 p-4 pt-2">
+        {/* Draw time strip — Solo visible si NO hay selector de tiempo detallado para evitar duplicidad */}
+        {!supportsTimeSelection && (
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white/60 px-4 py-2 shadow-sm backdrop-blur-sm">
+            <Calendar className="w-3.5 h-3.5 text-manises-blue/50 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Próximo sorteo</p>
+              <p className="text-[12px] font-bold text-manises-blue">
+                {formatDrawTime(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw)}
+              </p>
+            </div>
           </div>
-          {/* salesCloseAt: pendiente de BE — mostrar hora límite de compra cuando el campo esté disponible */}
-        </div>
+        )}
 
         {supportsTimeSelection && (
           <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
-            <div className="rounded-[1.4rem] border border-slate-200/50 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
-              <div className="flex items-center justify-between mb-3.5 px-0.5">
-                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Planificación</span>
+            <div className="rounded-[1.4rem] border border-slate-200/50 bg-white/80 p-3 shadow-sm backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-2.5 px-0.5">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-3 h-3 text-manises-blue/40" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Sorteo y Planificación</span>
+                </div>
                 <span className="text-[9px] font-bold text-manises-blue/60 uppercase">{drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}</span>
               </div>
 
@@ -847,10 +851,12 @@ export function GamePlayPage() {
                   onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
                 />
               ) : !isTimeSelectorExpanded ? (
-                <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-slate-50/70 px-3.5 py-3">
+                <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-slate-50/70 px-3 py-2">
                   <div className="min-w-0">
-                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">Selección activa</p>
-                    <p className="mt-1 truncate text-[12px] font-black text-manises-blue">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                      {timeMode === 'next_draw' ? 'Sorteo' : 'Planificación'}
+                    </p>
+                    <p className="mt-0.5 truncate text-[12px] font-black text-manises-blue">
                       {timeSelectionSummary}
                     </p>
                   </div>
@@ -1026,11 +1032,11 @@ export function GamePlayPage() {
 
         {/* Toggle Multi-columna (Opcional para juegos de bolas en modo simple) */}
         {!isNationalLottery && !isQuiniela && mode === 'simple' && (
-          <div className="flex p-1 bg-slate-100/50 rounded-2xl border border-slate-200/50">
+          <div className="flex p-0.5 bg-slate-100/50 rounded-xl border border-slate-200/50">
             <button
               onClick={() => setIsMulticolumnMode(false)}
               className={cn(
-                "flex-1 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
                 !isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
               )}
             >
@@ -1039,7 +1045,7 @@ export function GamePlayPage() {
             <button
               onClick={() => setIsMulticolumnMode(true)}
               className={cn(
-                "flex-1 py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
                 isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
               )}
             >
@@ -1110,43 +1116,43 @@ export function GamePlayPage() {
                 ) : (
                   <>
                     {/* ---- Selección visual ---- */}
-                    <div className="flex flex-col items-center gap-4 rounded-[1.6rem] border border-white/70 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] surface-neo-soft" style={theme.surface}>
-                  {/* Números seleccionados */}
-                  <div className="flex flex-wrap justify-center gap-2.5">
-                    {(mode === 'reduced'
-                      ? Array.from({ length: Math.max(minNums, selectedNumbers.length || minNums) })
-                      : Array.from({ length: maxNums })
-                    ).map((_, i) => (
-                      <motion.div
-                        key={`slot-${i}`}
-                        animate={{ scale: selectedNumbers[i] ? 1 : 0.95 }}
-                        className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-base border-2 transition-colors ${selectedNumbers[i]
-                            ? 'shadow-sm'
-                            : 'bg-white border-dashed border-gray-200 text-gray-200'
-                          }`}
-                        style={selectedNumbers[i] ? theme.selectedNumber : undefined}
-                      >
-                        {selectedNumbers[i] ?? ''}
-                      </motion.div>
-                    ))}
+                    <div className="flex flex-col items-center gap-3 rounded-[1.6rem] border border-white/70 p-3 shadow-[0_16px_40px_rgba(15,23,42,0.08)] surface-neo-soft" style={theme.surface}>
+                    {/* Números seleccionados */}
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {(mode === 'reduced'
+                        ? Array.from({ length: Math.max(minNums, selectedNumbers.length || minNums) })
+                        : Array.from({ length: maxNums })
+                      ).map((_, i) => (
+                        <motion.div
+                          key={`slot-${i}`}
+                          animate={{ scale: selectedNumbers[i] ? 1 : 0.95 }}
+                          className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm border-2 transition-colors ${selectedNumbers[i]
+                              ? 'shadow-sm'
+                              : 'bg-white border-dashed border-gray-200 text-gray-200'
+                            }`}
+                          style={selectedNumbers[i] ? theme.selectedNumber : undefined}
+                        >
+                          {selectedNumbers[i] ?? ''}
+                        </motion.div>
+                      ))}
 
-                    {maxStars > 0 && (
-                      <div className="flex gap-2.5 border-l-2 border-gray-200 pl-3 ml-1">
-                        {Array.from({ length: mode === 'reduced' ? minStars : maxStars }).map((_, i) => (
-                          <motion.div
-                            key={`star-slot-${i}`}
-                            animate={{ scale: selectedStars[i] ? 1 : 0.95 }}
-                            className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-base border-2 transition-colors ${selectedStars[i]
-                                ? 'bg-manises-gold border-manises-gold text-manises-blue shadow-gold'
-                                : 'bg-white border-dashed border-yellow-200 text-yellow-200'
-                              }`}
-                          >
-                            {selectedStars[i] ?? ''}
-                          </motion.div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                      {maxStars > 0 && (
+                        <div className="flex gap-2 border-l-2 border-gray-200 pl-2.5 ml-0.5">
+                          {Array.from({ length: mode === 'reduced' ? minStars : maxStars }).map((_, i) => (
+                            <motion.div
+                              key={`star-slot-${i}`}
+                              animate={{ scale: selectedStars[i] ? 1 : 0.95 }}
+                              className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm border-2 transition-colors ${selectedStars[i]
+                                  ? 'bg-manises-gold border-manises-gold text-manises-blue shadow-gold'
+                                  : 'bg-white border-dashed border-yellow-200 text-yellow-200'
+                                }`}
+                            >
+                              {selectedStars[i] ?? ''}
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
 
                   {/* Acciones */}
                   <div className="flex gap-2">

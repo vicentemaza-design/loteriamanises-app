@@ -30,7 +30,7 @@ export function NumbersGrid({
   subtitle
 }: NumbersGridProps) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       <div className="flex items-center justify-between px-1">
         <div className="flex flex-col">
           <h2 className="font-bold text-sm" style={theme.title}>{title}</h2>
