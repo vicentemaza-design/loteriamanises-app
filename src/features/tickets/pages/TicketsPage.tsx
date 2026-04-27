@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ComponentType } from 'react';
+import { useMemo, useRef, useState, useEffect, type ComponentType } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { StatusBadge } from '@/shared/ui/StatusBadge';
 import { GameBadge } from '@/shared/ui/GameBadge';
@@ -17,14 +17,10 @@ import {
   Repeat2,
   Archive,
   ScrollText,
-  CheckCircle2,
-  CalendarDays,
   ReceiptText,
   Hash,
-  Wallet,
   Target,
   Maximize2,
-  FileCheck2,
   Trophy,
   XCircle,
 } from 'lucide-react';
@@ -39,6 +35,9 @@ import { ComparisonModal } from '@/features/results/components/ComparisonModal';
 import { toast } from 'sonner';
 import type { Ticket } from '@/shared/types/domain';
 import { getGameIdentity } from '@/shared/lib/game-identity';
+import { BallSelection } from '../components/BallSelection';
+import { NationalDecimoCard } from '../components/NationalDecimoCard';
+import { TicketReceiptModal } from '../components/TicketReceiptModal';
 
 gsap.registerPlugin(useGSAP);
 
@@ -174,218 +173,6 @@ function QuickActionButton({
   );
 }
 
-/**
- * Visualización de bolas y aciertos para juegos de azar.
- */
-function BallSelection({ 
-  numbers, 
-  stars, 
-  matchedNumbers = [], 
-  matchedStars = [], 
-  gameColor,
-  type
-}: { 
-  numbers: number[]; 
-  stars?: number[]; 
-  matchedNumbers?: number[]; 
-  matchedStars?: number[]; 
-  gameColor: string;
-  type?: string;
-}) {
-  const isGordo = type === 'gordo';
-  const isEuroDreams = type === 'eurodreams';
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      <div className="flex flex-wrap gap-1.5">
-        {numbers.map((n) => (
-          <div
-            key={n}
-            className={cn(
-              "flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-bold transition-all",
-              matchedNumbers.includes(n)
-                ? "border-emerald-500 bg-emerald-500 text-white shadow-[0_0_12px_rgba(16,185,129,0.3)]"
-                : "border-slate-200 bg-white text-slate-600"
-            )}
-          >
-            {n}
-          </div>
-        ))}
-      </div>
-      {stars && stars.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 border-l border-slate-100 pl-2">
-          {stars.map((s) => (
-            <div
-              key={s}
-              className={cn(
-                "relative flex h-7 w-7 items-center justify-center text-[10px] font-bold transition-all",
-                isGordo ? "rounded-lg border" : "star-shape",
-                matchedStars.includes(s)
-                  ? isGordo 
-                    ? "border-amber-500 bg-amber-500 text-white shadow-md"
-                    : "text-white drop-shadow-md"
-                  : isGordo
-                    ? "border-amber-200 bg-amber-50 text-amber-700"
-                    : "text-amber-500"
-              )}
-              style={!isGordo && matchedStars.includes(s) ? { 
-                clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
-                backgroundColor: '#f59e0b'
-              } : !isGordo ? {
-                clipPath: 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)',
-                backgroundColor: '#fef3c7'
-              } : {}}
-            >
-              <span className="relative z-10">{s}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/**
- * Previsualización mock de un décimo de Lotería Nacional.
- */
-function NationalDecimoCard({ ticket }: { ticket: Ticket }) {
-  const number = getTicketDisplayNumber(ticket);
-  const series = '167'; // Mock
-  const fraction = '4'; // Mock
-  
-  return (
-    <div className="relative overflow-hidden rounded-2xl border border-manises-blue/10 bg-[#fffdf5] shadow-inner">
-      <div className="absolute right-0 top-0 rounded-bl-xl bg-manises-gold/10 px-2 py-1 text-[8px] font-black uppercase text-manises-gold">
-        DEMO · No real
-      </div>
-      
-      <div className="flex p-4">
-        {/* Imagen del décimo (Placeholder premium) */}
-        <div className="mr-4 flex h-24 w-20 shrink-0 flex-col items-center justify-center rounded-lg border border-manises-blue/5 bg-white p-2 shadow-sm">
-          <div className="h-full w-full rounded bg-manises-blue/5 flex items-center justify-center">
-            <Target className="h-8 w-8 text-manises-blue/20" />
-          </div>
-          <p className="mt-1 text-[6px] font-bold text-slate-300">ADMIN. 6</p>
-        </div>
-        
-        <div className="flex flex-1 flex-col justify-between py-1">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-manises-blue/40">Lotería Nacional</p>
-            <h4 className="text-sm font-black text-manises-blue">Sorteo del Jueves</h4>
-          </div>
-          
-          <div className="flex items-end justify-between">
-            <div className="space-y-1">
-              <span className="block text-[28px] font-black leading-none tracking-tighter text-manises-blue">
-                {number.padStart(5, '0')}
-              </span>
-              <div className="flex gap-2 text-[9px] font-bold text-slate-400">
-                <span>SERIE {series}</span>
-                <span>FRACCIÓN {fraction}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="border-t border-dashed border-manises-blue/10 bg-manises-blue/[0.02] p-2 text-center">
-        <p className="text-[8px] font-bold uppercase tracking-widest text-manises-blue/30">
-          Custodiado en Administración Nº 6 · Manises
-        </p>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Modal tipo resguardo térmico (Thermal Receipt Mock).
- */
-function TicketReceiptModal({ ticket, onClose }: { ticket: Ticket | null; onClose: () => void }) {
-  if (!ticket) return null;
-  const game = LOTTERY_GAMES.find(g => g.id === ticket.gameId);
-  const code = getTicketCode(ticket.id);
-
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[110] flex items-center justify-center p-5">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
-          onClick={onClose}
-        />
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className="relative w-full max-w-sm overflow-hidden rounded-[2.5rem] bg-white p-1 shadow-2xl"
-        >
-          <div className="rounded-[2.2rem] border-2 border-slate-50 bg-white p-6 pt-8">
-            <div className="mb-6 flex flex-col items-center text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-manises-blue/5 text-manises-blue">
-                <ReceiptText className="h-8 w-8" />
-              </div>
-              <h3 className="text-lg font-black text-manises-blue uppercase tracking-tight">Resguardo de Apuesta</h3>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Lotería Manises · Admin. Nº 6</p>
-            </div>
-
-            <div className="space-y-4 font-mono text-[11px] text-slate-600">
-              <div className="border-y border-dashed border-slate-200 py-3 space-y-2">
-                <div className="flex justify-between">
-                  <span>JUEGO:</span>
-                  <span className="font-bold text-manises-blue">{game?.name.toUpperCase()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>FECHA SORTEO:</span>
-                  <span className="font-bold text-manises-blue">{formatDate(ticket.drawDate)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>CÓDIGO:</span>
-                  <span className="font-bold text-manises-blue">{code}</span>
-                </div>
-              </div>
-
-              <div className="py-2">
-                <p className="mb-2 text-center text-[10px] font-bold text-slate-400">COMBINACIÓN</p>
-                <div className="text-center text-sm font-bold text-manises-blue tracking-wider">
-                  {ticket.numbers.join('  ')}
-                  {ticket.stars && ticket.stars.length > 0 && `  +  ${ticket.stars.join('  ')}`}
-                </div>
-              </div>
-
-              <div className="border-t border-dashed border-slate-200 pt-3 space-y-1">
-                <div className="flex justify-between">
-                  <span>IMPORTE TOTAL:</span>
-                  <span className="font-bold">{formatCurrency(ticket.price)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>EMITIDO:</span>
-                  <span>{formatDate(ticket.createdAt)}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-col items-center gap-4">
-              <div className="h-10 w-full rounded-lg bg-slate-50 flex items-center justify-center opacity-30">
-                {/* Mock barcode */}
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 40 }).map((_, i) => (
-                    <div key={i} className="bg-slate-900" style={{ width: i % 3 === 0 ? '2px' : '1px', height: '24px' }} />
-                  ))}
-                </div>
-              </div>
-              <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">DEMO · SIN VALIDEZ OFICIAL</p>
-              <Button variant="outline" className="w-full rounded-2xl h-12" onClick={onClose}>
-                Cerrar resguardo
-              </Button>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
-  );
-}
 
 function ScrutinyFallbackModal({
   state,
@@ -455,6 +242,10 @@ export function TicketsPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'won' | 'lost'>('all');
   const [receiptTicket, setReceiptTicket] = useState<Ticket | null>(null);
   const [scrutinyState, setScrutinyState] = useState<ScrutinyState>(null);
+
+  useEffect(() => {
+    setGameFilter('all');
+  }, [statusFilter]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -711,9 +502,9 @@ export function TicketsPage() {
                               </div>
 
                               <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{formatDate(ticket.drawDate)}</p>
+                                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{orderDatesSummary}</p>
                                 <span className="text-slate-300">·</span>
-                                <p className="text-[11px] font-black text-manises-blue">{formatCurrency(ticket.price ?? 0)}</p>
+                                <p className="text-[11px] font-black text-manises-blue">{formatCurrency(orderTotal ?? 0)}</p>
                                 <span className="text-slate-300">·</span>
                                 <StatusBadge status={ticket.status} className="px-1.5 py-0 text-[9px]" />
                               </div>
@@ -770,8 +561,13 @@ export function TicketsPage() {
                               className="overflow-hidden"
                             >
                               <div className="mt-3 space-y-3">
-                                {nationalTicket ? (
-                                  <NationalDecimoCard ticket={ticket} />
+                                {game.type === 'quiniela' ? (
+                                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                                    <p className="text-[11px] font-black uppercase tracking-tight text-manises-blue">Pronóstico Quiniela</p>
+                                    <p className="mt-1 text-[10px] font-bold text-slate-500">{ticket.numbers.join(' · ')}</p>
+                                  </div>
+                                ) : nationalTicket ? (
+                                  <NationalDecimoCard ticket={ticket} displayNumber={ticketDisplayNumber} />
                                 ) : (
                                   <div className="rounded-xl border border-white bg-white/90 p-3">
                                     <p className="mb-2 text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Combinación</p>
@@ -780,8 +576,8 @@ export function TicketsPage() {
                                       stars={ticket.stars} 
                                       matchedNumbers={matched.numbers}
                                       matchedStars={matched.stars}
-                                      gameColor={game.color}
                                       type={game.type}
+                                      gameColor={game.color}
                                     />
                                   </div>
                                 )}
@@ -902,6 +698,7 @@ export function TicketsPage() {
       <TicketReceiptModal
         ticket={receiptTicket}
         onClose={() => setReceiptTicket(null)}
+        ticketCode={receiptTicket ? getTicketCode(receiptTicket.id) : ''}
       />
     </>
   );
