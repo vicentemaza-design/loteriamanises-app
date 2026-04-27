@@ -122,6 +122,7 @@ export function GamePlayPage() {
   const [timeMode, setTimeMode] = useState<ScheduleMode>('next_draw');
   const [selectedWeeksCount, setSelectedWeeksCount] = useState(DEFAULT_CUSTOM_WEEKS);
   const [selectedDrawDates, setSelectedDrawDates] = useState<string[]>([]);
+  const [isTimeSelectorExpanded, setIsTimeSelectorExpanded] = useState(true);
 
   // Features Laguinda Style
   const [isSubscription, setIsSubscription] = useState(false);
@@ -366,6 +367,10 @@ export function GamePlayPage() {
     setSelectedWeeksCount(Math.min(DEFAULT_CUSTOM_WEEKS, maxWeeksSelectable));
   }, [game.id, maxWeeksSelectable]);
 
+  useEffect(() => {
+    setIsTimeSelectorExpanded(true);
+  }, [game.id, editingDraftId]);
+
   const toggleNumber = (n: number) => {
     setSelectedNumbers(prev =>
       prev.includes(n)
@@ -550,6 +555,31 @@ export function GamePlayPage() {
                           effectiveSelectedDrawDates.length >= 2 &&
                           effectiveSelectedDrawDates.length < currentWeekDates.length;
 
+  const timeSelectionSummary = useMemo(() => {
+    if (isNationalLottery) {
+      return `${drawsCount} ${drawsCount === 1 ? 'sorteo' : 'sorteos'}`;
+    }
+
+    if (timeMode === 'next_draw') {
+      return 'Próximo sorteo';
+    }
+
+    if (timeMode === 'full_week') {
+      return `Toda la semana · ${drawsCount} ${drawsCount === 1 ? 'sorteo' : 'sorteos'}`;
+    }
+
+    const selectedDays = effectiveSelectedDrawDates
+      .slice(0, 3)
+      .map((drawDate) => new Date(drawDate).toLocaleDateString('es-ES', { weekday: 'short' }))
+      .map((label) => label.replace('.', ''));
+
+    if (effectiveSelectedDrawDates.length > 3) {
+      return `Días concretos · ${selectedDays.join(', ')} +${effectiveSelectedDrawDates.length - 3}`;
+    }
+
+    return `Días concretos · ${selectedDays.join(', ')}`;
+  }, [drawsCount, effectiveSelectedDrawDates, isNationalLottery, timeMode]);
+
   return (
     <div
       className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-36"
@@ -644,19 +674,35 @@ export function GamePlayPage() {
                     );
                   })}
                 </div>
+              ) : !isTimeSelectorExpanded ? (
+                <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-slate-50/70 px-3.5 py-3">
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">Selección activa</p>
+                    <p className="mt-1 truncate text-[12px] font-black text-manises-blue">
+                      {timeSelectionSummary}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsTimeSelectorExpanded(true)}
+                    className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-800"
+                  >
+                    Cambiar
+                  </button>
+                </div>
               ) : (
                 <>
                   {/* SELECTOR BINARIO PRINCIPAL */}
                   <div className="relative flex rounded-xl border border-slate-200/60 bg-slate-100/40 p-1">
-                    {[
-                      { id: 'next_draw', label: 'Próximo sorteo' },
-                      { id: 'full_week', label: 'Toda la semana' }
-                    ].map((option) => {
+                    {SCHEDULE_OPTIONS.filter((option) => option.id !== 'specific_days').map((option) => {
                       const active = timeMode === option.id;
                       return (
                         <button
                           key={option.id}
-                          onClick={() => setTimeMode(option.id as any)}
+                          onClick={() => {
+                            setTimeMode(option.id);
+                            setIsTimeSelectorExpanded(false);
+                          }}
                           className={cn(
                             'relative flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all z-10',
                             active ? 'text-manises-blue' : 'text-slate-500'
@@ -678,7 +724,16 @@ export function GamePlayPage() {
                   {/* ACCIÓN SECUNDARIA: PERSONALIZAR */}
                   <div className="mt-3 flex justify-center">
                     <button
-                      onClick={() => setTimeMode(timeMode === 'specific_days' ? 'next_draw' : 'specific_days')}
+                      onClick={() => {
+                        if (timeMode === 'specific_days') {
+                          setTimeMode('next_draw');
+                          setIsTimeSelectorExpanded(false);
+                          return;
+                        }
+
+                        setTimeMode('specific_days');
+                        setIsTimeSelectorExpanded(true);
+                      }}
                       className={cn(
                         "inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] transition-all px-3.5 py-1.5 rounded-full border",
                         timeMode === 'specific_days'
@@ -747,6 +802,15 @@ export function GamePlayPage() {
                               </button>
                             );
                           })}
+                        </div>
+                        <div className="flex justify-end px-1 pb-1">
+                          <button
+                            type="button"
+                            onClick={() => setIsTimeSelectorExpanded(false)}
+                            className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-800"
+                          >
+                            Listo
+                          </button>
                         </div>
                       </motion.div>
                     )}
