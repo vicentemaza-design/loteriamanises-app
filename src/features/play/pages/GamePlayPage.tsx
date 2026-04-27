@@ -1155,20 +1155,20 @@ export function GamePlayPage() {
                     </div>
 
                   {/* Acciones */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     <Button
                       variant="outline" size="sm"
-                      className="rounded-lg font-semibold text-xs px-4 border-gray-200 text-gray-500 hover:bg-gray-50"
+                      className="h-7 rounded-lg font-bold text-[10px] px-3 border-gray-200 text-gray-500 hover:bg-gray-50 uppercase tracking-wider"
                       onClick={handleClear}
                     >
-                      <RefreshCircle className="w-3.5 h-3.5 mr-1.5" /> Limpiar
+                      <RefreshCircle className="w-3 h-3 mr-1" /> Limpiar
                     </Button>
                     <Button
                       variant="outline" size="sm"
-                      className="rounded-lg font-semibold text-xs px-4 border-manises-gold/50 text-manises-gold hover:bg-manises-gold/5"
+                      className="h-7 rounded-lg font-bold text-[10px] px-3 border-manises-gold/50 text-manises-gold hover:bg-manises-gold/5 uppercase tracking-wider"
                       onClick={handleRandom}
                     >
-                      <Spark className="w-3.5 h-3.5 mr-1.5" /> Aleatorio
+                      <Spark className="w-3 h-3 mr-1" /> Aleatorio
                     </Button>
                   </div>
                 </div>
@@ -1410,53 +1410,43 @@ export function GamePlayPage() {
 
       {/* ---- Barra de confirmación ---- */}
       <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-safe">
-        <div className="mx-auto flex max-w-screen-sm flex-col gap-3 rounded-[2.2rem] border border-white/80 bg-white/95 p-4 shadow-[0_-12px_40px_rgba(15,23,42,0.15)] backdrop-blur-2xl">
-          {/* Resumen de saldo */}
-          <div className="flex items-center justify-between gap-4 px-1">
-            <div className="flex flex-col">
-              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">{isNationalLottery ? 'Saldo demo actual' : 'Tu saldo actual'}</p>
-              <p className="mt-1 text-base font-black text-manises-blue">{formatCurrency(availableBalance)}</p>
-            </div>
-            <div className={cn(
-              'flex flex-col items-end rounded-2xl border px-3 py-1.5',
-              isOverBalance
-                ? 'border-red-200 bg-red-50'
-                : 'border-emerald-200 bg-emerald-50'
-            )}>
-              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
-                {isNationalLottery ? (isOverBalance ? 'Falta saldo demo' : 'Saldo demo restante') : (isOverBalance ? 'Te falta saldo' : 'Te quedará saldo')}
-              </p>
-              <p className={cn(
-                'mt-1 text-base font-black',
-                isOverBalance ? 'text-red-700' : 'text-emerald-700'
-              )}>
-                {isOverBalance ? formatCurrency(totalPrice - availableBalance) : formatCurrency(remainingBalance)}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0 px-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                {isNationalLottery ? 'Importe demo' : 'Importe Total'}
-              </p>
-              <p className="mt-0.5 text-[10px] font-medium text-muted-foreground leading-tight">
-                {isNationalLottery
-                  ? `${selectedNationalQuantity} ${selectedNationalQuantity === 1 ? 'décimo' : 'décimos'} x ${drawsCount} ${drawsCount === 1 ? 'sorteo' : 'sorteos'}`
-                  : `${formatCurrency(drawPrice)} x ${drawsCount} ${drawsCount === 1 ? 'sorteo' : 'sorteos'}`
-                }
-              </p>
-              <div className="mt-1 flex items-baseline gap-1.5">
-                <p className="text-[1.35rem] font-black tabular-nums leading-none" style={theme.title}>
-                  {formatCurrency(totalPrice)}
+        <div className={cn(
+          "mx-auto flex max-w-screen-sm flex-col gap-2.5 rounded-[1.8rem] border p-3 shadow-[0_-12px_40px_rgba(15,23,42,0.15)] backdrop-blur-2xl transition-all",
+          isOverBalance ? "bg-red-50/95 border-red-200" : "bg-white/95 border-white/80"
+        )}>
+          {/* Fila Operativa Compacta */}
+          <div className="flex items-center justify-between gap-3 px-1">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-wider">Saldo:</span>
+                <span className="text-[11px] font-black text-manises-blue">{formatCurrency(availableBalance)}</span>
+                <span className="text-slate-300 mx-0.5">·</span>
+                <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-wider">Total:</span>
+                <span className="text-[13px] font-black text-manises-blue" style={theme.title}>{formatCurrency(totalPrice)}</span>
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className={cn(
+                  "text-[9px] font-bold uppercase tracking-tight",
+                  isOverBalance ? "text-red-600" : "text-emerald-600"
+                )}>
+                  {isOverBalance 
+                    ? `Faltan ${formatCurrency(totalPrice - availableBalance)}` 
+                    : `Quedarán ${formatCurrency(remainingBalance)}`
+                  }
                 </p>
+                {!isNationalLottery && drawsCount > 1 && (
+                  <span className="text-[8px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full uppercase">
+                    {drawsCount} sorteos
+                  </span>
+                )}
               </div>
             </div>
+
             <AnimatePresence mode="wait">
               <Button
-                className={`h-12 flex-1 rounded-2xl font-bold text-sm shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-all active:scale-[0.98] ${canPlay
+                className={`h-10 px-6 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-sm transition-all active:scale-[0.98] ${canPlay
                     ? 'text-white'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-slate-100 text-slate-400 cursor-not-allowed border-transparent shadow-none'
                   }`}
                 style={canPlay ? theme.cta : undefined}
                 onClick={handlePlay}
@@ -1466,23 +1456,29 @@ export function GamePlayPage() {
                   ? drawsCount > 1
                     ? `Añadir ${drawsCount} jugadas`
                     : isNationalLottery
-                      ? editingDraft
-                        ? `Actualizar ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'}`
-                        : `Añadir ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'} demo`
-                      : editingDraft
-                        ? 'Actualizar jugada'
-                        : `Añadir ${betsCount} ${betsCount === 1 ? 'jugada' : 'jugadas'}`
-                  : isMulticolumnMode
-                    ? 'Revisa las columnas para añadir'
-                    : isNationalLottery
-                      ? 'Elige un décimo'
-                      : isQuiniela
-                        ? 'Completa los 15 partidos'
-                        : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' nums' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
+                      ? editingDraft ? 'Actualizar' : 'Añadir décimo'
+                      : editingDraft ? 'Actualizar' : 'Añadir jugada'
+                  : 'Pendiente'
                 }
               </Button>
             </AnimatePresence>
           </div>
+
+          {/* Estado de validación detallado solo si no se puede jugar */}
+          {!canPlay && (
+            <div className="px-1 border-t border-slate-100/50 pt-2">
+              <p className="text-[9px] font-bold text-slate-400 uppercase text-center leading-tight">
+                {isMulticolumnMode
+                  ? 'Revisa las columnas para añadir'
+                  : isNationalLottery
+                    ? 'Elige un décimo del escaparate'
+                    : isQuiniela
+                      ? 'Completa el pronóstico de los 15 partidos'
+                      : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' números' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
+                }
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
