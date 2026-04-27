@@ -6,20 +6,18 @@ import {
   Timer, 
   AlertTriangle, 
   ChevronRight, 
-  ExternalLink,
-  Info,
+  FileText,
+  Search,
+  ExternalLink as ExternalLinkIcon,
+  LifeBuoy,
   Scale,
-  HelpCircle,
   PhoneCall,
-  Mail,
-  MapPin,
-  Trophy,
-  Users,
-  FileText
+  Mail
 } from 'lucide-react';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';
 import { PremiumActionRow } from '../components/PremiumActionRow';
+import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { Button } from '@/shared/ui/Button';
 import { toast } from 'sonner';
 import gsap from 'gsap';
@@ -72,14 +70,33 @@ export function HelpPage() {
       />
 
       <div className="p-5 flex flex-col gap-5">
-        {/* Banner Hero */}
-        <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-manises-blue text-white shadow-xl stagger-item">
-          <img src={adminFacade} alt="Administración Manises" className="absolute inset-0 h-full w-full object-cover opacity-20" />
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(10,25,47,0.9)_0%,rgba(10,25,47,0.6)_100%)]" />
-          <div className="relative p-6 flex flex-col gap-2">
-            <h3 className="text-lg font-black leading-tight uppercase tracking-tight">Compromiso con el usuario</h3>
-            <p className="text-[12px] font-medium text-white/80 leading-relaxed">
-              Resumen oficial adaptado para consultar trayectoria, premios, ayuda y herramientas de control.
+        {/* Mock Search Bar */}
+        <div className="relative stagger-item">
+          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+            <Search className="w-4 h-4 text-manises-blue/40" />
+          </div>
+          <input 
+            type="text" 
+            placeholder="¿En qué podemos ayudarte?"
+            className="w-full h-12 pl-11 pr-4 rounded-2xl border border-slate-200 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-manises-blue/10 text-sm font-medium"
+            onChange={() => toast.info('Buscador: Demo · Pendiente de integración')}
+          />
+        </div>
+
+        {/* Banner Hero Premium */}
+        <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-manises-blue p-7 text-white shadow-xl stagger-item group">
+          <img src={adminFacade} alt="Administración Manises" className="absolute inset-0 h-full w-full object-cover opacity-20 group-hover:scale-110 transition-transform duration-1000" />
+          <div className="absolute inset-0 bg-gradient-to-br from-manises-blue/95 via-manises-blue/80 to-transparent" />
+          
+          <div className="relative flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-white/10 backdrop-blur-md">
+                <LifeBuoy className="w-5 h-5 text-manises-gold" />
+              </div>
+              <h3 className="text-sm font-black uppercase tracking-widest text-manises-gold">Centro de Ayuda</h3>
+            </div>
+            <p className="text-[12px] font-medium text-white/80 leading-relaxed max-w-[80%]">
+              Tu tranquilidad es nuestra prioridad. Consulta guías oficiales y herramientas de control.
             </p>
           </div>
         </section>
@@ -128,116 +145,132 @@ export function HelpPage() {
             <section className="stagger-item">
               <PremiumSectionCard
                 title="Pautas de seguridad"
-                description="El juego debe ser ocio. Márcate un presupuesto, no intentes recuperar pérdidas y pide ayuda si lo necesitas."
+                eyebrow="Educación"
+                description="El juego debe ser ocio. Márcate un presupuesto y pide ayuda si lo necesitas."
                 tone="emerald"
               >
-                <Button 
-                  variant="ghost" 
-                  className="mt-2 h-9 px-0 text-[11px] font-black text-emerald-700 uppercase tracking-widest gap-2"
-                  onClick={() => openExternal(officialLinks.responsibleGaming)}
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  Guía oficial completa
-                </Button>
+                <div className="mt-2 space-y-4">
+                  <div className="p-3 rounded-xl bg-emerald-50/50 border border-emerald-100/50">
+                    <p className="text-[10px] font-medium text-emerald-800 leading-relaxed italic">
+                      "Juega por diversión, no por necesidad. El control es la clave de la victoria."
+                    </p>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full h-10 text-[10px] font-black text-emerald-700 uppercase tracking-widest gap-2 bg-emerald-50 hover:bg-emerald-100/50 rounded-xl transition-all"
+                    onClick={() => openExternal(officialLinks.responsibleGaming)}
+                  >
+                    <ExternalLinkIcon className="w-3.5 h-3.5" />
+                    Guía oficial de seguridad
+                  </Button>
+                </div>
               </PremiumSectionCard>
             </section>
           </>
         )}
 
         {activeTab === 'legal' && (
-          <section className="space-y-4 stagger-item">
-            <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Documentación Legal</p>
-            <div className="grid gap-3">
-              <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <Scale className="w-5 h-5 text-manises-blue/40" />
-                  <span className="text-[9px] font-black bg-white px-2 py-1 rounded-full border border-border">Oficial</span>
-                </div>
-                <h4 className="text-[13px] font-black text-manises-blue">Aviso Legal y Privacidad</h4>
-                <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
-                  LOTERÍA MANISES, S.L. garantiza el tratamiento seguro de sus datos según el RGPD.
-                </p>
-                <div className="mt-4 flex flex-col gap-2">
+            <section className="space-y-4 stagger-item">
+              <PremiumSectionCard
+                title="Legal y Privacidad"
+                eyebrow="Compliance"
+                description="LOTERÍA MANISES garantiza el tratamiento seguro según el RGPD."
+                tone="blue"
+              >
+                <div className="divide-y divide-slate-100 -mx-1">
                   <PremiumActionRow
-                    icon={ExternalLink}
+                    icon={Scale}
                     title="Aviso Legal"
+                    description="Identificación y normas de uso"
                     onClick={() => openExternal(officialLinks.legalNotice)}
-                    className="px-0 h-10"
                   />
                   <PremiumActionRow
-                    icon={ExternalLink}
+                    icon={ShieldCheck}
                     title="Política de Privacidad"
+                    description="Gestión de tus datos personales"
                     onClick={() => openExternal(officialLinks.privacy)}
-                    className="px-0 h-10"
+                  />
+                  <PremiumActionRow
+                    icon={FileText}
+                    title="Condiciones de Gestión"
+                    description="Custodia y cobro de premios"
+                    onClick={() => openExternal(officialLinks.conditions)}
                   />
                 </div>
-              </div>
-
-              <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <FileText className="w-5 h-5 text-manises-blue/40" />
-                </div>
-                <h4 className="text-[13px] font-black text-manises-blue">Condiciones de Gestión</h4>
-                <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
-                  Información sobre la custodia de décimos, plazos de cobro y fiscalidad de premios.
-                </p>
-                <PremiumActionRow
-                  icon={Trophy}
-                  title="Premios y Pagos"
-                  onClick={() => openExternal(officialLinks.prizes)}
-                  className="px-0 mt-3"
-                />
-              </div>
-            </div>
-          </section>
+              </PremiumSectionCard>
+            </section>
         )}
 
         {activeTab === 'faq' && (
           <section className="space-y-4 stagger-item">
-            <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Preguntas Frecuentes</p>
-            <div className="flex flex-col gap-2">
-              {[
-                { q: '¿Cómo sé si tengo premio?', a: 'Te avisamos por email tras el escrutinio oficial.' },
-                { q: '¿Es seguro el pago?', a: 'Usamos pasarelas CES (Comercio Electrónico Seguro).' },
-                { q: '¿Tengo que recoger el décimo?', a: 'No, queda custodiado en la administración.' }
-              ].map((item, i) => (
-                <div key={i} className="p-4 rounded-2xl border border-border/60 bg-muted/20">
-                  <p className="text-[12px] font-black text-manises-blue">{item.q}</p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">{item.a}</p>
-                </div>
-              ))}
+            <PremiumSectionCard
+              title="Preguntas Frecuentes"
+              eyebrow="FAQs"
+              description="Respuestas rápidas a las dudas más comunes."
+              tone="gold"
+            >
+              <div className="divide-y divide-slate-100 -mx-1">
+                {[
+                  { q: '¿Cómo sé si tengo premio?', a: 'Te avisamos por email tras el escrutinio.' },
+                  { q: '¿Es seguro el pago?', a: 'Usamos pasarelas CES de alta seguridad.' },
+                  { q: '¿Tengo que recoger el décimo?', a: 'No, queda custodiado en la administración.' }
+                ].map((item, i) => (
+                  <div key={i} className="py-3.5 px-3">
+                    <p className="text-[11px] font-black text-manises-blue leading-tight mb-1">{item.q}</p>
+                    <p className="text-[10px] text-muted-foreground font-medium leading-relaxed">{item.a}</p>
+                  </div>
+                ))}
+              </div>
               <Button 
-                variant="ghost" 
-                className="w-full text-[10px] font-black uppercase tracking-widest mt-2"
+                variant="outline" 
+                className="w-full h-10 text-[9px] font-black uppercase tracking-widest mt-4 rounded-xl border-slate-200"
                 onClick={() => openExternal(officialLinks.faq)}
               >
                 Ver todas las dudas oficiales
               </Button>
-            </div>
+            </PremiumSectionCard>
           </section>
         )}
 
         {/* Bloque de Contacto (Siempre visible al final) */}
-        <section className="stagger-item space-y-3 mt-2">
-          <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Soporte Directo</p>
-          <div className="grid grid-cols-2 gap-2">
-            <button 
-              onClick={() => window.open('tel:960992556')}
-              className="flex flex-col items-center p-4 rounded-2xl border border-blue-100 bg-blue-50/50 hover:bg-blue-50 transition-colors"
-            >
-              <PhoneCall className="w-5 h-5 text-blue-600 mb-2" />
-              <p className="text-[11px] font-bold text-blue-900">Llamar</p>
-              <p className="text-[9px] text-blue-600/70">960 992 556</p>
-            </button>
-            <button 
-              onClick={() => window.open('mailto:info@loteriamanises.com')}
-              className="flex flex-col items-center p-4 rounded-2xl border border-blue-100 bg-blue-50/50 hover:bg-blue-50 transition-colors"
-            >
-              <Mail className="w-5 h-5 text-blue-600 mb-2" />
-              <p className="text-[11px] font-bold text-blue-900">Email</p>
-              <p className="text-[9px] text-blue-600/70">Soporte 24/7</p>
-            </button>
-          </div>
+        {/* Bloque de Contacto Premium */}
+        <section className="stagger-item">
+          <PremiumSectionCard
+            title="Soporte Directo"
+            eyebrow="Contacto"
+            description="Atención personalizada de Lunes a Sábado."
+            tone="violet"
+          >
+            <div className="grid grid-cols-2 gap-3 mt-1">
+              <PremiumTouchInteraction scale={0.96}>
+                <button 
+                  onClick={() => window.open('tel:960992556')}
+                  className="w-full flex flex-col items-center p-4 rounded-2xl border border-violet-100 bg-violet-50/50 hover:bg-violet-50 transition-colors shadow-sm"
+                >
+                  <div className="p-2.5 rounded-xl bg-white shadow-sm mb-3">
+                    <PhoneCall className="w-5 h-5 text-violet-600" />
+                  </div>
+                  <p className="text-[11px] font-black text-violet-900 uppercase">Llamar</p>
+                  <p className="text-[9px] text-violet-600/70 font-bold mt-0.5">960 992 556</p>
+                </button>
+              </PremiumTouchInteraction>
+              <PremiumTouchInteraction scale={0.96}>
+                <button 
+                  onClick={() => window.open('mailto:info@loteriamanises.com')}
+                  className="w-full flex flex-col items-center p-4 rounded-2xl border border-violet-100 bg-violet-50/50 hover:bg-violet-50 transition-colors shadow-sm"
+                >
+                  <div className="p-2.5 rounded-xl bg-white shadow-sm mb-3">
+                    <Mail className="w-5 h-5 text-violet-600" />
+                  </div>
+                  <p className="text-[11px] font-black text-violet-900 uppercase">Email</p>
+                  <p className="text-[9px] text-violet-600/70 font-bold mt-0.5">Soporte 24h</p>
+                </button>
+              </PremiumTouchInteraction>
+            </div>
+            <p className="mt-4 text-[9px] font-black text-center text-violet-600/30 uppercase tracking-widest">
+              Demo · Horario de 9:00 a 20:00
+            </p>
+          </PremiumSectionCard>
         </section>
 
         <div className="stagger-item mt-4 opacity-50 flex flex-col items-center gap-1">
