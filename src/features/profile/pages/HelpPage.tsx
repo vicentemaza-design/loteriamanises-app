@@ -128,7 +128,7 @@ export function HelpPage() {
                   title="Límite de Gasto"
                   description="Configura cuánto quieres gastar al mes"
                   tone="blue"
-                  onClick={() => handleAction('Límite de Gasto')}
+                  onClick={() => navigate('/profile/gaming-control')}
                   trailing={<ChevronRight className="w-4 h-4 text-muted-foreground/40" />}
                 />
                 <PremiumActionRow
@@ -136,7 +136,7 @@ export function HelpPage() {
                   title="Autoexclusión"
                   description="Suspende tu cuenta temporalmente"
                   tone="violet"
-                  onClick={() => handleAction('Autoexclusión')}
+                  onClick={() => navigate('/profile/gaming-control')}
                   trailing={<ChevronRight className="w-4 h-4 text-muted-foreground/40" />}
                 />
               </div>

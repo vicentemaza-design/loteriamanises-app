@@ -20,6 +20,8 @@ import { SubscriptionsPage } from '@/features/profile/pages/SubscriptionsPage';
 import { MovementsPage } from '@/features/profile/pages/MovementsPage';
 import { WithdrawalsPage } from '@/features/profile/pages/WithdrawalsPage';
 import { HelpPage } from '@/features/profile/pages/HelpPage';
+import { KycPage } from '@/features/profile/pages/KycPage';
+import { ResponsibleGamingPage } from '@/features/profile/pages/ResponsibleGamingPage';
 import { CompaniesPage } from '@/features/profile/pages/CompaniesPage';
 import { TechnicalMatrixPage } from '@/features/admin/pages/TechnicalMatrixPage';
 import { DeliveredPrizesPage } from '@/features/catalog/pages/DeliveredPrizesPage';
@@ -53,6 +55,8 @@ export function AppRouter() {
           <Route path="/profile/movements" element={<MovementsPage />} />
           <Route path="/profile/withdrawals" element={<WithdrawalsPage />} />
           <Route path="/profile/help" element={<HelpPage />} />
+          <Route path="/profile/kyc" element={<KycPage />} />
+          <Route path="/profile/gaming-control" element={<ResponsibleGamingPage />} />
           <Route path="/profile/companies" element={<CompaniesPage />} />
           <Route path="/profile/settings" element={<SettingsPage />} />
           <Route path="/profile/matrix" element={<TechnicalMatrixPage />} />

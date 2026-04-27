@@ -101,6 +101,7 @@ export function ProfilePage() {
           bg: isLockEnabled ? 'bg-purple-50' : 'bg-gray-50',
           onClick: toggleLock
         },
+        { icon: User,        label: 'Verificación de identidad', detail: () => <span className="text-[10px] font-black text-amber-500 uppercase">Pendiente</span>, color: 'text-amber-600', bg: 'bg-amber-50', onClick: () => navigate('/profile/kyc') },
         { icon: ShieldCheck, label: 'Seguridad biométrica',detail: null, color: 'text-purple-600',  bg: 'bg-purple-50', onClick: () => toast.info('Biometría disponible en App Nativa.') },
       ],
     },
@@ -108,6 +109,7 @@ export function ProfilePage() {
       title: 'Ajustes',
       items: [
         { icon: Settings,    label: 'Preferencias',      detail: null, color: 'text-gray-600',    bg: 'bg-gray-100', onClick: () => navigate('/profile/settings') },
+        { icon: ShieldCheck, label: 'Control de juego', detail: null, color: 'text-emerald-600', bg: 'bg-emerald-50', onClick: () => navigate('/profile/gaming-control') },
         { icon: HelpCircle,  label: 'Ayuda, premios y legal', detail: null, color: 'text-orange-500',  bg: 'bg-orange-50', onClick: () => navigate('/profile/help') },
       ],
     },
