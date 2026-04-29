@@ -841,6 +841,7 @@ export function GamePlayPage() {
     if (isMulticolumnMode) return 'Revisa las columnas';
     if (isNationalLottery) return 'Elige un décimo';
     if (isQuiniela) return 'Completa el pronóstico';
+    if (mode === 'reduced' && !isSupportedReducedSelection) return 'Completa la reducida';
     const numsLeft = minNums - selectedNumbers.length;
     const starsLeft = minStars - selectedStars.length;
     if (numsLeft > 0 && starsLeft > 0) return `Elige ${numsLeft} números y ${starsLeft} ${starsLeft === 1 ? 'estrella' : 'estrellas'}`;

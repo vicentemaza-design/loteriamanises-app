@@ -16,7 +16,7 @@ export function NationalReservationCard({
   onRemove,
 }: NationalReservationCardProps) {
   const handleConfirm = () => {
-    toast.success('Demo · confirmación manual pendiente de integración.');
+    toast.success('Demo · número reservado para confirmación manual.');
   };
 
   return (
@@ -86,7 +86,7 @@ export function NationalReservationCard({
         </Button>
 
         <p className="text-center text-[7px] font-bold text-slate-400 uppercase tracking-tighter">
-          Demo · no se realizará ninguna reserva real · Confirmación manual pendiente de integración
+          Demo · sin reserva automática · confirmación manual requerida
         </p>
       </div>
     </div>
