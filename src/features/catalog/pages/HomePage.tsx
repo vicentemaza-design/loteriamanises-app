@@ -374,6 +374,7 @@ function PremiumEditorialCard({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function HomePage() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const { featuredGame, upcomingGames } = useLotteryGames();
   const { canInstall, isInstalled, shouldShowIosHint, promptInstall } = useInstallPrompt();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -415,10 +416,10 @@ export function HomePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[1.45rem] font-black leading-none tracking-tight text-manises-blue">
-              Hola, Usuario 👋
+              {profile ? `Hola, ${profile.displayName.split(' ')[0]} 👋` : 'Lotería Manises 🍀'}
             </h1>
             <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-              ¡QUE TENGAS MUCHA SUERTE HOY!
+              {profile ? '¡QUE TENGAS MUCHA SUERTE HOY!' : 'TU ADMINISTRACIÓN EN DEMO'}
             </p>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-100 bg-white text-manises-blue shadow-sm">
