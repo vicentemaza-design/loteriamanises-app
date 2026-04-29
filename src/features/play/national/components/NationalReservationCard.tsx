@@ -63,7 +63,7 @@ export function NationalReservationCard({
 
         <div className="text-right">
           <span className="inline-block px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 text-[8px] font-black uppercase tracking-wider">
-            Pendiente
+            Pendiente de confirmación
           </span>
         </div>
       </div>
@@ -89,7 +89,7 @@ export function NationalReservationCard({
         </Button>
 
         <p className="text-center text-[8px] font-medium text-slate-400">
-          Demo · no se realizará ninguna reserva real · Pendiente de integración
+          Demo · no se realizará ninguna reserva real · Confirmación manual pendiente de integración
         </p>
       </div>
     </div>
