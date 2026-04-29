@@ -48,6 +48,13 @@ Este documento detalla los activos legales y logotipos oficiales de juego respon
 - **URL Directa:** `https://www.loteriamanises.com/Web_2_0/web/RecursosAranya/images/Arana/logo_blanco.png`
 - **Notas:** Versión oficial para fondos oscuros.
 
+### Logo Combinado Footer (Juego Inteligente + 18 + Thawte)
+- **Nombre:** `logo_manises_footer_combined.png`
+- **Formato:** PNG
+- **Fuente:** [loteriamanises.com](https://www.loteriamanises.com)
+- **URL Directa:** `https://www.loteriamanises.com/Web_2_0/web/recursosAranya/images/about/logo-manises-18.png`
+- **Notas:** Imagen combinada utilizada en el footer original para certificar seguridad y juego responsable.
+
 ---
 
 ## Notas de Autorización y Uso
