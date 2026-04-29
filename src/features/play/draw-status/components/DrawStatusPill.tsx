@@ -44,9 +44,9 @@ export function DrawStatusPill({
       ? 'Primer sorteo seleccionado'
       : 'Próximo sorteo';
   const secondaryText = isClosed
-    ? 'Validación operativa pendiente de integración'
+    ? 'Sorteo no disponible'
     : drawStatus.isDemoCutoff
-      ? 'Hora límite demo · Pendiente de integración'
+      ? 'Hora límite demo'
       : 'Hora límite';
   const cutoffLabel = drawStatus.isDemoCutoff ? 'Límite demo' : 'Límite';
   const statusLabel = drawStatus.state === 'open'

@@ -416,21 +416,16 @@ export function GamePlayPage() {
     drawDate: highlightedDrawDate,
   }), [highlightedDrawDate]);
 
-  const timeSelectionSummary = useMemo(() => {
-    if (effectiveSelectedDrawDates.length === 0) return 'Sin selección';
-    
-    const dates = effectiveSelectedDrawDates.map(d => {
-      const date = new Date(d);
-      const weekday = date.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
-      return `${weekday} ${date.getDate()}`;
-    });
-
-    if (dates.length <= 3) {
-      return dates.join(', ');
-    }
-    
-    return `${dates.slice(0, 3).join(', ')} +${dates.length - 3}`;
-  }, [effectiveSelectedDrawDates]);
+  const drawTimeSummary = useMemo(() => {
+    const d = new Date(drawStatus.drawDate);
+    const cutoff = new Date(drawStatus.salesCloseAt);
+    const weekday = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
+    const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const cutoffTime = cutoff.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const countLabel = drawsCount === 1 ? 'Próximo sorteo' : `${drawsCount} sorteos`;
+    const cutoffKey = drawStatus.isDemoCutoff ? 'Límite demo' : 'Límite';
+    return `${countLabel} · ${weekday} ${time} · ${cutoffKey} ${cutoffTime}`;
+  }, [drawStatus, drawsCount]);
 
   // Auxiliares para botones de acción rápida
   const currentWeekDraws = useMemo(() => getDrawsForCurrentWeek(game.type, new Date()), [game.type]);
@@ -837,6 +832,23 @@ export function GamePlayPage() {
     }
   };
 
+  const ctaLabel = (() => {
+    if (canPlay) {
+      if (drawsCount > 1) return `Añadir ${drawsCount} jugadas`;
+      if (isNationalLottery) return editingDraft ? 'Actualizar' : 'Añadir décimo';
+      return editingDraft ? 'Actualizar' : 'Añadir jugada';
+    }
+    if (isMulticolumnMode) return 'Revisa las columnas';
+    if (isNationalLottery) return 'Elige un décimo';
+    if (isQuiniela) return 'Completa el pronóstico';
+    const numsLeft = minNums - selectedNumbers.length;
+    const starsLeft = minStars - selectedStars.length;
+    if (numsLeft > 0 && starsLeft > 0) return `Elige ${numsLeft} números y ${starsLeft} ${starsLeft === 1 ? 'estrella' : 'estrellas'}`;
+    if (numsLeft > 0) return `Elige ${numsLeft} ${numsLeft === 1 ? 'número' : 'números'}`;
+    if (starsLeft > 0) return `Elige ${starsLeft} ${starsLeft === 1 ? 'estrella' : 'estrellas'}`;
+    return 'Completa la jugada';
+  })();
+
   return (
     <div
       className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-32"
@@ -893,7 +905,31 @@ export function GamePlayPage() {
           <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={drawsCount} />
         )}
 
-        {supportsTimeSelection && (
+        {supportsTimeSelection && !isNationalLottery && !isTimeSelectorExpanded && (
+          <div className="flex items-center justify-between gap-2 rounded-[1.2rem] border border-slate-200/50 bg-white/88 px-3 py-2.5 shadow-sm">
+            <div className="flex min-w-0 items-center gap-2">
+              <span className={cn(
+                'h-1.5 w-1.5 shrink-0 rounded-full',
+                drawStatus.state === 'open' && 'bg-emerald-400',
+                drawStatus.state === 'closingSoon' && 'bg-amber-400',
+                drawStatus.state === 'closed' && 'bg-slate-400',
+              )} />
+              <p className="truncate text-[11px] font-black text-manises-blue">
+                {drawTimeSummary}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 shrink-0 rounded-xl px-2.5 text-[9px] font-black uppercase tracking-wider text-manises-blue/60 hover:bg-manises-blue/5 hover:text-manises-blue"
+              onClick={() => setIsTimeSelectorExpanded(true)}
+            >
+              Cambiar
+            </Button>
+          </div>
+        )}
+
+        {supportsTimeSelection && (isNationalLottery || isTimeSelectorExpanded) && (
           <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
             <div className="rounded-[1.2rem] border border-slate-200/50 bg-white/88 p-2.5 shadow-sm backdrop-blur-sm">
               <div className="mb-2 flex items-center justify-between px-0.5">
@@ -902,7 +938,7 @@ export function GamePlayPage() {
                   <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Cuándo jugar</span>
                 </div>
                 {isTimeSelectorExpanded && (
-                  <button 
+                  <button
                     onClick={() => setIsTimeSelectorExpanded(false)}
                     className="text-[9px] font-bold text-manises-blue/60 uppercase hover:text-manises-blue"
                   >
@@ -923,25 +959,6 @@ export function GamePlayPage() {
                   effectiveSelectedDrawDates={effectiveSelectedDrawDates}
                   onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
                 />
-              ) : !isTimeSelectorExpanded ? (
-                <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-slate-50/70 px-3 py-2">
-                  <div className="min-w-0">
-                    <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
-                      {drawsCount === 1 ? '1 sorteo seleccionado' : `${drawsCount} sorteos seleccionados`}
-                    </p>
-                    <p className="mt-0.5 truncate text-[11px] font-black text-manises-blue">
-                      {timeSelectionSummary}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 rounded-xl px-3 text-[10px] font-black uppercase tracking-wider text-manises-blue hover:bg-manises-blue/5 shrink-0"
-                    onClick={() => setIsTimeSelectorExpanded(true)}
-                  >
-                    Cambiar
-                  </Button>
-                </div>
               ) : (
                 <div className="space-y-3">
                   {/* Acciones rápidas */}
@@ -976,7 +993,7 @@ export function GamePlayPage() {
                           className={cn(
                             "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border",
                             isActive
-                              ? "bg-manises-blue text-white border-manises-blue shadow-sm" 
+                              ? "bg-manises-blue text-white border-manises-blue shadow-sm"
                               : "bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300"
                           )}
                         >
@@ -1012,7 +1029,7 @@ export function GamePlayPage() {
                                 key={draw.drawDate}
                                 onClick={() => {
                                   setTimeMode('specific_days');
-                                  setSelectedDrawDates(prev => 
+                                  setSelectedDrawDates(prev =>
                                     prev.includes(draw.drawDate)
                                       ? prev.filter(d => d !== draw.drawDate)
                                       : [...prev, draw.drawDate].sort()
@@ -1026,9 +1043,9 @@ export function GamePlayPage() {
                                 )}
                               >
                                 {isSelected && (
-                                  <motion.div 
+                                  <motion.div
                                     layoutId="selected-draw-indicator"
-                                    className="absolute inset-0 rounded-xl border-2 border-manises-blue z-0" 
+                                    className="absolute inset-0 rounded-xl border-2 border-manises-blue z-0"
                                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                   />
                                 )}
@@ -1052,7 +1069,7 @@ export function GamePlayPage() {
                     );
                   })}
                   </div>
-                  
+
                   <p className="text-[10px] font-medium text-slate-400 px-1 italic">
                     * Puedes combinar días sueltos de distintas semanas
                   </p>
@@ -1508,14 +1525,7 @@ export function GamePlayPage() {
                   onClick={handlePlay}
                   disabled={!canPlay}
                 >
-                  {canPlay
-                    ? drawsCount > 1
-                      ? `Añadir ${drawsCount} jugadas`
-                      : isNationalLottery
-                        ? editingDraft ? 'Actualizar' : 'Añadir décimo'
-                        : editingDraft ? 'Actualizar' : 'Añadir jugada'
-                    : 'Pendiente'
-                  }
+                  {ctaLabel}
                 </Button>
               </AnimatePresence>
             </div>
