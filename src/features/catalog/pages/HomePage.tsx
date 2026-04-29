@@ -18,6 +18,7 @@ import {
   Trophy,
 } from 'iconoir-react/regular';
 import { AnnouncementBanner } from '../components/AnnouncementBanner';
+import { ResponsibleGamingFooter } from '@/shared/components/ResponsibleGamingFooter';
 import { getDeliveredPrizeHighlights, getDeliveredPrizesTotalAmount } from '../data/delivered-prizes.mock';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
@@ -655,17 +656,8 @@ export function HomePage() {
         </PremiumTouchInteraction>
       </section>
 
-      {/* ── Footer Info ───────────────────────────────────────── */}
-      <footer className="mt-2 px-8 pb-10 text-center">
-        <div className="mb-6 flex justify-center gap-5 opacity-40">
-          <Shield className="w-5 h-5 text-manises-blue" />
-          <CreditCard className="w-5 h-5 text-manises-blue" />
-          <Lock className="w-5 h-5 text-manises-blue" />
-        </div>
-        <p className="text-[10px] text-manises-blue/25 font-black uppercase tracking-[0.35em]">
-          Contenido Demo · Lotería Manises
-        </p>
-      </footer>
+      {/* ── Responsible Gaming Footer ─────────────────────────── */}
+      <ResponsibleGamingFooter />
 
       <ScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} />
     </div>
