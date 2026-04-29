@@ -244,6 +244,7 @@ function PremiumEditorialCard({
   icon: Icon,
   stats,
   className,
+  isCompact,
 }: {
   badge: string;
   title: string;
@@ -256,6 +257,7 @@ function PremiumEditorialCard({
   icon: typeof BriefcaseBusiness;
   stats: string[];
   className?: string;
+  isCompact?: boolean;
 }) {
   const accentClasses =
     accent === 'gold'
@@ -290,6 +292,18 @@ function PremiumEditorialCard({
           overlay: 'bg-[linear-gradient(135deg,rgba(10,71,146,0.98)_0%,rgba(8,63,132,0.88)_40%,rgba(10,71,146,0.4)_100%)]'
         };
 
+  const heightClasses = isCompact 
+    ? 'min-h-[134px] xs:min-h-[148px] md:min-h-[168px]'
+    : 'min-h-[210px] xs:min-h-[230px] md:min-h-[280px]';
+
+  const paddingClasses = isCompact
+    ? 'p-3.5 xs:p-4 md:p-5.5'
+    : 'p-4 xs:p-4.5 md:p-7';
+
+  const titleClasses = isCompact
+    ? 'text-[1.05rem] xs:text-[1.15rem] sm:text-[1.35rem] leading-[1.1] mb-0.5'
+    : 'text-[1.15rem] xs:text-[1.35rem] sm:text-[1.65rem] leading-[1.05] mb-0';
+
   return (
     <PremiumTouchInteraction scale={0.985} className={className}>
       <button
@@ -313,40 +327,42 @@ function PremiumEditorialCard({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_28%,rgba(255,255,255,0.02)_100%)]" />
         </div>
 
-        <div className="relative flex min-h-[210px] xs:min-h-[230px] md:min-h-[280px] flex-col justify-between p-4 xs:p-4.5 md:p-7 text-white">
-          <div className="space-y-3 md:space-y-4">
+        <div className={`relative flex ${heightClasses} flex-col justify-between ${paddingClasses} text-white`}>
+          <div className={`${isCompact ? 'space-y-2' : 'space-y-3 md:space-y-4'}`}>
             <div className="flex items-center justify-between gap-3">
-              <span className={`inline-flex items-center gap-1.5 xs:gap-2 rounded-full px-2.5 xs:px-3.5 py-1.5 text-[8px] xs:text-[9px] font-extrabold uppercase tracking-[0.2em] backdrop-blur-md shadow-inner ${accentClasses.badge}`}>
-                <Icon className="h-3 w-3 xs:h-3.5 w-3.5" />
+              <span className={`inline-flex items-center gap-1.5 xs:gap-2 rounded-full px-2.5 xs:px-3.5 py-1 text-[8px] xs:text-[9px] font-extrabold uppercase tracking-[0.2em] backdrop-blur-md shadow-inner ${accentClasses.badge}`}>
+                <Icon className={`${isCompact ? 'h-2.5 w-2.5' : 'h-3 w-3 xs:h-3.5 w-3.5'}`} />
                 {badge}
               </span>
             </div>
 
-            <div className="max-w-[19rem] space-y-1.5 md:space-y-2.5">
-              <h3 className="text-[1.15rem] xs:text-[1.35rem] sm:text-[1.65rem] font-extrabold leading-[1.05] tracking-tight text-white drop-shadow-sm line-clamp-3">
+            <div className={`${isCompact ? 'max-w-[20rem]' : 'max-w-[19rem]'} space-y-1 md:space-y-2.5`}>
+              <h3 className={`${titleClasses} font-extrabold tracking-tight text-white drop-shadow-sm line-clamp-2`}>
                 {title}
               </h3>
-              <p className="text-[10px] xs:text-[11px] sm:text-[12px] font-medium leading-relaxed text-white/70 line-clamp-2">
+              <p className={`${isCompact ? 'text-[9.5px] xs:text-[10px] sm:text-[11px]' : 'text-[10px] xs:text-[11px] sm:text-[12px]'} font-medium leading-relaxed text-white/70 line-clamp-1`}>
                 {description}
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 xs:gap-2">
-              {stats.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-xl border border-white/10 bg-white/5 px-2 xs:px-3 py-1 xs:py-1.5 backdrop-blur-lg"
-                >
-                  <p className="text-[8px] xs:text-[9px] font-bold uppercase tracking-[0.14em] text-white/80">{item}</p>
-                </div>
-              ))}
-            </div>
+            {!isCompact && (
+              <div className="flex flex-wrap gap-1.5 xs:gap-2">
+                {stats.map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-xl border border-white/10 bg-white/5 px-2 xs:px-3 py-1 xs:py-1.5 backdrop-blur-lg"
+                  >
+                    <p className="text-[8px] xs:text-[9px] font-bold uppercase tracking-[0.14em] text-white/80">{item}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="mt-4 pt-1 xs:pt-2">
-              <span className={`inline-flex h-9 xs:h-10 items-center gap-1.5 xs:gap-2 rounded-2xl px-4 xs:px-5 text-[11px] xs:text-[13px] font-extrabold shadow-lg transition-all active:scale-95 ${accentClasses.cta}`}>
+          <div className={`${isCompact ? 'mt-2' : 'mt-4'} pt-1`}>
+              <span className={`inline-flex ${isCompact ? 'h-8 px-4 text-[11px]' : 'h-9 xs:h-10 px-4 xs:px-5 text-[11px] xs:text-[13px]'} items-center gap-1.5 xs:gap-2 rounded-2xl font-extrabold shadow-lg transition-all active:scale-95 ${accentClasses.cta}`}>
                 {cta}
-                <ArrowRight className="h-3.5 w-3.5 xs:h-4 w-4" />
+                <ArrowRight className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5 xs:h-4 w-4'}`} />
               </span>
             </div>
           </div>
@@ -415,15 +431,16 @@ export function HomePage() {
       {/* ── Premios Entregados ───────────────────────────────── */}
       <section className="px-5">
         <PremiumEditorialCard
-          badge="ÉXITO MANISES"
+          badge="PREMIOS"
           title={`Más de ${(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M€ repartidos`}
-          description="Consulta los últimos premios comunicados por la administración."
+          description="Consulta los últimos premios comunicados."
           cta="Ver premios"
           image={celebrationImage}
           imageAlt="Premios entregados"
           icon={Sparkles}
           accent="emerald"
-          stats={['Premios 2024', 'Histórico']}
+          isCompact={true}
+          stats={['Premios']}
           onClick={() => navigate('/premios-entregados')}
         />
       </section>
