@@ -244,6 +244,7 @@ function PremiumEditorialCard({
   accent = 'gold',
   icon: Icon,
   stats,
+  className,
 }: {
   badge: string;
   title: string;
@@ -252,9 +253,10 @@ function PremiumEditorialCard({
   image: string;
   imageAlt: string;
   onClick: () => void;
-  accent?: 'gold' | 'blue' | 'indigo';
+  accent?: 'gold' | 'blue' | 'indigo' | 'emerald';
   icon: typeof BriefcaseBusiness;
   stats: string[];
+  className?: string;
 }) {
   const accentClasses =
     accent === 'gold'
@@ -273,6 +275,14 @@ function PremiumEditorialCard({
           border: 'border-sky-400/20',
           overlay: 'bg-[linear-gradient(135deg,rgba(10,71,146,0.96)_0%,rgba(8,63,132,0.85)_40%,rgba(10,71,146,0.3)_100%)]'
         }
+      : accent === 'emerald'
+      ? {
+          badge: 'bg-emerald-500/20 text-emerald-100 border border-emerald-400/30',
+          cta: 'bg-white/10 text-white backdrop-blur-md border border-white/20',
+          glow: 'rgba(52,211,153,0.12)',
+          border: 'border-emerald-400/20',
+          overlay: 'bg-[linear-gradient(135deg,rgba(4,40,20,0.96)_0%,rgba(6,72,54,0.85)_40%,rgba(4,40,20,0.3)_100%)]'
+        }
       : {
           badge: 'bg-indigo-500/20 text-indigo-100 border border-indigo-400/30',
           cta: 'bg-indigo-500 text-white',
@@ -282,11 +292,11 @@ function PremiumEditorialCard({
         };
 
   return (
-    <PremiumTouchInteraction scale={0.985}>
+    <PremiumTouchInteraction scale={0.985} className={className}>
       <button
         type="button"
         onClick={onClick}
-        className={`premium-editorial-card group relative overflow-hidden rounded-[2rem] border ${accentClasses.border} text-left shadow-[0_18px_40px_-12px_rgba(0,0,0,0.32)] transition-all duration-500`}
+        className={`premium-editorial-card group relative overflow-hidden rounded-[2rem] border ${accentClasses.border} text-left shadow-[0_18px_40px_-12px_rgba(0,0,0,0.32)] transition-all duration-500 w-full`}
       >
         <div className="absolute inset-0">
           <img
@@ -304,40 +314,40 @@ function PremiumEditorialCard({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_28%,rgba(255,255,255,0.02)_100%)]" />
         </div>
 
-        <div className="relative flex min-h-[210px] xs:min-h-[230px] md:min-h-[280px] flex-col justify-between p-4.5 md:p-7 text-white">
-          <div className="space-y-3.5 md:space-y-4">
+        <div className="relative flex min-h-[210px] xs:min-h-[230px] md:min-h-[280px] flex-col justify-between p-4 xs:p-4.5 md:p-7 text-white">
+          <div className="space-y-3 md:space-y-4">
             <div className="flex items-center justify-between gap-3">
-              <span className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[9px] font-extrabold uppercase tracking-[0.2em] backdrop-blur-md shadow-inner ${accentClasses.badge}`}>
-                <Icon className="h-3.5 w-3.5" />
+              <span className={`inline-flex items-center gap-1.5 xs:gap-2 rounded-full px-2.5 xs:px-3.5 py-1.5 text-[8px] xs:text-[9px] font-extrabold uppercase tracking-[0.2em] backdrop-blur-md shadow-inner ${accentClasses.badge}`}>
+                <Icon className="h-3 w-3 xs:h-3.5 w-3.5" />
                 {badge}
               </span>
             </div>
 
             <div className="max-w-[19rem] space-y-1.5 md:space-y-2.5">
-              <h3 className="text-[1.35rem] xs:text-[1.65rem] font-extrabold leading-[1.02] tracking-tight text-white drop-shadow-sm">
+              <h3 className="text-[1.15rem] xs:text-[1.35rem] sm:text-[1.65rem] font-extrabold leading-[1.05] tracking-tight text-white drop-shadow-sm line-clamp-3">
                 {title}
               </h3>
-              <p className="text-[11px] xs:text-[12px] font-medium leading-relaxed text-white/70 line-clamp-2">
+              <p className="text-[10px] xs:text-[11px] sm:text-[12px] font-medium leading-relaxed text-white/70 line-clamp-2">
                 {description}
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5 xs:gap-2">
               {stats.map((item) => (
                 <div
                   key={item}
-                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-lg"
+                  className="rounded-xl border border-white/10 bg-white/5 px-2 xs:px-3 py-1 xs:py-1.5 backdrop-blur-lg"
                 >
-                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/80">{item}</p>
+                  <p className="text-[8px] xs:text-[9px] font-bold uppercase tracking-[0.14em] text-white/80">{item}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="mt-4 pt-2">
-              <span className={`inline-flex h-10 items-center gap-2 rounded-2xl px-5 text-[13px] font-extrabold shadow-lg transition-all active:scale-95 ${accentClasses.cta}`}>
+          <div className="mt-4 pt-1 xs:pt-2">
+              <span className={`inline-flex h-9 xs:h-10 items-center gap-1.5 xs:gap-2 rounded-2xl px-4 xs:px-5 text-[11px] xs:text-[13px] font-extrabold shadow-lg transition-all active:scale-95 ${accentClasses.cta}`}>
                 {cta}
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3.5 w-3.5 xs:h-4 w-4" />
               </span>
             </div>
           </div>
@@ -481,40 +491,6 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ── Premios Destacados ──────────────────────────────── */}
-      <section className="px-5">
-        <PremiumTouchInteraction scale={0.98}>
-          <button
-            type="button"
-            onClick={() => navigate('/premios-entregados')}
-            className="group relative h-[134px] w-full overflow-hidden rounded-[1.75rem] text-left shadow-[0_8px_28px_-8px_rgba(0,0,0,0.30)]"
-          >
-            <img
-              src={celebrationImage}
-              alt="Clientes ganadores Lotería Manises"
-              className="absolute inset-0 h-full w-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(4,40,20,0.92)_0%,rgba(6,72,54,0.74)_55%,rgba(4,40,20,0.18)_100%)]" />
-
-            <div className="relative flex h-full items-center justify-between px-5">
-              <div className="max-w-[15rem] space-y-0.5">
-                <p className="text-[8px] font-black uppercase tracking-[0.22em] text-emerald-300">
-                  Últimos premios
-                </p>
-                <p className="text-[1.1rem] font-black leading-tight tracking-tight text-white">
-                  Más de {(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M€ repartidos
-                </p>
-                <p className="text-[10px] font-medium leading-snug text-white/60">
-                  Descubre los premios entregados recientemente
-                </p>
-              </div>
-              <div className="ml-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md transition-colors group-hover:bg-white/20">
-                <ArrowRight className="h-4 w-4 text-white" />
-              </div>
-            </div>
-          </button>
-        </PremiumTouchInteraction>
-      </section>
 
       {/* ── Bento: Próximos Sorteos ───────────────────────────── */}
       {bentoGames.length > 0 && (
@@ -575,6 +551,19 @@ export function HomePage() {
             accent="gold"
             stats={['Persistente', 'Semanal']}
             onClick={() => navigate('/profile/subscriptions')}
+          />
+          <PremiumEditorialCard
+            badge="ÉXITO MANISES"
+            title={`Más de ${(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M€ repartidos`}
+            description="Descubre los premios entregados recientemente en nuestra administración."
+            cta="Ver premios"
+            image={celebrationImage}
+            imageAlt="Clientes ganadores Lotería Manises"
+            icon={Sparkles}
+            accent="emerald"
+            stats={['Premios', 'Historial']}
+            className="md:col-span-2"
+            onClick={() => navigate('/premios-entregados')}
           />
         </div>
       </section>
