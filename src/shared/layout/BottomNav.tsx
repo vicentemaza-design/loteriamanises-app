@@ -7,8 +7,8 @@ import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInterac
 const navItems = [
   { icon: Home,        label: 'Inicio',      path: '/home' },
   { icon: ViewGrid,    label: 'Juegos',      path: '/games' },
-  { icon: Trophy,      label: 'Resultados',  path: '/results' },
   { icon: JournalPage, label: 'Mis jugadas', path: '/tickets' },
+  { icon: Trophy,      label: 'Resultados',  path: '/results' },
   { icon: User,        label: 'Perfil',      path: '/profile' },
 ];
 
@@ -61,7 +61,7 @@ export function BottomNav() {
 
                 <Icon
                   className={cn(
-                    'w-[19px] h-[19px] transition-all duration-300',
+                    'w-[22px] h-[22px] transition-all duration-300',
                     isActive ? 'scale-105' : 'scale-100 opacity-90'
                   )}
                   style={{ strokeWidth: isActive ? '2.1px' : '1.75px' }}
