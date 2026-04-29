@@ -18,7 +18,7 @@ import {
   Trophy,
 } from 'iconoir-react/regular';
 import { AnnouncementBanner } from '../components/AnnouncementBanner';
-import { MOCK_DELIVERED_PRIZES } from '../data/delivered-prizes.mock';
+import { getDeliveredPrizeHighlights, getDeliveredPrizesTotalAmount } from '../data/delivered-prizes.mock';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { GameIcon } from '@/shared/ui/GameIcon';
@@ -43,10 +43,10 @@ import quinielaHero from '@/assets/quiniela_hero.jpg';
 import adminFacade from '@/assets/images/administracion_manises.webp';
 
 /**
- * ⚠️ BACKEND INTEGRATION POINT: OFFICIAL_PENAS
+ * ⚠️ BACKEND INTEGRATION POINT: FEATURED_PENAS
  * Reemplazar por: GET /api/penas → Pena[]
  */
-const OFFICIAL_PENAS = [
+const FEATURED_PENAS = [
   { id: 'pena-euro', name: 'Peña Euromillones', jackpot: '130M €', price: 10, color: '#2563eb' },
   { id: 'pena-prim', name: 'Peña Primitiva', jackpot: '12M €', price: 5, color: '#16a34a' },
 ];
@@ -54,7 +54,7 @@ const OFFICIAL_PENAS = [
 const TRUST_ITEMS = [
   { icon: Shield, label: 'Pago Seguro\n100% SSL' },
   { icon: CreditCard, label: 'Sin\nComisiones' },
-  { icon: Lock, label: 'Privacidad\nGarantizada' },
+  { icon: Lock, label: 'Privacidad\nProtegida' },
 ];
 
 // ─── Sub-component: HeroTimeChip ─────────────────────────────────────────────
@@ -231,6 +231,52 @@ function PenaCompactCard({ title, jackpot, price, color, onClick }: PenaCompactP
   );
 }
 
+function DeliveredPrizeHighlightCard({
+  title,
+  amount,
+  label,
+  description,
+  onClick,
+}: {
+  key?: Key;
+  title: string;
+  amount: string;
+  label: string;
+  description: string;
+  onClick: () => void;
+}) {
+  return (
+    <PremiumTouchInteraction scale={0.985}>
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full rounded-[1.7rem] border border-emerald-100 bg-white p-4 text-left shadow-sm transition-all hover:border-emerald-200"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <span className="inline-flex rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-700">
+              {label}
+            </span>
+            <h3 className="mt-2 truncate text-[15px] font-black text-manises-blue">
+              {title}
+            </h3>
+          </div>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100">
+            <Trophy className="h-4.5 w-4.5 text-emerald-600" />
+          </div>
+        </div>
+
+        <p className="mt-3 text-[18px] font-black tracking-tight text-emerald-600">
+          {amount}
+        </p>
+        <p className="mt-1 text-[10px] font-medium leading-relaxed text-slate-500 line-clamp-2">
+          {description}
+        </p>
+      </button>
+    </PremiumTouchInteraction>
+  );
+}
+
 function PremiumEditorialCard({
   badge,
   title,
@@ -352,6 +398,8 @@ export function HomePage() {
   const { canInstall, isInstalled, shouldShowIosHint, promptInstall } = useInstallPrompt();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const deliveredPrizeHighlights = useMemo(() => getDeliveredPrizeHighlights(2), []);
+  const deliveredPrizesTotalAmount = useMemo(() => getDeliveredPrizesTotalAmount(), []);
 
   // Los juegos destacados en el bento (priorizamos los nacionales e inmediatos)
   const bentoGames = useMemo(() => {
@@ -391,7 +439,7 @@ export function HomePage() {
               {profile ? `Hola, ${profile.displayName.split(' ')[0]} 👋` : 'Lotería Manises 🍀'}
             </h1>
             <p className="text-[13px] font-semibold text-slate-400 mt-1.5 uppercase tracking-wider">
-              {profile ? '¡Que tengas mucha suerte hoy!' : 'Tu administración de lotería oficial'}
+              {profile ? '¡Que tengas mucha suerte hoy!' : 'Tu administración en demo'}
             </p>
           </div>
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white border border-slate-100 shadow-sm text-manises-blue">
@@ -452,20 +500,20 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ── Peñas Oficiales (Rediseño Compacto sugerido) ──────── */}
+      {/* ── Peñas Destacadas ─────────────────────────────────── */}
       <section className="space-y-4 px-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="bg-manises-blue/5 p-1.5 rounded-lg">
               <Users className="w-4 h-4 text-manises-blue" />
             </div>
-            <h2 className="text-xs font-extrabold text-manises-blue uppercase tracking-[0.16em]">Peñas Oficiales</h2>
+            <h2 className="text-xs font-extrabold text-manises-blue uppercase tracking-[0.16em]">Peñas destacadas</h2>
           </div>
           <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ver todas</button>
         </div>
 
         <div className="flex gap-3.5 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
-          {OFFICIAL_PENAS.map(pena => (
+          {FEATURED_PENAS.map(pena => (
             <PenaCompactCard
               key={pena.id}
               title={pena.name}
@@ -477,6 +525,45 @@ export function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* ── Premios Destacados ──────────────────────────────── */}
+      {deliveredPrizeHighlights.length > 0 && (
+        <section className="space-y-4 px-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="bg-emerald-50 p-1.5 rounded-lg">
+                <Trophy className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div>
+                <h2 className="text-xs font-extrabold text-manises-blue uppercase tracking-[0.16em]">Premios destacados</h2>
+                <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400">
+                  Contenido informativo demo
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/premios-entregados')}
+              className="text-[10px] font-black text-emerald-700 uppercase tracking-widest"
+            >
+              Ver más
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3">
+            {deliveredPrizeHighlights.map((prize) => (
+              <DeliveredPrizeHighlightCard
+                key={prize.id}
+                title={prize.game}
+                amount={formatCurrency(prize.amount)}
+                label={prize.highlightLabel}
+                description={prize.description}
+                onClick={() => navigate('/premios-entregados')}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ── Bento: Próximos Sorteos ───────────────────────────── */}
       {bentoGames.length > 0 && (
@@ -547,7 +634,7 @@ export function HomePage() {
           <button
             type="button"
             onClick={() => navigate('/premios-entregados')}
-            className="w-full flex items-center gap-4 rounded-2xl bg-emerald-50 border border-emerald-100 p-4 text-left group hover:border-emerald-200 transition-all"
+            className="w-full flex items-center gap-4 rounded-[1.8rem] bg-emerald-50 border border-emerald-100 p-4 text-left group hover:border-emerald-200 transition-all"
           >
             <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0">
               <Trophy className="w-6 h-6 text-emerald-600" />
@@ -557,10 +644,10 @@ export function HomePage() {
                 Premios entregados
               </p>
               <p className="text-sm font-bold text-emerald-900 mt-0.5">
-                {(MOCK_DELIVERED_PRIZES.reduce((s, p) => s + p.amount, 0) / 1_000_000).toFixed(1)}M € repartidos
+                {(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M € en premios destacados
               </p>
               <p className="text-[10px] text-emerald-700/60 font-medium">
-                Ver historial de nuestra administración
+                Abrir módulo demo e informativo
               </p>
             </div>
             <ArrowRight className="w-4 h-4 text-emerald-600/50 group-hover:text-emerald-600 transition-colors" />
@@ -576,7 +663,7 @@ export function HomePage() {
           <Lock className="w-5 h-5 text-manises-blue" />
         </div>
         <p className="text-[10px] text-manises-blue/25 font-black uppercase tracking-[0.35em]">
-          Administración Oficial · Lotería Manises
+          Contenido Demo · Lotería Manises
         </p>
       </footer>
 
