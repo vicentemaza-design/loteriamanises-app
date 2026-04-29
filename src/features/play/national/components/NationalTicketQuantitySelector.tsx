@@ -109,7 +109,7 @@ export function NationalTicketQuantitySelector({
 
       <div className="mt-2.5 text-center">
         <p className="text-[8px] font-medium text-slate-400">
-          La reserva no es compra automática · Requiere confirmación manual · Demo · reserva pendiente de integración
+          La reserva no es compra automática · Requiere confirmación manual · Servicio simulado
         </p>
       </div>
     </motion.section>

@@ -1,4 +1,3 @@
-import { CheckCircle } from 'iconoir-react/regular';
 import { cn } from '@/shared/lib/utils';
 
 interface NationalDrawSelectorProps {
@@ -7,34 +6,36 @@ interface NationalDrawSelectorProps {
   onSelectDate: (dateIso: string) => void;
 }
 
-/**
- * Selector de sorteos para Lotería Nacional (Fase 2B.3B).
- * Renderiza la lista de fechas disponibles para Nacional.
- */
+function formatChipDate(iso: string): string {
+  const d = new Date(iso);
+  const weekday = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
+  const day = d.getDate();
+  const month = d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
+  return `${weekday} ${day} ${month}`;
+}
+
 export function NationalDrawSelector({
   availableNationalDates,
   effectiveSelectedDrawDates,
   onSelectDate,
 }: NationalDrawSelectorProps) {
   return (
-    <div className="space-y-1.5">
+    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-0.5 px-0.5">
       {availableNationalDates.map((dateIso) => {
         const isSelected = effectiveSelectedDrawDates.includes(dateIso);
         return (
           <button
             key={dateIso}
+            type="button"
             onClick={() => onSelectDate(dateIso)}
             className={cn(
-              'flex w-full items-center justify-between rounded-xl border px-3 py-2 transition-all',
-              isSelected ? 'border-manises-blue bg-manises-blue/[0.03]' : 'border-slate-100 bg-slate-50/50'
+              'shrink-0 rounded-xl border px-3 py-2 text-[11px] font-black tracking-tight transition-all',
+              isSelected
+                ? 'border-manises-blue bg-manises-blue text-white shadow-sm'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
             )}
           >
-            <span className={cn('text-[11px] font-black tracking-tight', isSelected ? 'text-manises-blue' : 'text-slate-600')}>
-              {new Date(dateIso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </span>
-            <div className={cn('w-4 h-4 rounded-full border flex items-center justify-center', isSelected ? 'bg-manises-blue border-manises-blue' : 'border-slate-300 bg-white')}>
-              {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
-            </div>
+            {formatChipDate(dateIso)}
           </button>
         );
       })}
