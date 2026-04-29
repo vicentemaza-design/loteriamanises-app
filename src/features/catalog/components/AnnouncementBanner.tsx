@@ -31,9 +31,6 @@ export function AnnouncementBanner() {
             <p className="text-[9px] font-black uppercase tracking-[0.16em] text-manises-blue">
               {ann.title}
             </p>
-            <span className="rounded-full bg-slate-100 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-slate-500">
-              Demo
-            </span>
             {extraAnnouncementsCount > 0 && (
               <span className="rounded-full bg-sky-50 px-2 py-1 text-[9px] font-black uppercase tracking-[0.12em] text-sky-700">
                 +{extraAnnouncementsCount} avisos
@@ -45,11 +42,8 @@ export function AnnouncementBanner() {
             {ann.body}
           </p>
 
-          <div className="mt-1.5 flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-              Contenido informativo
-            </span>
-            {ann.cta && (
+          {ann.cta && (
+            <div className="mt-1.5">
               <button
                 onClick={() => navigate(ann.cta.href)}
                 className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.14em] text-manises-blue"
@@ -57,8 +51,8 @@ export function AnnouncementBanner() {
                 {ann.cta.label}
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <button

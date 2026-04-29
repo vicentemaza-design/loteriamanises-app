@@ -9,16 +9,10 @@ export interface Announcement {
 // Deja este array vacío para ocultar el banner completamente
 export const MOCK_ANNOUNCEMENTS: Announcement[] = [
   {
-    id: 'ann-premio-mar25',
+    id: 'ann-premio-abr26',
     type: 'prize',
-    title: 'Premios destacados',
-    body: 'Contenido informativo demo con accesos rápidos a premios entregados y avisos de campaña.',
-    cta: { label: 'Ver historial', href: '/premios-entregados' },
-  },
-  {
-    id: 'ann-recordatorio-demo',
-    type: 'reminder',
-    title: 'Aviso demo',
-    body: 'Los avisos mostrados en esta sección son informativos y pendientes de integración dinámica.',
+    title: 'Premio entregado',
+    body: '¡Enhorabuena a nuestros clientes! Consulta los últimos premios repartidos en tu administración de Manises.',
+    cta: { label: 'Ver premios', href: '/premios-entregados' },
   },
 ];

@@ -15,11 +15,10 @@ import {
   Download,
   Flash as Zap,
   Calendar,
-  Trophy,
 } from 'iconoir-react/regular';
 import { AnnouncementBanner } from '../components/AnnouncementBanner';
 import { ResponsibleGamingFooter } from '@/shared/components/ResponsibleGamingFooter';
-import { getDeliveredPrizeHighlights, getDeliveredPrizesTotalAmount } from '../data/delivered-prizes.mock';
+import { getDeliveredPrizesTotalAmount } from '../data/delivered-prizes.mock';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { GameIcon } from '@/shared/ui/GameIcon';
@@ -42,6 +41,8 @@ import loteriaJuevesLuck from '@/assets/images/loteria_jueves_luck.jpg';
 import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
 import quinielaHero from '@/assets/quiniela_hero.jpg';
 import adminFacade from '@/assets/images/administracion_manises.webp';
+import celebrationImage from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
+import loteriaFacade from '@/assets/images/loteria_manises_facade.png';
 
 /**
  * ⚠️ BACKEND INTEGRATION POINT: FEATURED_PENAS
@@ -232,51 +233,6 @@ function PenaCompactCard({ title, jackpot, price, color, onClick }: PenaCompactP
   );
 }
 
-function DeliveredPrizeHighlightCard({
-  title,
-  amount,
-  label,
-  description,
-  onClick,
-}: {
-  key?: Key;
-  title: string;
-  amount: string;
-  label: string;
-  description: string;
-  onClick: () => void;
-}) {
-  return (
-    <PremiumTouchInteraction scale={0.985}>
-      <button
-        type="button"
-        onClick={onClick}
-        className="w-full rounded-[1.45rem] border border-emerald-100 bg-white p-3.5 text-left shadow-sm transition-all hover:border-emerald-200"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <span className="inline-flex rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-700">
-              {label}
-            </span>
-            <h3 className="mt-2 truncate text-[15px] font-black text-manises-blue">
-              {title}
-            </h3>
-          </div>
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100">
-            <Trophy className="h-4.5 w-4.5 text-emerald-600" />
-          </div>
-        </div>
-
-        <p className="mt-2.5 text-[17px] font-black tracking-tight text-emerald-600">
-          {amount}
-        </p>
-        <p className="mt-1 text-[10px] font-medium leading-relaxed text-slate-500 line-clamp-2">
-          {description}
-        </p>
-      </button>
-    </PremiumTouchInteraction>
-  );
-}
 
 function PremiumEditorialCard({
   badge,
@@ -399,7 +355,6 @@ export function HomePage() {
   const { canInstall, isInstalled, shouldShowIosHint, promptInstall } = useInstallPrompt();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const deliveredPrizeHighlights = useMemo(() => getDeliveredPrizeHighlights(2), []);
   const deliveredPrizesTotalAmount = useMemo(() => getDeliveredPrizesTotalAmount(), []);
 
   // Los juegos destacados en el bento (priorizamos los nacionales e inmediatos)
@@ -528,43 +483,39 @@ export function HomePage() {
       </section>
 
       {/* ── Premios Destacados ──────────────────────────────── */}
-      {deliveredPrizeHighlights.length > 0 && (
-        <section className="space-y-3 px-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="bg-emerald-50 p-1.5 rounded-lg">
-                <Trophy className="w-4 h-4 text-emerald-600" />
-              </div>
-              <div>
-                <h2 className="text-xs font-extrabold text-manises-blue uppercase tracking-[0.16em]">Premios destacados</h2>
-                <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-400">
-                  Contenido informativo demo
+      <section className="px-5">
+        <PremiumTouchInteraction scale={0.98}>
+          <button
+            type="button"
+            onClick={() => navigate('/premios-entregados')}
+            className="group relative h-[134px] w-full overflow-hidden rounded-[1.75rem] text-left shadow-[0_8px_28px_-8px_rgba(0,0,0,0.30)]"
+          >
+            <img
+              src={celebrationImage}
+              alt="Clientes ganadores Lotería Manises"
+              className="absolute inset-0 h-full w-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(4,40,20,0.92)_0%,rgba(6,72,54,0.74)_55%,rgba(4,40,20,0.18)_100%)]" />
+
+            <div className="relative flex h-full items-center justify-between px-5">
+              <div className="max-w-[15rem] space-y-0.5">
+                <p className="text-[8px] font-black uppercase tracking-[0.22em] text-emerald-300">
+                  Últimos premios
+                </p>
+                <p className="text-[1.1rem] font-black leading-tight tracking-tight text-white">
+                  Más de {(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M€ repartidos
+                </p>
+                <p className="text-[10px] font-medium leading-snug text-white/60">
+                  Descubre los premios entregados recientemente
                 </p>
               </div>
+              <div className="ml-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md transition-colors group-hover:bg-white/20">
+                <ArrowRight className="h-4 w-4 text-white" />
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={() => navigate('/premios-entregados')}
-              className="text-[10px] font-black text-emerald-700 uppercase tracking-widest"
-            >
-              Ver más
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 gap-2.5">
-            {deliveredPrizeHighlights.map((prize) => (
-              <DeliveredPrizeHighlightCard
-                key={prize.id}
-                title={prize.game}
-                amount={formatCurrency(prize.amount)}
-                label={prize.highlightLabel}
-                description={prize.description}
-                onClick={() => navigate('/premios-entregados')}
-              />
-            ))}
-          </div>
-        </section>
-      )}
+          </button>
+        </PremiumTouchInteraction>
+      </section>
 
       {/* ── Bento: Próximos Sorteos ───────────────────────────── */}
       {bentoGames.length > 0 && (
@@ -638,8 +589,8 @@ export function HomePage() {
             className="group relative h-[132px] w-full overflow-hidden rounded-[1.75rem] border border-white/10 text-left shadow-[0_8px_28px_-8px_rgba(0,0,0,0.28)]"
           >
             <img
-              src={adminFacade}
-              alt="Premios entregados Lotería Manises"
+              src={loteriaFacade}
+              alt="Administración Lotería Manises"
               className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(10,71,146,0.93)_0%,rgba(8,58,118,0.80)_55%,rgba(10,71,146,0.35)_100%)]" />
@@ -647,13 +598,13 @@ export function HomePage() {
             <div className="relative flex h-full items-center justify-between px-5">
               <div className="max-w-[14rem] space-y-0.5">
                 <p className="text-[8px] font-black uppercase tracking-[0.22em] text-manises-gold">
-                  Premios entregados
+                  Historial completo
                 </p>
                 <p className="text-[1.12rem] font-black leading-tight tracking-tight text-white">
-                  {(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M € repartidos
+                  Historias de suerte en Manises
                 </p>
                 <p className="text-[10px] font-medium leading-snug text-white/60">
-                  Consulta el histórico y premios recientes
+                  Todos los premios entregados, en un solo lugar
                 </p>
               </div>
               <div className="ml-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md transition-colors group-hover:bg-white/20">
