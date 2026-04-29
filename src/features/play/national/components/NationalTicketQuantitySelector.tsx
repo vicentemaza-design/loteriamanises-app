@@ -11,6 +11,7 @@ interface NationalTicketQuantitySelectorProps {
   firstPrize: number;
   onQuantityChange: (quantity: number) => void;
   onAddToCart: () => void;
+  onReserve: () => void;
 }
 
 /**
@@ -25,6 +26,7 @@ export function NationalTicketQuantitySelector({
   firstPrize,
   onQuantityChange,
   onAddToCart,
+  onReserve,
 }: NationalTicketQuantitySelectorProps) {
   const potentialFirstPrize = firstPrize * selectedQuantity;
 
@@ -89,14 +91,26 @@ export function NationalTicketQuantitySelector({
         </p>
       </div>
 
-      <div className="mt-4 flex justify-end">
+      <div className="mt-6 flex items-center justify-between gap-3">
         <Button
-          variant="outline"
-          className="rounded-2xl border-manises-blue/15 bg-manises-blue/[0.03] text-manises-blue"
+          variant="ghost"
+          className="flex-1 rounded-2xl text-manises-blue font-bold text-[11px] uppercase tracking-widest hover:bg-slate-50"
+          onClick={onReserve}
+        >
+          Reservar número demo
+        </Button>
+        <Button
+          className="flex-1 rounded-2xl bg-manises-blue text-white font-bold shadow-lg"
           onClick={onAddToCart}
         >
           Añadir a cesta demo
         </Button>
+      </div>
+
+      <div className="mt-3 text-center">
+        <p className="text-[8px] font-medium text-slate-400">
+          La reserva no es compra automática · Requiere confirmación manual
+        </p>
       </div>
     </motion.section>
   );

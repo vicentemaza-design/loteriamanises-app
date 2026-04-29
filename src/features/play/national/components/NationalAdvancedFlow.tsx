@@ -8,6 +8,7 @@ import { NationalNumberShowcase } from './NationalNumberShowcase';
 import { NationalTicketQuantitySelector } from './NationalTicketQuantitySelector';
 import { NationalCartSummary } from './NationalCartSummary';
 import { NationalDeliverySelector, type DeliveryMode } from './NationalDeliverySelector';
+import { NationalReservationCard } from './NationalReservationCard';
 import type { 
   NationalShowcaseItem, 
   NationalCartLine, 
@@ -15,6 +16,7 @@ import type {
   NationalSearchState 
 } from '../contracts/national-play.contract';
 import type { LotteryGame } from '@/shared/types/domain';
+import { toast } from 'sonner';
 
 interface NationalDrawMeta {
   id: string;
@@ -58,8 +60,8 @@ interface NationalAdvancedFlowProps {
 }
 
 /**
- * Flujo avanzado de Lotería Nacional (Refinado en Fase 3B.1).
- * Prioriza selector de entrega, buscador y escaparate visible rápido.
+ * Flujo avanzado de Lotería Nacional (Refinado en Fase 3B.4).
+ * Incluye reserva demo, entrega, buscador y escaparate.
  */
 export function NationalAdvancedFlow({
   game,
@@ -76,6 +78,17 @@ export function NationalAdvancedFlow({
   onClear,
 }: NationalAdvancedFlowProps) {
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
+  const [mockReservation, setMockReservation] = useState<{ number: string; drawLabel: string; drawDate: string } | null>(null);
+
+  const handleReserve = () => {
+    if (!selectedNationalNumber) return;
+    setMockReservation({
+      number: selectedNationalNumber,
+      drawLabel: selectedNationalDraw.label,
+      drawDate: selectedNationalDraw.nextDraw,
+    });
+    toast.success(`Reserva demo creada para el nº ${selectedNationalNumber}`);
+  };
 
   const drawType: NationalDrawType = game.id === 'loteria-navidad' ? 'navidad' : 
                                    game.id === 'loteria-nino' ? 'nino' : 'ordinary';
@@ -167,6 +180,19 @@ export function NationalAdvancedFlow({
             firstPrize={selectedNationalDraw.firstPrize}
             onQuantityChange={onChangeNationalQuantity}
             onAddToCart={() => nationalCart.addSelectedToCart(deliveryMode)}
+            onReserve={handleReserve}
+          />
+        </section>
+      )}
+
+      {/* 4.5 Reservas Demo */}
+      {mockReservation && (
+        <section className="stagger-item">
+          <NationalReservationCard
+            number={mockReservation.number}
+            drawLabel={mockReservation.drawLabel}
+            drawDate={mockReservation.drawDate}
+            onRemove={() => setMockReservation(null)}
           />
         </section>
       )}
