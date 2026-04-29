@@ -16,8 +16,8 @@ import {
   Flash as Zap,
   Calendar,
 } from 'iconoir-react/regular';
-import { getDeliveredPrizesTotalAmount } from '../data/delivered-prizes.mock';
 import { ResponsibleGamingFooter } from '@/shared/components/ResponsibleGamingFooter';
+import { getDeliveredPrizesTotalAmount } from '../data/delivered-prizes.mock';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { GameIcon } from '@/shared/ui/GameIcon';
@@ -336,7 +336,7 @@ function PremiumEditorialCard({
               </span>
             </div>
 
-            <div className={`${isCompact ? 'max-w-[20rem]' : 'max-w-[19rem]'} space-y-1 md:space-y-2.5`}>
+            <div className={`${isCompact ? '' : 'max-w-[19rem]'} space-y-1 md:space-y-2.5`}>
               <h3 className={`${titleClasses} font-extrabold tracking-tight text-white drop-shadow-sm line-clamp-2`}>
                 {title}
               </h3>
@@ -375,7 +375,6 @@ function PremiumEditorialCard({
 export function HomePage() {
   const navigate = useNavigate();
   const { featuredGame, upcomingGames } = useLotteryGames();
-  const { profile } = useAuth();
   const { canInstall, isInstalled, shouldShowIosHint, promptInstall } = useInstallPrompt();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -416,10 +415,10 @@ export function HomePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[1.45rem] font-black leading-none tracking-tight text-manises-blue">
-              {profile ? `Hola, ${profile.displayName.split(' ')[0]} 👋` : 'Lotería Manises 🍀'}
+              Hola, Usuario 👋
             </h1>
             <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-              {profile ? '¡Que tengas mucha suerte hoy!' : 'Tu administración en demo'}
+              ¡QUE TENGAS MUCHA SUERTE HOY!
             </p>
           </div>
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-100 bg-white text-manises-blue shadow-sm">
@@ -431,6 +430,7 @@ export function HomePage() {
       {/* ── Premios Entregados ───────────────────────────────── */}
       <section className="px-5">
         <PremiumEditorialCard
+          className="w-full"
           badge="PREMIOS"
           title={`Más de ${(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M€ repartidos`}
           description="Consulta los últimos premios comunicados."
