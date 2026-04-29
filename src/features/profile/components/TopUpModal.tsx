@@ -52,7 +52,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
          setIsProcessing(false);
       }, 1500);
     } catch {
-      toast.error('Hubo un problema al procesar el pago.');
+      toast.error('No se ha podido completar la simulación de recarga.');
       setIsProcessing(false);
     }
   };
@@ -92,7 +92,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                 </div>
                 <h3 className="text-2xl font-black text-manises-blue">¡Pago Completado!</h3>
                 <p className="text-sm font-medium text-muted-foreground text-center">
-                  Has recargado {formatCurrency(selectedAmount)} con éxito.
+                  Has recargado {formatCurrency(effectiveAmount)} con éxito.
                 </p>
               </motion.div>
             ) : (
@@ -206,7 +206,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                     {/* Bizum */}
                     <button onClick={() => setSelectedMethod('bizum')} disabled={isProcessing} className={`w-full flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all ${selectedMethod === 'bizum' ? 'border-[#00c4b3] bg-[#00c4b3]/10' : 'border-slate-100 bg-white'}`}>
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black italic text-base ${selectedMethod === 'biz_um' ? 'bg-[#00c4b3] text-white' : 'bg-slate-100 text-slate-500'}`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black italic text-base ${selectedMethod === 'bizum' ? 'bg-[#00c4b3] text-white' : 'bg-slate-100 text-slate-500'}`}>
                           bz
                         </div>
                         <div className="text-left">
@@ -235,31 +235,38 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
 
                 <div className="flex items-center justify-center gap-2 pt-2 pb-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Pago 100% Seguro y Encriptado</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Demo · método de pago no operativo</p>
                 </div>
 
                 <AnimatePresence mode="wait">
-                  <PremiumTouchInteraction scale={0.98} className="w-full">
-                    <Button
-                      onClick={handlePay}
-                      disabled={isProcessing || effectiveAmount <= 0}
-                      className={`w-full h-14 rounded-2xl text-white font-black text-lg transition-all shadow-md ${
-                        selectedMethod === 'apple' ? 'bg-black hover:bg-gray-900 border-b-4 border-gray-800' :
-                        selectedMethod === 'bizum' ? 'bg-[#00c4b3] hover:bg-[#00aba0] border-b-4 border-[#009e93]' :
-                        'bg-manises-blue hover:bg-[#083d7d] border-b-4 border-[#052a5a]'
-                      }`}
-                    >
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="w-6 h-6 mr-2 animate-spin" /> Verificando...
-                        </>
-                      ) : (
-                        <>
-                          Recargar {formatCurrency(effectiveAmount)} demo <ArrowRight className="w-5 h-5 ml-2 opacity-70" />
-                        </>
-                      )}
-                    </Button>
-                  </PremiumTouchInteraction>
+                  <div className="w-full flex flex-col gap-2">
+                    {effectiveAmount > 500 && (
+                      <p className="text-[9px] font-black text-red-500 uppercase tracking-widest text-center animate-pulse">
+                        Límite de recarga demo: 500€
+                      </p>
+                    )}
+                    <PremiumTouchInteraction scale={0.98} className="w-full">
+                      <Button
+                        onClick={handlePay}
+                        disabled={isProcessing || effectiveAmount <= 0 || effectiveAmount > 500}
+                        className={`w-full h-14 rounded-2xl text-white font-black text-lg transition-all shadow-md ${
+                          selectedMethod === 'apple' ? 'bg-black hover:bg-gray-900 border-b-4 border-gray-800' :
+                          selectedMethod === 'bizum' ? 'bg-[#00c4b3] hover:bg-[#00aba0] border-b-4 border-[#009e93]' :
+                          'bg-manises-blue hover:bg-[#083d7d] border-b-4 border-[#052a5a]'
+                        }`}
+                      >
+                        {isProcessing ? (
+                          <>
+                            <Loader2 className="w-6 h-6 mr-2 animate-spin" /> Verificando...
+                          </>
+                        ) : (
+                          <>
+                            Recargar {formatCurrency(effectiveAmount)} demo <ArrowRight className="w-5 h-5 ml-2 opacity-70" />
+                          </>
+                        )}
+                      </Button>
+                    </PremiumTouchInteraction>
+                  </div>
                 </AnimatePresence>
                 
               </div>
