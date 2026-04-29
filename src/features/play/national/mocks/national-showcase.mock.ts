@@ -63,6 +63,7 @@ export const DEFAULT_NATIONAL_SEARCH_STATE: NationalSearchState = {
   query: '',
   sortBy: 'featured',
   onlyAvailable: true,
+  minQuantity: 1,
 };
 
 export function getNationalShowcaseItems(drawId: NationalDrawId): NationalShowcaseItem[] {

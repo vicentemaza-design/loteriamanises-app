@@ -14,6 +14,11 @@ export function searchNationalShowcase(
   const normalizedQuery = searchState.query.trim();
 
   const filtered = items.filter((item) => {
+    // Filtro por cantidad mínima requerida (stock demo)
+    if (item.available < searchState.minQuantity) {
+      return false;
+    }
+
     if (searchState.onlyAvailable && item.available <= 0) {
       return false;
     }

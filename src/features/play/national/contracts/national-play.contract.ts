@@ -24,6 +24,7 @@ export interface NationalSearchState {
   query: string;
   sortBy: 'featured' | 'availability' | 'number';
   onlyAvailable: boolean;
+  minQuantity: number;
 }
 
 export interface NationalCartLine {

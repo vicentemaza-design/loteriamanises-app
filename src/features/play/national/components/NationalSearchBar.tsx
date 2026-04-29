@@ -20,7 +20,30 @@ export function NationalSearchBar({ searchState, onChange }: NationalSearchBarPr
         />
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-4 space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest">Quiero al menos X décimos iguales</p>
+          <span className="text-[10px] font-black text-manises-blue">{searchState.minQuantity} {searchState.minQuantity === 1 ? 'décimo' : 'décimos'}</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {[1, 5, 10, 20, 50].map((val) => (
+            <button
+              key={val}
+              type="button"
+              onClick={() => onChange({ ...searchState, minQuantity: val })}
+              className={`rounded-xl border h-9 min-w-[3.5rem] px-3 text-[11px] font-black transition-all ${
+                searchState.minQuantity === val
+                  ? 'border-manises-blue bg-manises-blue text-white shadow-sm'
+                  : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
+              }`}
+            >
+              {val}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2 pt-4 border-t border-slate-100">
         {[
           { id: 'featured', label: 'Destacados' },
           { id: 'availability', label: 'Stock demo' },
@@ -52,7 +75,7 @@ export function NationalSearchBar({ searchState, onChange }: NationalSearchBarPr
               : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700'
           }`}
         >
-          {searchState.onlyAvailable ? 'Solo demo' : 'Mostrar todos'}
+          {searchState.onlyAvailable ? 'Solo con stock' : 'Mostrar todos'}
         </button>
       </div>
     </div>
