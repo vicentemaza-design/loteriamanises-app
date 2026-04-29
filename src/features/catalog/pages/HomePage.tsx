@@ -16,7 +16,7 @@ import {
   Flash as Zap,
   Calendar,
 } from 'iconoir-react/regular';
-import { AnnouncementBanner } from '../components/AnnouncementBanner';
+import { getDeliveredPrizesTotalAmount } from '../data/delivered-prizes.mock';
 import { ResponsibleGamingFooter } from '@/shared/components/ResponsibleGamingFooter';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
@@ -40,6 +40,7 @@ import loteriaJuevesLuck from '@/assets/images/loteria_jueves_luck.jpg';
 import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
 import quinielaHero from '@/assets/quiniela_hero.jpg';
 import adminFacade from '@/assets/images/administracion_manises.webp';
+import celebrationImage from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
 
 /**
  * ⚠️ BACKEND INTEGRATION POINT: FEATURED_PENAS
@@ -362,6 +363,8 @@ export function HomePage() {
   const { canInstall, isInstalled, shouldShowIosHint, promptInstall } = useInstallPrompt();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const deliveredPrizesTotalAmount = useMemo(() => getDeliveredPrizesTotalAmount(), []);
+
   // Los juegos destacados en el bento (priorizamos los nacionales e inmediatos)
   const bentoGames = useMemo(() => {
     const baseGames = upcomingGames.filter((game) => game.id !== featuredGame.id);
@@ -409,8 +412,21 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ── Announcement Banner ───────────────────────────────── */}
-      <AnnouncementBanner />
+      {/* ── Premios Entregados ───────────────────────────────── */}
+      <section className="px-5">
+        <PremiumEditorialCard
+          badge="ÉXITO MANISES"
+          title={`Más de ${(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M€ repartidos`}
+          description="Consulta los últimos premios comunicados por la administración."
+          cta="Ver premios"
+          image={celebrationImage}
+          imageAlt="Premios entregados"
+          icon={Sparkles}
+          accent="emerald"
+          stats={['Premios 2024', 'Histórico']}
+          onClick={() => navigate('/premios-entregados')}
+        />
+      </section>
 
       {/* ── Hero Section ──────────────────────────────────────── */}
       <section className="px-4">

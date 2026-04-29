@@ -5,20 +5,14 @@ export function ResponsibleGamingFooter() {
       role="contentinfo"
       aria-label="Juego responsable"
     >
-      <div className="mx-auto max-w-sm space-y-3.5">
+      <div className="mx-auto max-w-sm space-y-3">
 
-        {/* Square regulatory seals: 18+ and RGIAJ */}
-        <div className="flex items-center justify-center gap-5">
+        {/* Combined legal logo: Juego Inteligente +18 + thawte */}
+        <div className="flex justify-center px-2">
           <img
-            src="/legal-assets/mas_18.png"
-            alt="Prohibido menores de 18 años"
-            className="h-7 w-auto object-contain"
-            loading="lazy"
-          />
-          <img
-            src="/legal-assets/autoprohibicion.png"
-            alt="Registro General de Interdicciones de Acceso al Juego"
-            className="h-7 w-auto object-contain"
+            src="/legal-assets/logo_manises_footer_combined.png"
+            alt="Juego Inteligente, solo para mayores de 18 años y seguridad thawte"
+            className="h-auto max-h-[42px] w-auto max-w-full object-contain"
             loading="lazy"
           />
         </div>
@@ -40,7 +34,7 @@ export function ResponsibleGamingFooter() {
         </div>
 
         {/* Legal copy */}
-        <div className="space-y-1 pt-0.5 text-center">
+        <div className="space-y-1 pt-1 text-center">
           <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">
             Juega con responsabilidad · Solo mayores de 18 años
           </p>

@@ -7,12 +7,4 @@ export interface Announcement {
 }
 
 // Deja este array vacío para ocultar el banner completamente
-export const MOCK_ANNOUNCEMENTS: Announcement[] = [
-  {
-    id: 'ann-premio-abr26',
-    type: 'prize',
-    title: 'Premios entregados',
-    body: 'Consulta los últimos premios comunicados por la administración.',
-    cta: { label: 'Ver premios', href: '/premios-entregados' },
-  },
-];
+export const MOCK_ANNOUNCEMENTS: Announcement[] = [];
