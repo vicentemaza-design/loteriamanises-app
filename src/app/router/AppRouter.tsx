@@ -25,6 +25,7 @@ import { ResponsibleGamingPage } from '@/features/profile/pages/ResponsibleGamin
 import { CompaniesPage } from '@/features/profile/pages/CompaniesPage';
 import { TechnicalMatrixPage } from '@/features/admin/pages/TechnicalMatrixPage';
 import { DeliveredPrizesPage } from '@/features/catalog/pages/DeliveredPrizesPage';
+import { CompanyLandingPage } from '@/features/company/pages/CompanyLandingPage';
 
 export function AppRouter() {
   return (
@@ -39,6 +40,9 @@ export function AppRouter() {
       <Route element={<PrivateLayout />}>
         <Route path="/home" element={<HomePage />} />
         <Route path="/premios-entregados" element={<DeliveredPrizesPage />} />
+        <Route path="/empresas" element={<CompanyLandingPage />} />
+        <Route path="/colectivos" element={<CompanyLandingPage />} />
+        <Route path="/company/:code" element={<CompanyLandingPage />} />
         <Route path="/games" element={<GamesPage />} />
         <Route path="/play/:gameId" element={<GamePlayPage />} />
         <Route path="/results" element={<ResultsPage />} />
