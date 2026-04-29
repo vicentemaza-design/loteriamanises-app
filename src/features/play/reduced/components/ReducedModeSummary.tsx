@@ -77,7 +77,7 @@ export function ReducedModeSummary({
           </div>
 
           <p className="mt-3 text-[10px] font-bold text-slate-400 italic">
-            * Simulación demo sin valor contractual oficial.
+            * Simulación demo sin valor contractual.
           </p>
         </div>
       </div>
