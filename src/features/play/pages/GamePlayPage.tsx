@@ -54,8 +54,10 @@ import type { NationalDrawId } from '@/features/play/national/contracts/national
 import { useNationalShowcase } from '@/features/play/national/hooks/useNationalShowcase';
 import { useNationalCart } from '@/features/play/national/hooks/useNationalCart';
 import { buildNationalCartDraftIntent } from '@/features/play/national/application/build-national-cart-intent';
+import { useQuickPick } from '../quick-pick/hooks/useQuickPick';
+import { buildQuickPickDrafts } from '../quick-pick/application/build-quick-pick-drafts';
+import { QuickPickPanel } from '../quick-pick/components/QuickPickPanel';
 import type { PlayDraft } from '@/features/session/types/session.types';
-
 
 interface GamePlayLocationState { playDraftId?: string; }
 
@@ -109,6 +111,7 @@ export function GamePlayPage() {
   // Features Laguinda Style
   const [isSubscription, setIsSubscription] = useState(false);
   const [isMulticolumnMode, setIsMulticolumnMode] = useState(false);
+  const [isQuickPickMode, setIsQuickPickMode] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   if (!game) {
@@ -125,6 +128,8 @@ export function GamePlayPage() {
   const isNationalLottery = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
   const isQuiniela = game.id === 'quiniela';
   const isExplicitNationalProduct = gameId === 'loteria-nacional-jueves' || gameId === 'loteria-nacional-sabado';
+
+  const quickPick = useQuickPick(game);
 
   const availableNationalDates = useMemo(() => {
     return getAvailableNationalDrawDates(gameId, isNationalLottery, isExplicitNationalProduct);
@@ -319,6 +324,36 @@ export function GamePlayPage() {
   ]);
   const effectiveSelectedDrawDates = drawDateResolution.drawDates;
   const drawsCount = Math.max(effectiveSelectedDrawDates.length, 1);
+
+  const quickPickPricing = useMemo(() => {
+    return resolvePlayPricing({
+      game,
+      isNationalLottery: false,
+      isQuiniela: false,
+      mode: 'simple',
+      selectedNumbersCount: game.selectionRange.numbers.min,
+      selectedStarsCount: game.selectionRange.stars?.min ?? 0,
+      selectedReductionSystemId: '',
+      selectedNationalQuantity: 1,
+      selectedNationalDraw: { decimoPrice: game.price },
+      drawsCount: effectiveSelectedDrawDates.length || 1,
+    });
+  }, [game, effectiveSelectedDrawDates]);
+
+  const quickPickTotalPrice = quickPickPricing.totalPrice * quickPick.count;
+  const handlePersistQuickPick = () => {
+    const drafts = buildQuickPickDrafts({
+      game,
+      combinations: quickPick.combinations,
+      drawDates: effectiveSelectedDrawDates,
+      isSubscription,
+    });
+
+    addDrafts(drafts);
+    toast.success(`${quickPick.count} jugadas rápidas demo añadidas.`);
+    setIsQuickPickMode(false);
+  };
+
   const { betsCount, drawPrice, totalPrice } = resolvePlayPricing({
     game,
     isNationalLottery,
@@ -1021,20 +1056,38 @@ export function GamePlayPage() {
           />
         )}
 
-        {/* Toggle Multi-columna (Opcional para juegos de bolas en modo simple) */}
+        {/* Toggle de Modo (Manual / Rápida / Multi-columna) */}
         {!isNationalLottery && !isQuiniela && mode === 'simple' && (
           <div className="flex p-0.5 bg-slate-100/50 rounded-xl border border-slate-200/50">
             <button
-              onClick={() => setIsMulticolumnMode(false)}
+              onClick={() => {
+                setIsQuickPickMode(false);
+                setIsMulticolumnMode(false);
+              }}
               className={cn(
                 "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
-                !isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
+                !isQuickPickMode && !isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
               )}
             >
-              Selección clásica
+              Manual
             </button>
             <button
-              onClick={() => setIsMulticolumnMode(true)}
+              onClick={() => {
+                setIsQuickPickMode(true);
+                setIsMulticolumnMode(false);
+              }}
+              className={cn(
+                "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
+                isQuickPickMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
+              )}
+            >
+              Rápida
+            </button>
+            <button
+              onClick={() => {
+                setIsQuickPickMode(false);
+                setIsMulticolumnMode(true);
+              }}
               className={cn(
                 "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
                 isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
@@ -1098,7 +1151,19 @@ export function GamePlayPage() {
               </>
             ) : !isNationalLottery ? (
               <>
-                {isMulticolumnMode ? (
+                {isQuickPickMode ? (
+                  <QuickPickPanel
+                    count={quickPick.count}
+                    setCount={quickPick.setCount}
+                    combinations={quickPick.combinations}
+                    isRegenerating={quickPick.isRegenerating}
+                    regenerate={quickPick.regenerate}
+                    totalPrice={quickPickTotalPrice}
+                    availableBalance={profile?.balance ?? 0}
+                    drawsCount={effectiveSelectedDrawDates.length || 1}
+                    onAdd={handlePersistQuickPick}
+                  />
+                ) : isMulticolumnMode ? (
                   <MulticolumnTicketFlow 
                     game={game} 
                     drawDates={effectiveSelectedDrawDates}
