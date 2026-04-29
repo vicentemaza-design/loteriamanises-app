@@ -78,7 +78,7 @@ export function NationalCartSummary({
                   <button
                     type="button"
                     onClick={() => onUpdateQuantity(line.number, line.drawId, -1)}
-                      className="flex h-6.5 w-6.5 items-center justify-center text-slate-400 transition-colors hover:text-manises-blue disabled:opacity-30"
+                      className="flex h-[26px] w-[26px] items-center justify-center text-slate-400 transition-colors hover:text-manises-blue disabled:opacity-30"
                     disabled={line.quantity <= 1}
                   >
                     -
@@ -89,7 +89,7 @@ export function NationalCartSummary({
                   <button
                     type="button"
                     onClick={() => onUpdateQuantity(line.number, line.drawId, 1)}
-                    className="flex h-6.5 w-6.5 items-center justify-center text-slate-400 transition-colors hover:text-manises-blue disabled:opacity-30"
+                    className="flex h-[26px] w-[26px] items-center justify-center text-slate-400 transition-colors hover:text-manises-blue disabled:opacity-30"
                     disabled={line.quantity >= line.maxQuantity}
                   >
                     +

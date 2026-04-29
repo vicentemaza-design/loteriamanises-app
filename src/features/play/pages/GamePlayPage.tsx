@@ -1207,7 +1207,7 @@ export function GamePlayPage() {
                           <motion.div
                             key={`slot-${i}`}
                             animate={{ scale: selectedNumbers[i] ? 1 : 0.95 }}
-                            className={`flex h-8.5 w-8.5 items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedNumbers[i]
+                            className={`flex h-[34px] w-[34px] items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedNumbers[i]
                                 ? 'shadow-sm'
                                 : 'bg-white border-dashed border-gray-200 text-gray-200'
                               }`}
@@ -1223,7 +1223,7 @@ export function GamePlayPage() {
                               <motion.div
                                 key={`star-slot-${i}`}
                                 animate={{ scale: selectedStars[i] ? 1 : 0.95 }}
-                                className={`flex h-8.5 w-8.5 items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedStars[i]
+                                className={`flex h-[34px] w-[34px] items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedStars[i]
                                     ? 'bg-manises-gold border-manises-gold text-manises-blue shadow-gold'
                                     : 'bg-white border-dashed border-yellow-200 text-yellow-200'
                                   }`}
