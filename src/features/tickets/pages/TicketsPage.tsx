@@ -492,31 +492,27 @@ export function TicketsPage() {
                 const orderTotal = getOrderTotal(ticket);
                 const identity = getGameIdentity(game);
                 const scrutinyTone = getScrutinyTone(ticket, matchingResult);
-                const matchedValuesSummary = [
-                  matched.numbers.length > 0 ? matched.numbers.join(', ') : '',
-                  matched.stars.length > 0 ? `Estrellas ${matched.stars.join(', ')}` : '',
-                ].filter(Boolean).join(' · ');
 
                 return (
                   <PremiumTouchInteraction key={ticket.id} scale={0.985}>
                     <div className="ticket-card relative overflow-hidden rounded-[1.5rem] border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition-all">
                       <div className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: game.color }} />
 
-                      <div className="p-3 pl-3.5">
+                      <div className="px-3 py-2 pl-3.5">
                         <div className="flex items-start gap-2.5">
                           <div className="flex min-w-0 flex-1 items-start gap-2.5">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white shadow-md" style={{ backgroundColor: game.color }}>
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white shadow-sm" style={{ backgroundColor: game.color }}>
                               <GameBadge game={game} size="sm" variant="white" />
                             </div>
 
-                            <div className="min-w-0 flex-1">
+                            <div className="min-w-0 flex-1 flex flex-col gap-0.5">
                               <div className="flex items-center gap-1.5">
                                 <h3 className="truncate text-[12px] font-black uppercase leading-tight text-manises-blue">{identity.shortName}</h3>
                                 {ticket.isSubscription && <Sparkles className="h-3 w-3 shrink-0 fill-current text-manises-gold" />}
                                 {ticket.hasInsurance && <Shield className="h-3 w-3 shrink-0 text-manises-gold" />}
                               </div>
 
-                              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                              <div className="flex flex-wrap items-center gap-1">
                                 <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{orderDatesSummary}</p>
                                 <span className="text-slate-300">·</span>
                                 <p className="text-[11px] font-black text-manises-blue">{formatCurrency(orderTotal ?? 0)}</p>
@@ -524,46 +520,30 @@ export function TicketsPage() {
                                 <StatusBadge status={ticket.status} className="px-1.5 py-0 text-[9px]" />
                               </div>
 
+                              <p className="truncate text-[11px] font-black text-manises-blue">
+                                {getCompactSelectionSummary(ticket)}
+                                {ticket.status === 'won' && ticket.prize != null && (
+                                  <span className="ml-1 text-emerald-600"> · Premio {formatCurrency(ticket.prize)}</span>
+                                )}
+                              </p>
+                              {hasResolvedDraw && totalHits > 0 && (
+                                <div className="w-fit inline-flex items-center gap-0.5 rounded-full border border-emerald-200 bg-emerald-50 px-1.5 py-px text-[8px] font-black uppercase tracking-[0.1em] text-emerald-700">
+                                  <Target className="h-2.5 w-2.5" />
+                                  {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'}
+                                </div>
+                              )}
                             </div>
                           </div>
 
                           <button
                             type="button"
                             onClick={() => setExpandedIds((current) => current.includes(ticket.id) ? current.filter((id) => id !== ticket.id) : [...current, ticket.id])}
-                            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white text-manises-blue transition-all hover:border-manises-blue/20 hover:bg-manises-blue/[0.04]"
+                            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white text-manises-blue transition-all hover:border-manises-blue/20 hover:bg-manises-blue/[0.04]"
                             aria-expanded={isExpanded}
                             aria-label={isExpanded ? 'Ocultar detalle' : 'Mostrar detalle'}
                           >
                             <ChevronDown className={cn('h-4.5 w-4.5 transition-transform', isExpanded && 'rotate-180')} />
                           </button>
-                        </div>
-
-                        <div className="mt-2.5 flex items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-[12px] font-black text-manises-blue">
-                              {getCompactSelectionSummary(ticket)}
-                            </p>
-                            {hasResolvedDraw && totalHits > 0 && (
-                              <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-emerald-700">
-                                  <Target className="h-3 w-3" />
-                                  {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'}
-                                </span>
-                                {matchedValuesSummary && (
-                                  <span className="truncate text-[10px] font-semibold text-emerald-700">
-                                    {matchedValuesSummary}
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                          </div>
-
-                          {ticket.status === 'won' && ticket.prize != null && (
-                            <div className="shrink-0 rounded-xl border border-emerald-100 bg-emerald-50 px-2.5 py-1.5 text-right">
-                              <span className="block text-[8px] font-black uppercase tracking-[0.14em] text-emerald-600">Premio</span>
-                              <span className="block text-xs font-black leading-none text-emerald-700">{formatCurrency(ticket.prize)}</span>
-                            </div>
-                          )}
                         </div>
 
                         <AnimatePresence initial={false}>
@@ -575,7 +555,7 @@ export function TicketsPage() {
                               transition={{ duration: 0.22, ease: 'easeOut' }}
                               className="overflow-hidden"
                             >
-                              <div className="mt-3 space-y-3">
+                              <div className="mt-2 space-y-2">
                                 {game.type === 'quiniela' ? (
                                   <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
                                     <p className="text-[11px] font-black uppercase tracking-tight text-manises-blue">Pronóstico Quiniela</p>
@@ -629,19 +609,7 @@ export function TicketsPage() {
                                   </div>
                                 </div>
 
-                                {hasResolvedDraw && totalHits > 0 && (
-                                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-2.5">
-                                    <div className="flex items-center gap-2">
-                                      <Target className="h-4 w-4 text-emerald-700" />
-                                      <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-700">Aciertos detectados</p>
-                                    </div>
-                                    <p className="mt-1 text-[11px] font-semibold text-emerald-800">
-                                      {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'} en total.
-                                    </p>
-                                  </div>
-                                )}
-
-                                <div className="flex flex-wrap items-center gap-2 pt-1">
+                                <div className="flex flex-wrap items-center gap-2">
                                   <QuickActionButton
                                     icon={Repeat2}
                                     label="Repetir"
