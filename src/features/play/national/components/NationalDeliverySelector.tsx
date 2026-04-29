@@ -23,17 +23,17 @@ export function NationalDeliverySelector({ selectedMode, onChange }: NationalDel
           type="button"
           onClick={() => onChange('custody')}
           className={cn(
-            'flex flex-col items-center justify-center gap-2 rounded-2xl border-2 p-4 transition-all',
+            'flex flex-col items-center justify-center gap-2 rounded-2xl border-2 p-3 transition-all',
             selectedMode === 'custody'
               ? 'border-manises-blue bg-manises-blue text-white shadow-manises'
               : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
           )}
         >
-          <Smartphone className={cn('h-6 w-6', selectedMode === 'custody' ? 'text-white' : 'text-manises-blue')} />
+          <Smartphone className={cn('h-5 w-5', selectedMode === 'custody' ? 'text-white' : 'text-manises-blue')} />
           <div className="text-center">
             <p className="text-[11px] font-black uppercase tracking-wider">Custodia / Digital</p>
             <p className={cn('text-[9px] font-medium opacity-70', selectedMode === 'custody' ? 'text-white' : 'text-slate-400')}>
-              Sin gastos · Cobro automático
+              Sin envío · custodia demo
             </p>
           </div>
         </button>
@@ -42,17 +42,17 @@ export function NationalDeliverySelector({ selectedMode, onChange }: NationalDel
           type="button"
           onClick={() => onChange('shipping')}
           className={cn(
-            'flex flex-col items-center justify-center gap-2 rounded-2xl border-2 p-4 transition-all',
+            'flex flex-col items-center justify-center gap-2 rounded-2xl border-2 p-3 transition-all',
             selectedMode === 'shipping'
               ? 'border-manises-blue bg-manises-blue text-white shadow-manises'
               : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
           )}
         >
-          <Truck className={cn('h-6 w-6', selectedMode === 'shipping' ? 'text-white' : 'text-manises-blue')} />
+          <Truck className={cn('h-5 w-5', selectedMode === 'shipping' ? 'text-white' : 'text-manises-blue')} />
           <div className="text-center">
             <p className="text-[11px] font-black uppercase tracking-wider">Mensajería</p>
             <p className={cn('text-[9px] font-medium opacity-70', selectedMode === 'shipping' ? 'text-white' : 'text-slate-400')}>
-              Envío a domicilio
+              Vista previa envío
             </p>
           </div>
         </button>

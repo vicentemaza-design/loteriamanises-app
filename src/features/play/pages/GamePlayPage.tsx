@@ -48,6 +48,7 @@ import {
 } from '@/features/play/application/resolve-draw-dates';
 import {
   NATIONAL_DRAW_CONFIG,
+  DEFAULT_NATIONAL_SEARCH_STATE,
 } from '@/features/play/national/mocks/national-showcase.mock';
 import type { NationalDrawId } from '@/features/play/national/contracts/national-play.contract';
 import { useNationalShowcase } from '@/features/play/national/hooks/useNationalShowcase';
@@ -462,6 +463,10 @@ export function GamePlayPage() {
     setSelectedStars([]);
     setSelectedNationalNumber(null);
     setSelectedNationalQuantity(1);
+
+    if (isNationalLottery) {
+      setNationalSearchState(DEFAULT_NATIONAL_SEARCH_STATE);
+    }
   };
 
   const handleShare = async () => {
