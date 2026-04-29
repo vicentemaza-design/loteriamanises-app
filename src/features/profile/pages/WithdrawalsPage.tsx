@@ -177,7 +177,7 @@ export function WithdrawalsPage() {
           </div>
           <div className="flex flex-col items-center gap-1 opacity-30">
             <p className="text-[9px] font-black text-manises-blue uppercase tracking-widest">
-              Demo · No se procesará pago real
+              Demo · No se realizará ninguna retirada real
             </p>
           </div>
         </div>

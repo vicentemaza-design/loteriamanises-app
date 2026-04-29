@@ -123,7 +123,7 @@ export function PaymentsPage() {
             <div className="space-y-1">
               <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest">Seguridad Garantizada</p>
               <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">
-                No se realizará ningún cargo real. Los datos mostrados son ejemplos visuales para demostración de interfaz segura SSL.
+                No se realizará ningún cargo real. Los datos mostrados son ejemplos visuales para simulación visual de métodos de pago.
               </p>
             </div>
           </div>

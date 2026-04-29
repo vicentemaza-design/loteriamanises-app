@@ -16,6 +16,7 @@ import { Button } from '@/shared/ui/Button';
 import type { WalletMovement } from '@/shared/types/domain';
 
 type FilterKey = 'all' | 'deposit' | 'bet' | 'prize' | 'withdrawal';
+type MovementWithBalance = WalletMovement & { balanceAfter?: number };
 
 const FILTER_CHIPS: { key: FilterKey; label: string }[] = [
   { key: 'all',        label: 'Todo' },
@@ -59,7 +60,7 @@ export function MovementsPage() {
   const prizes   = movements.filter((m) => m.type === 'prize').reduce((s, m) => s + m.amount, 0);
 
   // Pre-calculate running balance for "all" view
-  const movementsWithBalance = useMemo(() => {
+  const movementsWithBalance = useMemo<MovementWithBalance[]>(() => {
     let current = profile?.balance ?? 0;
     return movements.map(m => {
       const balanceAfter = current;
@@ -173,7 +174,7 @@ export function MovementsPage() {
                       </span>
                       {activeFilter === 'all' && (
                         <span className="text-[10px] font-bold text-muted-foreground tabular-nums">
-                          {formatCurrency((movement as any).balanceAfter)}
+                          {formatCurrency(movement.balanceAfter)}
                         </span>
                       )}
                     </div>
