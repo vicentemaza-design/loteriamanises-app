@@ -629,29 +629,37 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ── Premios Entregados Widget ─────────────────────────── */}
+      {/* ── Premios Entregados Banner ─────────────────────────── */}
       <section className="px-5">
         <PremiumTouchInteraction scale={0.98}>
           <button
             type="button"
             onClick={() => navigate('/premios-entregados')}
-            className="group flex w-full items-center gap-3 rounded-[1.45rem] border border-emerald-100 bg-emerald-50 p-3.5 text-left transition-all hover:border-emerald-200"
+            className="group relative h-[132px] w-full overflow-hidden rounded-[1.75rem] border border-white/10 text-left shadow-[0_8px_28px_-8px_rgba(0,0,0,0.28)]"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-100">
-              <Trophy className="h-5 w-5 text-emerald-600" />
+            <img
+              src={adminFacade}
+              alt="Premios entregados Lotería Manises"
+              className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(10,71,146,0.93)_0%,rgba(8,58,118,0.80)_55%,rgba(10,71,146,0.35)_100%)]" />
+
+            <div className="relative flex h-full items-center justify-between px-5">
+              <div className="max-w-[14rem] space-y-0.5">
+                <p className="text-[8px] font-black uppercase tracking-[0.22em] text-manises-gold">
+                  Premios entregados
+                </p>
+                <p className="text-[1.12rem] font-black leading-tight tracking-tight text-white">
+                  {(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M € repartidos
+                </p>
+                <p className="text-[10px] font-medium leading-snug text-white/60">
+                  Consulta el histórico y premios recientes
+                </p>
+              </div>
+              <div className="ml-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md transition-colors group-hover:bg-white/20">
+                <ArrowRight className="h-4 w-4 text-white" />
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">
-                Premios entregados
-              </p>
-              <p className="mt-0.5 text-[13px] font-bold text-emerald-900">
-                {(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M € en premios destacados
-              </p>
-              <p className="text-[10px] text-emerald-700/60 font-medium">
-                Abrir módulo demo e informativo
-              </p>
-            </div>
-            <ArrowRight className="w-4 h-4 text-emerald-600/50 group-hover:text-emerald-600 transition-colors" />
           </button>
         </PremiumTouchInteraction>
       </section>
