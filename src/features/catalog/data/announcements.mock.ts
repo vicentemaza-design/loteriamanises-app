@@ -11,8 +11,8 @@ export const MOCK_ANNOUNCEMENTS: Announcement[] = [
   {
     id: 'ann-premio-abr26',
     type: 'prize',
-    title: 'Premio entregado',
-    body: '¡Enhorabuena a nuestros clientes! Consulta los últimos premios repartidos en tu administración de Manises.',
+    title: 'Premios entregados',
+    body: 'Consulta los últimos premios comunicados por la administración.',
     cta: { label: 'Ver premios', href: '/premios-entregados' },
   },
 ];

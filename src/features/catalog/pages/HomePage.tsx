@@ -18,7 +18,6 @@ import {
 } from 'iconoir-react/regular';
 import { AnnouncementBanner } from '../components/AnnouncementBanner';
 import { ResponsibleGamingFooter } from '@/shared/components/ResponsibleGamingFooter';
-import { getDeliveredPrizesTotalAmount } from '../data/delivered-prizes.mock';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { GameIcon } from '@/shared/ui/GameIcon';
@@ -41,7 +40,6 @@ import loteriaJuevesLuck from '@/assets/images/loteria_jueves_luck.jpg';
 import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
 import quinielaHero from '@/assets/quiniela_hero.jpg';
 import adminFacade from '@/assets/images/administracion_manises.webp';
-import celebrationImage from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
 
 /**
  * ⚠️ BACKEND INTEGRATION POINT: FEATURED_PENAS
@@ -364,8 +362,6 @@ export function HomePage() {
   const { canInstall, isInstalled, shouldShowIosHint, promptInstall } = useInstallPrompt();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const deliveredPrizesTotalAmount = useMemo(() => getDeliveredPrizesTotalAmount(), []);
-
   // Los juegos destacados en el bento (priorizamos los nacionales e inmediatos)
   const bentoGames = useMemo(() => {
     const baseGames = upcomingGames.filter((game) => game.id !== featuredGame.id);
@@ -551,19 +547,6 @@ export function HomePage() {
             accent="gold"
             stats={['Persistente', 'Semanal']}
             onClick={() => navigate('/profile/subscriptions')}
-          />
-          <PremiumEditorialCard
-            badge="ÉXITO MANISES"
-            title={`Más de ${(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M€ repartidos`}
-            description="Descubre los premios entregados recientemente en nuestra administración."
-            cta="Ver premios"
-            image={celebrationImage}
-            imageAlt="Clientes ganadores Lotería Manises"
-            icon={Sparkles}
-            accent="emerald"
-            stats={['Premios', 'Historial']}
-            className="md:col-span-2"
-            onClick={() => navigate('/premios-entregados')}
           />
         </div>
       </section>
