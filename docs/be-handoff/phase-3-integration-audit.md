@@ -25,7 +25,7 @@ El frontend de Lotería Manises está en estado de integración avanzada. La arq
 | Play Session | Mock activo, contratos definidos | Sí — endpoint submit sin implementar |
 | Pricing engine | Cálculo local FE | Sí — BE debe recalcular, ver sección 3 |
 | Lotería Nacional | Mock completo, contratos definidos | Sí — catálogo y disponibilidad Nacional pendientes |
-| Wallet | Mock + Firebase parcial | Sí — pasarela real sujeta a validación legal |
+| Wallet | Mock + Firebase parcial | Sí — pasarela externa sujeta a validación legal |
 | Tickets | Mock, TicketDto definido | Sí — persistencia pendiente |
 | Empresas / Colectivos | Mock hardcoded | Sí — contrato pendiente (ver sección 6) |
 | Resultados | Mock, ResultDto definido | Medio — fuente de datos externa pendiente |
@@ -293,7 +293,7 @@ POST /api/me/wallet/topup
 ```
 Body: `{ amount: number }`  
 Respuesta: `{ success: boolean; newBalance: number }`  
-**Estado: Demo simulada. No conectar a pasarela de pago real sin validación legal y proveedor de pagos aprobado.**
+**Estado: Demo simulada. No conectar a pasarela de pagos externa sin validación legal y proveedor de pagos aprobado.**
 
 ### 5.5 Resultados
 
@@ -448,7 +448,7 @@ C-04  Transacción atómica saldo + movimiento
 
 ### Fase D — Catálogo y Disponibilidad Nacional
 
-Objetivo: el escaparate de Nacional muestra stock real del catálogo interno.
+Objetivo: el escaparate de Nacional muestra disponibilidad gestionada por backend interno.
 
 ```
 D-01  GET  /api/national/draws        — sorteos disponibles y config
@@ -458,7 +458,7 @@ D-04  POST /api/national/reserve      — sujeto a acuerdo con proveedor
 D-05  POST /api/national/checkout     — integrado en B-01 si es via submitPlaySession
 ```
 
-### Fase E — Flujos Reales (sujeto a validación legal y proveedor)
+### Fase E — Flujos sujetos a validación legal y proveedor
 
 **No planificar hasta que cliente y legal confirmen modelo operativo.**
 
