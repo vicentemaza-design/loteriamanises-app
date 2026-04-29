@@ -61,6 +61,8 @@ import { useQuickPick } from '../quick-pick/hooks/useQuickPick';
 import { buildQuickPickDrafts } from '../quick-pick/application/build-quick-pick-drafts';
 import { QuickPickPanel } from '../quick-pick/components/QuickPickPanel';
 import type { PlayDraft } from '@/features/session/types/session.types';
+import { DrawStatusPill } from '../draw-status/components/DrawStatusPill';
+import { resolveDrawStatus } from '../draw-status/application/resolve-draw-status';
 
 interface GamePlayLocationState { playDraftId?: string; }
 
@@ -402,6 +404,17 @@ export function GamePlayPage() {
   }, [game.type, isNationalLottery, availableNationalDates]);
 
   const groupedAllDraws = useMemo(() => groupDrawsByWeek(allAvailableDraws), [allAvailableDraws]);
+  const highlightedDrawDate = useMemo(() => {
+    const sortedDrawDates = [...effectiveSelectedDrawDates].sort((left, right) => left.localeCompare(right));
+    if (sortedDrawDates.length > 0) {
+      return sortedDrawDates[0];
+    }
+
+    return getBusinessDate(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw);
+  }, [effectiveSelectedDrawDates, game.nextDraw, isNationalLottery, selectedNationalDraw.nextDraw]);
+  const drawStatus = useMemo(() => resolveDrawStatus({
+    drawDate: highlightedDrawDate,
+  }), [highlightedDrawDate]);
 
   const timeSelectionSummary = useMemo(() => {
     if (effectiveSelectedDrawDates.length === 0) return 'Sin selección';
@@ -877,15 +890,7 @@ export function GamePlayPage() {
       <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-3 p-4 pt-2">
         {/* Draw time strip — Solo visible si NO hay selector de tiempo detallado para evitar duplicidad */}
         {!supportsTimeSelection && (
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white/60 px-4 py-2 shadow-sm backdrop-blur-sm">
-            <Calendar className="w-3.5 h-3.5 text-manises-blue/50 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Próximo sorteo</p>
-              <p className="text-[12px] font-bold text-manises-blue">
-                {formatDrawTime(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw)}
-              </p>
-            </div>
-          </div>
+          <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={drawsCount} />
         )}
 
         {supportsTimeSelection && (
@@ -905,6 +910,12 @@ export function GamePlayPage() {
                   </button>
                 )}
               </div>
+
+              <DrawStatusPill
+                drawStatus={drawStatus}
+                selectedDrawsCount={drawsCount}
+                className="mb-3"
+              />
 
               {isNationalLottery ? (
                 <NationalDrawSelector
