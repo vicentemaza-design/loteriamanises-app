@@ -42,7 +42,6 @@ import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
 import quinielaHero from '@/assets/quiniela_hero.jpg';
 import adminFacade from '@/assets/images/administracion_manises.webp';
 import celebrationImage from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
-import loteriaFacade from '@/assets/images/loteria_manises_facade.png';
 
 /**
  * ⚠️ BACKEND INTEGRATION POINT: FEATURED_PENAS
@@ -580,42 +579,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ── Premios Entregados Banner ─────────────────────────── */}
-      <section className="px-5">
-        <PremiumTouchInteraction scale={0.98}>
-          <button
-            type="button"
-            onClick={() => navigate('/premios-entregados')}
-            className="group relative h-[132px] w-full overflow-hidden rounded-[1.75rem] border border-white/10 text-left shadow-[0_8px_28px_-8px_rgba(0,0,0,0.28)]"
-          >
-            <img
-              src={loteriaFacade}
-              alt="Administración Lotería Manises"
-              className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(10,71,146,0.93)_0%,rgba(8,58,118,0.80)_55%,rgba(10,71,146,0.35)_100%)]" />
-
-            <div className="relative flex h-full items-center justify-between px-5">
-              <div className="max-w-[14rem] space-y-0.5">
-                <p className="text-[8px] font-black uppercase tracking-[0.22em] text-manises-gold">
-                  Historial completo
-                </p>
-                <p className="text-[1.12rem] font-black leading-tight tracking-tight text-white">
-                  Historias de suerte en Manises
-                </p>
-                <p className="text-[10px] font-medium leading-snug text-white/60">
-                  Todos los premios entregados, en un solo lugar
-                </p>
-              </div>
-              <div className="ml-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md transition-colors group-hover:bg-white/20">
-                <ArrowRight className="h-4 w-4 text-white" />
-              </div>
-            </div>
-          </button>
-        </PremiumTouchInteraction>
-      </section>
-
-      {/* ── Responsible Gaming Footer ─────────────────────────── */}
+{/* ── Responsible Gaming Footer ─────────────────────────── */}
       <ResponsibleGamingFooter />
 
       <ScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} />
