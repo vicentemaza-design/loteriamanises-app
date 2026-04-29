@@ -52,7 +52,7 @@ export function WalletPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-background" ref={containerRef}>
+    <div className="flex min-h-full flex-col bg-background pb-32" ref={containerRef}>
       <ProfileSubHeader title="Mi Saldo" />
       
       <div className="p-5 flex flex-col gap-6">
@@ -95,7 +95,7 @@ export function WalletPage() {
               <PremiumTouchInteraction scale={0.97}>
                 <Button 
                   variant="outline"
-                  onClick={() => toast.info('Cobro de premios pendiente de integración')}
+                  onClick={() => navigate('/profile/withdrawals')}
                   className="h-12 w-full rounded-2xl border-white/20 bg-white/10 font-black text-white hover:bg-white/20 transition-all"
                 >
                   Cobrar

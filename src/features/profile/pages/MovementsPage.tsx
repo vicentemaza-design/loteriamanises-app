@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ElementType } from 'react';
-import { ArrowDownLeft, ArrowUpRight, Trophy, Wallet, Plus } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Trophy, Wallet, Plus, Landmark } from 'lucide-react';
 import { formatCurrency, formatDate, cn } from '@/shared/lib/utils';
+import { useNavigate } from 'react-router-dom';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';
 import { PremiumActionRow } from '../components/PremiumActionRow';
@@ -14,34 +15,40 @@ import { TopUpModal } from '../components/TopUpModal';
 import { Button } from '@/shared/ui/Button';
 import type { WalletMovement } from '@/shared/types/domain';
 
-type FilterKey = 'all' | 'deposit' | 'bet' | 'prize';
+type FilterKey = 'all' | 'deposit' | 'bet' | 'prize' | 'withdrawal';
 
 const FILTER_CHIPS: { key: FilterKey; label: string }[] = [
-  { key: 'all',     label: 'Todo' },
-  { key: 'deposit', label: 'Recargas' },
-  { key: 'bet',     label: 'Jugadas' },
-  { key: 'prize',   label: 'Premios' },
+  { key: 'all',        label: 'Todo' },
+  { key: 'deposit',    label: 'Recargas' },
+  { key: 'prize',      label: 'Premios' },
+  { key: 'bet',        label: 'Jugadas' },
+  { key: 'withdrawal', label: 'Retiradas' },
 ];
 
 function getIcon(type: WalletMovement['type']): ElementType {
-  if (type === 'deposit') return ArrowDownLeft;
+  if (type === 'deposit') return Plus;
   if (type === 'prize') return Trophy;
-  return ArrowUpRight;
+  if (type === 'withdrawal') return ArrowUpRight;
+  return ArrowDownLeft; // default/bet
 }
 
-function getTone(type: WalletMovement['type']): 'blue' | 'gold' | 'violet' {
+function getTone(type: WalletMovement['type']): 'blue' | 'gold' | 'violet' | 'emerald' | 'default' {
   if (type === 'deposit') return 'blue';
   if (type === 'prize') return 'gold';
-  return 'violet';
+  if (type === 'withdrawal') return 'emerald';
+  if (type === 'bet') return 'default';
+  return 'default';
 }
 
 function getBadge(type: WalletMovement['type']): string {
   if (type === 'deposit') return 'Entrada';
   if (type === 'prize') return 'Premio';
+  if (type === 'withdrawal') return 'Retirada';
   return 'Apuesta';
 }
 
 export function MovementsPage() {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const { movements, isLoading, error } = useMovements();
   const { topUp } = useWallet();
@@ -51,9 +58,19 @@ export function MovementsPage() {
   const deposits = movements.filter((m) => m.type === 'deposit').reduce((s, m) => s + m.amount, 0);
   const prizes   = movements.filter((m) => m.type === 'prize').reduce((s, m) => s + m.amount, 0);
 
+  // Pre-calculate running balance for "all" view
+  const movementsWithBalance = useMemo(() => {
+    let current = profile?.balance ?? 0;
+    return movements.map(m => {
+      const balanceAfter = current;
+      current = current - m.amount;
+      return { ...m, balanceAfter };
+    });
+  }, [movements, profile?.balance]);
+
   const filtered = activeFilter === 'all'
-    ? movements
-    : movements.filter((m) => m.type === activeFilter);
+    ? movementsWithBalance
+    : movementsWithBalance.filter((m) => m.type === activeFilter);
 
   const handleTopUpSuccess = async (amount: number) => {
     const result = await topUp(amount);
@@ -65,21 +82,28 @@ export function MovementsPage() {
       <ProfileSubHeader title="Movimientos" subtitle="Historial financiero" />
       <div className="flex flex-col gap-5 p-4">
 
-        {/* Summary header Premium */}
         <section className="px-1 flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-[10px] font-black text-manises-blue/40 uppercase tracking-[0.2em]">Balance de actividad</p>
+            <p className="text-[10px] font-black text-manises-blue/40 uppercase tracking-[0.2em]">Balance total</p>
             <div className="flex items-baseline gap-1">
-              <p className="text-2xl font-black text-manises-blue tracking-tight tabular-nums">
-                {formatCurrency(deposits + prizes)}
+              <p className="text-3xl font-black text-manises-blue tracking-tight tabular-nums">
+                {formatCurrency(profile?.balance ?? 0)}
               </p>
-              <span className="text-[9px] font-black text-manises-blue/20 uppercase tracking-widest">Histórico</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
-              className="h-10 rounded-2xl bg-manises-blue text-white font-black text-[10px] gap-2 hover:bg-manises-gold hover:text-manises-blue transition-all border-none shadow-lg px-4"
+              variant="outline"
+              className="h-10 rounded-2xl border-manises-blue/20 text-manises-blue font-black text-[10px] gap-2 hover:bg-slate-50 transition-all shadow-sm px-4"
+              onClick={() => navigate('/profile/withdrawals')}
+            >
+              <Landmark className="w-3.5 h-3.5" />
+              Retirar
+            </Button>
+            <Button
+              size="sm"
+              className="h-10 rounded-2xl bg-manises-blue text-white font-black text-[10px] gap-2 hover:opacity-90 transition-all border-none shadow-lg px-4"
               onClick={() => setIsTopUpOpen(true)}
             >
               <Plus className="w-3.5 h-3.5" />
@@ -139,13 +163,20 @@ export function MovementsPage() {
                   tone={getTone(movement.type)}
                   badge={getBadge(movement.type)}
                   trailing={
-                    <span className={cn(
-                      'text-sm font-bold tabular-nums',
-                      movement.amount > 0 ? 'text-emerald-600' : 'text-manises-blue'
-                    )}>
-                      {movement.amount > 0 ? '+' : ''}
-                      {formatCurrency(movement.amount)}
-                    </span>
+                    <div className="flex flex-col items-end">
+                      <span className={cn(
+                        'text-sm font-black tabular-nums',
+                        movement.amount > 0 ? 'text-emerald-600' : 'text-manises-blue'
+                      )}>
+                        {movement.amount > 0 ? '+' : ''}
+                        {formatCurrency(movement.amount)}
+                      </span>
+                      {activeFilter === 'all' && (
+                        <span className="text-[10px] font-bold text-muted-foreground tabular-nums">
+                          {formatCurrency((movement as any).balanceAfter)}
+                        </span>
+                      )}
+                    </div>
                   }
                 />
               ))
