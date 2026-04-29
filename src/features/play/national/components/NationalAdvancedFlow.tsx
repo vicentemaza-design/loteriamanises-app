@@ -87,7 +87,7 @@ export function NationalAdvancedFlow({
       drawLabel: selectedNationalDraw.label,
       drawDate: selectedNationalDraw.nextDraw,
     });
-    toast.success(`Reserva demo creada para el nº ${selectedNationalNumber}`);
+    toast.success(`Reserva demo preparada para el nº ${selectedNationalNumber}`);
   };
 
   const drawType: NationalDrawType = game.id === 'loteria-navidad' ? 'navidad' : 

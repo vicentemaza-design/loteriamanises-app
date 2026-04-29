@@ -1,4 +1,3 @@
-import { formatCurrency } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { Bookmark, Calendar, InfoCircle } from 'iconoir-react/regular';
 import { toast } from 'sonner';
@@ -17,7 +16,7 @@ export function NationalReservationCard({
   onRemove,
 }: NationalReservationCardProps) {
   const handleConfirm = () => {
-    toast.success('Simulación: Confirmación de reserva enviada (demo).');
+    toast.success('Demo · confirmación manual pendiente de integración.');
   };
 
   return (
