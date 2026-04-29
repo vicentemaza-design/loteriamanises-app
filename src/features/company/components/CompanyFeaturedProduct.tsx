@@ -111,16 +111,9 @@ export function CompanyFeaturedProduct({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-2.5">
-          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-800">
-            Demo · participación pendiente de integración
-          </p>
-          <p className="mt-1 text-[11px] font-medium leading-relaxed text-emerald-700">
-            {company.featuredProduct.note}
-          </p>
-          <p className="mt-2 text-[11px] font-medium leading-relaxed text-emerald-700">
-            No se realizará ninguna compra{' '}
-            <span className="font-black">real</span>.
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-2.5">
+          <p className="text-[10px] font-medium leading-relaxed text-slate-400">
+            {company.featuredProduct.note} Flujo simulado para esta demo.
           </p>
         </div>
 

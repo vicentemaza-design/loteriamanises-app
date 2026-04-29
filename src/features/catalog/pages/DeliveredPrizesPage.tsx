@@ -31,7 +31,7 @@ export function DeliveredPrizesPage() {
             Premios entregados
           </h1>
           <p className="text-[10px] font-medium text-muted-foreground mt-0.5 uppercase tracking-widest opacity-60">
-            Contenido informativo demo
+            Historial de premios
           </p>
         </div>
       </div>
@@ -56,7 +56,7 @@ export function DeliveredPrizesPage() {
 
         <section className="space-y-2.5">
           <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">
-            Resumen visible en home
+            Premios destacados
           </p>
           <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
             {highlightedPrizes.map((prize) => (
@@ -87,7 +87,7 @@ export function DeliveredPrizesPage() {
 
         <section className="space-y-2.5">
           <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">
-            Historial visible
+            Historial de premios
           </p>
           <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm divide-y divide-border/50">
             {MOCK_DELIVERED_PRIZES.map((prize) => (

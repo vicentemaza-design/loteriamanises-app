@@ -49,27 +49,16 @@ export function CompanyAccessCard({
       </div>
 
       <div className="space-y-3 p-3.5">
-        <div className="grid grid-cols-2 gap-2.5">
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5">
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5">
+          <div className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-manises-blue/55" />
             <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
-              Código demo
-            </p>
-            <p className="mt-1 font-mono text-[0.95rem] font-black tracking-[0.18em] text-manises-blue">
-              {company.code}
+              Colectivo
             </p>
           </div>
-
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5">
-            <div className="flex items-center gap-1.5">
-              <Users className="h-3.5 w-3.5 text-manises-blue/55" />
-              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
-                Colectivo
-              </p>
-            </div>
-            <p className="mt-1 text-[12px] font-black leading-tight text-manises-blue">
-              {company.memberCountLabel}
-            </p>
-          </div>
+          <p className="mt-1 text-[12px] font-black leading-tight text-manises-blue">
+            {company.memberCountLabel}
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -97,10 +86,10 @@ export function CompanyAccessCard({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
-                Enlace demo
+                Enlace de colectivo
               </p>
               <p className="mt-1 truncate font-mono text-[11px] font-bold text-manises-blue">
-                {demoLinkLabel}
+                {demoLinkLabel.split('/').filter(Boolean).pop()}
               </p>
             </div>
             <Button
@@ -115,14 +104,9 @@ export function CompanyAccessCard({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-amber-100 bg-amber-50/80 p-2.5">
-          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-amber-800">
-            Demo · participación pendiente de integración
-          </p>
-          <p className="mt-1 text-[11px] font-medium leading-relaxed text-amber-700">
-            El acceso por código y enlace es visual en esta fase y no valida identidades ni reparto interno.
-          </p>
-        </div>
+        <p className="px-1 text-[10px] font-medium leading-relaxed text-slate-400">
+          Flujo simulado para esta demo.
+        </p>
 
         <button
           type="button"

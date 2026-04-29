@@ -329,8 +329,7 @@ export function TicketsPage() {
         <section className="tickets-header space-y-3 px-4 pt-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="mb-1 text-sm font-black uppercase tracking-widest text-manises-blue">Mis Jugadas</h2>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Vista compacta para operativa intensiva</p>
+              <h2 className="text-sm font-black uppercase tracking-widest text-manises-blue">Mis Jugadas</h2>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-manises-blue/5">
               <TicketIcon className="h-5 w-5 text-manises-blue" />
@@ -466,6 +465,18 @@ export function TicketsPage() {
             </div>
           ) : (
             <div className="flex flex-col gap-2">
+              {tab === 'activos' && displayed.length > 0 && displayed.length < 4 && (
+                <div className="order-last mt-1 rounded-[1.5rem] border border-dashed border-manises-blue/15 bg-manises-blue/[0.02] p-4 text-center">
+                  <p className="text-[12px] font-black text-manises-blue/50">¿Quieres añadir otra jugada?</p>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/games')}
+                    className="mt-2.5 inline-flex items-center gap-1.5 rounded-2xl bg-manises-blue px-5 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white"
+                  >
+                    Ir a juegos
+                  </button>
+                </div>
+              )}
               {displayed.map((ticket) => {
                 const game = LOTTERY_GAMES.find((entry) => entry.id === ticket.gameId);
                 if (!game) return null;

@@ -158,7 +158,7 @@ export function WalletPage() {
         </section>
 
         <section className="space-y-2.5">
-          <h3 className="text-xs font-black text-manises-blue uppercase tracking-widest pl-1">Operativa premium</h3>
+          <h3 className="text-xs font-black text-manises-blue uppercase tracking-widest pl-1">Gestión de cuenta</h3>
           <div className="flex flex-col gap-3">
             <PremiumActionRow
               icon={ArrowDownLeft}

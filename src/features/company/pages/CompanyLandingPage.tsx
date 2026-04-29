@@ -70,7 +70,7 @@ export function CompanyLandingPage() {
             Empresas y colectivos
           </h1>
           <p className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-slate-400">
-            Landing demo compacta
+            Acceso por colectivo
           </p>
         </div>
       </div>
