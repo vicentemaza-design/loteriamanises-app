@@ -290,7 +290,7 @@ export function AccountPage() {
           
           <div className="flex items-center justify-center gap-2 opacity-40">
             <Shield className="w-3.5 h-3.5 text-manises-blue" />
-            <p className="text-[9px] font-black uppercase tracking-widest text-manises-blue">Conexión Segura SSL · Demo Mode</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-manises-blue">Conexión Segura · Demo Mode</p>
           </div>
         </div>
       </div>
