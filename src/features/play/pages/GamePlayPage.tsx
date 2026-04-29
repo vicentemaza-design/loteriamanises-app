@@ -696,6 +696,7 @@ export function GamePlayPage() {
       unitPrice: selectedNationalDraw.decimoPrice,
       totalPrice: selectedNationalDraw.decimoPrice * selectedNationalQuantity * drawsCount,
       deliveryMode,
+      maxQuantity: maxNationalQuantity,
     });
 
     toast.success('Añadido a la cesta demo nacional.');

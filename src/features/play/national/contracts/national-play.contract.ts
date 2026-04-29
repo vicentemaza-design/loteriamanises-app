@@ -36,6 +36,7 @@ export interface NationalCartLine {
   unitPrice: number;
   totalPrice: number;
   deliveryMode: 'custody' | 'shipping';
+  maxQuantity: number;
 }
 
 export interface NationalOrderBreakdown {
@@ -57,6 +58,7 @@ export interface NationalCartDraftIntentLine {
   quantity: number;
   unitPrice: number;
   deliveryMode: 'custody' | 'shipping';
+  maxQuantity: number;
 }
 
 /**

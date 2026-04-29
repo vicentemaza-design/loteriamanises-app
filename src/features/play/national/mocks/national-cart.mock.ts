@@ -10,6 +10,7 @@ export const NATIONAL_CART_DEMO_LINES: NationalCartLine[] = [
     unitPrice: 3,
     totalPrice: 6,
     deliveryMode: 'custody',
+    maxQuantity: 10,
   },
   {
     number: '15432',
@@ -20,5 +21,6 @@ export const NATIONAL_CART_DEMO_LINES: NationalCartLine[] = [
     unitPrice: 6,
     totalPrice: 12,
     deliveryMode: 'custody',
+    maxQuantity: 5,
   },
 ];

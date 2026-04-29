@@ -33,7 +33,7 @@ export function useNationalCart(initialLines: NationalCartLine[] = []) {
   const updateQuantity = (number: string, drawId: NationalCartLine['drawId'], delta: number) => {
     setLines((current) => current.map((line) => {
       if (line.number === number && line.drawId === drawId) {
-        const nextQty = Math.max(1, line.quantity + delta);
+        const nextQty = Math.min(line.maxQuantity, Math.max(1, line.quantity + delta));
         return {
           ...line,
           quantity: nextQty,

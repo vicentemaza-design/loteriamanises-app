@@ -21,6 +21,7 @@ export function buildNationalCartDraftIntent(
     quantity: line.quantity,
     unitPrice: line.unitPrice,
     deliveryMode: line.deliveryMode,
+    maxQuantity: line.maxQuantity,
   }));
 
   return {

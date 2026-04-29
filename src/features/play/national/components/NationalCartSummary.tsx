@@ -71,25 +71,31 @@ export function NationalCartSummary({
 
             {/* Controles Cantidad */}
             <div className="flex items-center gap-2">
-              <div className="flex items-center bg-white rounded-lg border border-slate-200 shadow-sm p-0.5">
-                <button
-                  type="button"
-                  onClick={() => onUpdateQuantity(line.number, line.drawId, -1)}
-                  className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-manises-blue transition-colors disabled:opacity-30"
-                  disabled={line.quantity <= 1}
-                >
-                  -
-                </button>
-                <span className="w-6 text-center text-[12px] font-black text-manises-blue">
-                  {line.quantity}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => onUpdateQuantity(line.number, line.drawId, 1)}
-                  className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-manises-blue transition-colors"
-                >
-                  +
-                </button>
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center bg-white rounded-lg border border-slate-200 shadow-sm p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => onUpdateQuantity(line.number, line.drawId, -1)}
+                    className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-manises-blue transition-colors disabled:opacity-30"
+                    disabled={line.quantity <= 1}
+                  >
+                    -
+                  </button>
+                  <span className="w-6 text-center text-[12px] font-black text-manises-blue">
+                    {line.quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onUpdateQuantity(line.number, line.drawId, 1)}
+                    className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-manises-blue transition-colors disabled:opacity-30"
+                    disabled={line.quantity >= line.maxQuantity}
+                  >
+                    +
+                  </button>
+                </div>
+                <p className="text-[8px] font-black uppercase text-slate-400 tracking-tighter">
+                  Máx. {line.maxQuantity} demo
+                </p>
               </div>
               
               <div className="text-right min-w-[3rem]">
