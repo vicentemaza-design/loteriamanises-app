@@ -2,6 +2,8 @@ import { formatCurrency, cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import type { NationalCartLine, NationalOrderBreakdown } from '../contracts/national-play.contract';
 
+import { NationalShippingForm } from './NationalShippingForm';
+
 interface NationalCartSummaryProps {
   lines: NationalCartLine[];
   breakdown: NationalOrderBreakdown;
@@ -62,9 +64,9 @@ export function NationalCartSummary({
                 </span>
                 <span className={cn(
                   'text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md',
-                  line.deliveryMode === 'custody' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                  line.deliveryMode === 'custody' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700 shadow-sm border border-amber-200'
                 )}>
-                  {line.deliveryMode === 'custody' ? 'Custodia demo' : 'Mensajería'}
+                  {line.deliveryMode === 'custody' ? 'Custodia demo' : 'Mensajería demo'}
                 </span>
               </div>
             </div>
@@ -113,12 +115,27 @@ export function NationalCartSummary({
         ))}
       </div>
 
+      {/* 6. Formulario de envío si aplica */}
+      {breakdown.hasShipping && (
+        <div className="mt-6">
+          <NationalShippingForm />
+        </div>
+      )}
+
       <div className="mt-5 pt-4 border-t border-slate-100 space-y-2">
         <div className="flex items-center justify-between px-1">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Subtotal líneas</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Subtotal décimos</p>
           <p className="text-[12px] font-black text-manises-blue">{formatCurrency(breakdown.subtotal)}</p>
         </div>
-        <div className="flex items-center justify-between px-1">
+        
+        {breakdown.hasShipping && (
+          <div className="flex items-center justify-between px-1">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Envío demo</p>
+            <p className="text-[12px] font-black text-manises-blue">{formatCurrency(breakdown.shippingCost)}</p>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between px-1 pt-1 border-t border-slate-50">
           <p className="text-[11px] font-black text-manises-blue uppercase tracking-widest">Importe total demo</p>
           <p className="text-lg font-black text-manises-blue">{formatCurrency(breakdown.total)}</p>
         </div>

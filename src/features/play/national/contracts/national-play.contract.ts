@@ -44,7 +44,9 @@ export interface NationalOrderBreakdown {
   totalDecimos: number;
   drawsCount: number;
   subtotal: number;
+  shippingCost: number;
   total: number;
+  hasShipping: boolean;
 }
 
 /**
