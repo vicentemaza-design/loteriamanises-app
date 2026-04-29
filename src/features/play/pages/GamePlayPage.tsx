@@ -839,7 +839,7 @@ export function GamePlayPage() {
 
   return (
     <div
-      className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-36"
+      className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-32"
       style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 56px)' }}
     >
       <div
@@ -887,7 +887,7 @@ export function GamePlayPage() {
         content={helpContent}
       />
 
-      <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-3 p-4 pt-2">
+      <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-2.5 p-4 pt-2">
         {/* Draw time strip — Solo visible si NO hay selector de tiempo detallado para evitar duplicidad */}
         {!supportsTimeSelection && (
           <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={drawsCount} />
@@ -895,8 +895,8 @@ export function GamePlayPage() {
 
         {supportsTimeSelection && (
           <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
-            <div className="rounded-[1.4rem] border border-slate-200/50 bg-white/80 p-3 shadow-sm backdrop-blur-sm">
-              <div className="flex items-center justify-between mb-2.5 px-0.5">
+            <div className="rounded-[1.2rem] border border-slate-200/50 bg-white/88 p-2.5 shadow-sm backdrop-blur-sm">
+              <div className="mb-2 flex items-center justify-between px-0.5">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-3 h-3 text-manises-blue/40" />
                   <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Cuándo jugar</span>
@@ -914,7 +914,7 @@ export function GamePlayPage() {
               <DrawStatusPill
                 drawStatus={drawStatus}
                 selectedDrawsCount={drawsCount}
-                className="mb-3"
+                className="mb-2.5"
               />
 
               {isNationalLottery ? (
@@ -943,7 +943,7 @@ export function GamePlayPage() {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {/* Acciones rápidas */}
                   <div className="flex flex-wrap gap-1.5 px-0.5">
                     {[
@@ -996,7 +996,7 @@ export function GamePlayPage() {
                   </div>
 
                   {/* Selector multi-semana */}
-                  <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                  <div className="custom-scrollbar max-h-[220px] space-y-3 overflow-y-auto pr-1">
                     {(Object.entries(groupedAllDraws) as [string, ScheduledDraw[]][]).map(([weekLabel, draws], index) => {
                       const displayLabel = index === 0 ? 'Esta semana' : index === 1 ? 'Próxima semana' : weekLabel;
                       return (
@@ -1004,7 +1004,7 @@ export function GamePlayPage() {
                           <p className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 pl-1">
                             {displayLabel}
                           </p>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-1.5">
                           {draws.map((draw) => {
                             const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
                             return (
@@ -1019,7 +1019,7 @@ export function GamePlayPage() {
                                   );
                                 }}
                                 className={cn(
-                                  "relative flex flex-col items-center justify-center min-w-[72px] py-2 px-2 rounded-xl border transition-all",
+                                  "relative flex min-w-[68px] flex-col items-center justify-center rounded-xl border px-2 py-1.5 transition-all",
                                   isSelected
                                     ? "bg-manises-blue/5 border-manises-blue shadow-[0_4px_12px_rgba(10,71,146,0.08)]"
                                     : "bg-white border-slate-100 hover:border-slate-200"
@@ -1176,7 +1176,7 @@ export function GamePlayPage() {
               </>
             ) : !isNationalLottery ? (
               <>
-                {isQuickPickMode ? (
+                    {isQuickPickMode ? (
                   <QuickPickPanel
                     count={quickPick.count}
                     setCount={quickPick.setCount}
@@ -1197,9 +1197,9 @@ export function GamePlayPage() {
                 ) : (
                   <>
                     {/* ---- Selección visual ---- */}
-                    <div className="flex flex-col items-center gap-3 rounded-[1.6rem] border border-white/70 p-3 shadow-[0_16px_40px_rgba(15,23,42,0.08)] surface-neo-soft" style={theme.surface}>
+                    <div className="surface-neo-soft flex flex-col items-center gap-2.5 rounded-[1.35rem] border border-white/70 p-2.5 shadow-[0_12px_28px_rgba(15,23,42,0.08)]" style={theme.surface}>
                       {/* Números seleccionados */}
-                      <div className="flex flex-wrap justify-center gap-2">
+                      <div className="flex flex-wrap justify-center gap-1.5">
                         {(mode === 'reduced'
                           ? Array.from({ length: Math.max(minNums, selectedNumbers.length || minNums) })
                           : Array.from({ length: maxNums })
@@ -1207,7 +1207,7 @@ export function GamePlayPage() {
                           <motion.div
                             key={`slot-${i}`}
                             animate={{ scale: selectedNumbers[i] ? 1 : 0.95 }}
-                            className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm border-2 transition-colors ${selectedNumbers[i]
+                            className={`flex h-8.5 w-8.5 items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedNumbers[i]
                                 ? 'shadow-sm'
                                 : 'bg-white border-dashed border-gray-200 text-gray-200'
                               }`}
@@ -1218,12 +1218,12 @@ export function GamePlayPage() {
                         ))}
 
                         {maxStars > 0 && (
-                          <div className="flex gap-2 border-l-2 border-gray-200 pl-2.5 ml-0.5">
+                          <div className="ml-0.5 flex gap-1.5 border-l-2 border-gray-200 pl-2">
                             {Array.from({ length: mode === 'reduced' ? minStars : maxStars }).map((_, i) => (
                               <motion.div
                                 key={`star-slot-${i}`}
                                 animate={{ scale: selectedStars[i] ? 1 : 0.95 }}
-                                className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm border-2 transition-colors ${selectedStars[i]
+                                className={`flex h-8.5 w-8.5 items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedStars[i]
                                     ? 'bg-manises-gold border-manises-gold text-manises-blue shadow-gold'
                                     : 'bg-white border-dashed border-yellow-200 text-yellow-200'
                                   }`}
@@ -1239,14 +1239,14 @@ export function GamePlayPage() {
                       <div className="flex gap-1.5">
                         <Button
                           variant="outline" size="sm"
-                          className="h-7 rounded-lg font-bold text-[10px] px-3 border-gray-200 text-gray-500 hover:bg-gray-50 uppercase tracking-wider"
+                          className="h-7 rounded-lg border-gray-200 px-3 text-[9px] font-bold uppercase tracking-wider text-gray-500 hover:bg-gray-50"
                           onClick={handleClear}
                         >
                           <RefreshCircle className="w-3 h-3 mr-1" /> Limpiar
                         </Button>
                         <Button
                           variant="outline" size="sm"
-                          className="h-7 rounded-lg font-bold text-[10px] px-3 border-manises-gold/50 text-manises-gold hover:bg-manises-gold/5 uppercase tracking-wider"
+                          className="h-7 rounded-lg border-manises-gold/50 px-3 text-[9px] font-bold uppercase tracking-wider text-manises-gold hover:bg-manises-gold/5"
                           onClick={handleRandom}
                         >
                           <Spark className="w-3 h-3 mr-1" /> Aleatorio
@@ -1464,78 +1464,80 @@ export function GamePlayPage() {
       </div>
 
       {/* ---- Barra de confirmación ---- */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-safe">
-        <div className={cn(
-          "mx-auto flex max-w-screen-sm flex-col gap-2.5 rounded-[1.8rem] border p-3 shadow-[0_-12px_40px_rgba(15,23,42,0.15)] backdrop-blur-2xl transition-all",
-          isOverBalance ? "bg-red-50/95 border-red-200" : "bg-white/95 border-white/80"
-        )}>
-          {/* Fila Operativa Compacta */}
-          <div className="flex items-center justify-between gap-3 px-1">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-wider">Saldo:</span>
-                <span className="text-[11px] font-black text-manises-blue">{formatCurrency(availableBalance)}</span>
-                <span className="text-slate-300 mx-0.5">·</span>
-                <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-wider">Total:</span>
-                <span className="text-[13px] font-black text-manises-blue" style={theme.title}>{formatCurrency(totalPrice)}</span>
+      {!isQuickPickMode && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-safe">
+          <div className={cn(
+            "mx-auto flex max-w-screen-sm flex-col gap-2 rounded-[1.5rem] border p-2.5 shadow-[0_-10px_30px_rgba(15,23,42,0.14)] backdrop-blur-2xl transition-all",
+            isOverBalance ? "bg-red-50/95 border-red-200" : "bg-white/95 border-white/80"
+          )}>
+            {/* Fila Operativa Compacta */}
+            <div className="flex items-center justify-between gap-3 px-1">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-wider">Saldo:</span>
+                  <span className="text-[11px] font-black text-manises-blue">{formatCurrency(availableBalance)}</span>
+                  <span className="text-slate-300 mx-0.5">·</span>
+                  <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-wider">Total:</span>
+                  <span className="text-[13px] font-black text-manises-blue" style={theme.title}>{formatCurrency(totalPrice)}</span>
+                </div>
+                <div className="mt-0.5 flex items-center gap-2">
+                  <p className={cn(
+                    "text-[9px] font-bold uppercase tracking-tight",
+                    isOverBalance ? "text-red-600" : "text-emerald-600"
+                  )}>
+                    {isOverBalance 
+                      ? `Faltan ${formatCurrency(totalPrice - availableBalance)}` 
+                      : `Quedarán ${formatCurrency(remainingBalance)}`
+                    }
+                  </p>
+                  {!isNationalLottery && drawsCount > 1 && (
+                    <span className="text-[8px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full uppercase">
+                      {drawsCount} sorteos
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <p className={cn(
-                  "text-[9px] font-bold uppercase tracking-tight",
-                  isOverBalance ? "text-red-600" : "text-emerald-600"
-                )}>
-                  {isOverBalance 
-                    ? `Faltan ${formatCurrency(totalPrice - availableBalance)}` 
-                    : `Quedarán ${formatCurrency(remainingBalance)}`
+
+              <AnimatePresence mode="wait">
+                <Button
+                  className={`h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-[0.14em] shadow-sm transition-all active:scale-[0.98] ${canPlay
+                      ? 'text-white'
+                      : 'bg-slate-100 text-slate-400 cursor-not-allowed border-transparent shadow-none'
+                    }`}
+                  style={canPlay ? theme.cta : undefined}
+                  onClick={handlePlay}
+                  disabled={!canPlay}
+                >
+                  {canPlay
+                    ? drawsCount > 1
+                      ? `Añadir ${drawsCount} jugadas`
+                      : isNationalLottery
+                        ? editingDraft ? 'Actualizar' : 'Añadir décimo'
+                        : editingDraft ? 'Actualizar' : 'Añadir jugada'
+                    : 'Pendiente'
+                  }
+                </Button>
+              </AnimatePresence>
+            </div>
+
+            {/* Estado de validación detallado solo si no se puede jugar y no estamos en modo rápido */}
+            {!canPlay && (
+              <div className="border-t border-slate-100/50 px-1 pt-1.5">
+                <p className="text-[9px] font-bold text-slate-400 uppercase text-center leading-tight">
+                  {isMulticolumnMode
+                    ? 'Revisa las columnas para añadir'
+                    : isNationalLottery
+                      ? 'Elige un décimo del escaparate'
+                      : isQuiniela
+                        ? 'Completa el pronóstico de los 15 partidos'
+                        : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' números' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
                   }
                 </p>
-                {!isNationalLottery && drawsCount > 1 && (
-                  <span className="text-[8px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full uppercase">
-                    {drawsCount} sorteos
-                  </span>
-                )}
               </div>
-            </div>
-
-            <AnimatePresence mode="wait">
-              <Button
-                className={`h-10 px-6 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-sm transition-all active:scale-[0.98] ${canPlay
-                    ? 'text-white'
-                    : 'bg-slate-100 text-slate-400 cursor-not-allowed border-transparent shadow-none'
-                  }`}
-                style={canPlay ? theme.cta : undefined}
-                onClick={handlePlay}
-                disabled={!canPlay}
-              >
-                {canPlay
-                  ? drawsCount > 1
-                    ? `Añadir ${drawsCount} jugadas`
-                    : isNationalLottery
-                      ? editingDraft ? 'Actualizar' : 'Añadir décimo'
-                      : editingDraft ? 'Actualizar' : 'Añadir jugada'
-                  : 'Pendiente'
-                }
-              </Button>
-            </AnimatePresence>
+            )}
           </div>
-
-          {/* Estado de validación detallado solo si no se puede jugar y no estamos en modo rápido */}
-          {!canPlay && !isQuickPickMode && (
-            <div className="px-1 border-t border-slate-100/50 pt-2">
-              <p className="text-[9px] font-bold text-slate-400 uppercase text-center leading-tight">
-                {isMulticolumnMode
-                  ? 'Revisa las columnas para añadir'
-                  : isNationalLottery
-                    ? 'Elige un décimo del escaparate'
-                    : isQuiniela
-                      ? 'Completa el pronóstico de los 15 partidos'
-                      : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' números' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
-                }
-              </p>
-            </div>
-          )}
         </div>
-      </div>
+      )}
     </div>
   );
 }

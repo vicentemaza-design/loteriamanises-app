@@ -52,13 +52,13 @@ export function WalletPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-background pb-32" ref={containerRef}>
+    <div className="flex min-h-full flex-col bg-background pb-28" ref={containerRef}>
       <ProfileSubHeader title="Mi Saldo" />
       
-      <div className="p-5 flex flex-col gap-6">
+      <div className="flex flex-col gap-4 p-4">
         
         {/* Wallet Hero Premium */}
-        <section className="relative overflow-hidden rounded-3xl bg-manises-blue p-7 shadow-2xl wallet-hero">
+        <section className="wallet-hero relative overflow-hidden rounded-[1.9rem] bg-manises-blue p-5 shadow-xl">
           {/* Decorative elements */}
           <div className="absolute -right-6 -top-6 h-32 w-32 rounded-full bg-manises-gold/20 blur-3xl" />
           <div className="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-sky-500/10 blur-3xl" />
@@ -69,25 +69,25 @@ export function WalletPage() {
                 Saldo Disponible
               </span>
               <div className="flex items-baseline gap-1">
-                <span className="text-5xl font-black tracking-tighter text-manises-gold tabular-nums drop-shadow-xl">
+                <span className="text-[2.6rem] font-black tracking-tighter text-manises-gold tabular-nums drop-shadow-xl">
                   {formatCurrency(profile?.balance ?? 0).split(',')[0]}
                 </span>
-                <span className="text-2xl font-bold text-manises-gold/80">
+                <span className="text-xl font-bold text-manises-gold/80">
                   ,{formatCurrency(profile?.balance ?? 0).split(',')[1]}
                 </span>
               </div>
               
-              <div className="mt-2 flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 border border-white/10">
+              <div className="mt-2 flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Demo · Monedero Virtual</p>
               </div>
             </div>
 
-            <div className="mt-8 grid grid-cols-2 gap-3">
+            <div className="mt-5 grid grid-cols-2 gap-2.5">
               <PremiumTouchInteraction scale={0.97}>
                 <Button 
                   onClick={() => setIsTopUpOpen(true)}
-                  className="h-12 w-full rounded-2xl bg-manises-gold font-black text-manises-blue hover:bg-white shadow-lg transition-all border-none"
+                  className="h-11 w-full rounded-2xl border-none bg-manises-gold font-black text-manises-blue shadow-lg transition-all hover:bg-white"
                 >
                   <Plus className="mr-1.5 h-5 w-5" /> Recargar
                 </Button>
@@ -96,7 +96,7 @@ export function WalletPage() {
                 <Button 
                   variant="outline"
                   onClick={() => navigate('/profile/withdrawals')}
-                  className="h-12 w-full rounded-2xl border-white/20 bg-white/10 font-black text-white hover:bg-white/20 transition-all"
+                  className="h-11 w-full rounded-2xl border-white/20 bg-white/10 font-black text-white transition-all hover:bg-white/20"
                 >
                   Cobrar
                 </Button>
@@ -141,7 +141,7 @@ export function WalletPage() {
               )}
             </div>
             
-            <div className="mt-4 flex flex-col items-center gap-2">
+            <div className="mt-3 flex flex-col items-center gap-1.5">
               <p className="text-[9px] font-black text-manises-blue/20 uppercase tracking-widest text-center">
                 Demo · No se realizará ningún cargo real
               </p>
@@ -157,7 +157,7 @@ export function WalletPage() {
           </PremiumSectionCard>
         </section>
 
-        <section className="space-y-3">
+        <section className="space-y-2.5">
           <h3 className="text-xs font-black text-manises-blue uppercase tracking-widest pl-1">Operativa premium</h3>
           <div className="flex flex-col gap-3">
             <PremiumActionRow

@@ -250,7 +250,7 @@ function DeliveredPrizeHighlightCard({
       <button
         type="button"
         onClick={onClick}
-        className="w-full rounded-[1.7rem] border border-emerald-100 bg-white p-4 text-left shadow-sm transition-all hover:border-emerald-200"
+        className="w-full rounded-[1.45rem] border border-emerald-100 bg-white p-3.5 text-left shadow-sm transition-all hover:border-emerald-200"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -261,12 +261,12 @@ function DeliveredPrizeHighlightCard({
               {title}
             </h3>
           </div>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100">
             <Trophy className="h-4.5 w-4.5 text-emerald-600" />
           </div>
         </div>
 
-        <p className="mt-3 text-[18px] font-black tracking-tight text-emerald-600">
+        <p className="mt-2.5 text-[17px] font-black tracking-tight text-emerald-600">
           {amount}
         </p>
         <p className="mt-1 text-[10px] font-medium leading-relaxed text-slate-500 line-clamp-2">
@@ -330,7 +330,7 @@ function PremiumEditorialCard({
       <button
         type="button"
         onClick={onClick}
-        className={`premium-editorial-card group relative overflow-hidden rounded-[2.25rem] border ${accentClasses.border} text-left shadow-[0_22px_65px_-12px_rgba(0,0,0,0.4)] transition-all duration-500`}
+        className={`premium-editorial-card group relative overflow-hidden rounded-[2rem] border ${accentClasses.border} text-left shadow-[0_18px_40px_-12px_rgba(0,0,0,0.32)] transition-all duration-500`}
       >
         <div className="absolute inset-0">
           <img
@@ -348,8 +348,8 @@ function PremiumEditorialCard({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_28%,rgba(255,255,255,0.02)_100%)]" />
         </div>
 
-        <div className="relative flex min-h-[240px] xs:min-h-[260px] md:min-h-[300px] flex-col justify-between p-5 md:p-8 text-white">
-          <div className="space-y-4 md:space-y-5">
+        <div className="relative flex min-h-[210px] xs:min-h-[230px] md:min-h-[280px] flex-col justify-between p-4.5 md:p-7 text-white">
+          <div className="space-y-3.5 md:space-y-4">
             <div className="flex items-center justify-between gap-3">
               <span className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[9px] font-extrabold uppercase tracking-[0.2em] backdrop-blur-md shadow-inner ${accentClasses.badge}`}>
                 <Icon className="h-3.5 w-3.5" />
@@ -357,11 +357,11 @@ function PremiumEditorialCard({
               </span>
             </div>
 
-            <div className="max-w-[19rem] space-y-2 md:space-y-3">
-              <h3 className="text-[1.5rem] xs:text-[1.8rem] font-extrabold leading-[1.05] tracking-tight text-white drop-shadow-sm">
+            <div className="max-w-[19rem] space-y-1.5 md:space-y-2.5">
+              <h3 className="text-[1.35rem] xs:text-[1.65rem] font-extrabold leading-[1.02] tracking-tight text-white drop-shadow-sm">
                 {title}
               </h3>
-              <p className="text-[12px] xs:text-[13px] font-medium leading-relaxed text-white/70 line-clamp-2">
+              <p className="text-[11px] xs:text-[12px] font-medium leading-relaxed text-white/70 line-clamp-2">
                 {description}
               </p>
             </div>
@@ -379,12 +379,12 @@ function PremiumEditorialCard({
           </div>
 
           <div className="mt-4 pt-2">
-            <span className={`inline-flex h-12 items-center gap-2 rounded-2xl px-6 text-sm font-extrabold shadow-lg transition-all active:scale-95 ${accentClasses.cta}`}>
-              {cta}
-              <ArrowRight className="h-4 w-4" />
-            </span>
+              <span className={`inline-flex h-10 items-center gap-2 rounded-2xl px-5 text-[13px] font-extrabold shadow-lg transition-all active:scale-95 ${accentClasses.cta}`}>
+                {cta}
+                <ArrowRight className="h-4 w-4" />
+              </span>
+            </div>
           </div>
-        </div>
       </button>
     </PremiumTouchInteraction>
   );
@@ -429,21 +429,21 @@ export function HomePage() {
   }, { scope: containerRef });
 
   return (
-    <div className="flex min-h-full flex-col gap-6" ref={containerRef}>
+    <div className="flex min-h-full flex-col gap-4.5" ref={containerRef}>
 
       {/* ── Greeting ────────────────────────────────────────────── */}
-      <section className="px-6 pt-6 home-greeting">
+      <section className="home-greeting px-5 pt-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-[1.75rem] font-black text-manises-blue tracking-tight leading-none">
+            <h1 className="text-[1.45rem] font-black leading-none tracking-tight text-manises-blue">
               {profile ? `Hola, ${profile.displayName.split(' ')[0]} 👋` : 'Lotería Manises 🍀'}
             </h1>
-            <p className="text-[13px] font-semibold text-slate-400 mt-1.5 uppercase tracking-wider">
+            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
               {profile ? '¡Que tengas mucha suerte hoy!' : 'Tu administración en demo'}
             </p>
           </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white border border-slate-100 shadow-sm text-manises-blue">
-            <BadgeCheck className="w-6 h-6" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-100 bg-white text-manises-blue shadow-sm">
+            <BadgeCheck className="h-5 w-5" />
           </div>
         </div>
       </section>
@@ -453,7 +453,7 @@ export function HomePage() {
 
       {/* ── Hero Section ──────────────────────────────────────── */}
       <section className="px-4">
-        <div className="hero-card relative h-[520px] rounded-[2.5rem] overflow-hidden shadow-xl shadow-manises/10 group transition-all duration-500">
+        <div className="hero-card group relative h-[448px] overflow-hidden rounded-[2.15rem] shadow-xl shadow-manises/10 transition-all duration-500">
           <div className="absolute inset-0">
             <img
               src={headerWinner}
@@ -464,33 +464,33 @@ export function HomePage() {
             <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(10,71,146,0.92)_0%,rgba(10,71,146,0.5)_40%,transparent_100%)]" />
           </div>
  
-          <div className="relative flex h-full flex-col px-7 pb-7 pt-8">
+          <div className="relative flex h-full flex-col px-5 pb-5 pt-5.5">
             <div className="flex items-start justify-between gap-3">
-              <span className="hero-badge px-3.5 py-2 rounded-full bg-manises-gold text-manises-blue text-[10px] font-black uppercase tracking-[0.18em] flex items-center gap-2 shadow-lg">
+              <span className="hero-badge flex items-center gap-2 rounded-full bg-manises-gold px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.18em] text-manises-blue shadow-lg">
                 <Sparkles className="w-3.5 h-3.5 fill-current" />
                 Sorteo destacado
               </span>
               <HeroTimeChip iso={featuredGame.nextDraw} />
             </div>
  
-            <div className="mt-14 max-w-[16.5rem] space-y-4">
-              <h1 className="hero-title text-[2.6rem] font-black text-white tracking-tighter leading-[0.88] drop-shadow-md">
+            <div className="mt-9 max-w-[15rem] space-y-3">
+              <h1 className="hero-title text-[2.2rem] font-black leading-[0.9] tracking-tighter text-white drop-shadow-md">
                 {featuredGame.name}
               </h1>
-              <p className="hero-tagline max-w-[15rem] text-[14px] font-bold leading-[1.45] tracking-tight text-white/78">
+              <p className="hero-tagline max-w-[14rem] text-[12px] font-bold leading-[1.4] tracking-tight text-white/78">
                 {featuredGame.description ?? 'El bote que puede cambiar tu vida para siempre.'}
               </p>
             </div>
  
-            <div className="hero-box mt-auto max-w-[21.5rem] rounded-[2rem] border border-white/16 bg-white/8 p-6 shadow-2xl backdrop-blur-2xl">
+            <div className="hero-box mt-auto max-w-[20rem] rounded-[1.7rem] border border-white/16 bg-white/8 p-4 shadow-2xl backdrop-blur-2xl">
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/56">Bote Estimado</p>
-              <div className="mt-3">
+              <div className="mt-2">
                 <HeroJackpot jackpot={featuredGame.jackpot} isMonthly={featuredGame.isMonthly} />
               </div>
-              <PremiumTouchInteraction scale={0.97} className="mt-6 w-full">
+              <PremiumTouchInteraction scale={0.97} className="mt-4 w-full">
                 <Button
                   onClick={() => navigate(`/play/${featuredGame.id}`)}
-                  className="w-full h-14 bg-white text-manises-blue hover:bg-manises-gold hover:text-white font-black rounded-2xl shadow-xl transition-all gap-2 text-base"
+                  className="h-12 w-full gap-2 rounded-2xl bg-white text-sm font-black text-manises-blue shadow-xl transition-all hover:bg-manises-gold hover:text-white"
                 >
                   Jugar Ahora <ArrowRight className="w-5 h-5" />
                 </Button>
@@ -528,7 +528,7 @@ export function HomePage() {
 
       {/* ── Premios Destacados ──────────────────────────────── */}
       {deliveredPrizeHighlights.length > 0 && (
-        <section className="space-y-4 px-6">
+        <section className="space-y-3 px-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="bg-emerald-50 p-1.5 rounded-lg">
@@ -550,7 +550,7 @@ export function HomePage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 gap-2.5">
             {deliveredPrizeHighlights.map((prize) => (
               <DeliveredPrizeHighlightCard
                 key={prize.id}
@@ -567,7 +567,7 @@ export function HomePage() {
 
       {/* ── Bento: Próximos Sorteos ───────────────────────────── */}
       {bentoGames.length > 0 && (
-        <section className="px-6 space-y-4">
+        <section className="space-y-3 px-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="bg-manises-blue/5 p-1.5 rounded-lg">
@@ -577,7 +577,7 @@ export function HomePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             {bentoGames.map(game => (
               <BentoGameCard
                 key={game.id}
@@ -590,7 +590,7 @@ export function HomePage() {
       )}
 
       {/* ── Editorial Premium ─────────────────────────────────── */}
-      <section className="space-y-5 px-6">
+      <section className="space-y-4 px-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="bg-manises-blue/5 p-1.5 rounded-lg">
@@ -600,7 +600,7 @@ export function HomePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
           <PremiumEditorialCard
             badge="PARA EMPRESAS"
             title="Lotería de Navidad para empresas"
@@ -629,21 +629,21 @@ export function HomePage() {
       </section>
 
       {/* ── Premios Entregados Widget ─────────────────────────── */}
-      <section className="px-6">
+      <section className="px-5">
         <PremiumTouchInteraction scale={0.98}>
           <button
             type="button"
             onClick={() => navigate('/premios-entregados')}
-            className="w-full flex items-center gap-4 rounded-[1.8rem] bg-emerald-50 border border-emerald-100 p-4 text-left group hover:border-emerald-200 transition-all"
+            className="group flex w-full items-center gap-3 rounded-[1.45rem] border border-emerald-100 bg-emerald-50 p-3.5 text-left transition-all hover:border-emerald-200"
           >
-            <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0">
-              <Trophy className="w-6 h-6 text-emerald-600" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-100">
+              <Trophy className="h-5 w-5 text-emerald-600" />
             </div>
             <div className="flex-1">
               <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">
                 Premios entregados
               </p>
-              <p className="text-sm font-bold text-emerald-900 mt-0.5">
+              <p className="mt-0.5 text-[13px] font-bold text-emerald-900">
                 {(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M € en premios destacados
               </p>
               <p className="text-[10px] text-emerald-700/60 font-medium">
@@ -656,8 +656,8 @@ export function HomePage() {
       </section>
 
       {/* ── Footer Info ───────────────────────────────────────── */}
-      <footer className="mt-4 px-8 pb-12 text-center">
-        <div className="flex justify-center gap-6 mb-8 opacity-40">
+      <footer className="mt-2 px-8 pb-10 text-center">
+        <div className="mb-6 flex justify-center gap-5 opacity-40">
           <Shield className="w-5 h-5 text-manises-blue" />
           <CreditCard className="w-5 h-5 text-manises-blue" />
           <Lock className="w-5 h-5 text-manises-blue" />

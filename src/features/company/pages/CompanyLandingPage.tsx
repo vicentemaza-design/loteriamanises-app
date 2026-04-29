@@ -75,8 +75,8 @@ export function CompanyLandingPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 px-4 pt-4">
-        <section className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-[linear-gradient(135deg,#0a4792_0%,#153b6f_62%,#1f2937_100%)] px-4 py-5 text-white shadow-[0_20px_50px_rgba(10,71,146,0.25)]">
+      <div className="flex flex-col gap-3.5 px-4 pt-4">
+        <section className="overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-[linear-gradient(135deg,#0a4792_0%,#153b6f_62%,#1f2937_100%)] px-4 py-4 text-white shadow-[0_16px_38px_rgba(10,71,146,0.22)]">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
@@ -87,21 +87,21 @@ export function CompanyLandingPage() {
                   Código demo
                 </span>
               </div>
-              <h2 className="mt-3 max-w-[14rem] text-[1.55rem] font-black leading-[1.05] tracking-tight">
+              <h2 className="mt-2.5 max-w-[13rem] text-[1.35rem] font-black leading-[1.02] tracking-tight">
                 Acceso compacto para colectivos
               </h2>
-              <p className="mt-2 max-w-[18rem] text-[12px] font-medium leading-relaxed text-white/72">
+              <p className="mt-2 max-w-[17rem] text-[11px] font-medium leading-relaxed text-white/72">
                 Accede por código o enlace y revisa el producto protagonista del colectivo en una sola vista.
               </p>
             </div>
 
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.2rem] bg-white/10">
-              <BriefcaseBusiness className="h-6 w-6 text-manises-gold" />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1.1rem] bg-white/10">
+              <BriefcaseBusiness className="h-5.5 w-5.5 text-manises-gold" />
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-2xl border border-white/10 bg-white/8 p-3">
+          <div className="mt-3 grid grid-cols-2 gap-2.5">
+            <div className="rounded-2xl border border-white/10 bg-white/8 p-2.5">
               <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/60">
                 Colectivos demo
               </p>
@@ -109,7 +109,7 @@ export function CompanyLandingPage() {
                 {COMPANY_DEMO_COLLECTION.length} activos
               </p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/8 p-3">
+            <div className="rounded-2xl border border-white/10 bg-white/8 p-2.5">
               <p className="text-[9px] font-black uppercase tracking-[0.14em] text-white/60">
                 Flujo
               </p>
@@ -137,7 +137,7 @@ export function CompanyLandingPage() {
           onOpenGame={handleOpenGame}
         />
 
-        <section className="rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-sm">
+        <section className="rounded-[1.45rem] border border-slate-200 bg-white p-3.5 shadow-sm">
           <div className="flex gap-3">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
             <div>

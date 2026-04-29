@@ -25,11 +25,11 @@ export function NationalDrawSelector({
             key={dateIso}
             onClick={() => onSelectDate(dateIso)}
             className={cn(
-              'flex items-center justify-between rounded-xl border px-3.5 py-2.5 transition-all w-full',
+              'flex w-full items-center justify-between rounded-xl border px-3 py-2 transition-all',
               isSelected ? 'border-manises-blue bg-manises-blue/[0.03]' : 'border-slate-100 bg-slate-50/50'
             )}
           >
-            <span className={cn('text-[12px] font-black tracking-tight', isSelected ? 'text-manises-blue' : 'text-slate-600')}>
+            <span className={cn('text-[11px] font-black tracking-tight', isSelected ? 'text-manises-blue' : 'text-slate-600')}>
               {new Date(dateIso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
             </span>
             <div className={cn('w-4 h-4 rounded-full border flex items-center justify-center', isSelected ? 'bg-manises-blue border-manises-blue' : 'border-slate-300 bg-white')}>

@@ -20,10 +20,10 @@ export function AnnouncementBanner() {
   const extraAnnouncementsCount = Math.max(MOCK_ANNOUNCEMENTS.length - 1, 0);
 
   return (
-    <div className="mx-4 rounded-[1.65rem] border border-slate-200/80 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm">
-      <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-manises-gold/12 text-amber-700">
-          <Icon className="h-4.5 w-4.5" />
+    <div className="mx-4 rounded-[1.45rem] border border-slate-200/80 bg-white/92 px-3.5 py-2.5 shadow-sm backdrop-blur-sm">
+      <div className="flex items-start gap-2.5">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-manises-gold/12 text-amber-700">
+          <Icon className="h-4 w-4" />
         </div>
 
         <div className="min-w-0 flex-1">
@@ -41,11 +41,11 @@ export function AnnouncementBanner() {
             )}
           </div>
 
-          <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate-500 line-clamp-2">
+          <p className="mt-1 text-[10px] font-medium leading-snug text-slate-500 line-clamp-2">
             {ann.body}
           </p>
 
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-1.5 flex items-center gap-2">
             <span className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
               Contenido informativo
             </span>
@@ -63,7 +63,7 @@ export function AnnouncementBanner() {
 
         <button
           onClick={() => setDismissed(true)}
-          className="shrink-0 text-slate-400 transition-colors hover:text-slate-600"
+          className="mt-0.5 shrink-0 text-slate-400 transition-colors hover:text-slate-600"
           aria-label="Cerrar aviso"
         >
           <X className="h-4 w-4" />

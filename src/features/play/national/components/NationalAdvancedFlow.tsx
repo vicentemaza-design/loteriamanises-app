@@ -94,7 +94,7 @@ export function NationalAdvancedFlow({
                                    game.id === 'loteria-nino' ? 'nino' : 'ordinary';
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       {/* 1. Selector de Entrega (Decisión previa compacta) */}
       <section className="stagger-item">
         <NationalDeliverySelector 
@@ -104,7 +104,7 @@ export function NationalAdvancedFlow({
       </section>
 
       {/* 2. Buscador Protagonista */}
-      <section className="space-y-4">
+      <section className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h2 className="font-black text-sm text-manises-blue">Busca tu número</h2>
           <Button
@@ -124,7 +124,7 @@ export function NationalAdvancedFlow({
       </section>
 
       {/* 3. Escaparate visible rápido */}
-      <section className="space-y-4">
+      <section className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
             Escaparate demo ({nationalShowcase.count} números)
@@ -149,7 +149,7 @@ export function NationalAdvancedFlow({
 
       {/* 4. Visual del Décimo (Solo cuando hay selección o como bloque secundario) */}
       {selectedNationalNumber && (
-        <section className="space-y-4 pt-4 border-t border-slate-100">
+        <section className="space-y-3 border-t border-slate-100 pt-3">
            <div>
             <h2 className="font-black text-sm text-manises-blue">Tu décimo seleccionado</h2>
             <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-manises-blue/50">

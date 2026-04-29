@@ -35,10 +35,10 @@ export function QuickPickPanel({
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* 1. Selector de cantidad */}
-      <section className="rounded-[2rem] border border-manises-blue/10 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4 px-1">
+      <section className="rounded-[1.6rem] border border-manises-blue/10 bg-white p-4 shadow-sm">
+        <div className="mb-3 flex items-center justify-between gap-3 px-0.5">
           <div>
             <h3 className="text-sm font-black text-manises-blue uppercase tracking-widest">Jugada rápida demo</h3>
             <p className="text-[10px] font-bold text-slate-400 mt-0.5">Elige cuántas apuestas quieres generar</p>
@@ -58,13 +58,13 @@ export function QuickPickPanel({
           </Button>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6">
           {QUICK_PICK_OPTIONS.map((option) => (
             <button
               key={option}
               onClick={() => setCount(option)}
               className={cn(
-                "py-2.5 rounded-xl border text-[11px] font-black transition-all active:scale-[0.95]",
+                "rounded-xl border py-2 text-[11px] font-black transition-all active:scale-[0.95]",
                 count === option
                   ? "bg-manises-blue border-manises-blue text-white shadow-md shadow-manises-blue/20"
                   : "bg-white border-slate-200 text-slate-500 hover:border-manises-blue/30"
@@ -77,10 +77,10 @@ export function QuickPickPanel({
       </section>
 
       {/* 2. Preview de combinaciones */}
-      <section className="rounded-[2rem] border border-manises-blue/10 bg-slate-50/50 overflow-hidden">
+      <section className="overflow-hidden rounded-[1.6rem] border border-manises-blue/10 bg-slate-50/50">
         <button
           onClick={() => setIsPreviewOpen(!isPreviewOpen)}
-          className="w-full flex items-center justify-between p-4 hover:bg-slate-100/50 transition-colors"
+          className="flex w-full items-center justify-between p-3.5 transition-colors hover:bg-slate-100/50"
         >
           <div className="flex items-center gap-2.5">
             <Spark className="w-4 h-4 text-manises-gold" />
@@ -97,11 +97,11 @@ export function QuickPickPanel({
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="px-4 pb-4 overflow-hidden"
+              className="overflow-hidden px-3.5 pb-3.5"
             >
-              <div className="space-y-2 pt-2">
+              <div className="space-y-1.5 pt-1.5">
                 {combinations.map((combo, idx) => (
-                  <div key={combo.id} className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-slate-100 shadow-sm">
+                  <div key={combo.id} className="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-2 shadow-sm">
                     <span className="text-[10px] font-black text-slate-300 w-4">#{idx + 1}</span>
                     <div className="flex-1 flex flex-wrap gap-1 items-center justify-end">
                       {combo.numbers.map((n) => (
@@ -124,8 +124,8 @@ export function QuickPickPanel({
       </section>
 
       {/* 3. Footer con Resumen y CTA */}
-      <section className="rounded-[2.2rem] border border-manises-blue/10 bg-white p-6 shadow-xl">
-        <div className="space-y-3 mb-6">
+      <section className="rounded-[1.8rem] border border-manises-blue/10 bg-white p-4 shadow-lg">
+        <div className="mb-4 space-y-2.5">
           <div className="flex items-center justify-between px-1">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               {count} {count === 1 ? 'jugada' : 'jugadas'} × {drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}
@@ -133,12 +133,12 @@ export function QuickPickPanel({
             <p className="text-[12px] font-black text-manises-blue">{formatCurrency(totalPrice)}</p>
           </div>
           
-          <div className="flex items-center justify-between px-1 pt-2 border-t border-slate-50">
+          <div className="flex items-center justify-between border-t border-slate-50 px-1 pt-2">
             <p className="text-[11px] font-black text-manises-blue uppercase tracking-widest">Total demo</p>
-            <p className="text-xl font-black text-manises-blue">{formatCurrency(totalPrice)}</p>
+            <p className="text-lg font-black text-manises-blue">{formatCurrency(totalPrice)}</p>
           </div>
 
-          <div className="flex items-center justify-center gap-2 pt-2">
+          <div className="flex items-center justify-center gap-2 pt-1">
             <div className={cn(
               "px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider",
               availableBalance >= totalPrice ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
@@ -149,14 +149,14 @@ export function QuickPickPanel({
         </div>
 
         <Button
-          className="w-full rounded-2xl bg-manises-blue text-white font-bold py-3.5 shadow-lg shadow-manises-blue/20 active:scale-[0.98] transition-all disabled:opacity-50"
+          className="w-full rounded-2xl bg-manises-blue py-3 text-white shadow-lg shadow-manises-blue/20 transition-all active:scale-[0.98] disabled:opacity-50"
           onClick={onAdd}
           disabled={isAdding || availableBalance < totalPrice}
         >
           {isAdding ? 'Generando...' : `Añadir ${count} apuestas rápidas demo`}
         </Button>
         
-        <p className="mt-3 text-center text-[8px] font-medium text-slate-400">
+        <p className="mt-2.5 text-center text-[8px] font-medium text-slate-400">
           Demo · combinaciones generadas de forma aleatoria · sin operación de compra
         </p>
       </section>

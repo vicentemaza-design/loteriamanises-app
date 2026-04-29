@@ -325,8 +325,8 @@ export function TicketsPage() {
 
   return (
     <>
-      <div className="flex min-h-full flex-col gap-4 overflow-x-hidden bg-background pb-24" ref={containerRef}>
-        <section className="tickets-header space-y-4 px-5 pt-4">
+      <div className="flex min-h-full flex-col gap-3 overflow-x-hidden bg-background pb-24" ref={containerRef}>
+        <section className="tickets-header space-y-3 px-4 pt-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="mb-1 text-sm font-black uppercase tracking-widest text-manises-blue">Mis Jugadas</h2>
@@ -343,19 +343,19 @@ export function TicketsPage() {
               placeholder="Buscar por juego o número..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-12 rounded-2xl border-gray-100 bg-white pl-11 shadow-sm focus:ring-manises-blue/20"
+              className="h-11 rounded-2xl border-gray-100 bg-white pl-11 shadow-sm focus:ring-manises-blue/20"
             />
           </div>
         </section>
 
-        <section className="tabs-container px-5">
-          <div className="flex gap-1.5 rounded-2xl border border-gray-100/50 bg-gray-100/50 p-1.5 backdrop-blur-md">
+        <section className="tabs-container px-4">
+          <div className="flex gap-1 rounded-2xl border border-gray-100/50 bg-gray-100/50 p-1 backdrop-blur-md">
             {(['activos', 'historial'] as Tab[]).map((currentTab) => (
               <PremiumTouchInteraction key={currentTab} scale={0.96} className="flex-1">
                 <button
                   onClick={() => { setTab(currentTab); setGameFilter('all'); }}
                   className={cn(
-                    'w-full rounded-xl py-2.5 text-[11px] font-black uppercase tracking-wider transition-all',
+                    'w-full rounded-xl py-2 text-[10px] font-black uppercase tracking-wider transition-all',
                     tab === currentTab
                       ? 'scale-[1.02] bg-white text-manises-blue shadow-md'
                       : 'text-manises-blue/40 hover:text-manises-blue'
@@ -369,7 +369,7 @@ export function TicketsPage() {
         </section>
 
         {availableGames.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-0 px-5">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4">
             <button
               onClick={() => setGameFilter('all')}
               className={cn(
@@ -399,7 +399,7 @@ export function TicketsPage() {
         )}
 
         {tab === 'historial' && (
-          <div className="flex gap-2 px-5">
+          <div className="flex gap-2 px-4">
             <button
               onClick={() => setStatusFilter('all')}
               className={cn(
@@ -438,7 +438,7 @@ export function TicketsPage() {
           </div>
         )}
 
-        <section className="min-h-[400px] flex-1 px-5">
+        <section className="min-h-[400px] flex-1 px-4">
           {isLoading ? (
             <div className="flex flex-col gap-3.5">
               {Array.from({ length: 4 }).map((_, index) => (

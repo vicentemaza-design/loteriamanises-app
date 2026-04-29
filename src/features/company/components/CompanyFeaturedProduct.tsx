@@ -22,8 +22,8 @@ export function CompanyFeaturedProduct({
   const featuredGame = LOTTERY_GAMES.find((game) => game.id === company.featuredProduct.gameId);
 
   return (
-    <section className="overflow-hidden rounded-[1.8rem] border border-slate-200/80 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
-      <div className="border-b border-slate-100 p-4">
+    <section className="overflow-hidden rounded-[1.55rem] border border-slate-200/80 bg-white shadow-[0_14px_32px_rgba(15,23,42,0.08)]">
+      <div className="border-b border-slate-100 p-3.5">
         <div className="flex items-center gap-3">
           {featuredGame ? (
             <GameBadge game={featuredGame} size="sm" className="shadow-none" />
@@ -47,22 +47,22 @@ export function CompanyFeaturedProduct({
         </div>
       </div>
 
-      <div className="space-y-4 p-4">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="space-y-3 p-3.5">
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           {company.featuredProduct.protagonistNumber ? (
-            <div className="rounded-2xl border border-manises-blue/10 bg-manises-blue/[0.03] p-3">
+            <div className="rounded-2xl border border-manises-blue/10 bg-manises-blue/[0.03] p-2.5">
               <div className="flex items-center gap-1.5">
                 <Hash className="h-3.5 w-3.5 text-manises-blue/55" />
                 <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
                   Número protagonista
                 </p>
               </div>
-              <p className="mt-2 font-mono text-[1.2rem] font-black tracking-[0.2em] text-manises-blue">
+              <p className="mt-1.5 font-mono text-[1.05rem] font-black tracking-[0.18em] text-manises-blue">
                 {company.featuredProduct.protagonistNumber}
               </p>
             </div>
           ) : (
-            <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3">
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5">
               <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
                 Juego protagonista
               </p>
@@ -72,7 +72,7 @@ export function CompanyFeaturedProduct({
             </div>
           )}
 
-          <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3">
+          <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5">
             <div className="flex items-center gap-1.5">
               <BadgeCheck className="h-3.5 w-3.5 text-manises-blue/55" />
               <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
@@ -85,7 +85,7 @@ export function CompanyFeaturedProduct({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
+        <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-2.5">
           <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
             Cantidad
           </p>
@@ -98,7 +98,7 @@ export function CompanyFeaturedProduct({
                   type="button"
                   onClick={() => onSelectQuantity(quantity)}
                   className={[
-                    'min-w-[48px] rounded-xl border px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] transition-all',
+                    'min-w-[44px] rounded-xl border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] transition-all',
                     isActive
                       ? 'border-manises-blue bg-manises-blue text-white shadow-sm'
                       : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300',
@@ -111,7 +111,7 @@ export function CompanyFeaturedProduct({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-3">
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-2.5">
           <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-800">
             Demo · participación pendiente de integración
           </p>
@@ -127,14 +127,14 @@ export function CompanyFeaturedProduct({
         <div className="flex gap-2">
           <Button
             onClick={onParticipateDemo}
-            className="h-11 flex-1 rounded-2xl bg-manises-blue text-[10px] font-black uppercase tracking-[0.14em] text-white"
+            className="h-10 flex-1 rounded-2xl bg-manises-blue text-[10px] font-black uppercase tracking-[0.14em] text-white"
           >
             Participar demo
           </Button>
           <Button
             variant="outline"
             onClick={onOpenGame}
-            className="h-11 rounded-2xl border-slate-200 px-4 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue"
+            className="h-10 rounded-2xl border-slate-200 px-4 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue"
           >
             Ver juego
             <ArrowRight className="h-3.5 w-3.5" />
