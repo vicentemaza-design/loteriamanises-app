@@ -24,6 +24,7 @@ interface PlayDraftMetadataShape extends Record<string, unknown> {
   nationalNumber: string | null;
   nationalQuantity: number;
   nationalDrawLabel: string;
+  reducedSystemId?: string;
 }
 
 export interface BuildPlayDraftsOptions {
@@ -43,6 +44,7 @@ export interface BuildPlayDraftsOptions {
   selectedNationalQuantity: number;
   selectedNationalDraw: SelectedNationalDrawInput;
   editingDraft?: EditableDraftRef;
+  selectedReductionSystemId?: string;
 }
 
 function buildDraftMetadata({
@@ -55,6 +57,7 @@ function buildDraftMetadata({
   selectedNationalNumber,
   selectedNationalQuantity,
   selectedNationalDraw,
+  selectedReductionSystemId,
 }: Omit<BuildPlayDraftsOptions, 'selection' | 'unitPrice' | 'quantity' | 'mode' | 'betsCount' | 'isSubscription' | 'editingDraft'>): PlayDraftMetadataShape {
   return {
     technicalMode: game.technicalMode,
@@ -67,6 +70,7 @@ function buildDraftMetadata({
     nationalNumber: selectedNationalNumber,
     nationalQuantity: selectedNationalQuantity,
     nationalDrawLabel: selectedNationalDraw.label,
+    reducedSystemId: selectedReductionSystemId,
   };
 }
 

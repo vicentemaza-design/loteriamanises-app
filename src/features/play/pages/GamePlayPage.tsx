@@ -616,6 +616,7 @@ export function GamePlayPage() {
       selectedNationalNumber,
       selectedNationalQuantity,
       selectedNationalDraw,
+      selectedReductionSystemId,
       editingDraft: editingDraft
         ? { id: editingDraft.id, addedAt: editingDraft.addedAt }
         : undefined,
@@ -1269,7 +1270,9 @@ export function GamePlayPage() {
                         <ReducedModeSummary 
                           hasSelection={selectedNumbers.length > 0}
                           minNumbers={minNums}
+                          maxNumbers={maxNums}
                           currentNumbers={selectedNumbers.length}
+                          supportedNumbers={supportedReducedNumbers}
                         />
 
                         <ReducedSystemPicker 
@@ -1317,7 +1320,7 @@ export function GamePlayPage() {
                             </div>
 
                             <p className="mt-3 text-[11px] font-semibold text-slate-500">
-                              Soporta {supportedReducedNumbers[0]} a {supportedReducedNumbers[supportedReducedNumbers.length - 1]} números, según la tabla demo disponible.
+                              Basado en tablas demo de Lotería Manises.
                             </p>
                           </div>
                         )}
