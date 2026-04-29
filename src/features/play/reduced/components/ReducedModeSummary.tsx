@@ -50,17 +50,17 @@ export function ReducedModeSummary({
           </div>
 
           <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
-            {!hasSelection ? (
+            {!hasSelection || currentNumbers === 0 ? (
               <>Selecciona entre <span className="font-black text-manises-blue">{minNumbers} y {maxNumbers} números</span> para habilitar las tablas reducidas demo.</>
-            ) : isOutOfRange ? (
-              <span className="text-amber-700">
-                Tu selección ({currentNumbers}) está fuera del rango permitido para reducidas ({minNumbers}-{maxNumbers}).
-              </span>
-            ) : !isValid ? (
+            ) : currentNumbers < minNumbers ? (
               <>Te faltan <span className="font-bold text-manises-blue">{minNumbers - currentNumbers} números</span> para alcanzar el mínimo del sistema.</>
+            ) : currentNumbers > maxNumbers ? (
+              <span className="text-amber-700">Tu selección supera el máximo permitido para reducidas demo ({maxNumbers}).</span>
+            ) : !supportedNumbers.includes(currentNumbers) ? (
+              <span className="text-amber-700">Esta cantidad no encaja en una tabla reducida demo disponible. Prueba con otro número de bolas.</span>
             ) : (
               <span className="text-emerald-700">
-                Tu pronóstico de {currentNumbers} números es compatible. Selecciona una tabla para optimizar tu jugada.
+                Compatible con tabla reducida demo. Selecciona una opción para optimizar tu jugada.
               </span>
             )}
           </p>

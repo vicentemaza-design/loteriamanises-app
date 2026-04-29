@@ -1288,7 +1288,7 @@ export function GamePlayPage() {
                                 <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Selección actual</p>
                                 <h3 className="mt-1 text-sm font-black text-manises-blue">{currentReductionSystem.label}</h3>
                                 <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
-                                  {currentReductionSystem.guaranteeCondition.replace('oficial', 'demo')}
+                                  {currentReductionSystem.guaranteeCondition}
                                 </p>
                               </div>
                               <div className="rounded-xl bg-slate-50 px-3 py-2 text-right">

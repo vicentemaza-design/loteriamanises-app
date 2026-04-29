@@ -157,7 +157,7 @@ export function QuickPickPanel({
         </Button>
         
         <p className="mt-3 text-center text-[8px] font-medium text-slate-400">
-          Demo · combinaciones generadas de forma aleatoria · no es compra real
+          Demo · combinaciones generadas de forma aleatoria · sin operación de compra
         </p>
       </section>
     </div>

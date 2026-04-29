@@ -79,7 +79,7 @@ export function ReducedSystemPicker({
                     "mt-1 text-[11px] font-medium leading-relaxed",
                     isActive ? "text-white/80" : "text-slate-500"
                   )}>
-                    {system.guaranteeCondition.replace('oficial', 'demo')}
+                    {system.guaranteeCondition}
                   </p>
                 </div>
 
