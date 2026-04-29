@@ -20,6 +20,7 @@ export function buildNationalCartDraftIntent(
     drawDates: [...line.drawDates],
     quantity: line.quantity,
     unitPrice: line.unitPrice,
+    deliveryMode: line.deliveryMode,
   }));
 
   return {

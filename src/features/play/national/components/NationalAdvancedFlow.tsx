@@ -45,8 +45,9 @@ interface NationalAdvancedFlowProps {
     lines: NationalCartLine[];
     breakdown: NationalOrderBreakdown;
     removeLine: (number: string, drawId: NationalCartLine['drawId']) => void;
+    updateQuantity: (number: string, drawId: NationalCartLine['drawId'], delta: number) => void;
     clearCart: () => void;
-    addSelectedToCart: () => void;
+    addSelectedToCart: (deliveryMode: DeliveryMode) => void;
     onPersistToSession?: () => void;
   };
 
@@ -165,7 +166,7 @@ export function NationalAdvancedFlow({
             decimoPrice={selectedNationalDraw.decimoPrice}
             firstPrize={selectedNationalDraw.firstPrize}
             onQuantityChange={onChangeNationalQuantity}
-            onAddToCart={nationalCart.addSelectedToCart}
+            onAddToCart={() => nationalCart.addSelectedToCart(deliveryMode)}
           />
         </section>
       )}
@@ -175,6 +176,7 @@ export function NationalAdvancedFlow({
         lines={nationalCart.lines}
         breakdown={nationalCart.breakdown}
         onRemove={nationalCart.removeLine}
+        onUpdateQuantity={nationalCart.updateQuantity}
         onClear={nationalCart.clearCart}
         onPersistToSession={nationalCart.onPersistToSession}
       />

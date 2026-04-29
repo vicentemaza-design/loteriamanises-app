@@ -30,12 +30,27 @@ export function useNationalCart(initialLines: NationalCartLine[] = []) {
     setLines([]);
   };
 
+  const updateQuantity = (number: string, drawId: NationalCartLine['drawId'], delta: number) => {
+    setLines((current) => current.map((line) => {
+      if (line.number === number && line.drawId === drawId) {
+        const nextQty = Math.max(1, line.quantity + delta);
+        return {
+          ...line,
+          quantity: nextQty,
+          totalPrice: line.unitPrice * nextQty * line.drawDates.length,
+        };
+      }
+      return line;
+    }));
+  };
+
   const breakdown = useMemo(() => buildNationalOrderBreakdown(lines), [lines]);
 
   return {
     lines,
     addOrUpdateLine,
     removeLine,
+    updateQuantity,
     clearCart,
     breakdown,
   };

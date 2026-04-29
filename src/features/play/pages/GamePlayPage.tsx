@@ -140,6 +140,7 @@ export function GamePlayPage() {
     lines: nationalCartLines,
     addOrUpdateLine: addOrUpdateNationalCartLine,
     removeLine: removeNationalCartLine,
+    updateQuantity: updateNationalCartQuantity,
     clearCart: clearNationalCart,
     breakdown: nationalCartBreakdown,
   } = useNationalCart();
@@ -680,7 +681,7 @@ export function GamePlayPage() {
   };
 
 
-  const handleAddSelectedNationalToDemoCart = () => {
+  const handleAddSelectedNationalToDemoCart = (deliveryMode: 'custody' | 'shipping' = 'custody') => {
     if (!selectedNationalNumber) {
       toast.error('Selecciona antes un décimo.');
       return;
@@ -694,6 +695,7 @@ export function GamePlayPage() {
       quantity: selectedNationalQuantity,
       unitPrice: selectedNationalDraw.decimoPrice,
       totalPrice: selectedNationalDraw.decimoPrice * selectedNationalQuantity * drawsCount,
+      deliveryMode,
     });
 
     toast.success('Añadido a la cesta demo nacional.');
@@ -1308,6 +1310,7 @@ export function GamePlayPage() {
                   lines: nationalCartLines,
                   breakdown: nationalCartBreakdown,
                   removeLine: removeNationalCartLine,
+                  updateQuantity: updateNationalCartQuantity,
                   clearCart: clearNationalCart,
                   addSelectedToCart: handleAddSelectedNationalToDemoCart,
                   onPersistToSession: handlePersistNationalCart,

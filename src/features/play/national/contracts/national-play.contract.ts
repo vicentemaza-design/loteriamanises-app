@@ -35,6 +35,7 @@ export interface NationalCartLine {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  deliveryMode: 'custody' | 'shipping';
 }
 
 export interface NationalOrderBreakdown {
@@ -55,6 +56,7 @@ export interface NationalCartDraftIntentLine {
   drawDates: string[];
   quantity: number;
   unitPrice: number;
+  deliveryMode: 'custody' | 'shipping';
 }
 
 /**
