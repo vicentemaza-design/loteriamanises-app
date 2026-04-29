@@ -129,7 +129,8 @@ export function GamePlayPage() {
   const isQuiniela = game.id === 'quiniela';
   const isExplicitNationalProduct = gameId === 'loteria-nacional-jueves' || gameId === 'loteria-nacional-sabado';
 
-  const quickPick = useQuickPick(game);
+  const supportsQuickPick = !isNationalLottery && !isQuiniela && Boolean(game.selectionRange?.numbers);
+  const quickPick = useQuickPick(game, supportsQuickPick);
 
   const availableNationalDates = useMemo(() => {
     return getAvailableNationalDrawDates(gameId, isNationalLottery, isExplicitNationalProduct);
@@ -543,7 +544,7 @@ export function GamePlayPage() {
     : true;
   const hasSufficientReducedForecast = selectedNumbers.length >= minNums && (minStars === 0 || selectedStars.length >= minStars);
 
-  const canPlay = !isMulticolumnMode && (isNationalLottery
+  const canPlay = !isMulticolumnMode && !isQuickPickMode && (isNationalLottery
     ? selectedNationalNumber !== null
     : isQuiniela
       ? isQuinielaValid
@@ -1521,8 +1522,8 @@ export function GamePlayPage() {
             </AnimatePresence>
           </div>
 
-          {/* Estado de validación detallado solo si no se puede jugar */}
-          {!canPlay && (
+          {/* Estado de validación detallado solo si no se puede jugar y no estamos en modo rápido */}
+          {!canPlay && !isQuickPickMode && (
             <div className="px-1 border-t border-slate-100/50 pt-2">
               <p className="text-[9px] font-bold text-slate-400 uppercase text-center leading-tight">
                 {isMulticolumnMode

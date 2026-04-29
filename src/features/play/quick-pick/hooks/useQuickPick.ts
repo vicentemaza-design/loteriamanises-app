@@ -5,12 +5,17 @@ import { buildGameSelection } from '@/features/play/application/build-game-selec
 import type { QuickPickCombination } from '../contracts/quick-pick.contract';
 import { toast } from 'sonner';
 
-export function useQuickPick(game: LotteryGame) {
+export function useQuickPick(game: LotteryGame, enabled: boolean = true) {
   const [count, setCount] = useState<number>(3);
   const [combinations, setCombinations] = useState<QuickPickCombination[]>([]);
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   const generate = useCallback(() => {
+    if (!enabled || !game.selectionRange?.numbers) {
+      setCombinations([]);
+      return;
+    }
+
     setIsRegenerating(true);
     const newCombinations: QuickPickCombination[] = [];
     
@@ -46,11 +51,13 @@ export function useQuickPick(game: LotteryGame) {
 
     setCombinations(newCombinations);
     setTimeout(() => setIsRegenerating(false), 300);
-  }, [game, count]);
+  }, [game, count, enabled]);
 
   useEffect(() => {
-    generate();
-  }, [count, generate]);
+    if (enabled) {
+      generate();
+    }
+  }, [count, generate, enabled]);
 
   return {
     count,
