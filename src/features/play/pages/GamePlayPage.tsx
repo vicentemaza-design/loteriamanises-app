@@ -1120,7 +1120,7 @@ export function GamePlayPage() {
                                     className={cn(
                                       "relative flex min-w-[68px] flex-col items-center justify-center rounded-xl border px-2 py-1.5 transition-all",
                                       isSelected
-                                        ? "bg-manises-blue/5 border-manises-blue shadow-[0_4px_12px_rgba(10,71,146,0.08)]"
+                                        ? "bg-manises-blue/10 border-manises-blue shadow-[0_4px_12px_rgba(10,71,146,0.14)]"
                                         : "bg-white border-slate-100 hover:border-slate-200"
                                     )}
                                   >
