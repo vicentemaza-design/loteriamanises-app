@@ -17,7 +17,6 @@ import {
   Repeat2,
   Archive,
   ScrollText,
-  Hash,
   Target,
   Maximize2,
   Trophy,
@@ -520,7 +519,7 @@ export function TicketsPage() {
                   <PremiumTouchInteraction key={ticket.id} scale={0.985}>
                     <div className="ticket-card relative overflow-hidden rounded-[1.5rem] border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition-all">
                       <div className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: game.color }} />
-                      <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(to right, ${game.color}0D, transparent 55%)` }} />
+                      <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(to right, ${game.color}12, transparent 55%)` }} />
 
                       <div className="px-3 py-2 pl-3.5">
                         <div className="flex items-start gap-2.5">
@@ -608,21 +607,12 @@ export function TicketsPage() {
                                 ) : null}
 
                                 <div className="flex items-center gap-2 rounded-xl bg-slate-50/80 px-3 py-2 border border-slate-100">
-                                  <div className="flex items-center gap-1">
-                                    <Hash className="h-3 w-3 shrink-0 text-slate-400" />
-                                    <span className="text-[10px] font-black text-manises-blue">{getTicketCode(ticket.id)}</span>
-                                  </div>
-                                  {(ticket.hasInsurance || ticket.isSubscription) && (
-                                    <>
-                                      <div className="h-3 w-px shrink-0 bg-slate-200" />
-                                      <span className="text-[10px] font-semibold text-slate-500">
-                                        {[ticket.hasInsurance ? 'Seguro' : null, ticket.isSubscription ? 'Abono' : null].filter(Boolean).join(' · ')}
-                                      </span>
-                                    </>
-                                  )}
-                                  <div className="ml-auto shrink-0 text-[9px] font-medium text-slate-400">
-                                    {formatCompactDate(ticket.createdAt)}
-                                  </div>
+                                  <span className="text-[10px] font-semibold text-slate-500 shrink-0">
+                                    {ticket.userId === 'demo-user' ? 'Pedido demo' : 'Pedido'} {getTicketCode(ticket.id)}
+                                  </span>
+                                  <span className="ml-auto shrink-0 text-[9px] font-medium text-slate-400">
+                                    Creada {formatCompactDate(ticket.createdAt)}
+                                  </span>
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-2">
