@@ -520,6 +520,7 @@ export function TicketsPage() {
                   <PremiumTouchInteraction key={ticket.id} scale={0.985}>
                     <div className="ticket-card relative overflow-hidden rounded-[1.5rem] border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition-all">
                       <div className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: game.color }} />
+                      <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(to right, ${game.color}0D, transparent 55%)` }} />
 
                       <div className="px-3 py-2 pl-3.5">
                         <div className="flex items-start gap-2.5">

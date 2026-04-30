@@ -204,7 +204,7 @@ export function ResultsPage() {
             >
               <div className="h-0.5" style={{ backgroundColor: game.color }} />
 
-              <div className="px-3 py-2.5" style={theme.surface}>
+              <div className="px-3 py-2.5" style={{ ...theme.surface, backgroundImage: `linear-gradient(to right, ${game.color}0A, transparent 55%)` }}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex min-w-0 items-center gap-2">
                     <GameBadge game={game} size="sm" />
@@ -224,7 +224,7 @@ export function ResultsPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 shrink-0 rounded-lg px-2 text-[9px] font-bold text-manises-blue bg-manises-blue/5 hover:bg-manises-blue/10"
+                    className="h-8 shrink-0 rounded-lg px-2 text-[9px] font-bold text-manises-blue bg-manises-blue/5 hover:bg-manises-blue/10"
                     onClick={() => openComparison(result)}
                   >
                     <CheckSquare className="w-3 h-3 mr-1" />
