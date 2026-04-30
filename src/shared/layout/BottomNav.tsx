@@ -38,7 +38,7 @@ export function BottomNav() {
                 end
                 className={cn(
                   'flex flex-col items-center justify-center w-full h-full gap-0.5 relative transition-all duration-500',
-                  isActive ? 'text-manises-gold' : 'text-white/40 hover:text-white/80'
+                  isActive ? 'text-manises-gold' : 'text-white/60 hover:text-white/80'
                 )}
               >
                 {/* Active Indicator: Ultra-thin refined line */}

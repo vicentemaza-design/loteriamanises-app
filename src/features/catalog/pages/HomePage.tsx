@@ -4,9 +4,6 @@ import type { Key } from 'react';
 import {
   ArrowRight,
   Group as Users,
-  Shield,
-  Wallet as CreditCard,
-  Lock,
   Sparks as Sparkles,
   Timer as Clock,
   Suitcase as BriefcaseBusiness,
@@ -49,12 +46,6 @@ import celebrationImage from '@/assets/images/group-people-celebrating-financial
 const FEATURED_PENAS = [
   { id: 'pena-euro', name: 'Peña Euromillones', jackpot: '130M €', price: 10, color: '#2563eb' },
   { id: 'pena-prim', name: 'Peña Primitiva', jackpot: '12M €', price: 5, color: '#16a34a' },
-];
-
-const TRUST_ITEMS = [
-  { icon: Shield, label: 'Pago Seguro\n100% SSL' },
-  { icon: CreditCard, label: 'Sin\nComisiones' },
-  { icon: Lock, label: 'Privacidad\nProtegida' },
 ];
 
 // ─── Sub-component: HeroTimeChip ─────────────────────────────────────────────
@@ -222,9 +213,9 @@ function PenaCompactCard({ title, jackpot, price, color, onClick }: PenaCompactP
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Participa</span>
             <span className="text-base font-black text-manises-blue">{formatCurrency(price)}</span>
           </div>
-          <button className="text-[10px] font-black text-manises-blue/40 uppercase tracking-widest flex items-center gap-1 group-hover:text-manises-blue transition-colors">
+          <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-widest flex items-center gap-1 group-hover:text-manises-blue transition-colors" aria-hidden="true">
             Jugar <ArrowRight className="w-2.5 h-2.5" />
-          </button>
+          </span>
         </div>
       </article>
     </PremiumTouchInteraction>
@@ -504,7 +495,12 @@ export function HomePage() {
             </div>
             <h2 className="text-xs font-extrabold text-manises-blue uppercase tracking-[0.16em]">Peñas destacadas</h2>
           </div>
-          <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ver todas</button>
+          <button
+            onClick={() => navigate('/profile/companies')}
+            className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-manises-blue transition-colors"
+          >
+            Ver todas
+          </button>
         </div>
 
         <div className="flex gap-3.5 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
