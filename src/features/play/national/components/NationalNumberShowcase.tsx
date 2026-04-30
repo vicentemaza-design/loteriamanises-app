@@ -21,30 +21,6 @@ export function NationalNumberShowcase({
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3">
-          {/* DÉCIMO DE LA SUERTE */}
-          <button
-            type="button"
-            onClick={() => {
-               // Reutilizar lógica de random de fuera si es posible o simplemente toast demo
-               const randomIdx = Math.floor(Math.random() * items.length);
-               onSelect(items[randomIdx]);
-            }}
-            className="group relative overflow-hidden rounded-2xl border-2 border-manises-gold bg-manises-gold/5 p-4 text-left transition-all hover:bg-manises-gold/10"
-          >
-            <div className="absolute right-0 top-0 p-2">
-              <div className="w-2 h-2 rounded-full bg-manises-gold animate-pulse" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <p className="text-[10px] font-black uppercase tracking-widest text-manises-gold">Décimo de la suerte</p>
-              <p className="text-xl font-black tracking-widest text-manises-blue">? ? ? ? ?</p>
-            </div>
-            <div className="mt-3">
-              <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-manises-gold text-manises-blue">
-                Asignación demo aleatoria
-              </span>
-            </div>
-          </button>
-
           {items.map((item) => {
             const active = item.number === selectedNumber;
             const isLowStock = item.available <= 4;

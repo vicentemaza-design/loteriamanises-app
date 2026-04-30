@@ -11,7 +11,6 @@ import {
   Spark,
   InfoCircle,
   WarningTriangle,
-  Calendar,
   ControlSlider,
 } from 'iconoir-react/regular';
 import { toast } from 'sonner';
@@ -33,7 +32,6 @@ import { getCompatibleReducedSystems } from '../reduced/application/get-compatib
 import { NumbersGrid } from '../components/NumbersGrid';
 import { StarsGrid } from '../components/StarsGrid';
 import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
-import { NationalDrawSelector } from '../national/components/NationalDrawSelector';
 import { MulticolumnTicketFlow } from '../multicolumn/components/MulticolumnTicketFlow';
 import type { MulticolumnDraftIntent } from '../multicolumn/contracts/multicolumn-play.contract';
 import { inferMulticolumnPlayMode } from '../multicolumn/application/infer-multicolumn-play-mode';
@@ -931,28 +929,6 @@ export function GamePlayPage() {
       />
 
       <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-2.5 p-4 pt-2">
-        {/* Lotería Nacional: selector de sorteo siempre expandido */}
-        {isNationalLottery && !supportsTimeSelection && (
-          <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={drawsCount} />
-        )}
-
-        {supportsTimeSelection && isNationalLottery && (
-          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
-            <div className="rounded-[1.2rem] border border-slate-200/50 bg-white/88 p-2.5 shadow-sm backdrop-blur-sm">
-              <div className="mb-2 flex items-center gap-2 px-0.5">
-                <Calendar className="w-3 h-3 text-manises-blue/40" />
-                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Cuándo jugar</span>
-              </div>
-              <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={drawsCount} className="mb-2.5" />
-              <NationalDrawSelector
-                availableNationalDates={availableNationalDates}
-                effectiveSelectedDrawDates={effectiveSelectedDrawDates}
-                onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
-              />
-            </div>
-          </motion.div>
-        )}
-
         {/* Config bar — estado colapsado (solo juegos no-nacionales) */}
         {!isNationalLottery && !isConfigPanelOpen && (
           <button
@@ -1425,6 +1401,11 @@ export function GamePlayPage() {
                 selectedNationalQuantity={selectedNationalQuantity}
                 maxNationalQuantity={maxNationalQuantity}
                 drawsCount={drawsCount}
+                drawStatus={drawStatus}
+                supportsTimeSelection={supportsTimeSelection}
+                availableNationalDates={availableNationalDates}
+                effectiveSelectedDrawDates={effectiveSelectedDrawDates}
+                onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
                 nationalShowcase={{
                   items: nationalShowcase,
                   count: nationalShowcaseCount,

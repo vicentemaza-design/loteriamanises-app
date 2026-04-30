@@ -9,7 +9,9 @@ import { NationalNumberShowcase } from './NationalNumberShowcase';
 import { NationalTicketQuantitySelector } from './NationalTicketQuantitySelector';
 import { NationalCartSummary } from './NationalCartSummary';
 import { NationalDeliverySelector, type DeliveryMode } from './NationalDeliverySelector';
+import { NationalDrawSelector } from './NationalDrawSelector';
 import { NationalReservationCard } from './NationalReservationCard';
+import { DrawStatusPill } from '../../draw-status/components/DrawStatusPill';
 import type {
   NationalShowcaseItem,
   NationalCartLine,
@@ -17,6 +19,7 @@ import type {
   NationalSearchState
 } from '../contracts/national-play.contract';
 import type { LotteryGame } from '@/shared/types/domain';
+import type { ResolvedDrawStatus } from '../../draw-status/contracts/draw-status.contract';
 import { toast } from 'sonner';
 
 interface NationalDrawMeta {
@@ -34,6 +37,11 @@ interface NationalAdvancedFlowProps {
   selectedNationalQuantity: number;
   maxNationalQuantity: number;
   drawsCount: number;
+  drawStatus: ResolvedDrawStatus;
+  supportsTimeSelection: boolean;
+  availableNationalDates: string[];
+  effectiveSelectedDrawDates: string[];
+  onSelectDate: (dateIso: string) => void;
 
   nationalShowcase: {
     items: NationalShowcaseItem[];
@@ -64,7 +72,11 @@ export function NationalAdvancedFlow({
   selectedNationalNumber,
   selectedNationalQuantity,
   maxNationalQuantity,
-  drawsCount,
+  drawStatus,
+  supportsTimeSelection,
+  availableNationalDates,
+  effectiveSelectedDrawDates,
+  onSelectDate,
   nationalShowcase,
   nationalCart,
   onSelectNationalNumber,
@@ -91,9 +103,85 @@ export function NationalAdvancedFlow({
 
   const deliveryLabel = deliveryMode === 'custody' ? 'Custodia digital' : 'Mensajería';
 
+  const statusColor = drawStatus.state === 'open'
+    ? { dot: 'bg-emerald-400', icon: 'text-emerald-600', bg: 'bg-emerald-50' }
+    : drawStatus.state === 'closingSoon'
+    ? { dot: 'bg-amber-400', icon: 'text-amber-600', bg: 'bg-amber-50' }
+    : { dot: 'bg-slate-300', icon: 'text-slate-400', bg: 'bg-slate-100' };
+
+  const statusLabel = drawStatus.state === 'open' ? 'Abierto'
+    : drawStatus.state === 'closingSoon' ? 'Cierra pronto'
+    : 'Cerrado';
+
   return (
     <div className="space-y-6">
-      {/* 1. Cabecera — título igual que en main */}
+      {/* 1. Resumen compacto de configuración — unifica sorteo + entrega */}
+      <section className="stagger-item">
+        <button
+          onClick={() => setIsConfigOpen(!isConfigOpen)}
+          className="group w-full text-left rounded-[1.2rem] border border-slate-200/60 bg-white px-3.5 py-3 shadow-sm hover:border-manises-blue/20 hover:shadow-md transition-all active:scale-[0.99]"
+          aria-expanded={isConfigOpen}
+          aria-label="Configurar sorteo y tipo de entrega"
+        >
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors',
+              statusColor.bg,
+            )}>
+              <ControlSlider className={cn('w-4 h-4', statusColor.icon)} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', statusColor.dot)} />
+                <span className="text-[12px] font-black text-manises-blue leading-tight truncate">
+                  {formatDate(selectedNationalDraw.nextDraw)}
+                </span>
+              </div>
+              <p className="text-[10px] font-medium text-slate-400 truncate pl-3">
+                {deliveryLabel} · {statusLabel}
+              </p>
+            </div>
+            <span className={cn(
+              'shrink-0 rounded-xl px-3 py-2 text-[9px] font-black uppercase tracking-widest transition-colors',
+              isConfigOpen
+                ? 'bg-manises-blue/10 text-manises-blue'
+                : 'bg-manises-blue/[0.06] text-manises-blue/60 group-hover:bg-manises-blue/10 group-hover:text-manises-blue'
+            )}>
+              {isConfigOpen ? 'Cerrar' : 'Cambiar'}
+            </span>
+          </div>
+        </button>
+
+        {isConfigOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-3 space-y-3"
+          >
+            <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={1} />
+
+            {supportsTimeSelection && availableNationalDates.length > 0 && (
+              <div className="rounded-[1.2rem] border border-slate-200/50 bg-white p-3 shadow-sm">
+                <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+                  Fecha del sorteo
+                </p>
+                <NationalDrawSelector
+                  availableNationalDates={availableNationalDates}
+                  effectiveSelectedDrawDates={effectiveSelectedDrawDates}
+                  onSelectDate={onSelectDate}
+                />
+              </div>
+            )}
+
+            <NationalDeliverySelector
+              selectedMode={deliveryMode}
+              onChange={setDeliveryMode}
+            />
+          </motion.div>
+        )}
+      </section>
+
+      {/* 2. Cabecera + décimo hero — siempre visible */}
       <section className="flex flex-col gap-5">
         <div>
           <h2 className="font-black text-base text-manises-blue">Configuración de tu jugada</h2>
@@ -102,7 +190,6 @@ export function NationalAdvancedFlow({
           </p>
         </div>
 
-        {/* 2. Décimo visual — protagonista, siempre visible */}
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -119,7 +206,7 @@ export function NationalAdvancedFlow({
         </motion.div>
       </section>
 
-      {/* 3. Selector de números — "Números en administración" */}
+      {/* 3. Números en administración */}
       <section className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <h2 className="font-black text-sm text-manises-blue">Números en administración</h2>
@@ -151,7 +238,7 @@ export function NationalAdvancedFlow({
         />
       </section>
 
-      {/* 4. Cantidad y acciones — solo cuando hay número seleccionado */}
+      {/* 4. Cantidad — solo cuando hay número seleccionado */}
       {selectedNationalNumber && (
         <NationalTicketQuantitySelector
           selectedNumber={selectedNationalNumber}
@@ -165,52 +252,7 @@ export function NationalAdvancedFlow({
         />
       )}
 
-      {/* 5. Configuración de entrega — secundaria, colapsable */}
-      <section className="stagger-item">
-        <button
-          onClick={() => setIsConfigOpen(!isConfigOpen)}
-          className="group w-full text-left rounded-[1.2rem] border border-slate-200/60 bg-white px-3.5 py-3 shadow-sm hover:border-manises-blue/20 hover:shadow-md transition-all active:scale-[0.99]"
-          aria-expanded={isConfigOpen}
-          aria-label="Configurar tipo de entrega"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-manises-blue/[0.06]">
-              <ControlSlider className="w-4 h-4 text-manises-blue/60" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <span className="text-[12px] font-black text-manises-blue leading-tight">
-                Tipo de entrega
-              </span>
-              <p className="mt-0.5 text-[10px] font-medium text-slate-400 truncate">
-                {deliveryLabel} · {formatDate(selectedNationalDraw.nextDraw)}
-              </p>
-            </div>
-            <span className={cn(
-              'shrink-0 rounded-xl px-3 py-2 text-[9px] font-black uppercase tracking-widest transition-colors',
-              isConfigOpen
-                ? 'bg-manises-blue/10 text-manises-blue'
-                : 'bg-manises-blue/[0.06] text-manises-blue/60 group-hover:bg-manises-blue/10 group-hover:text-manises-blue'
-            )}>
-              {isConfigOpen ? 'Cerrar' : 'Cambiar'}
-            </span>
-          </div>
-        </button>
-
-        {isConfigOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-3"
-          >
-            <NationalDeliverySelector
-              selectedMode={deliveryMode}
-              onChange={(mode) => { setDeliveryMode(mode); setIsConfigOpen(false); }}
-            />
-          </motion.div>
-        )}
-      </section>
-
-      {/* 6. Búsqueda y filtros — secundaria */}
+      {/* 5. Búsqueda y filtros — secundaria */}
       <section className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h2 className="font-black text-sm text-manises-blue">Busca por número</h2>
@@ -230,7 +272,7 @@ export function NationalAdvancedFlow({
         />
       </section>
 
-      {/* 7. Reserva demo */}
+      {/* 6. Reserva demo */}
       {mockReservation && (
         <section className="stagger-item">
           <NationalReservationCard
@@ -242,7 +284,7 @@ export function NationalAdvancedFlow({
         </section>
       )}
 
-      {/* 8. Cesta nacional */}
+      {/* 7. Cesta nacional */}
       <NationalCartSummary
         lines={nationalCart.lines}
         breakdown={nationalCart.breakdown}
