@@ -25,7 +25,7 @@ interface MulticolumnTicketFlowProps {
 export function MulticolumnTicketFlow({
   game,
   drawDates,
-  initialColumnsCount = 8,
+  initialColumnsCount = 1,
   onReviewColumns,
 }: MulticolumnTicketFlowProps) {
   const {
@@ -37,6 +37,7 @@ export function MulticolumnTicketFlow({
     clearAllColumns,
     randomizeActiveColumn,
     randomizeAllColumns,
+    addColumn,
   } = useMulticolumn(game, initialColumnsCount, drawDates.length);
 
   const theme = useMemo(() => getGameTheme(game), [game]);
@@ -50,9 +51,12 @@ export function MulticolumnTicketFlow({
 
   // Generamos el mapeo de completitud para el slider
   const columnStatus = useMemo(() => {
-    const status: Record<number, { isComplete: boolean }> = {};
+    const status: Record<number, { isComplete: boolean; hasData: boolean }> = {};
     state.columns.forEach((col, i) => {
-      status[i] = { isComplete: col.isComplete };
+      status[i] = {
+        isComplete: col.isComplete,
+        hasData: col.numbers.length > 0 || col.stars.length > 0,
+      };
     });
     return status;
   }, [state.columns]);
@@ -78,6 +82,7 @@ export function MulticolumnTicketFlow({
           onSelect={setActiveColumn}
           activeColor={game.color}
           columnStatus={columnStatus}
+          onAddColumn={addColumn}
         />
       </section>
 
