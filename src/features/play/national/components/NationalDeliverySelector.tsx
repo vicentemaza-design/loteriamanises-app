@@ -1,0 +1,61 @@
+import { Smartphone, Truck } from 'lucide-react';
+import { cn } from '@/shared/lib/utils';
+
+export type DeliveryMode = 'custody' | 'shipping';
+
+interface NationalDeliverySelectorProps {
+  selectedMode: DeliveryMode;
+  onChange: (mode: DeliveryMode) => void;
+}
+
+export function NationalDeliverySelector({ selectedMode, onChange }: NationalDeliverySelectorProps) {
+  return (
+    <div className="space-y-2.5">
+      <div className="px-1">
+        <h3 className="text-[10px] font-black text-manises-blue uppercase tracking-widest">Tipo de décimo / Entrega</h3>
+      </div>
+      
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => onChange('custody')}
+          className={cn(
+            'flex items-center gap-2 rounded-2xl border-2 p-3 text-left transition-all',
+            selectedMode === 'custody'
+              ? 'border-manises-blue bg-manises-blue text-white shadow-manises'
+              : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
+          )}
+        >
+          <Smartphone className={cn('h-5 w-5', selectedMode === 'custody' ? 'text-white' : 'text-manises-blue')} />
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-wider">Custodia / Digital</p>
+            <p className={cn('text-[9px] font-medium opacity-70', selectedMode === 'custody' ? 'text-white' : 'text-slate-400')}>
+              Sin envío · custodia demo
+            </p>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onChange('shipping')}
+          className={cn(
+            'flex items-center gap-2 rounded-2xl border-2 p-3 text-left transition-all',
+            selectedMode === 'shipping'
+              ? 'border-manises-blue bg-manises-blue text-white shadow-manises'
+              : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
+          )}
+        >
+          <Truck className={cn('h-5 w-5', selectedMode === 'shipping' ? 'text-white' : 'text-manises-blue')} />
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-wider">Mensajería</p>
+            <p className={cn('text-[9px] font-medium opacity-70', selectedMode === 'shipping' ? 'text-white' : 'text-slate-400')}>
+              Envío demo
+            </p>
+          </div>
+        </button>
+      </div>
+
+      <p className="px-1 text-[9px] font-medium text-slate-400">Servicio simulado en esta demo.</p>
+    </div>
+  );
+}

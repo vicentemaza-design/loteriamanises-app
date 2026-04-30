@@ -1,12 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { Key } from 'react';
-import { 
-  ArrowRight, 
-  Group as Users, 
-  Shield, 
-  Wallet as CreditCard, 
-  Lock,
+import {
+  ArrowRight,
+  Group as Users,
   Sparks as Sparkles,
   Timer as Clock,
   Suitcase as BriefcaseBusiness,
@@ -16,6 +13,8 @@ import {
   Flash as Zap,
   Calendar,
 } from 'iconoir-react/regular';
+import { ResponsibleGamingFooter } from '@/shared/components/ResponsibleGamingFooter';
+import { getDeliveredPrizesTotalAmount } from '../data/delivered-prizes.mock';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { GameIcon } from '@/shared/ui/GameIcon';
@@ -38,20 +37,15 @@ import loteriaJuevesLuck from '@/assets/images/loteria_jueves_luck.jpg';
 import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
 import quinielaHero from '@/assets/quiniela_hero.jpg';
 import adminFacade from '@/assets/images/administracion_manises.webp';
+import celebrationImage from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
 
 /**
- * ⚠️ BACKEND INTEGRATION POINT: OFFICIAL_PENAS
+ * ⚠️ BACKEND INTEGRATION POINT: FEATURED_PENAS
  * Reemplazar por: GET /api/penas → Pena[]
  */
-const OFFICIAL_PENAS = [
+const FEATURED_PENAS = [
   { id: 'pena-euro', name: 'Peña Euromillones', jackpot: '130M €', price: 10, color: '#2563eb' },
   { id: 'pena-prim', name: 'Peña Primitiva', jackpot: '12M €', price: 5, color: '#16a34a' },
-];
-
-const TRUST_ITEMS = [
-  { icon: Shield, label: 'Pago Seguro\n100% SSL' },
-  { icon: CreditCard, label: 'Sin\nComisiones' },
-  { icon: Lock, label: 'Privacidad\nGarantizada' },
 ];
 
 // ─── Sub-component: HeroTimeChip ─────────────────────────────────────────────
@@ -219,14 +213,15 @@ function PenaCompactCard({ title, jackpot, price, color, onClick }: PenaCompactP
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Participa</span>
             <span className="text-base font-black text-manises-blue">{formatCurrency(price)}</span>
           </div>
-          <button className="text-[10px] font-black text-manises-blue/40 uppercase tracking-widest flex items-center gap-1 group-hover:text-manises-blue transition-colors">
+          <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-widest flex items-center gap-1 group-hover:text-manises-blue transition-colors" aria-hidden="true">
             Jugar <ArrowRight className="w-2.5 h-2.5" />
-          </button>
+          </span>
         </div>
       </article>
     </PremiumTouchInteraction>
   );
 }
+
 
 function PremiumEditorialCard({
   badge,
@@ -239,6 +234,8 @@ function PremiumEditorialCard({
   accent = 'gold',
   icon: Icon,
   stats,
+  className,
+  isCompact,
 }: {
   badge: string;
   title: string;
@@ -247,9 +244,11 @@ function PremiumEditorialCard({
   image: string;
   imageAlt: string;
   onClick: () => void;
-  accent?: 'gold' | 'blue' | 'indigo';
+  accent?: 'gold' | 'blue' | 'indigo' | 'emerald';
   icon: typeof BriefcaseBusiness;
   stats: string[];
+  className?: string;
+  isCompact?: boolean;
 }) {
   const accentClasses =
     accent === 'gold'
@@ -268,6 +267,14 @@ function PremiumEditorialCard({
           border: 'border-sky-400/20',
           overlay: 'bg-[linear-gradient(135deg,rgba(10,71,146,0.96)_0%,rgba(8,63,132,0.85)_40%,rgba(10,71,146,0.3)_100%)]'
         }
+      : accent === 'emerald'
+      ? {
+          badge: 'bg-emerald-500/20 text-emerald-100 border border-emerald-400/30',
+          cta: 'bg-white/10 text-white backdrop-blur-md border border-white/20',
+          glow: 'rgba(52,211,153,0.12)',
+          border: 'border-emerald-400/20',
+          overlay: 'bg-[linear-gradient(135deg,rgba(4,40,20,0.96)_0%,rgba(6,72,54,0.85)_40%,rgba(4,40,20,0.3)_100%)]'
+        }
       : {
           badge: 'bg-indigo-500/20 text-indigo-100 border border-indigo-400/30',
           cta: 'bg-indigo-500 text-white',
@@ -276,12 +283,24 @@ function PremiumEditorialCard({
           overlay: 'bg-[linear-gradient(135deg,rgba(10,71,146,0.98)_0%,rgba(8,63,132,0.88)_40%,rgba(10,71,146,0.4)_100%)]'
         };
 
+  const heightClasses = isCompact 
+    ? 'min-h-[134px] xs:min-h-[148px] md:min-h-[168px]'
+    : 'min-h-[210px] xs:min-h-[230px] md:min-h-[280px]';
+
+  const paddingClasses = isCompact
+    ? 'p-3.5 xs:p-4 md:p-5.5'
+    : 'p-4 xs:p-4.5 md:p-7';
+
+  const titleClasses = isCompact
+    ? 'text-[1.05rem] xs:text-[1.15rem] sm:text-[1.35rem] leading-[1.1] mb-0.5'
+    : 'text-[1.15rem] xs:text-[1.35rem] sm:text-[1.65rem] leading-[1.05] mb-0';
+
   return (
-    <PremiumTouchInteraction scale={0.985}>
+    <PremiumTouchInteraction scale={0.985} className={className}>
       <button
         type="button"
         onClick={onClick}
-        className={`premium-editorial-card group relative overflow-hidden rounded-[2.25rem] border ${accentClasses.border} text-left shadow-[0_22px_65px_-12px_rgba(0,0,0,0.4)] transition-all duration-500`}
+        className={`premium-editorial-card group relative overflow-hidden rounded-[2rem] border ${accentClasses.border} text-left shadow-[0_18px_40px_-12px_rgba(0,0,0,0.32)] transition-all duration-500 w-full`}
       >
         <div className="absolute inset-0">
           <img
@@ -299,43 +318,45 @@ function PremiumEditorialCard({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_28%,rgba(255,255,255,0.02)_100%)]" />
         </div>
 
-        <div className="relative flex min-h-[240px] xs:min-h-[260px] md:min-h-[300px] flex-col justify-between p-5 md:p-8 text-white">
-          <div className="space-y-4 md:space-y-5">
+        <div className={`relative flex ${heightClasses} flex-col justify-between ${paddingClasses} text-white`}>
+          <div className={`${isCompact ? 'space-y-2' : 'space-y-3 md:space-y-4'}`}>
             <div className="flex items-center justify-between gap-3">
-              <span className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[9px] font-extrabold uppercase tracking-[0.2em] backdrop-blur-md shadow-inner ${accentClasses.badge}`}>
-                <Icon className="h-3.5 w-3.5" />
+              <span className={`inline-flex items-center gap-1.5 xs:gap-2 rounded-full px-2.5 xs:px-3.5 py-1 text-[8px] xs:text-[9px] font-extrabold uppercase tracking-[0.2em] backdrop-blur-md shadow-inner ${accentClasses.badge}`}>
+                <Icon className={`${isCompact ? 'h-2.5 w-2.5' : 'h-3 w-3 xs:h-3.5 w-3.5'}`} />
                 {badge}
               </span>
             </div>
 
-            <div className="max-w-[19rem] space-y-2 md:space-y-3">
-              <h3 className="text-[1.5rem] xs:text-[1.8rem] font-extrabold leading-[1.05] tracking-tight text-white drop-shadow-sm">
+            <div className={`${isCompact ? '' : 'max-w-[19rem]'} space-y-1 md:space-y-2.5`}>
+              <h3 className={`${titleClasses} font-extrabold tracking-tight text-white drop-shadow-sm line-clamp-2`}>
                 {title}
               </h3>
-              <p className="text-[12px] xs:text-[13px] font-medium leading-relaxed text-white/70 line-clamp-2">
+              <p className={`${isCompact ? 'text-[9.5px] xs:text-[10px] sm:text-[11px]' : 'text-[10px] xs:text-[11px] sm:text-[12px]'} font-medium leading-relaxed text-white/70 line-clamp-1`}>
                 {description}
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              {stats.map((item) => (
-                <div
-                  key={item}
-                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 backdrop-blur-lg"
-                >
-                  <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/80">{item}</p>
-                </div>
-              ))}
-            </div>
+            {!isCompact && (
+              <div className="flex flex-wrap gap-1.5 xs:gap-2">
+                {stats.map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-xl border border-white/10 bg-white/5 px-2 xs:px-3 py-1 xs:py-1.5 backdrop-blur-lg"
+                  >
+                    <p className="text-[8px] xs:text-[9px] font-bold uppercase tracking-[0.14em] text-white/80">{item}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="mt-4 pt-2">
-            <span className={`inline-flex h-12 items-center gap-2 rounded-2xl px-6 text-sm font-extrabold shadow-lg transition-all active:scale-95 ${accentClasses.cta}`}>
-              {cta}
-              <ArrowRight className="h-4 w-4" />
-            </span>
+          <div className={`${isCompact ? 'mt-2' : 'mt-4'} pt-1`}>
+              <span className={`inline-flex ${isCompact ? 'h-8 px-4 text-[11px]' : 'h-9 xs:h-10 px-4 xs:px-5 text-[11px] xs:text-[13px]'} items-center gap-1.5 xs:gap-2 rounded-2xl font-extrabold shadow-lg transition-all active:scale-95 ${accentClasses.cta}`}>
+                {cta}
+                <ArrowRight className={`${isCompact ? 'h-3 w-3' : 'h-3.5 w-3.5 xs:h-4 w-4'}`} />
+              </span>
+            </div>
           </div>
-        </div>
       </button>
     </PremiumTouchInteraction>
   );
@@ -344,11 +365,12 @@ function PremiumEditorialCard({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function HomePage() {
   const navigate = useNavigate();
-  const { featuredGame, upcomingGames } = useLotteryGames();
   const { profile } = useAuth();
+  const { featuredGame, upcomingGames } = useLotteryGames();
   const { canInstall, isInstalled, shouldShowIosHint, promptInstall } = useInstallPrompt();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const deliveredPrizesTotalAmount = useMemo(() => getDeliveredPrizesTotalAmount(), []);
 
   // Los juegos destacados en el bento (priorizamos los nacionales e inmediatos)
   const bentoGames = useMemo(() => {
@@ -378,28 +400,46 @@ export function HomePage() {
   }, { scope: containerRef });
 
   return (
-    <div className="flex min-h-full flex-col gap-6" ref={containerRef}>
+    <div className="flex min-h-full flex-col gap-4.5" ref={containerRef}>
 
       {/* ── Greeting ────────────────────────────────────────────── */}
-      <section className="px-6 pt-6 home-greeting">
+      <section className="home-greeting px-5 pt-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-[1.75rem] font-black text-manises-blue tracking-tight leading-none">
+            <h1 className="text-[1.45rem] font-black leading-none tracking-tight text-manises-blue">
               {profile ? `Hola, ${profile.displayName.split(' ')[0]} 👋` : 'Lotería Manises 🍀'}
             </h1>
-            <p className="text-[13px] font-semibold text-slate-400 mt-1.5 uppercase tracking-wider">
-              {profile ? '¡Que tengas mucha suerte hoy!' : 'Tu administración de lotería oficial'}
+            <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              {profile ? '¡QUE TENGAS MUCHA SUERTE HOY!' : 'TU ADMINISTRACIÓN EN DEMO'}
             </p>
           </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white border border-slate-100 shadow-sm text-manises-blue">
-            <BadgeCheck className="w-6 h-6" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-100 bg-white text-manises-blue shadow-sm">
+            <BadgeCheck className="h-5 w-5" />
           </div>
         </div>
       </section>
 
+      {/* ── Premios Entregados ───────────────────────────────── */}
+      <section className="px-5">
+        <PremiumEditorialCard
+          className="w-full"
+          badge="PREMIOS"
+          title={`Más de ${(deliveredPrizesTotalAmount / 1_000_000).toFixed(1)}M€ repartidos`}
+          description="Consulta los últimos premios comunicados."
+          cta="Ver premios"
+          image={celebrationImage}
+          imageAlt="Premios entregados"
+          icon={Sparkles}
+          accent="emerald"
+          isCompact={true}
+          stats={['Premios']}
+          onClick={() => navigate('/premios-entregados')}
+        />
+      </section>
+
       {/* ── Hero Section ──────────────────────────────────────── */}
       <section className="px-4">
-        <div className="hero-card relative h-[520px] rounded-[2.5rem] overflow-hidden shadow-xl shadow-manises/10 group transition-all duration-500">
+        <div className="hero-card group relative h-[448px] overflow-hidden rounded-[2.15rem] shadow-xl shadow-manises/10 transition-all duration-500">
           <div className="absolute inset-0">
             <img
               src={headerWinner}
@@ -410,33 +450,33 @@ export function HomePage() {
             <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(10,71,146,0.92)_0%,rgba(10,71,146,0.5)_40%,transparent_100%)]" />
           </div>
  
-          <div className="relative flex h-full flex-col px-7 pb-7 pt-8">
+          <div className="relative flex h-full flex-col px-5 pb-5 pt-5.5">
             <div className="flex items-start justify-between gap-3">
-              <span className="hero-badge px-3.5 py-2 rounded-full bg-manises-gold text-manises-blue text-[10px] font-black uppercase tracking-[0.18em] flex items-center gap-2 shadow-lg">
+              <span className="hero-badge flex items-center gap-2 rounded-full bg-manises-gold px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.18em] text-manises-blue shadow-lg">
                 <Sparkles className="w-3.5 h-3.5 fill-current" />
                 Sorteo destacado
               </span>
               <HeroTimeChip iso={featuredGame.nextDraw} />
             </div>
  
-            <div className="mt-14 max-w-[16.5rem] space-y-4">
-              <h1 className="hero-title text-[2.6rem] font-black text-white tracking-tighter leading-[0.88] drop-shadow-md">
+            <div className="mt-9 max-w-[15rem] space-y-3">
+              <h1 className="hero-title text-[2.2rem] font-black leading-[0.9] tracking-tighter text-white drop-shadow-md">
                 {featuredGame.name}
               </h1>
-              <p className="hero-tagline max-w-[15rem] text-[14px] font-bold leading-[1.45] tracking-tight text-white/78">
+              <p className="hero-tagline max-w-[14rem] text-[12px] font-bold leading-[1.4] tracking-tight text-white/78">
                 {featuredGame.description ?? 'El bote que puede cambiar tu vida para siempre.'}
               </p>
             </div>
  
-            <div className="hero-box mt-auto max-w-[21.5rem] rounded-[2rem] border border-white/16 bg-white/8 p-6 shadow-2xl backdrop-blur-2xl">
+            <div className="hero-box mt-auto max-w-[20rem] rounded-[1.7rem] border border-white/16 bg-white/8 p-4 shadow-2xl backdrop-blur-2xl">
               <p className="text-[9px] font-black uppercase tracking-[0.22em] text-white/56">Bote Estimado</p>
-              <div className="mt-3">
+              <div className="mt-2">
                 <HeroJackpot jackpot={featuredGame.jackpot} isMonthly={featuredGame.isMonthly} />
               </div>
-              <PremiumTouchInteraction scale={0.97} className="mt-6 w-full">
+              <PremiumTouchInteraction scale={0.97} className="mt-4 w-full">
                 <Button
                   onClick={() => navigate(`/play/${featuredGame.id}`)}
-                  className="w-full h-14 bg-white text-manises-blue hover:bg-manises-gold hover:text-white font-black rounded-2xl shadow-xl transition-all gap-2 text-base"
+                  className="h-12 w-full gap-2 rounded-2xl bg-white text-sm font-black text-manises-blue shadow-xl transition-all hover:bg-manises-gold hover:text-white"
                 >
                   Jugar Ahora <ArrowRight className="w-5 h-5" />
                 </Button>
@@ -446,20 +486,25 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ── Peñas Oficiales (Rediseño Compacto sugerido) ──────── */}
+      {/* ── Peñas Destacadas ─────────────────────────────────── */}
       <section className="space-y-4 px-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="bg-manises-blue/5 p-1.5 rounded-lg">
               <Users className="w-4 h-4 text-manises-blue" />
             </div>
-            <h2 className="text-xs font-extrabold text-manises-blue uppercase tracking-[0.16em]">Peñas Oficiales</h2>
+            <h2 className="text-xs font-extrabold text-manises-blue uppercase tracking-[0.16em]">Peñas destacadas</h2>
           </div>
-          <button className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ver todas</button>
+          <button
+            onClick={() => navigate('/profile/companies')}
+            className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-manises-blue transition-colors"
+          >
+            Ver todas
+          </button>
         </div>
 
         <div className="flex gap-3.5 overflow-x-auto pb-4 -mx-6 px-6 scrollbar-hide">
-          {OFFICIAL_PENAS.map(pena => (
+          {FEATURED_PENAS.map(pena => (
             <PenaCompactCard
               key={pena.id}
               title={pena.name}
@@ -472,9 +517,10 @@ export function HomePage() {
         </div>
       </section>
 
+
       {/* ── Bento: Próximos Sorteos ───────────────────────────── */}
       {bentoGames.length > 0 && (
-        <section className="px-6 space-y-4">
+        <section className="space-y-3 px-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="bg-manises-blue/5 p-1.5 rounded-lg">
@@ -484,7 +530,7 @@ export function HomePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             {bentoGames.map(game => (
               <BentoGameCard
                 key={game.id}
@@ -497,7 +543,7 @@ export function HomePage() {
       )}
 
       {/* ── Editorial Premium ─────────────────────────────────── */}
-      <section className="space-y-5 px-6">
+      <section className="space-y-4 px-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="bg-manises-blue/5 p-1.5 rounded-lg">
@@ -507,7 +553,7 @@ export function HomePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
           <PremiumEditorialCard
             badge="PARA EMPRESAS"
             title="Lotería de Navidad para empresas"
@@ -535,17 +581,8 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ── Footer Info ───────────────────────────────────────── */}
-      <footer className="mt-4 px-8 pb-12 text-center">
-        <div className="flex justify-center gap-6 mb-8 opacity-40">
-          <Shield className="w-5 h-5 text-manises-blue" />
-          <CreditCard className="w-5 h-5 text-manises-blue" />
-          <Lock className="w-5 h-5 text-manises-blue" />
-        </div>
-        <p className="text-[10px] text-manises-blue/25 font-black uppercase tracking-[0.35em]">
-          Administración Oficial · Lotería Manises
-        </p>
-      </footer>
+{/* ── Responsible Gaming Footer ─────────────────────────── */}
+      <ResponsibleGamingFooter />
 
       <ScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} />
     </div>

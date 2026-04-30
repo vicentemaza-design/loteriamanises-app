@@ -20,8 +20,12 @@ import { SubscriptionsPage } from '@/features/profile/pages/SubscriptionsPage';
 import { MovementsPage } from '@/features/profile/pages/MovementsPage';
 import { WithdrawalsPage } from '@/features/profile/pages/WithdrawalsPage';
 import { HelpPage } from '@/features/profile/pages/HelpPage';
+import { KycPage } from '@/features/profile/pages/KycPage';
+import { ResponsibleGamingPage } from '@/features/profile/pages/ResponsibleGamingPage';
 import { CompaniesPage } from '@/features/profile/pages/CompaniesPage';
 import { TechnicalMatrixPage } from '@/features/admin/pages/TechnicalMatrixPage';
+import { DeliveredPrizesPage } from '@/features/catalog/pages/DeliveredPrizesPage';
+import { CompanyLandingPage } from '@/features/company/pages/CompanyLandingPage';
 
 export function AppRouter() {
   return (
@@ -35,6 +39,10 @@ export function AppRouter() {
 
       <Route element={<PrivateLayout />}>
         <Route path="/home" element={<HomePage />} />
+        <Route path="/premios-entregados" element={<DeliveredPrizesPage />} />
+        <Route path="/empresas" element={<CompanyLandingPage />} />
+        <Route path="/colectivos" element={<CompanyLandingPage />} />
+        <Route path="/company/:code" element={<CompanyLandingPage />} />
         <Route path="/games" element={<GamesPage />} />
         <Route path="/play/:gameId" element={<GamePlayPage />} />
         <Route path="/results" element={<ResultsPage />} />
@@ -51,6 +59,8 @@ export function AppRouter() {
           <Route path="/profile/movements" element={<MovementsPage />} />
           <Route path="/profile/withdrawals" element={<WithdrawalsPage />} />
           <Route path="/profile/help" element={<HelpPage />} />
+          <Route path="/profile/kyc" element={<KycPage />} />
+          <Route path="/profile/gaming-control" element={<ResponsibleGamingPage />} />
           <Route path="/profile/companies" element={<CompaniesPage />} />
           <Route path="/profile/settings" element={<SettingsPage />} />
           <Route path="/profile/matrix" element={<TechnicalMatrixPage />} />

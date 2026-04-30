@@ -17,7 +17,7 @@ export function GameModeSelector({ availableModes, currentMode, onModeChange }: 
         <button
           key={mode}
           onClick={() => onModeChange(mode)}
-          className={`relative flex-1 rounded-[0.95rem] py-3 text-xs font-black uppercase tracking-[0.14em] transition-all ${
+          className={`relative flex-1 rounded-[0.95rem] py-2 text-[10px] font-black uppercase tracking-[0.14em] transition-all ${
             currentMode === mode ? 'text-manises-blue' : 'text-slate-500 hover:text-slate-700'
           }`}
         >

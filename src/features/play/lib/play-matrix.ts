@@ -94,7 +94,7 @@ export const PLAY_MATRIX: Record<string, GamePlayDefinition> = {
         status: 'implemented',
         systemFamily: 'manises',
         guaranteeType: 'conditional_minimum',
-        guaranteeCondition: 'La garantía dependerá de la tabla oficial validada para cada sistema reducido.',
+        guaranteeCondition: 'La garantía dependerá de la tabla demo validada para cada sistema reducido.',
         selection: buildNumberSelection(
           { min: 10, max: 30, total: 50 },
           { min: 2, max: 2, total: 12, label: 'estrellas' }
@@ -309,7 +309,7 @@ export const PLAY_MATRIX: Record<string, GamePlayDefinition> = {
       },
       {
         mode: 'reduced',
-        label: 'Reducida oficial',
+        label: 'Reducida demo',
         status: 'implemented',
         systemFamily: 'official',
         guaranteeType: 'conditional_minimum',

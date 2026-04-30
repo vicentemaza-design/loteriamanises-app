@@ -81,7 +81,7 @@ export interface UserProfile {
 export interface WalletMovement {
   id: string;
   userId: string;
-  type: 'deposit' | 'bet' | 'prize';
+  type: 'deposit' | 'bet' | 'prize' | 'withdrawal';
   amount: number;
   description: string;
   createdAt: string;

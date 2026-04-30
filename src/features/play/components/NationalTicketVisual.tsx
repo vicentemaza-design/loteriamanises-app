@@ -128,7 +128,7 @@ export const NationalTicketVisual: React.FC<NationalTicketVisualProps> = ({
             config.realImage ? "text-slate-900" : config.text, 
             "opacity-60"
           )}>
-            Oficial
+            Validación demo
           </span>
         </div>
       </div>

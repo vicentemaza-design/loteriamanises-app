@@ -9,38 +9,59 @@ import {
   NavArrowLeft,
   RefreshCircle,
   Spark,
-  Sparks as Sparkles,
-  CheckCircle,
-  ShareAndroid,
-  ArrowRight,
-  JournalPage,
   InfoCircle,
   WarningTriangle,
-  Calendar,
+  ControlSlider,
 } from 'iconoir-react/regular';
 import { toast } from 'sonner';
 import { generateRandomPlay } from '@/features/play/services/play.service';
-import { usePlay } from '../hooks/usePlay';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { cn, formatCurrency, formatDate, formatDrawTime } from '@/shared/lib/utils';
+import { cn, formatCurrency, formatDrawTime } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { MOTION_EASE_OUT, panelSwap, sectionFadeUp } from '@/shared/lib/motion';
-import { calculateMultipleBets, calculateTotalPrice, QUINIELA_REDUCED_TABLES, QuinielaReducedType } from '../lib/bet-calculator';
+import { QUINIELA_REDUCED_TABLES, QuinielaReducedType } from '../lib/bet-calculator';
 import { getGameHelpContent } from '../lib/game-help';
-import { getAvailableModesForGame, getModeDefinition, getReductionSystem, getReductionSystemsForMode, quotePlay, type PlayMode } from '../lib/play-matrix';
+import { getAvailableModesForGame, getModeDefinition, getReductionSystem, getReductionSystemsForMode, type PlayMode } from '../lib/play-matrix';
 import { GameModeSelector } from '../components/GameModeSelector';
 import { GameInfoSheet } from '../components/GameInfoSheet';
 import { QuinielaProfessionalSelector } from '../components/QuinielaProfessionalSelector';
 import { ReductionSystemSelector } from '../components/ReductionSystemSelector';
-import loteriaTicketVisual from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
-import { NationalTicketVisual, type NationalDrawType } from '../components/NationalTicketVisual';
-import { Trophy as TrophyIcon } from 'lucide-react';
+import { ReducedModeSummary } from '../reduced/components/ReducedModeSummary';
+import { ReducedSystemPicker } from '../reduced/components/ReducedSystemPicker';
+import { getCompatibleReducedSystems } from '../reduced/application/get-compatible-reduced-systems';
+import { NumbersGrid } from '../components/NumbersGrid';
+import { StarsGrid } from '../components/StarsGrid';
+import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
+import { MulticolumnTicketFlow } from '../multicolumn/components/MulticolumnTicketFlow';
+import type { MulticolumnDraftIntent } from '../multicolumn/contracts/multicolumn-play.contract';
+import { inferMulticolumnPlayMode } from '../multicolumn/application/infer-multicolumn-play-mode';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
-import { getDrawsForCurrentWeek, getUpcomingDraws, groupDrawsByWeek, type ScheduledDraw } from '../lib/draw-schedule';
+import { getDrawsForCurrentWeek, groupDrawsByWeek, getUpcomingDraws, type ScheduledDraw } from '../lib/draw-schedule';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
-import { distributeAmount } from '@/features/session/lib/session.utils';
-import type { GameSelection, PlayDraft } from '@/features/session/types/session.types';
+import { buildGameSelection } from '@/features/play/application/build-game-selection';
+import { buildPlayDrafts } from '@/features/play/application/build-play-drafts';
+import { resolvePlayPricing } from '@/features/play/application/resolve-play-pricing';
+import {
+  getAvailableNationalDrawDates,
+  getNextWeekdayIso,
+  inferScheduleModeFromDrawDates,
+  resolveDrawDates,
+} from '@/features/play/application/resolve-draw-dates';
+import {
+  NATIONAL_DRAW_CONFIG,
+  DEFAULT_NATIONAL_SEARCH_STATE,
+} from '@/features/play/national/mocks/national-showcase.mock';
+import type { NationalDrawId } from '@/features/play/national/contracts/national-play.contract';
+import { useNationalShowcase } from '@/features/play/national/hooks/useNationalShowcase';
+import { useNationalCart } from '@/features/play/national/hooks/useNationalCart';
+import { buildNationalCartDraftIntent } from '@/features/play/national/application/build-national-cart-intent';
+import { useQuickPick } from '../quick-pick/hooks/useQuickPick';
+import { buildQuickPickDrafts } from '../quick-pick/application/build-quick-pick-drafts';
+import { QuickPickPanel } from '../quick-pick/components/QuickPickPanel';
+import type { PlayDraft } from '@/features/session/types/session.types';
+import { DrawStatusPill } from '../draw-status/components/DrawStatusPill';
+import { resolveDrawStatus } from '../draw-status/application/resolve-draw-status';
 
 interface GamePlayLocationState { playDraftId?: string; }
 
@@ -52,52 +73,18 @@ const SCHEDULE_OPTIONS: Array<{ id: ScheduleMode; label: string }> = [
   { id: 'specific_days', label: 'Elegir días' },
 ];
 
-type NationalDrawId = 'jueves' | 'sabado';
-
-const NATIONAL_DRAW_CONFIG: Array<{
-  id: NationalDrawId;
-  label: string;
-  weekday: number;
-  hour: number;
-  decimoPrice: number;
-  firstPrize: number;
-  secondPrize: number;
-}> = [
-    { id: 'jueves', label: 'Jueves', weekday: 4, hour: 21, decimoPrice: 3, firstPrize: 30_000, secondPrize: 6_000 },
-    { id: 'sabado', label: 'Sábado', weekday: 6, hour: 13, decimoPrice: 6, firstPrize: 60_000, secondPrize: 12_000 },
-  ];
-
-const NATIONAL_NUMBER_POOL = [
-  { number: '69844', available: 8 },
-  { number: '15432', available: 12 },
-  { number: '90877', available: 5 },
-  { number: '44501', available: 10 },
-  { number: '77123', available: 3 },
-  { number: '23019', available: 7 },
-  { number: '58264', available: 9 },
-  { number: '11038', available: 6 },
-];
-
-function nextWeekdayIso(targetWeekday: number, hour: number): string {
-  const now = new Date();
-  const currentWeekday = now.getDay();
-  const delta = (targetWeekday - currentWeekday + 7) % 7;
-  const date = new Date(now);
-  date.setDate(now.getDate() + delta);
-  date.setHours(hour, 0, 0, 0);
-
-  if (date <= now) {
-    date.setDate(date.getDate() + 7);
-  }
-
-  return date.toISOString();
-}
-
 interface QuinielaMatch {
   id: number;
   home: string;
   away: string;
   result: string | null;
+}
+
+function formatChipContext(iso: string): string {
+  const d = new Date(iso);
+  const weekday = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
+  const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return `${weekday} · ${time}`;
 }
 
 export function GamePlayPage() {
@@ -130,9 +117,12 @@ export function GamePlayPage() {
   const [timeMode, setTimeMode] = useState<ScheduleMode>('next_draw');
   const [selectedWeeksCount, setSelectedWeeksCount] = useState(DEFAULT_CUSTOM_WEEKS);
   const [selectedDrawDates, setSelectedDrawDates] = useState<string[]>([]);
+  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
 
   // Features Laguinda Style
   const [isSubscription, setIsSubscription] = useState(false);
+  const [isMulticolumnMode, setIsMulticolumnMode] = useState(false);
+  const [isQuickPickMode, setIsQuickPickMode] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   if (!game) {
@@ -150,32 +140,27 @@ export function GamePlayPage() {
   const isQuiniela = game.id === 'quiniela';
   const isExplicitNationalProduct = gameId === 'loteria-nacional-jueves' || gameId === 'loteria-nacional-sabado';
 
-  // Próximas 5 fechas para lotería nacional
+  const supportsQuickPick = !isNationalLottery && !isQuiniela && Boolean(game.selectionRange?.numbers);
+  const quickPick = useQuickPick(game, supportsQuickPick);
+
   const availableNationalDates = useMemo(() => {
-    if (!isNationalLottery || !isExplicitNationalProduct) return [];
-
-    // Usamos el primer sorteo disponible como base
-    const baseDraw = (gameId === 'loteria-nacional-jueves')
-      ? nextWeekdayIso(4, 21) // Jueves 21:00
-      : nextWeekdayIso(6, 13); // Sábado 13:00
-
-    const dates = [baseDraw];
-    for (let i = 1; i < 5; i++) {
-      const d = new Date(baseDraw);
-      d.setDate(d.getDate() + (i * 7));
-      dates.push(d.toISOString());
-    }
-    return dates;
+    return getAvailableNationalDrawDates(gameId, isNationalLottery, isExplicitNationalProduct);
   }, [isExplicitNationalProduct, isNationalLottery, gameId]);
-
-  const effectiveSelectedDrawDates = useMemo(() => {
-    if (!isExplicitNationalProduct) return selectedDrawDates;
-
-    const validDates = selectedDrawDates.filter((drawDate) => availableNationalDates.includes(drawDate));
-    if (validDates.length > 0) return validDates;
-
-    return availableNationalDates.length > 0 ? [availableNationalDates[0]] : [];
-  }, [availableNationalDates, isExplicitNationalProduct, selectedDrawDates]);
+  const {
+    setDrawId: setNationalShowcaseDrawId,
+    searchState: nationalSearchState,
+    setSearchState: setNationalSearchState,
+    items: nationalShowcase,
+    totalItems: nationalShowcaseCount,
+  } = useNationalShowcase(gameId === 'loteria-nacional-sabado' ? 'sabado' : 'jueves');
+  const {
+    lines: nationalCartLines,
+    addOrUpdateLine: addOrUpdateNationalCartLine,
+    removeLine: removeNationalCartLine,
+    updateQuantity: updateNationalCartQuantity,
+    clearCart: clearNationalCart,
+    breakdown: nationalCartBreakdown,
+  } = useNationalCart();
 
   // Resetear estados cuando cambia el juego para evitar arrastrar selecciones o precios incorrectos
   useEffect(() => {
@@ -183,6 +168,7 @@ export function GamePlayPage() {
     setSelectedStars([]);
     setSelectedNationalNumber(null);
     setSelectedNationalQuantity(1);
+    setIsMulticolumnMode(false);
 
     // Sincronizar sorteo nacional por defecto
     if (gameId === 'loteria-nacional-jueves') setSelectedNationalDrawId('jueves');
@@ -204,25 +190,14 @@ export function GamePlayPage() {
 
     setMode((editingDraft.mode as PlayMode) ?? availableModes[0]);
     setIsSubscription(editingDraft.isSubscription);
+    setIsMulticolumnMode(false);
     
     // Reconstrucción inteligente de la intención temporal (UI mapping)
-    const draftDates = editingDraft.metadata?.orderDrawDates || [editingDraft.drawDate];
+    const draftDates = Array.isArray(editingDraft.metadata?.orderDrawDates)
+      ? editingDraft.metadata.orderDrawDates.filter((drawDate): drawDate is string => typeof drawDate === 'string')
+      : [editingDraft.drawDate];
     setSelectedDrawDates(draftDates);
-    
-    const currentWeekDraws = getDrawsForCurrentWeek(game.type, new Date());
-    const currentWeekDates = currentWeekDraws.map(d => d.drawDate);
-    
-    if (draftDates.length === 1) {
-      setTimeMode('next_draw');
-    } else if (
-      draftDates.length === currentWeekDates.length && 
-      draftDates.every(d => currentWeekDates.includes(d))
-    ) {
-      setTimeMode('full_week');
-    } else {
-      setTimeMode('specific_days');
-    }
-    
+    setTimeMode(inferScheduleModeFromDrawDates(draftDates, game.type));
     setSelectedWeeksCount(DEFAULT_CUSTOM_WEEKS);
 
     if (editingDraft.selection.type === 'national') {
@@ -268,23 +243,6 @@ export function GamePlayPage() {
 
     setSelectedStars([]);
   }, [availableModes, editingDraft, gameId]);
-
-  useEffect(() => {
-    if (!isExplicitNationalProduct) return;
-
-    setSelectedDrawDates((current) => {
-      const validDates = current.filter((drawDate) => availableNationalDates.includes(drawDate));
-      const nextDates = validDates.length > 0
-        ? validDates
-        : availableNationalDates.length > 0
-          ? [availableNationalDates[0]]
-          : [];
-
-      return current.length === nextDates.length && current.every((drawDate, index) => drawDate === nextDates[index])
-        ? current
-        : nextDates;
-    });
-  }, [availableNationalDates, isExplicitNationalProduct]);
 
   const isStructuredGame = Boolean(game.selectionRange) || isNationalLottery || isQuiniela;
   const drawScheduleConfig = getDrawScheduleConfig(game.type);
@@ -333,27 +291,6 @@ export function GamePlayPage() {
   const theme = getGameTheme(game);
   const maxWeeksSelectable = drawScheduleConfig?.maxWeeksSelectable ?? DEFAULT_CUSTOM_WEEKS;
 
-  // --- CÁLCULO DE APUESTAS (NÚCLEO MATEMÁTICO) ---
-  let betsCount = 1;
-  if (isQuiniela && mode === 'reduced') {
-    betsCount = QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType].bets;
-  } else if (!isNationalLottery && !isQuiniela) {
-    betsCount = quotePlay({
-      game,
-      mode,
-      numbersCount: selectedNumbers.length,
-      starsCount: selectedStars.length,
-      reducedSystemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
-    }).betsCount;
-
-    if (mode === 'multiple' && betsCount === 0) {
-      betsCount = calculateMultipleBets(selectedNumbers.length, selectedStars.length, game.type);
-    }
-  }
-
-
-
-
   const nationalDraws = (game.id === 'loteria-nacional-jueves' || game.id === 'loteria-nacional-sabado')
     ? NATIONAL_DRAW_CONFIG.filter(d => {
       if (game.id === 'loteria-nacional-jueves') return d.id === 'jueves';
@@ -361,7 +298,7 @@ export function GamePlayPage() {
       return true;
     }).map((draw) => ({
       ...draw,
-      nextDraw: nextWeekdayIso(draw.weekday, draw.hour),
+      nextDraw: getNextWeekdayIso(draw.weekday, draw.hour),
     }))
     : [{
       id: 'especial' as NationalDrawId,
@@ -374,21 +311,80 @@ export function GamePlayPage() {
       nextDraw: game.nextDraw
     }];
   const selectedNationalDraw = nationalDraws.find((draw) => draw.id === selectedNationalDrawId) ?? nationalDraws[0];
-
-  const drawPrice = isNationalLottery
-    ? (selectedNationalDraw?.decimoPrice ?? game.price ?? 3) * selectedNationalQuantity
-    : calculateTotalPrice(game.price, betsCount, false);
-
+  const drawDateResolution = useMemo(() => resolveDrawDates({
+    gameType: game.type,
+    gameNextDraw: game.nextDraw,
+    isNationalLottery,
+    isExplicitNationalProduct,
+    supportsTimeSelection,
+    scheduleMode: timeMode,
+    selectedDrawDates,
+    selectedWeeksCount,
+    selectedNationalDrawNextDraw: selectedNationalDraw.nextDraw,
+    availableNationalDates,
+  }), [
+    availableNationalDates,
+    game.nextDraw,
+    game.type,
+    isExplicitNationalProduct,
+    isNationalLottery,
+    selectedDrawDates,
+    selectedNationalDraw.nextDraw,
+    selectedWeeksCount,
+    supportsTimeSelection,
+    timeMode,
+  ]);
+  const effectiveSelectedDrawDates = drawDateResolution.drawDates;
   const drawsCount = Math.max(effectiveSelectedDrawDates.length, 1);
-  const basePrice = drawPrice * drawsCount;
-  const totalPrice = basePrice;
+
+  const quickPickPricing = useMemo(() => {
+    return resolvePlayPricing({
+      game,
+      isNationalLottery: false,
+      isQuiniela: false,
+      mode: 'simple',
+      selectedNumbersCount: game.selectionRange.numbers.min,
+      selectedStarsCount: game.selectionRange.stars?.min ?? 0,
+      selectedReductionSystemId: '',
+      selectedNationalQuantity: 1,
+      selectedNationalDraw: { decimoPrice: game.price },
+      drawsCount: effectiveSelectedDrawDates.length || 1,
+    });
+  }, [game, effectiveSelectedDrawDates]);
+
+  const quickPickTotalPrice = quickPickPricing.totalPrice * quickPick.count;
+  const handlePersistQuickPick = () => {
+    const drafts = buildQuickPickDrafts({
+      game,
+      combinations: quickPick.combinations,
+      drawDates: effectiveSelectedDrawDates,
+      isSubscription,
+    });
+
+    addDrafts(drafts);
+    toast.success(`${quickPick.count} jugadas rápidas demo añadidas.`);
+    setIsQuickPickMode(false);
+  };
+
+  const { betsCount, drawPrice, totalPrice } = resolvePlayPricing({
+    game,
+    isNationalLottery,
+    isQuiniela,
+    mode,
+    selectedNumbersCount: selectedNumbers.length,
+    selectedStarsCount: selectedStars.length,
+    selectedReductionSystemId,
+    selectedNationalQuantity,
+    selectedNationalDraw,
+    drawsCount,
+  });
   const isOverBalance = profile ? profile.balance < totalPrice : false;
   const availableBalance = profile?.balance ?? 0;
   const remainingBalance = Math.max(availableBalance - totalPrice, 0);
 
-  const selectedNationalTicket = NATIONAL_NUMBER_POOL.find((ticket) => ticket.number === selectedNationalNumber);
+  const selectedNationalTicket = nationalShowcase.find((ticket) => ticket.number === selectedNationalNumber);
   const maxNationalQuantity = selectedNationalTicket?.available ?? 1;
-  const nationalPotentialFirstPrize = selectedNationalDraw.firstPrize * selectedNationalQuantity;
+
   const helpContent = getGameHelpContent({
     game,
     mode,
@@ -396,22 +392,93 @@ export function GamePlayPage() {
     totalPrice,
     reducedSystemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
   });
-  const groupedSelectedDraws = groupDrawsByWeek(
-    effectiveSelectedDrawDates.map((drawDate) => ({
-      gameId: game.type,
-      drawDate,
-      label: new Date(drawDate).toLocaleDateString('es-ES', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'short',
-      }),
-      weekLabel: new Date(drawDate).toLocaleDateString('es-ES', {
-        day: 'numeric',
-        month: 'short',
-      }),
-      isClosed: false,
-    }))
-  );
+  const allAvailableDraws = useMemo(() => {
+    if (isNationalLottery) {
+      return availableNationalDates.map((date) => ({
+        gameId: game.type,
+        drawDate: date,
+        label: new Date(date).toLocaleDateString('es-ES', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+        }),
+        weekLabel: 'Sorteos disponibles',
+        isClosed: false,
+      }));
+    }
+    return getUpcomingDraws(game.type, new Date(), 4);
+  }, [game.type, isNationalLottery, availableNationalDates]);
+
+  const groupedAllDraws = useMemo(() => groupDrawsByWeek(allAvailableDraws), [allAvailableDraws]);
+  const highlightedDrawDate = useMemo(() => {
+    const sortedDrawDates = [...effectiveSelectedDrawDates].sort((left, right) => left.localeCompare(right));
+    if (sortedDrawDates.length > 0) {
+      return sortedDrawDates[0];
+    }
+
+    return getBusinessDate(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw);
+  }, [effectiveSelectedDrawDates, game.nextDraw, isNationalLottery, selectedNationalDraw.nextDraw]);
+  const drawStatus = useMemo(() => resolveDrawStatus({
+    drawDate: highlightedDrawDate,
+  }), [highlightedDrawDate]);
+
+  const drawTimeSummary = useMemo(() => {
+    const d = new Date(drawStatus.drawDate);
+    const cutoff = new Date(drawStatus.salesCloseAt);
+    const weekday = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
+    const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const cutoffTime = cutoff.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const countLabel = drawsCount === 1 ? 'Próximo sorteo' : `${drawsCount} sorteos`;
+    const cutoffKey = drawStatus.isDemoCutoff ? 'Límite demo' : 'Límite';
+    return `${countLabel} · ${weekday} ${time} · ${cutoffKey} ${cutoffTime}`;
+  }, [drawStatus, drawsCount]);
+
+  const configSummary = useMemo(() => {
+    const parts: string[] = [];
+    if (availableModes.length > 1) {
+      const modeLabels: Record<PlayMode, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
+      parts.push(modeLabels[mode]);
+    }
+    if (!isQuiniela && mode === 'simple') {
+      if (isQuickPickMode) parts.push('Rápida');
+      else if (isMulticolumnMode) parts.push('Multi-columna');
+      else parts.push('Manual');
+    }
+    parts.push(drawTimeSummary);
+    return parts.join(' · ');
+  }, [availableModes.length, drawTimeSummary, isMulticolumnMode, isQuickPickMode, isQuiniela, mode]);
+
+  const configMainLine = useMemo(() => {
+    const parts: string[] = [];
+    if (availableModes.length > 1) {
+      const modeLabels: Record<PlayMode, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
+      parts.push(modeLabels[mode]);
+    }
+    if (!isQuiniela && mode === 'simple') {
+      if (isQuickPickMode) parts.push('Rápida');
+      else if (isMulticolumnMode) parts.push('Multi-columna');
+      else parts.push('Manual');
+    }
+    return parts.length > 0 ? parts.join(' · ') : 'Jugada';
+  }, [availableModes.length, isMulticolumnMode, isQuickPickMode, isQuiniela, mode]);
+
+  // Auxiliares para botones de acción rápida
+  const currentWeekDraws = useMemo(() => getDrawsForCurrentWeek(game.type, new Date()), [game.type]);
+  const currentWeekDates = useMemo(() => currentWeekDraws.map(d => d.drawDate), [currentWeekDraws]);
+  
+  const nextWeekDraws = useMemo(() => {
+    const allUpcoming = getUpcomingDraws(game.type, new Date(), 2);
+    const currentWeekEnd = new Date();
+    currentWeekEnd.setDate(currentWeekEnd.getDate() + (7 - currentWeekEnd.getDay()) % 7);
+    currentWeekEnd.setHours(23, 59, 59, 999);
+    return allUpcoming.filter(d => new Date(d.drawDate) > currentWeekEnd);
+  }, [game.type]);
+  const nextWeekDates = useMemo(() => nextWeekDraws.map(d => d.drawDate), [nextWeekDraws]);
+
+  const twoWeeksDates = useMemo(() => [...currentWeekDates, ...nextWeekDates], [currentWeekDates, nextWeekDates]);
+
+  const areDatesEqual = (a: string[], b: string[]) => 
+    a.length === b.length && a.every(val => b.includes(val));
 
   useEffect(() => {
     setTimeMode('next_draw');
@@ -419,55 +486,16 @@ export function GamePlayPage() {
   }, [game.id, maxWeeksSelectable]);
 
   useEffect(() => {
-    const fallbackDrawDate = getBusinessDate(isNationalLottery ? selectedNationalDraw.nextDraw : game.nextDraw);
-
-    if (!supportsTimeSelection) {
-      setSelectedDrawDates([fallbackDrawDate]);
+    if (!isNationalLottery) {
       return;
     }
 
-    if (isExplicitNationalProduct) {
-      setSelectedDrawDates((current) => {
-        const validDates = current.filter((drawDate) => availableNationalDates.includes(drawDate));
-        return validDates.length > 0
-          ? validDates
-          : availableNationalDates.length > 0
-            ? [availableNationalDates[0]]
-            : [fallbackDrawDate];
-      });
-      return;
-    }
+    setNationalShowcaseDrawId(isExplicitNationalProduct ? selectedNationalDrawId : 'especial');
+  }, [isExplicitNationalProduct, isNationalLottery, selectedNationalDrawId, setNationalShowcaseDrawId]);
 
-    let resolvedDraws: ScheduledDraw[] = [];
-    
-    if (timeMode === 'next_draw') {
-      resolvedDraws = getUpcomingDraws(game.type, new Date(), 1).slice(0, 1);
-    } else if (timeMode === 'full_week') {
-      resolvedDraws = getDrawsForCurrentWeek(game.type, new Date());
-    } else if (timeMode === 'specific_days') {
-      // En modo manual, no sobreescribimos automáticamente salvo que esté vacío
-      if (selectedDrawDates.length > 0) return;
-      resolvedDraws = getUpcomingDraws(game.type, new Date(), 1).slice(0, 1);
-    } else if (timeMode === 'current_week') { // Legacy
-      resolvedDraws = getDrawsForCurrentWeek(game.type, new Date());
-    } else { // Legacy two_weeks, custom_weeks
-      const weeks = timeMode === 'two_weeks' ? 2 : selectedWeeksCount;
-      resolvedDraws = getUpcomingDraws(game.type, new Date(), weeks);
-    }
-
-    const nextDrawDates = resolvedDraws.map((draw) => draw.drawDate);
-    setSelectedDrawDates(nextDrawDates.length > 0 ? nextDrawDates : [fallbackDrawDate]);
-  }, [
-    game.nextDraw,
-    game.type,
-    availableNationalDates,
-    isExplicitNationalProduct,
-    isNationalLottery,
-    selectedNationalDraw.nextDraw,
-    selectedWeeksCount,
-    supportsTimeSelection,
-    timeMode,
-  ]);
+  useEffect(() => {
+    setIsConfigPanelOpen(false);
+  }, [game.id, editingDraftId]);
 
   const toggleNumber = (n: number) => {
     setSelectedNumbers(prev =>
@@ -491,7 +519,11 @@ export function GamePlayPage() {
 
   const handleRandom = () => {
     if (isNationalLottery) {
-      const randomTicket = NATIONAL_NUMBER_POOL[Math.floor(Math.random() * NATIONAL_NUMBER_POOL.length)];
+      const randomTicket = nationalShowcase[Math.floor(Math.random() * nationalShowcase.length)];
+      if (!randomTicket) {
+        toast.error('No hay décimos disponibles en el escaparate demo.');
+        return;
+      }
       setSelectedNationalNumber(randomTicket.number);
       setSelectedNationalQuantity(Math.min(2, randomTicket.available));
       toast.success(`Décimo ${randomTicket.number} seleccionado`);
@@ -514,6 +546,10 @@ export function GamePlayPage() {
     setSelectedStars([]);
     setSelectedNationalNumber(null);
     setSelectedNationalQuantity(1);
+
+    if (isNationalLottery) {
+      setNationalSearchState(DEFAULT_NATIONAL_SEARCH_STATE);
+    }
   };
 
   const handleShare = async () => {
@@ -531,8 +567,8 @@ export function GamePlayPage() {
           text,
           url: window.location.origin
         });
-      } catch (err) {
-        console.log('Error al compartir:', err);
+      } catch {
+        // AbortError expected when user cancels the share sheet
       }
     } else {
       navigator.clipboard.writeText(text);
@@ -552,48 +588,22 @@ export function GamePlayPage() {
   const hasValidStarSelection = range.stars
     ? selectedStars.length >= minStars && selectedStars.length <= maxStars
     : true;
+  // Reduced mode logic
+  const compatibleReducedSystems = useMemo(() => {
+    if (mode !== 'reduced') return [];
+    return getCompatibleReducedSystems({
+      game,
+      numbersCount: selectedNumbers.length
+    });
+  }, [game, mode, selectedNumbers.length]);
 
-  const canPlay = isNationalLottery
+  const hasSufficientReducedForecast = compatibleReducedSystems.length > 0;
+
+  const canPlay = !isMulticolumnMode && !isQuickPickMode && (isNationalLottery
     ? selectedNationalNumber !== null
     : isQuiniela
       ? isQuinielaValid
-      : selectedNumbers.length >= minNums && selectedNumbers.length <= maxNums && hasValidStarSelection && isSupportedReducedSelection && betsCount > 0;
-
-  function buildSelection(): GameSelection | null {
-    if (isNationalLottery && selectedNationalNumber) {
-      return {
-        type: 'national',
-        number: selectedNationalNumber,
-        drawLabel: selectedNationalDraw.label,
-      };
-    }
-
-    if (isQuiniela) {
-      return {
-        type: 'quiniela',
-        matches: quinielaMatches.map((match) => ({ id: match.id, value: match.result })),
-        systemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
-      };
-    }
-
-    if (game.type === 'euromillones') {
-      return { type: 'euromillones', numbers: selectedNumbers, stars: selectedStars };
-    }
-
-    if (game.type === 'gordo') {
-      return { type: 'gordo', numbers: selectedNumbers, key: selectedStars[0] ?? 0 };
-    }
-
-    if (game.type === 'eurodreams') {
-      return { type: 'eurodreams', numbers: selectedNumbers, dream: selectedStars[0] ?? 0 };
-    }
-
-    if (game.type === 'bonoloto') {
-      return { type: 'bonoloto', numbers: selectedNumbers };
-    }
-
-    return { type: 'primitiva', numbers: selectedNumbers };
-  }
+      : selectedNumbers.length >= minNums && selectedNumbers.length <= maxNums && hasValidStarSelection && isSupportedReducedSelection && betsCount > 0);
 
   const handlePlay = async () => {
     if (!canPlay)           { 
@@ -608,7 +618,18 @@ export function GamePlayPage() {
       return; 
     }
 
-    const draftSelection = buildSelection();
+    const draftSelection = buildGameSelection({
+      game,
+      isNationalLottery,
+      isQuiniela,
+      mode,
+      selectedNumbers,
+      selectedStars,
+      quinielaMatches,
+      selectedReductionSystemId,
+      selectedNationalNumber,
+      selectedNationalDraw,
+    });
     if (!draftSelection) {
       toast.error('No se ha podido construir la jugada.');
       return;
@@ -622,35 +643,27 @@ export function GamePlayPage() {
       return;
     }
 
-    const distributedTotals = distributeAmount(totalPrice, drawDates.length);
-    const nextDrafts: PlayDraft[] = drawDates.map((drawDate, index) => ({
-      id: editingDraft && index === 0 ? editingDraft.id : crypto.randomUUID(),
-      gameId: game.id,
-      gameName: game.name,
-      gameType: game.type,
-      drawDate,
+    const nextDrafts = buildPlayDrafts({
+      game,
       selection: draftSelection,
+      drawDates,
+      totalPrice,
+      unitPrice: isNationalLottery ? selectedNationalDraw.decimoPrice : drawPrice,
       quantity: isNationalLottery ? selectedNationalQuantity : 1,
-      unitPrice: isNationalLottery ? game.price : drawPrice,
-      totalPrice: distributedTotals[index] ?? distributedTotals[0] ?? totalPrice,
-      addedAt: editingDraft && index === 0 ? editingDraft.addedAt : new Date().toISOString(),
-      status: 'valid',
       mode,
       betsCount,
       isSubscription,
-      metadata: {
-        technicalMode: game.technicalMode,
-        systemFamily: game.systemFamily,
-        drawsCount: drawDates.length,
-        scheduleMode: supportsTimeSelection ? timeMode : 'next_draw',
-        weeksCount: supportsTimeSelection ? (timeMode === 'custom_weeks' ? selectedWeeksCount : timeMode === 'two_weeks' ? 2 : 1) : 1,
-        orderDrawDates: drawDates,
-        orderTotalPrice: totalPrice,
-        nationalNumber: selectedNationalNumber,
-        nationalQuantity: selectedNationalQuantity,
-        nationalDrawLabel: selectedNationalDraw.label,
-      },
-    }));
+      supportsTimeSelection,
+      timeMode: drawDateResolution.scheduleMode,
+      weeksCount: drawDateResolution.weeksCount,
+      selectedNationalNumber,
+      selectedNationalQuantity,
+      selectedNationalDraw,
+      selectedReductionSystemId,
+      editingDraft: editingDraft
+        ? { id: editingDraft.id, addedAt: editingDraft.addedAt }
+        : undefined,
+    });
 
     if (editingDraft) {
       const result = updateDraft(editingDraft.id, nextDrafts[0]);
@@ -672,30 +685,216 @@ export function GamePlayPage() {
     }
   };
 
-  // Lógica computada para el selector temporal simplificado
-  const currentWeekDraws = useMemo(() => getDrawsForCurrentWeek(game.type, new Date()), [game.type]);
-  const currentWeekDates = useMemo(() => currentWeekDraws.map(d => d.drawDate), [currentWeekDraws]);
-  const isFullWeekSelected = useMemo(() => 
-    effectiveSelectedDrawDates.length === currentWeekDates.length && 
-    effectiveSelectedDrawDates.every(d => currentWeekDates.includes(d)),
-    [effectiveSelectedDrawDates, currentWeekDates]
-  );
+  /**
+   * Procesa la persistencia de un lote de columnas desde el modo multi-columna.
+   * Transforma el intent en múltiples borradores individuales.
+   */
+  const handleMulticolumnPersist = (intent: MulticolumnDraftIntent) => {
+    if (!game) return;
+
+    try {
+      const allDrafts: PlayDraft[] = [];
+
+      intent.columns.forEach((col) => {
+        // 1. Construir selección individual
+        const colMode = inferMulticolumnPlayMode(game, col);
+        
+        const selection = buildGameSelection({
+          game,
+          isNationalLottery: false,
+          isQuiniela: false,
+          mode: colMode,
+          selectedNumbers: col.numbers,
+          selectedStars: col.stars,
+          quinielaMatches: [],
+          selectedReductionSystemId: '',
+          selectedNationalNumber: null,
+          selectedNationalDraw: { label: '' },
+        });
+
+        if (!selection) return;
+
+        // 2. Calcular precio unitario (reutilizando resolvePlayPricing para consistencia)
+        const pricing = resolvePlayPricing({
+          game,
+          isNationalLottery: false,
+          isQuiniela: false,
+          mode: colMode,
+          selectedNumbersCount: col.numbers.length,
+          selectedStarsCount: col.stars.length,
+          selectedReductionSystemId: '',
+          selectedNationalQuantity: 0,
+          selectedNationalDraw: {},
+          drawsCount: intent.drawDates.length,
+        });
+
+        // 3. Generar borradores
+        const drafts = buildPlayDrafts({
+          game,
+          selection,
+          drawDates: intent.drawDates,
+          totalPrice: pricing.totalPrice,
+          unitPrice: pricing.drawPrice,
+          quantity: 1,
+          mode: colMode,
+          betsCount: pricing.betsCount,
+          isSubscription: isSubscription,
+          supportsTimeSelection: supportsTimeSelection,
+          timeMode: drawDateResolution.scheduleMode,
+          weeksCount: drawDateResolution.weeksCount,
+          selectedNationalNumber: null,
+          selectedNationalQuantity: 0,
+          selectedNationalDraw: { label: '' },
+        });
+
+        allDrafts.push(...drafts);
+      });
+
+      if (allDrafts.length === 0) {
+        toast.error('No se han podido procesar las columnas.');
+        return;
+      }
+
+      // 4. Persistir
+      const result = addDrafts(allDrafts);
+
+      // 5. Feedback refinado
+      if (result.addedCount > 0 && result.duplicateCount === 0) {
+        toast.success(result.addedCount === 1 ? 'Jugada añadida.' : `${result.addedCount} jugadas añadidas.`);
+      } else if (result.addedCount > 0 && result.duplicateCount > 0) {
+        toast.success(`${result.addedCount} añadidas (${result.duplicateCount} duplicadas).`);
+      } else if (result.addedCount === 0 && result.duplicateCount > 0) {
+        toast.error(result.duplicateCount === 1 ? 'Esta jugada ya estaba añadida.' : 'Todas las jugadas ya estaban añadidas.');
+      }
+    } catch (error) {
+      console.error('[handleMulticolumnPersist] Error:', error);
+      toast.error('Ocurrió un error al procesar las columnas.');
+    }
+  };
+
+
+  const handleAddSelectedNationalToDemoCart = (deliveryMode: 'custody' | 'shipping' = 'custody') => {
+    if (!selectedNationalNumber) {
+      toast.error('Selecciona antes un décimo.');
+      return;
+    }
+
+    addOrUpdateNationalCartLine({
+      number: selectedNationalNumber,
+      drawId: isExplicitNationalProduct ? selectedNationalDrawId : 'especial',
+      drawLabel: selectedNationalDraw.label,
+      drawDates: effectiveSelectedDrawDates,
+      quantity: selectedNationalQuantity,
+      unitPrice: selectedNationalDraw.decimoPrice,
+      totalPrice: selectedNationalDraw.decimoPrice * selectedNationalQuantity * drawsCount,
+      deliveryMode,
+      maxQuantity: maxNationalQuantity,
+    });
+
+    toast.success('Añadido a la cesta demo nacional.');
+  };
   
-  const showSmartBanner = timeMode === 'specific_days' && 
-                          !isFullWeekSelected && 
-                          effectiveSelectedDrawDates.length >= 2 &&
-                          effectiveSelectedDrawDates.length < currentWeekDates.length;
+  const handlePersistNationalCart = () => {
+    if (nationalCartLines.length === 0) return;
+
+    // Nota técnica: Se utiliza buildNationalCartDraftIntent para normalizar la intención.
+    // mapNationalCartIntentToPreview queda como referencia para auditoría visual/contratos, 
+    // mientras que este handler usa buildPlayDrafts como fuente final de creación.
+    const intent = buildNationalCartDraftIntent(game, nationalCartLines);
+    const allDrafts: PlayDraft[] = [];
+    let hasError = false;
+
+    intent.lines.forEach((line) => {
+      // Calculamos drawConfig una sola vez por línea y validamos su existencia
+      const drawCfg = NATIONAL_DRAW_CONFIG.find(d => d.id === line.drawId);
+      const unitPrice = drawCfg?.decimoPrice ?? line.unitPrice;
+      
+      if (!drawCfg && line.drawId !== 'especial') {
+        toast.error(`Error de configuración: sorteo ${line.drawId} no encontrado.`);
+        hasError = true;
+        return;
+      }
+
+      const draftSelection = buildGameSelection({
+        game,
+        isNationalLottery: true,
+        isQuiniela: false,
+        mode: 'simple',
+        selectedNumbers: [],
+        selectedStars: [],
+        quinielaMatches: [],
+        selectedReductionSystemId: '',
+        selectedNationalNumber: line.number,
+        selectedNationalDraw: { label: line.drawLabel },
+      });
+
+      if (!draftSelection) return;
+
+      const lineDrafts = buildPlayDrafts({
+        game,
+        selection: draftSelection,
+        drawDates: line.drawDates,
+        totalPrice: line.quantity * unitPrice * line.drawDates.length,
+        unitPrice,
+        quantity: line.quantity,
+        mode: 'simple',
+        betsCount: 1,
+        isSubscription: false,
+        supportsTimeSelection: true,
+        timeMode: 'specific_days',
+        weeksCount: 1,
+        selectedNationalNumber: line.number,
+        selectedNationalQuantity: line.quantity,
+        selectedNationalDraw: { label: line.drawLabel },
+      });
+
+      allDrafts.push(...lineDrafts);
+    });
+
+    if (allDrafts.length === 0) {
+      if (hasError) toast.error('No se han podido añadir borradores debido a errores técnicos.');
+      return;
+    }
+
+    const result = addDrafts(allDrafts);
+    
+    if (result.addedCount > 0) {
+      toast.success(result.addedCount === 1 ? 'Borrador añadido a tu sesión de prueba.' : `${result.addedCount} borradores añadidos a tu sesión de prueba.`);
+    }
+    
+    if (result.duplicateCount > 0) {
+      toast.error(result.duplicateCount === 1 ? '1 décimo ya estaba en tu sesión (omitido).' : `${result.duplicateCount} décimos ya estaban en tu sesión (omitidos).`);
+    }
+  };
+
+  const ctaLabel = (() => {
+    if (canPlay) {
+      if (drawsCount > 1) return `Añadir ${drawsCount} jugadas`;
+      if (isNationalLottery) return editingDraft ? 'Actualizar' : 'Añadir décimo';
+      return editingDraft ? 'Actualizar' : 'Añadir jugada';
+    }
+    if (isMulticolumnMode) return 'Revisa las columnas';
+    if (isNationalLottery) return 'Elige un décimo';
+    if (isQuiniela) return 'Completa el pronóstico';
+    if (mode === 'reduced' && !isSupportedReducedSelection) return 'Completa la reducida';
+    const numsLeft = minNums - selectedNumbers.length;
+    const starsLeft = minStars - selectedStars.length;
+    if (numsLeft > 0 && starsLeft > 0) return `Elige ${numsLeft} números y ${starsLeft} ${starsLeft === 1 ? 'estrella' : 'estrellas'}`;
+    if (numsLeft > 0) return `Elige ${numsLeft} ${numsLeft === 1 ? 'número' : 'números'}`;
+    if (starsLeft > 0) return `Elige ${starsLeft} ${starsLeft === 1 ? 'estrella' : 'estrellas'}`;
+    return 'Completa la jugada';
+  })();
 
   return (
     <div
-      className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-36"
-      style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 64px)' }}
+      className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-32"
+      style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 56px)' }}
     >
       <div
-        className="fixed top-0 left-0 right-0 z-40 text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+64px)] flex flex-col justify-end"
+        className="fixed top-0 left-0 right-0 z-40 text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+56px)] flex flex-col justify-end"
         style={{ background: `linear-gradient(135deg, ${game.color}, ${game.colorEnd ?? game.color})` }}
       >
-        <div className="flex items-center justify-between px-3 py-3">
+        <div className="flex items-center justify-between px-3 py-2">
           <div className="flex items-center gap-1">
             <Button
               variant="ghost" size="icon"
@@ -736,22 +935,238 @@ export function GamePlayPage() {
         content={helpContent}
       />
 
-      <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-5 p-4 pt-3">
-        {/* Selector de Modo (Solo si hay varios disponibles) */}
-        {!isNationalLottery && (
-          <GameModeSelector
-            gameType={game.type}
-            availableModes={availableModes}
-            currentMode={mode}
-            onModeChange={(m) => {
-              setMode(m);
-              const nextReductionSystems = getReductionSystemsForMode(game.id, m);
-              if (m === 'reduced' && nextReductionSystems.length > 0) {
-                setSelectedReductionSystemId(nextReductionSystems[0].id);
-              }
-              handleClear(); // Limpiar al cambiar de modo para evitar estados inconsistentes
-            }}
-          />
+      <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-2.5 p-4 pt-2">
+        {/* Config bar — estado colapsado (solo juegos no-nacionales) */}
+        {!isNationalLottery && !isConfigPanelOpen && (
+          <button
+            onClick={() => setIsConfigPanelOpen(true)}
+            className="group w-full text-left rounded-[1.2rem] border border-slate-200/60 bg-white px-3.5 py-3 shadow-sm hover:border-manises-blue/20 hover:shadow-md transition-all active:scale-[0.99]"
+            aria-expanded={false}
+            aria-label="Abrir configuración de jugada"
+          >
+            <div className="flex items-center gap-3">
+              <div className={cn(
+                'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors',
+                drawStatus.state === 'open' ? 'bg-emerald-50 text-emerald-600' :
+                drawStatus.state === 'closingSoon' ? 'bg-amber-50 text-amber-600' :
+                'bg-slate-100 text-slate-400',
+              )}>
+                <ControlSlider className="w-4 h-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className={cn(
+                    'h-1.5 w-1.5 shrink-0 rounded-full',
+                    drawStatus.state === 'open' ? 'bg-emerald-400' :
+                    drawStatus.state === 'closingSoon' ? 'bg-amber-400' :
+                    'bg-slate-300',
+                  )} />
+                  <span className="text-[12px] font-black text-manises-blue leading-tight">
+                    {configMainLine}
+                  </span>
+                </div>
+                <p className="text-[10px] font-medium text-slate-400 truncate pl-3">
+                  {drawTimeSummary}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-xl bg-manises-blue/[0.06] px-3 py-2 text-[9px] font-black uppercase tracking-widest text-manises-blue/60 group-hover:bg-manises-blue/10 group-hover:text-manises-blue transition-colors">
+                Cambiar
+              </span>
+            </div>
+          </button>
+        )}
+
+        {/* Config panel — estado expandido (solo juegos no-nacionales) */}
+        {!isNationalLottery && isConfigPanelOpen && (
+          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
+            <div className="space-y-3 rounded-[1.2rem] border border-manises-blue/10 bg-white p-3 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-manises-blue/[0.06]">
+                    <ControlSlider className="w-3.5 h-3.5 text-manises-blue/60" />
+                  </div>
+                  <span className="text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue">Configurar jugada</span>
+                </div>
+                <button
+                  onClick={() => setIsConfigPanelOpen(false)}
+                  className="flex h-9 items-center justify-center rounded-xl px-3 text-[10px] font-bold uppercase tracking-widest text-manises-blue/60 hover:bg-manises-blue/[0.06] hover:text-manises-blue transition-colors"
+                  aria-label="Cerrar configuración"
+                >
+                  Cerrar
+                </button>
+              </div>
+
+              <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={drawsCount} />
+
+              {availableModes.length > 1 && (
+                <div>
+                  <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">Tipo de jugada</p>
+                  <GameModeSelector
+                    gameType={game.type}
+                    availableModes={availableModes}
+                    currentMode={mode}
+                    onModeChange={(m) => {
+                      setMode(m);
+                      const nextReductionSystems = getReductionSystemsForMode(game.id, m);
+                      if (m === 'reduced' && nextReductionSystems.length > 0) {
+                        setSelectedReductionSystemId(nextReductionSystems[0].id);
+                      }
+                      handleClear();
+                      if (m !== 'simple') setIsMulticolumnMode(false);
+                      setIsConfigPanelOpen(false);
+                    }}
+                  />
+                </div>
+              )}
+
+              {!isQuiniela && mode === 'simple' && (
+                <div>
+                  <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">Método</p>
+                  <div className="flex p-1 bg-slate-100/70 rounded-xl border border-slate-200/50">
+                    <button
+                      onClick={() => { setIsQuickPickMode(false); setIsMulticolumnMode(false); }}
+                      className={cn(
+                        "flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
+                        !isQuickPickMode && !isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
+                      )}
+                    >
+                      Manual
+                    </button>
+                    <button
+                      onClick={() => { setIsQuickPickMode(true); setIsMulticolumnMode(false); setIsConfigPanelOpen(false); }}
+                      className={cn(
+                        "flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
+                        isQuickPickMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
+                      )}
+                    >
+                      Rápida
+                    </button>
+                    <button
+                      onClick={() => { setIsQuickPickMode(false); setIsMulticolumnMode(true); setIsConfigPanelOpen(false); }}
+                      className={cn(
+                        "flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
+                        isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
+                      )}
+                    >
+                      Multi-columna
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {supportsTimeSelection && (
+                <div>
+                  <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">Sorteo</p>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-1.5 px-0.5">
+                      {[
+                        { id: 'next_draw', label: 'Próximo' },
+                        { id: 'full_week', label: 'Esta semana' },
+                        { id: 'next_week', label: 'Próxima semana' },
+                        { id: 'two_weeks', label: '2 semanas' },
+                      ].map((opt) => {
+                        let isActive = false;
+                        if (opt.id === 'next_draw') isActive = timeMode === 'next_draw';
+                        else if (opt.id === 'full_week') isActive = timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates);
+                        else if (opt.id === 'next_week') isActive = areDatesEqual(effectiveSelectedDrawDates, nextWeekDates);
+                        else if (opt.id === 'two_weeks') isActive = timeMode === 'two_weeks' || areDatesEqual(effectiveSelectedDrawDates, twoWeeksDates);
+                        return (
+                          <button
+                            key={opt.id}
+                            onClick={() => {
+                              if (opt.id === 'next_week') {
+                                setTimeMode('specific_days');
+                                setSelectedDrawDates(nextWeekDates);
+                              } else if (opt.id === 'two_weeks') {
+                                setTimeMode('specific_days');
+                                setSelectedDrawDates(twoWeeksDates);
+                              } else {
+                                setTimeMode(opt.id as ScheduleMode);
+                                setSelectedDrawDates([]);
+                              }
+                            }}
+                            className={cn(
+                              "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border",
+                              isActive
+                                ? "bg-manises-blue text-white border-manises-blue shadow-sm"
+                                : "bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300"
+                            )}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                      <button
+                        onClick={() => { setTimeMode('specific_days'); setSelectedDrawDates([]); }}
+                        className="ml-auto px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200 hover:border-slate-300"
+                      >
+                        Limpiar
+                      </button>
+                    </div>
+
+                    <div className="custom-scrollbar max-h-[220px] space-y-3 overflow-y-auto pr-1">
+                      {(Object.entries(groupedAllDraws) as [string, ScheduledDraw[]][]).map(([weekLabel, draws], index) => {
+                        const displayLabel = index === 0 ? 'Esta semana' : index === 1 ? 'Próxima semana' : weekLabel;
+                        return (
+                          <div key={weekLabel} className="space-y-2">
+                            <p className="pl-1 text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">{displayLabel}</p>
+                            <div className="flex flex-wrap gap-2">
+                              {draws.map((draw) => {
+                                const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
+                                return (
+                                  <button
+                                    key={draw.drawDate}
+                                    onClick={() => {
+                                      setTimeMode('specific_days');
+                                      setSelectedDrawDates(prev =>
+                                        prev.includes(draw.drawDate)
+                                          ? prev.filter(d => d !== draw.drawDate)
+                                          : [...prev, draw.drawDate].sort()
+                                      );
+                                    }}
+                                    className={cn(
+                                      "relative flex min-w-[60px] flex-col items-center justify-center rounded-xl border px-2.5 py-2 transition-all",
+                                      isSelected
+                                        ? "bg-manises-blue/10 border-manises-blue shadow-[0_4px_12px_rgba(10,71,146,0.14)]"
+                                        : "bg-white border-slate-100 hover:border-slate-200"
+                                    )}
+                                  >
+                                    {isSelected && (
+                                      <motion.div
+                                        layoutId="selected-draw-indicator"
+                                        className="absolute inset-0 rounded-xl border-2 border-manises-blue z-0"
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                      />
+                                    )}
+                                    <span className={cn(
+                                      "relative z-10 text-[9px] font-semibold leading-tight",
+                                      isSelected ? "text-manises-blue/80" : "text-slate-400"
+                                    )}>
+                                      {formatChipContext(draw.drawDate)}
+                                    </span>
+                                    <span className={cn(
+                                      "relative z-10 text-[12px] font-black leading-tight mt-0.5",
+                                      isSelected ? "text-manises-blue" : "text-slate-700"
+                                    )}>
+                                      {new Date(draw.drawDate).getDate()} {new Date(draw.drawDate).toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <p className="px-1 text-[10px] font-medium italic text-slate-400">
+                      * Puedes combinar días sueltos de distintas semanas
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
         )}
 
         {/* Advertencia de Saldo Insuficiente */}
@@ -766,109 +1181,6 @@ export function GamePlayPage() {
             <p className="text-[10px] font-bold text-red-700 uppercase tracking-tight leading-normal">
               Saldo insuficiente ({formatCurrency(profile?.balance ?? 0)}). <br />
               Necesitas {formatCurrency(totalPrice)} para jugar esta variante.
-            </p>
-          </motion.div>
-        )}
-
-        {!isNationalLottery && !isQuiniela && mode === 'reduced' && reductionSystems.length > 0 && (
-          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible" className="space-y-3">
-            <ReductionSystemSelector
-              systems={reductionSystems}
-              currentSystemId={selectedReductionSystemId}
-              onChange={(systemId) => {
-                setSelectedReductionSystemId(systemId);
-                handleClear();
-              }}
-            />
-
-            <div className="rounded-2xl border border-manises-blue/10 bg-white px-4 py-4 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Selección actual</p>
-                  <h3 className="mt-1 text-sm font-black text-manises-blue">{currentReductionSystem?.label ?? 'Reducida'}</h3>
-                  <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
-                    {currentReductionSystem?.guaranteeCondition}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-slate-50 px-3 py-2 text-right">
-                  <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Números</p>
-                  <p className="mt-0.5 text-lg font-black text-manises-blue">{selectedNumbers.length}</p>
-                </div>
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                <span className="inline-flex items-center rounded-full border border-manises-blue/10 bg-manises-blue/[0.05] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-manises-blue/75">
-                  Rango válido: {supportedReducedNumbers[0]}-{supportedReducedNumbers[supportedReducedNumbers.length - 1]}
-                </span>
-                {game.type === 'euromillones' && (
-                  <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-amber-900">
-                    2 estrellas fijas
-                  </span>
-                )}
-                {selectedNumbers.length > 0 && (
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${isSupportedReducedSelection
-                        ? 'border border-emerald-200 bg-emerald-50 text-emerald-900'
-                        : 'border border-amber-200 bg-amber-50 text-amber-900'
-                      }`}
-                  >
-                    {isSupportedReducedSelection ? 'Fila válida' : 'Ajusta la fila'}
-                  </span>
-                )}
-              </div>
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                {selectedNumbers.length > 0 ? (
-                  selectedNumbers.map((number) => (
-                    <span
-                      key={number}
-                      className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-manises-blue/12 bg-manises-blue/[0.06] px-3 text-sm font-black text-manises-blue"
-                    >
-                      {number}
-                    </span>
-                  ))
-                ) : (
-                  <p className="text-[12px] font-medium text-slate-400">
-                    Añade números hasta encajar en una fila válida del sistema.
-                  </p>
-                )}
-              </div>
-
-              <p className="mt-3 text-[11px] font-semibold text-slate-500">
-                Soporta {supportedReducedNumbers[0]} a {supportedReducedNumbers[supportedReducedNumbers.length - 1]} números, según la tabla oficial disponible.
-              </p>
-            </div>
-          </motion.div>
-        )}
-
-        {!isNationalLottery && !isQuiniela && mode === 'reduced' && selectedNumbers.length > 0 && isSupportedReducedSelection && betsCount > 0 && (
-          <motion.div
-            variants={sectionFadeUp}
-            initial="hidden"
-            animate="visible"
-            className="rounded-xl border border-emerald-200 bg-emerald-50 p-3"
-          >
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-900">
-              Selección lista para cotizar
-            </p>
-            <p className="mt-1 text-[12px] font-medium leading-relaxed text-emerald-800">
-              Tu selección encaja en la tabla de {currentReductionSystem?.label?.toLowerCase() ?? 'reducida'} y genera {betsCount} columnas para esta variante.
-            </p>
-          </motion.div>
-        )}
-
-        {!isNationalLottery && !isQuiniela && mode === 'reduced' && selectedNumbers.length > 0 && !isSupportedReducedSelection && (
-          <motion.div
-            variants={sectionFadeUp}
-            initial="hidden"
-            animate="visible"
-            className="rounded-xl border border-amber-200 bg-amber-50 p-3"
-          >
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-amber-900">
-              Selección no compatible con esta reducida
-            </p>
-            <p className="mt-1 text-[12px] font-medium leading-relaxed text-amber-800">
-              Ajusta el total de números para que coincida con una fila soportada por la tabla del sistema.
             </p>
           </motion.div>
         )}
@@ -910,451 +1222,223 @@ export function GamePlayPage() {
               </>
             ) : !isNationalLottery ? (
               <>
-                {/* ---- Selección visual ---- */}
-                <div className="flex flex-col items-center gap-4 rounded-[1.6rem] border border-white/70 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] surface-neo-soft" style={theme.surface}>
-                  {/* Números seleccionados */}
-                  <div className="flex flex-wrap justify-center gap-2.5">
-                    {(mode === 'reduced'
-                      ? Array.from({ length: Math.max(minNums, selectedNumbers.length || minNums) })
-                      : Array.from({ length: maxNums })
-                    ).map((_, i) => (
-                      <motion.div
-                        key={`slot-${i}`}
-                        animate={{ scale: selectedNumbers[i] ? 1 : 0.95 }}
-                        className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-base border-2 transition-colors ${selectedNumbers[i]
-                            ? 'shadow-sm'
-                            : 'bg-white border-dashed border-gray-200 text-gray-200'
-                          }`}
-                        style={selectedNumbers[i] ? theme.selectedNumber : undefined}
-                      >
-                        {selectedNumbers[i] ?? ''}
-                      </motion.div>
-                    ))}
-
-                    {maxStars > 0 && (
-                      <div className="flex gap-2.5 border-l-2 border-gray-200 pl-3 ml-1">
-                        {Array.from({ length: mode === 'reduced' ? minStars : maxStars }).map((_, i) => (
+                    {isQuickPickMode ? (
+                  <QuickPickPanel
+                    count={quickPick.count}
+                    setCount={quickPick.setCount}
+                    combinations={quickPick.combinations}
+                    isRegenerating={quickPick.isRegenerating}
+                    regenerate={quickPick.regenerate}
+                    totalPrice={quickPickTotalPrice}
+                    availableBalance={profile?.balance ?? 0}
+                    drawsCount={effectiveSelectedDrawDates.length || 1}
+                    onAdd={handlePersistQuickPick}
+                  />
+                ) : isMulticolumnMode ? (
+                  <MulticolumnTicketFlow 
+                    game={game} 
+                    drawDates={effectiveSelectedDrawDates}
+                    onReviewColumns={handleMulticolumnPersist}
+                  />
+                ) : (
+                  <>
+                    {/* ---- Selección visual ---- */}
+                    <div className="surface-neo-soft flex flex-col items-center gap-2 rounded-[1.2rem] border border-white/70 p-2 shadow-sm" style={theme.surface}>
+                      <div className="flex flex-wrap justify-center gap-1.5">
+                        {(mode === 'reduced'
+                          ? Array.from({ length: Math.max(minNums, selectedNumbers.length || minNums) })
+                          : Array.from({ length: maxNums })
+                        ).map((_, i) => (
                           <motion.div
-                            key={`star-slot-${i}`}
-                            animate={{ scale: selectedStars[i] ? 1 : 0.95 }}
-                            className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-base border-2 transition-colors ${selectedStars[i]
-                                ? 'bg-manises-gold border-manises-gold text-manises-blue shadow-gold'
-                                : 'bg-white border-dashed border-yellow-200 text-yellow-200'
+                            key={`slot-${i}`}
+                            animate={{ scale: selectedNumbers[i] ? 1 : 0.95 }}
+                            className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedNumbers[i]
+                                ? 'shadow-sm'
+                                : 'bg-white border-dashed border-gray-200 text-gray-200'
                               }`}
+                            style={selectedNumbers[i] ? theme.selectedNumber : undefined}
                           >
-                            {selectedStars[i] ?? ''}
+                            {selectedNumbers[i] ?? ''}
                           </motion.div>
                         ))}
+
+                        {maxStars > 0 && (
+                          <div className="ml-0.5 flex gap-1.5 border-l-2 border-gray-200 pl-2">
+                            {Array.from({ length: mode === 'reduced' ? minStars : maxStars }).map((_, i) => (
+                              <motion.div
+                                key={`star-slot-${i}`}
+                                animate={{ scale: selectedStars[i] ? 1 : 0.95 }}
+                                className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedStars[i]
+                                    ? 'bg-manises-gold border-manises-gold text-manises-blue shadow-gold'
+                                    : 'bg-white border-dashed border-yellow-200 text-yellow-200'
+                                  }`}
+                              >
+                                {selectedStars[i] ?? ''}
+                              </motion.div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  {/* Acciones */}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline" size="sm"
-                      className="rounded-lg font-semibold text-xs px-4 border-gray-200 text-gray-500 hover:bg-gray-50"
-                      onClick={handleClear}
-                    >
-                      <RefreshCircle className="w-3.5 h-3.5 mr-1.5" /> Limpiar
-                    </Button>
-                    <Button
-                      variant="outline" size="sm"
-                      className="rounded-lg font-semibold text-xs px-4 border-manises-gold/50 text-manises-gold hover:bg-manises-gold/5"
-                      onClick={handleRandom}
-                    >
-                      <Spark className="w-3.5 h-3.5 mr-1.5" /> Aleatorio
-                    </Button>
-                  </div>
-                </div>
-
-                {/* ---- Grid de números ---- */}
-                <div>
-                  <div className="flex items-center justify-between mb-3 px-1">
-                    <h2 className="font-bold text-sm" style={theme.title}>Números</h2>
-                    <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                      {selectedNumbers.length}/{mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-7 gap-2">
-                    {Array.from({ length: totalNums }, (_, i) => i + 1).map(n => {
-                      const isSelected = selectedNumbers.includes(n);
-                      return (
-                        <button
-                          key={n}
-                          onClick={() => toggleNumber(n)}
-                          className={`aspect-square rounded-xl flex items-center justify-center border font-bold text-sm transition-all active:scale-90 ${isSelected
-                              ? 'scale-95 border-transparent shadow-[0_10px_20px_rgba(10,71,146,0.14)]'
-                              : 'border-gray-100 bg-white/80 text-manises-blue/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-manises-blue/30 hover:bg-manises-blue/5'
-                            }`}
-                          style={isSelected ? theme.selectedAccent : undefined}
-                          aria-pressed={isSelected}
-                          aria-label={`Número ${n}`}
+                      <div className="flex gap-1.5">
+                        <Button
+                          variant="outline" size="sm"
+                          className="h-7 rounded-lg border-manises-gold/50 px-3 text-[9px] font-bold uppercase tracking-wider text-manises-gold hover:bg-manises-gold/5"
+                          onClick={handleRandom}
                         >
-                          {n}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                          <Spark className="w-3 h-3 mr-1" /> Aleatorio
+                        </Button>
+                        <Button
+                          variant="outline" size="sm"
+                          className="h-7 rounded-lg border-gray-200 px-3 text-[9px] font-bold uppercase tracking-wider text-gray-500 hover:bg-gray-50"
+                          onClick={handleClear}
+                        >
+                          <RefreshCircle className="w-3 h-3 mr-1" /> Limpiar
+                        </Button>
+                      </div>
+                    </div>
 
-                {/* ---- Grid de estrellas ---- */}
-                {maxStars > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3 px-1">
-                      <h2 className="font-bold text-sm" style={theme.title}>
-                        {game.type === 'gordo' ? 'Clave' : 'Estrellas'}
-                      </h2>
-                      <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-                        {selectedStars.length}/{maxStars}
-                      </span>
-                    </div>
-                    <div className={`grid gap-2 ${totalStars <= 9 ? 'grid-cols-5' : 'grid-cols-6'}`}>
-                      {starValues.map(n => {
-                        const isSelected = selectedStars.includes(n);
-                        return (
-                          <button
-                            key={n}
-                            onClick={() => toggleStar(n)}
-                            className={`aspect-square rounded-xl flex items-center justify-center border font-bold text-sm transition-all active:scale-90 ${isSelected
-                                ? 'border-transparent bg-manises-gold text-manises-blue shadow-gold scale-95'
-                                : 'border-amber-100 bg-white text-amber-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-amber-300 hover:bg-amber-50'
-                              }`}
-                            aria-pressed={isSelected}
-                            aria-label={game.type === 'gordo' ? `Clave ${n}` : `Estrella ${n}`}
-                          >
-                            {n}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                    {/* ---- Grid de números ---- */}
+                    <NumbersGrid
+                      totalNums={totalNums}
+                      selectedNumbers={selectedNumbers}
+                      maxNumbersLimit={mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
+                      onToggle={toggleNumber}
+                      theme={theme}
+                    />
+
+                    {/* ---- Grid de estrellas ---- */}
+                    {maxStars > 0 && (
+                      <StarsGrid
+                        starValues={starValues}
+                        selectedStars={selectedStars}
+                        maxStarsLimit={maxStars}
+                        onToggle={toggleStar}
+                        theme={theme}
+                        title={game.type === 'gordo' ? 'Clave' : 'Estrellas'}
+                        labelPrefix={game.type === 'gordo' ? 'Clave' : 'Estrella'}
+                      />
+                    )}
+
+                    {mode === 'reduced' && (
+                      <motion.div variants={sectionFadeUp} initial="hidden" animate="visible" className="space-y-6">
+                        <ReducedModeSummary 
+                          hasSelection={selectedNumbers.length > 0}
+                          minNumbers={minNums}
+                          maxNumbers={maxNums}
+                          currentNumbers={selectedNumbers.length}
+                          supportedNumbers={supportedReducedNumbers}
+                        />
+
+                        <ReducedSystemPicker 
+                          systems={compatibleReducedSystems}
+                          selectedId={selectedReductionSystemId}
+                          onSelect={(id) => setSelectedReductionSystemId(id)}
+                        />
+
+                        {selectedReductionSystemId && currentReductionSystem && (
+                          <div className="rounded-2xl border border-manises-blue/10 bg-white px-4 py-4 shadow-sm">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Selección actual</p>
+                                <h3 className="mt-1 text-sm font-black text-manises-blue">{currentReductionSystem.label}</h3>
+                                <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
+                                  {currentReductionSystem.guaranteeCondition}
+                                </p>
+                              </div>
+                              <div className="rounded-xl bg-slate-50 px-3 py-2 text-right">
+                                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Números</p>
+                                <p className="mt-0.5 text-lg font-black text-manises-blue">{selectedNumbers.length}</p>
+                              </div>
+                            </div>
+
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <span className="inline-flex items-center rounded-full border border-manises-blue/10 bg-manises-blue/[0.05] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-manises-blue/75">
+                                Rango válido: {supportedReducedNumbers[0]}-{supportedReducedNumbers[supportedReducedNumbers.length - 1]}
+                              </span>
+                              {game.type === 'euromillones' && (
+                                <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-amber-900">
+                                  2 estrellas fijas
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {selectedNumbers.map((number) => (
+                                <span
+                                  key={number}
+                                  className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-manises-blue/12 bg-manises-blue/[0.06] px-3 text-sm font-black text-manises-blue"
+                                >
+                                  {number}
+                                </span>
+                              ))}
+                            </div>
+
+                            <p className="mt-3 text-[11px] font-semibold text-slate-500">
+                              Basado en tablas demo de Lotería Manises.
+                            </p>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+
+                    {mode === 'reduced' && selectedNumbers.length > 0 && isSupportedReducedSelection && betsCount > 0 && (
+                      <motion.div
+                        variants={sectionFadeUp}
+                        initial="hidden"
+                        animate="visible"
+                        className="rounded-xl border border-emerald-200 bg-emerald-50 p-3"
+                      >
+                        <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-900">
+                          Selección lista para cotizar
+                        </p>
+                        <p className="mt-1 text-[12px] font-medium leading-relaxed text-emerald-800">
+                          Tu selección encaja en la tabla de {currentReductionSystem?.label?.toLowerCase() ?? 'reducida'} y genera {betsCount} columnas para esta variante.
+                        </p>
+                      </motion.div>
+                    )}
+                  </>
                 )}
               </>
             ) : (
-              <div className="space-y-8">
-                {/* Cabecera Informativa con Visual del Décimo */}
-                <section className="flex flex-col gap-6">
-                  <div>
-                    <h2 className="font-black text-base text-manises-blue">Configuración de tu jugada</h2>
-                    <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-manises-blue/70">
-                      Visualiza y personaliza tu décimo
-                    </p>
-                  </div>
-
-                  {/* TICKET VISUAL - EL CORAZÓN DE LA EXPERIENCIA NACIONAL */}
-                  <motion.div
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="stagger-item"
-                  >
-                    <NationalTicketVisual
-                      number={selectedNationalNumber}
-                      drawLabel={selectedNationalDraw.label}
-                      drawDate={selectedNationalDraw.nextDraw}
-                      price={selectedNationalDraw.decimoPrice}
-                      gameId={game.id}
-                      drawType={
-                        game.id === 'loteria-navidad' ? 'navidad' :
-                          game.id === 'loteria-nino' ? 'nino' :
-                            'ordinary'
-                      }
-                    />
-                  </motion.div>
-                </section>
-
-
-                {/* Selector de Números */}
-                <section className="space-y-4">
-                  <div className="flex items-center justify-between px-1">
-                    <h2 className="font-black text-sm text-manises-blue">Números en administración</h2>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost" size="sm"
-                        className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-slate-400"
-                        onClick={handleClear}
-                      >
-                        Limpiar
-                      </Button>
-                      <Button
-                        variant="outline" size="sm"
-                        className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest border-manises-gold/40 text-manises-gold bg-manises-gold/5"
-                        onClick={handleRandom}
-                      >
-                        Aleatorio
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    {NATIONAL_NUMBER_POOL.map((ticket) => {
-                      const active = ticket.number === selectedNationalNumber;
-                      const isLowStock = ticket.available <= 4;
-
-                      return (
-                        <button
-                          key={ticket.number}
-                          onClick={() => {
-                            setSelectedNationalNumber(ticket.number);
-                            setSelectedNationalQuantity((qty) => Math.min(qty, ticket.available));
-                          }}
-                          className={cn(
-                            "group relative overflow-hidden rounded-2xl border-2 p-4 text-left transition-all",
-                            active
-                              ? "border-manises-blue bg-manises-blue text-white shadow-manises"
-                              : "border-slate-100 bg-white hover:border-manises-blue/20"
-                          )}
-                        >
-                          <p className={cn(
-                            "text-2xl font-black tracking-widest",
-                            active ? "text-white" : "text-manises-blue"
-                          )}>
-                            {ticket.number}
-                          </p>
-                          <div className="mt-2 flex items-center justify-between">
-                            <span className={cn(
-                              "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full border",
-                              active
-                                ? "bg-white/15 border-white/20 text-white"
-                                : isLowStock ? "bg-red-50 border-red-100 text-red-600" : "bg-slate-50 border-slate-100 text-slate-500"
-                            )}>
-                              {isLowStock ? 'Últimos' : 'Disponibles'}
-                            </span>
-                            <span className={cn(
-                              "text-[10px] font-bold",
-                              active ? "text-white/60" : "text-slate-400"
-                            )}>
-                              Stock: {ticket.available}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </section>
-
-                {/* Cantidad y Resumen */}
-                {selectedNationalNumber && (
-                  <motion.section
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="rounded-[2rem] border border-manises-blue/10 bg-white p-6 shadow-xl"
-                  >
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tu compra</p>
-                        <h3 className="text-xl font-black text-manises-blue mt-1">
-                          {selectedNationalQuantity} {selectedNationalQuantity === 1 ? 'décimo' : 'décimos'}
-                        </h3>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Subtotal</p>
-                        <p className="text-2xl font-black text-manises-blue mt-1">
-                          {formatCurrency(selectedNationalDraw.decimoPrice * selectedNationalQuantity)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between p-2 bg-slate-50 rounded-2xl">
-                      <div className="ml-2">
-                        <span className="text-xs font-black uppercase tracking-widest text-slate-500">Ajustar cantidad</span>
-                        <p className="mt-1 text-[11px] font-semibold text-slate-500">
-                          Máximo {maxNationalQuantity} {maxNationalQuantity === 1 ? 'décimo disponible' : 'décimos disponibles'} para el número {selectedNationalNumber}.
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Button
-                          variant="ghost" size="icon"
-                          className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
-                          onClick={() => setSelectedNationalQuantity(q => Math.max(1, q - 1))}
-                          disabled={selectedNationalQuantity <= 1}
-                          aria-label="Restar un décimo"
-                        >
-                          -
-                        </Button>
-                        <span className="w-6 text-center font-black text-lg text-manises-blue">{selectedNationalQuantity}</span>
-                        <Button
-                          variant="ghost" size="icon"
-                          className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm"
-                          onClick={() => setSelectedNationalQuantity(q => Math.min(maxNationalQuantity, q + 1))}
-                          disabled={selectedNationalQuantity >= maxNationalQuantity}
-                          aria-label="Sumar un décimo"
-                        >
-                          +
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3">
-                      <TrophyIcon className="w-5 h-5 text-emerald-600 shrink-0" />
-                      <p className="text-[11px] font-semibold text-emerald-800 leading-snug">
-                        Si este número resulta premiado con el <span className="font-black">Gordo</span>, cobrarías un total de <span className="font-black">{formatCurrency(nationalPotentialFirstPrize)}</span>.
-                      </p>
-                    </div>
-                  </motion.section>
-                )}
-              </div>
+              <NationalAdvancedFlow
+                game={game}
+                selectedNationalDraw={selectedNationalDraw}
+                selectedNationalNumber={selectedNationalNumber}
+                selectedNationalQuantity={selectedNationalQuantity}
+                maxNationalQuantity={maxNationalQuantity}
+                drawsCount={drawsCount}
+                drawStatus={drawStatus}
+                supportsTimeSelection={supportsTimeSelection}
+                availableNationalDates={availableNationalDates}
+                effectiveSelectedDrawDates={effectiveSelectedDrawDates}
+                onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
+                nationalShowcase={{
+                  items: nationalShowcase,
+                  count: nationalShowcaseCount,
+                  searchState: nationalSearchState,
+                  setSearchState: setNationalSearchState,
+                }}
+                nationalCart={{
+                  lines: nationalCartLines,
+                  breakdown: nationalCartBreakdown,
+                  removeLine: removeNationalCartLine,
+                  updateQuantity: updateNationalCartQuantity,
+                  clearCart: clearNationalCart,
+                  addSelectedToCart: handleAddSelectedNationalToDemoCart,
+                  onPersistToSession: handlePersistNationalCart,
+                }}
+                onSelectNationalNumber={(ticket) => {
+                  setSelectedNationalNumber(ticket.number);
+                  setSelectedNationalQuantity((qty) => Math.min(qty, ticket.available));
+                }}
+                onChangeNationalQuantity={setSelectedNationalQuantity}
+                onRandomNationalNumber={handleRandom}
+                onClear={handleClear}
+              />
             )}
           </motion.div>
         </AnimatePresence>
-
-        {supportsTimeSelection && (
-          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
-            <div className="rounded-[1.4rem] border border-slate-200/50 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
-              <div className="flex items-center justify-between mb-3.5 px-0.5">
-                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Planificación</span>
-                <span className="text-[9px] font-bold text-manises-blue/60 uppercase">{drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}</span>
-              </div>
-
-              {isNationalLottery ? (
-                <div className="space-y-1.5">
-                  {availableNationalDates.map((dateIso) => {
-                    const isSelected = selectedDrawDates.includes(dateIso);
-                    return (
-                      <button
-                        key={dateIso}
-                        onClick={() => setSelectedDrawDates([dateIso])}
-                        className={cn(
-                          'flex items-center justify-between rounded-xl border px-3.5 py-2.5 transition-all w-full',
-                          isSelected ? 'border-manises-blue bg-manises-blue/[0.03]' : 'border-slate-100 bg-slate-50/50'
-                        )}
-                      >
-                        <span className={cn("text-[12px] font-black tracking-tight", isSelected ? "text-manises-blue" : "text-slate-600")}>
-                          {new Date(dateIso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-                        </span>
-                        <div className={cn("w-4 h-4 rounded-full border flex items-center justify-center", isSelected ? "bg-manises-blue border-manises-blue" : "border-slate-300 bg-white")}>
-                          {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <>
-                  {/* SELECTOR BINARIO PRINCIPAL */}
-                  <div className="relative flex rounded-xl border border-slate-200/60 bg-slate-100/40 p-1">
-                    {[
-                      { id: 'next_draw', label: 'Próximo sorteo' },
-                      { id: 'full_week', label: 'Toda la semana' }
-                    ].map((option) => {
-                      const active = timeMode === option.id;
-                      return (
-                        <button
-                          key={option.id}
-                          onClick={() => setTimeMode(option.id as any)}
-                          className={cn(
-                            'relative flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all z-10',
-                            active ? 'text-manises-blue' : 'text-slate-500'
-                          )}
-                        >
-                          {active && (
-                            <motion.div
-                              layoutId="activeTimeMode"
-                              className="absolute inset-0 rounded-lg bg-white shadow-sm border border-slate-200/50"
-                              transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
-                            />
-                          )}
-                          <span className="relative z-20">{option.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* ACCIÓN SECUNDARIA: PERSONALIZAR */}
-                  <div className="mt-3 flex justify-center">
-                    <button
-                      onClick={() => setTimeMode(timeMode === 'specific_days' ? 'next_draw' : 'specific_days')}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.14em] transition-all px-3.5 py-1.5 rounded-full border",
-                        timeMode === 'specific_days'
-                          ? "text-manises-blue border-manises-blue/25 bg-manises-blue/5"
-                          : "text-slate-500 border-slate-200 bg-slate-50/80 hover:text-slate-700 hover:border-slate-300"
-                      )}
-                    >
-                      {timeMode !== 'specific_days' && <Calendar className="w-3 h-3" />}
-                      {timeMode === 'specific_days' ? '← Volver a selección rápida' : 'Elegir días concretos'}
-                    </button>
-                  </div>
-
-                  {/* GRID DE DÍAS REFINADO (TÁCTIL Y CLARO) */}
-                  <AnimatePresence>
-                    {timeMode === 'specific_days' && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="mt-3 grid grid-cols-7 gap-1.5 px-1 pt-1 pb-2">
-                          {currentWeekDraws.map((draw) => {
-                            const isSelected = selectedDrawDates.includes(draw.drawDate);
-                            const dayNumber = new Date(draw.drawDate).getDate();
-                            return (
-                              <button
-                                key={draw.drawDate}
-                                onClick={() => {
-                                  setSelectedDrawDates(prev => {
-                                    if (prev.includes(draw.drawDate)) {
-                                      if (prev.length === 1) return prev;
-                                      return prev.filter(d => d !== draw.drawDate);
-                                    }
-                                    return [...prev, draw.drawDate].sort();
-                                  });
-                                }}
-                                className="flex flex-col items-center gap-2"
-                              >
-                                <div
-                                  className={cn(
-                                    "relative w-11 h-11 rounded-full flex flex-col items-center justify-center transition-all border",
-                                    isSelected
-                                      ? "text-white scale-105"
-                                      : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
-                                  )}
-                                  style={isSelected ? {
-                                    background: `linear-gradient(145deg, ${game.color}dd 0%, ${game.color} 100%)`,
-                                    borderColor: game.color,
-                                    boxShadow: `0 3px 10px -1px ${game.color}44`,
-                                  } : undefined}
-                                >
-                                  <span className={cn("text-[9px] font-black uppercase leading-none mb-0.5", isSelected ? "text-white/70" : "text-slate-300")}>
-                                    {draw.label.substring(0, 1)}
-                                  </span>
-                                  <span className="text-[13px] font-black leading-none">
-                                    {dayNumber}
-                                  </span>
-                                </div>
-                                <span
-                                  className={cn("text-[8px] font-bold uppercase tracking-tighter", isSelected ? "" : "text-slate-400")}
-                                  style={isSelected ? { color: game.color } : undefined}
-                                >
-                                  {draw.label.substring(0, 3)}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </>
-              )}
-
-              {/* RESUMEN ULTRA-LIGERO */}
-              <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">
-                  Jugando: <span className="text-manises-blue">{drawsCount} sorteos</span>
-                </p>
-                <div className="flex gap-1">
-                  {effectiveSelectedDrawDates.slice(0, 3).map(date => (
-                    <span key={date} className="w-1.5 h-1.5 rounded-full bg-manises-blue/20" />
-                  ))}
-                  {effectiveSelectedDrawDates.length > 3 && <span className="text-[8px] font-black text-manises-blue/40">+</span>}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
 
         {/* ---- SECCIÓN LAGUINDA: Abono ---- */}
         <div className="mt-2 space-y-3">
@@ -1418,7 +1502,7 @@ export function GamePlayPage() {
                   ? 'border border-manises-blue/15 bg-white/80 text-manises-blue'
                   : 'border border-manises-blue/10 bg-manises-blue/[0.05] text-manises-blue/80'
               )}>
-                {isSubscription ? 'Abono activado en esta compra' : 'Actívalo con un toque'}
+                {isSubscription ? 'Abono activado en esta simulación' : 'Actívalo con un toque'}
               </span>
               <span className="inline-flex items-center rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 text-[10px] font-bold text-slate-500">
                 Sin permanencia
@@ -1429,80 +1513,73 @@ export function GamePlayPage() {
       </div>
 
       {/* ---- Barra de confirmación ---- */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-safe">
-        <div className="mx-auto flex max-w-screen-sm flex-col gap-3 rounded-[2.2rem] border border-white/80 bg-white/95 p-4 shadow-[0_-12px_40px_rgba(15,23,42,0.15)] backdrop-blur-2xl">
-          {/* Resumen de saldo */}
-          <div className="flex items-center justify-between gap-4 px-1">
-            <div className="flex flex-col">
-              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Tu saldo actual</p>
-              <p className="mt-1 text-base font-black text-manises-blue">{formatCurrency(availableBalance)}</p>
-            </div>
-            <div className={cn(
-              'flex flex-col items-end rounded-2xl border px-3 py-1.5',
-              isOverBalance
-                ? 'border-red-200 bg-red-50'
-                : 'border-emerald-200 bg-emerald-50'
-            )}>
-              <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
-                {isOverBalance ? 'Te falta saldo' : 'Te quedará saldo'}
-              </p>
-              <p className={cn(
-                'mt-1 text-base font-black',
-                isOverBalance ? 'text-red-700' : 'text-emerald-700'
-              )}>
-                {isOverBalance ? formatCurrency(totalPrice - availableBalance) : formatCurrency(remainingBalance)}
-              </p>
-            </div>
-          </div>
+      {!isQuickPickMode && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-safe">
+          <div className={cn(
+            "mx-auto flex max-w-screen-sm flex-col gap-2 rounded-[1.5rem] border p-2.5 shadow-[0_-10px_30px_rgba(15,23,42,0.14)] backdrop-blur-2xl transition-all",
+            isOverBalance ? "bg-red-50/95 border-red-200" : "bg-white/95 border-white/80"
+          )}>
+            {/* Fila Operativa Compacta */}
+            <div className="flex items-center justify-between gap-3 px-1">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-wider">Saldo:</span>
+                  <span className="text-[11px] font-black text-manises-blue">{formatCurrency(availableBalance)}</span>
+                  <span className="text-slate-300 mx-0.5">·</span>
+                  <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-wider">Total:</span>
+                  <span className="text-[13px] font-black text-manises-blue" style={theme.title}>{formatCurrency(totalPrice)}</span>
+                </div>
+                <div className="mt-0.5 flex items-center gap-2">
+                  <p className={cn(
+                    "text-[9px] font-bold uppercase tracking-tight",
+                    isOverBalance ? "text-red-600" : "text-emerald-600"
+                  )}>
+                    {isOverBalance 
+                      ? `Faltan ${formatCurrency(totalPrice - availableBalance)}` 
+                      : `Quedarán ${formatCurrency(remainingBalance)}`
+                    }
+                  </p>
+                  {!isNationalLottery && drawsCount > 1 && (
+                    <span className="text-[8px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full uppercase">
+                      {drawsCount} sorteos
+                    </span>
+                  )}
+                </div>
+              </div>
 
-          <div className="flex items-center justify-between gap-4">
-            <div className="min-w-0 px-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Importe Total
-              </p>
-              <p className="mt-0.5 text-[10px] font-medium text-muted-foreground leading-tight">
-                {isNationalLottery
-                  ? `${selectedNationalQuantity} ${selectedNationalQuantity === 1 ? 'décimo' : 'décimos'} x ${drawsCount} ${drawsCount === 1 ? 'sorteo' : 'sorteos'}`
-                  : `${formatCurrency(drawPrice)} x ${drawsCount} ${drawsCount === 1 ? 'sorteo' : 'sorteos'}`
-                }
-              </p>
-              <div className="mt-1 flex items-baseline gap-1.5">
-                <p className="text-[1.35rem] font-black tabular-nums leading-none" style={theme.title}>
-                  {formatCurrency(totalPrice)}
+              <AnimatePresence mode="wait">
+                <Button
+                  className={`h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-[0.14em] shadow-sm transition-all active:scale-[0.98] ${canPlay
+                      ? 'text-white'
+                      : 'bg-slate-100 text-slate-400 cursor-not-allowed border-transparent shadow-none'
+                    }`}
+                  style={canPlay ? theme.cta : undefined}
+                  onClick={handlePlay}
+                  disabled={!canPlay}
+                >
+                  {ctaLabel}
+                </Button>
+              </AnimatePresence>
+            </div>
+
+            {/* Estado de validación detallado solo si no se puede jugar y no estamos en modo rápido */}
+            {!canPlay && (
+              <div className="border-t border-slate-100/50 px-1 pt-1.5">
+                <p className="text-[9px] font-bold text-slate-400 uppercase text-center leading-tight">
+                  {isMulticolumnMode
+                    ? 'Revisa las columnas para añadir'
+                    : isNationalLottery
+                      ? 'Elige un décimo del escaparate'
+                      : isQuiniela
+                        ? 'Completa el pronóstico de los 15 partidos'
+                        : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' números' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
+                  }
                 </p>
               </div>
-            </div>
-            <AnimatePresence mode="wait">
-              <Button
-                className={`h-12 flex-1 rounded-2xl font-bold text-sm shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-all active:scale-[0.98] ${canPlay
-                    ? 'text-white'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  }`}
-                style={canPlay ? theme.cta : undefined}
-                onClick={handlePlay}
-                disabled={!canPlay}
-              >
-                {canPlay
-                  ? drawsCount > 1
-                    ? `Añadir ${drawsCount} jugadas`
-                    : isNationalLottery
-                      ? editingDraft
-                        ? `Actualizar ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'}`
-                        : `Añadir ${selectedNationalQuantity} décimo${selectedNationalQuantity === 1 ? '' : 's'}`
-                      : editingDraft
-                        ? 'Actualizar jugada'
-                        : `Añadir ${betsCount} ${betsCount === 1 ? 'jugada' : 'jugadas'}`
-                  : isNationalLottery
-                    ? 'Elige un décimo'
-                    : isQuiniela
-                      ? 'Completa los 15 partidos'
-                      : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' nums' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
-                }
-              </Button>
-            </AnimatePresence>
+            )}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

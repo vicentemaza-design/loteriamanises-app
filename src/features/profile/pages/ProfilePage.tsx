@@ -89,18 +89,21 @@ export function ProfilePage() {
     {
       title: 'Seguridad y Privacidad',
       items: [
-        { 
-          icon: isLockEnabled ? Lock : LockSlash, 
-          label: 'Bloqueo por PIN', 
+        {
+          icon: isLockEnabled ? Lock : LockSlash,
+          label: 'Bloqueo por PIN',
           detail: () => (
             <div className={`w-10 h-5 rounded-full transition-colors relative ${isLockEnabled ? 'bg-manises-blue' : 'bg-gray-200'}`}>
               <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${isLockEnabled ? 'left-6' : 'left-1'}`} />
             </div>
-          ), 
-          color: isLockEnabled ? 'text-purple-600' : 'text-gray-400', 
+          ),
+          color: isLockEnabled ? 'text-purple-600' : 'text-gray-400',
           bg: isLockEnabled ? 'bg-purple-50' : 'bg-gray-50',
-          onClick: toggleLock
+          onClick: toggleLock,
+          ariaRole: 'switch' as const,
+          isChecked: isLockEnabled,
         },
+        { icon: User,        label: 'Verificación de identidad', detail: () => <span className="text-[10px] font-black text-amber-500 uppercase">Pendiente</span>, color: 'text-amber-600', bg: 'bg-amber-50', onClick: () => navigate('/profile/kyc') },
         { icon: ShieldCheck, label: 'Seguridad biométrica',detail: null, color: 'text-purple-600',  bg: 'bg-purple-50', onClick: () => toast.info('Biometría disponible en App Nativa.') },
       ],
     },
@@ -108,6 +111,7 @@ export function ProfilePage() {
       title: 'Ajustes',
       items: [
         { icon: Settings,    label: 'Preferencias',      detail: null, color: 'text-gray-600',    bg: 'bg-gray-100', onClick: () => navigate('/profile/settings') },
+        { icon: ShieldCheck, label: 'Control de juego', detail: null, color: 'text-emerald-600', bg: 'bg-emerald-50', onClick: () => navigate('/profile/gaming-control') },
         { icon: HelpCircle,  label: 'Ayuda, premios y legal', detail: null, color: 'text-orange-500',  bg: 'bg-orange-50', onClick: () => navigate('/profile/help') },
       ],
     },
@@ -192,6 +196,8 @@ export function ProfilePage() {
                 onClick={item.onClick}
                 className="w-full flex items-center gap-4 px-4 py-3.5 text-left hover:bg-muted/50 active:bg-muted transition-colors group"
                 variants={listItemFadeUp}
+                role={'ariaRole' in item ? item.ariaRole : undefined}
+                aria-checked={'isChecked' in item ? (item.isChecked as boolean) : undefined}
               >
                 <div className={`p-2 rounded-xl ${item.bg} ${item.color} shrink-0 transition-transform group-hover:scale-105`}>
                   <item.icon className="w-4.5 h-4.5" aria-hidden="true" />
@@ -231,7 +237,7 @@ export function ProfilePage() {
           Receptor Oficial de Apuestas 81980 · Valencia
         </p>
         <p className="text-[9px] text-muted-foreground/40">
-          Juega con responsabilidad. +18. DGOJ. v2.0.26
+          Juega con responsabilidad. +18. Demo v2.0.26
         </p>
       </motion.div>
     </motion.div>

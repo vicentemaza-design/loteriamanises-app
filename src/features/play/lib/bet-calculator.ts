@@ -1,6 +1,6 @@
 /**
  * Lógica matemática para el cálculo de apuestas y precios (Lotería Manises).
- * Implementa combinatoria oficial para múltiples y tablas SELAE para reducidas.
+ * Implementa combinatoria demo para múltiples y tablas internas de simulación para reducidas.
  */
 
 /**
@@ -46,7 +46,7 @@ export function calculateMultipleBets(numsCount: number, starsCount: number = 0,
 }
 
 /**
- * Tablas oficiales de reducidas para La Quiniela (SELAE)
+ * Tablas demos de reducidas para La Quiniela (tablas internas de simulación)
  */
 export const QUINIELA_REDUCED_TABLES = {
   'reducida_1': { dobles: 7, triples: 0, bets: 16,  label: 'Reducida 1 (7 Dobles)' },

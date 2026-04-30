@@ -64,7 +64,7 @@ function getMultipleSummary(game: LotteryGame, betsCount: number, totalPrice: nu
         bullets: [
           `Partes de la base del juego y amplías la selección por encima del modo simple.`,
           starLabel,
-          `Cada columna desarrollada se considera una apuesta real a precio unitario oficial.`,
+          `Cada columna desarrollada se considera una apuesta simulada a precio unitario demo.`,
         ],
       },
       {
@@ -97,7 +97,7 @@ function getSimpleSummary(game: LotteryGame, totalPrice: number): GameHelpConten
 
   return {
     modeLabel: 'Simple',
-    summary: `Es la jugada base del ${game.name.toLowerCase()}: una sola apuesta con la selección mínima oficial.`,
+    summary: `Es la jugada base del ${game.name.toLowerCase()}: una sola apuesta con la selección mínima demo.`,
     quickFacts: [
       { label: 'Selección', value: formatSelection(game) },
       { label: 'Columnas', value: '1' },
@@ -115,7 +115,7 @@ function getSimpleSummary(game: LotteryGame, totalPrice: number): GameHelpConten
       {
         title: 'Precio y alcance',
         bullets: [
-          `Pagas exactamente el precio unitario oficial del juego.`,
+          `Pagas exactamente el precio unitario demo del juego.`,
           `No incluye combinaciones extra ni garantías más allá de la propia apuesta base.`,
         ],
       },
@@ -146,7 +146,7 @@ function getQuinielaSimpleSummary(totalPrice: number): GameHelpContent {
         title: 'Qué debes tener en cuenta',
         bullets: [
           'Cada fallo en un partido afecta directamente a la columna completa.',
-          'Si quieres ampliar cobertura, tendrás que pasar a una reducida oficial.',
+          'Si quieres ampliar cobertura, tendrás que pasar a una reducida demo.',
         ],
       },
     ],
@@ -163,12 +163,12 @@ function getQuinielaReducedSummary(
   const system = getReductionSystem(game.id, reducedType ?? 'reducida_1');
   const pattern = system?.requiredPattern
     ? `${system.requiredPattern.dobles} dobles y ${system.requiredPattern.triples} triples`
-    : 'un patrón oficial';
-  const label = system?.label ?? 'Reducida oficial';
+    : 'un patrón demo';
+  const label = system?.label ?? 'Reducida demo';
 
   return {
-    modeLabel: 'Reducida oficial',
-    summary: `Estás usando ${label}. La app te guía para introducir exactamente ${pattern} del sistema oficial.`,
+    modeLabel: 'Reducida demo',
+    summary: `Estás usando ${label}. La app te guía para introducir exactamente ${pattern} del sistema demo.`,
     quickFacts: [
       { label: 'Patrón', value: system?.requiredPattern ? `${system.requiredPattern.dobles}D · ${system.requiredPattern.triples}T` : 'Oficial' },
       { label: 'Columnas', value: `${betsCount}` },
@@ -179,7 +179,7 @@ function getQuinielaReducedSummary(
         title: 'Cómo funciona',
         bullets: [
           'Tu pronóstico general incluye dobles y triples, pero no se desarrolla completo.',
-          `El sistema lo reduce a ${system?.fixedBetsCount ?? betsCount} columnas siguiendo una tabla oficial.`,
+          `El sistema lo reduce a ${system?.fixedBetsCount ?? betsCount} columnas siguiendo una tabla demo.`,
           'Así reduces coste frente al múltiple total, a cambio de una garantía condicionada.',
         ],
       },
@@ -198,8 +198,8 @@ function getQuinielaReducedSummary(
         ],
       },
     ],
-    tip: 'La reducida oficial es la forma más sensata de subir cobertura en Quiniela sin disparar el número de columnas.',
-    warning: 'La garantía depende de que tu pronóstico general contenga el acierto real de la jornada.',
+    tip: 'La reducida demo es la forma más sensata de subir cobertura en Quiniela sin disparar el número de columnas.',
+    warning: 'La garantía depende de que tu pronóstico general contenga el acierto simulado de la jornada.',
   };
 }
 

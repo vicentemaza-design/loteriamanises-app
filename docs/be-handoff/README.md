@@ -31,3 +31,8 @@ Para implementar las validaciones en BE, se recomienda consultar:
 - **Saldo del Usuario**: Validar contra la Wallet antes de confirmar.
 - **Sorteo Abierto**: Validar que la `drawDate` corresponde a un sorteo futuro y que no ha pasado la hora de cierre.
 - **Combinatoria**: Validar que el número de apuestas (`betsCount`) es correcto para los números seleccionados (Múltiples/Reducidas).
+
+## Deuda Técnica / Fase 2
+- **Validación Multi-columna**: En Fase 1, cada `PlayDraft` representa una única selección lógica (Simple/Múltiple/Reducida). Para Fase 2, se debe preparar el contrato para aceptar arrays de selecciones independientes dentro de un mismo draft, lo cual impactará en el recálculo de `betsCount` y `totalPrice`.
+- **Centralización de Timezones**: BE debe ser el responsable de normalizar todas las fechas a `Europe/Madrid`, ignorando el offset enviado por el cliente.
+- **Validación Estricta de Identidad**: Implementar validaciones de tipos de juego robustas para evitar inyecciones de datos en el campo `metadata`.

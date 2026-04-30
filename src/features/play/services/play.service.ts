@@ -1,29 +1,14 @@
 import { createApiClient } from '@/services/api/factory/createApiClient';
-import type { GameType } from '@/shared/types/domain';
+import type { CreateBetRequestDto, CreateBetResponseDto } from '@/services/api/contracts/play.contracts';
 
-export interface PlaceBetParams {
-  userId: string;
-  gameId: string;
-  gameType: GameType;
-  numbers: number[];
-  stars?: number[];
-  drawDate: string;
-  price: number;
-  hasInsurance?: boolean;
-  isSubscription?: boolean;
-}
-
-export interface PlaceBetResult {
-  success: boolean;
-  ticketId?: string;
-  error?: string;
-}
+export type PlaceBetParams = CreateBetRequestDto & { userId: string };
+export type PlaceBetResult = CreateBetResponseDto;
 
 /**
  * @deprecated Use usePlay() hook or createApiClient().play.placeBet() instead.
  * Provided for backward compatibility during migration.
  */
-export async function placeBet(params: any): Promise<PlaceBetResult> {
+export async function placeBet(params: PlaceBetParams): Promise<PlaceBetResult> {
   console.warn('[DEPRECATED] placeBet in play.service.ts is deprecated. Use the modular API.');
   const client = await createApiClient();
   return client.play.placeBet(params);

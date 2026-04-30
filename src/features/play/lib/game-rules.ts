@@ -53,7 +53,7 @@ export function validatePlaySelection(
     const reductionSystem = getReductionSystem(game.id, selection.systemId);
 
     if (reductionSystem?.requiredPattern) {
-      return { isValid: false, message: 'La validación de reducidas oficiales se gestiona en el selector especializado.', betsCount: reductionSystem.fixedBetsCount ?? 0 };
+      return { isValid: false, message: 'La validación de reducidas demoes se gestiona en el selector especializado.', betsCount: reductionSystem.fixedBetsCount ?? 0 };
     }
 
     if (numbers.length < range.numbers.min) {
