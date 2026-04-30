@@ -587,13 +587,11 @@ export function TicketsPage() {
                                   </div>
                                 ) : nationalTicket ? (
                                   <NationalDecimoCard ticket={ticket} displayNumber={ticketDisplayNumber} />
-                                ) : (
+                                ) : hasResolvedDraw && totalHits > 0 ? (
                                   <div className="rounded-xl border border-slate-100 bg-white/90 px-3 py-2.5">
-                                    {hasResolvedDraw && (
-                                      <p className="mb-2 text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
-                                        {totalHits > 0 ? `${totalHits} ${totalHits === 1 ? 'acierto' : 'aciertos'}` : 'Sin aciertos'}
-                                      </p>
-                                    )}
+                                    <p className="mb-2 text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
+                                      {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'}
+                                    </p>
                                     <BallSelection
                                       numbers={ticket.numbers}
                                       stars={ticket.stars}
@@ -602,7 +600,12 @@ export function TicketsPage() {
                                       type={game.type}
                                     />
                                   </div>
-                                )}
+                                ) : hasResolvedDraw ? (
+                                  <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2">
+                                    <XCircle className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+                                    <span className="text-[10px] font-semibold text-slate-400">Sin aciertos en este sorteo</span>
+                                  </div>
+                                ) : null}
 
                                 <div className="flex items-center gap-2 rounded-xl bg-slate-50/80 px-3 py-2 border border-slate-100">
                                   <div className="flex items-center gap-1">
