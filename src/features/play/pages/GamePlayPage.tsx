@@ -111,7 +111,7 @@ export function GamePlayPage() {
   const [timeMode, setTimeMode] = useState<ScheduleMode>('next_draw');
   const [selectedWeeksCount, setSelectedWeeksCount] = useState(DEFAULT_CUSTOM_WEEKS);
   const [selectedDrawDates, setSelectedDrawDates] = useState<string[]>([]);
-  const [isTimeSelectorExpanded, setIsTimeSelectorExpanded] = useState(false);
+  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
 
   // Features Laguinda Style
   const [isSubscription, setIsSubscription] = useState(false);
@@ -427,6 +427,21 @@ export function GamePlayPage() {
     return `${countLabel} · ${weekday} ${time} · ${cutoffKey} ${cutoffTime}`;
   }, [drawStatus, drawsCount]);
 
+  const configSummary = useMemo(() => {
+    const parts: string[] = [];
+    if (availableModes.length > 1) {
+      const modeLabels: Record<PlayMode, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
+      parts.push(modeLabels[mode]);
+    }
+    if (!isQuiniela && mode === 'simple') {
+      if (isQuickPickMode) parts.push('Rápida');
+      else if (isMulticolumnMode) parts.push('Multi-columna');
+      else parts.push('Manual');
+    }
+    parts.push(drawTimeSummary);
+    return parts.join(' · ');
+  }, [availableModes.length, drawTimeSummary, isMulticolumnMode, isQuickPickMode, isQuiniela, mode]);
+
   // Auxiliares para botones de acción rápida
   const currentWeekDraws = useMemo(() => getDrawsForCurrentWeek(game.type, new Date()), [game.type]);
   const currentWeekDates = useMemo(() => currentWeekDraws.map(d => d.drawDate), [currentWeekDraws]);
@@ -459,7 +474,7 @@ export function GamePlayPage() {
   }, [isExplicitNationalProduct, isNationalLottery, selectedNationalDrawId, setNationalShowcaseDrawId]);
 
   useEffect(() => {
-    setIsTimeSelectorExpanded(false);
+    setIsConfigPanelOpen(false);
   }, [game.id, editingDraftId]);
 
   const toggleNumber = (n: number) => {
@@ -901,12 +916,30 @@ export function GamePlayPage() {
       />
 
       <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-2.5 p-4 pt-2">
-        {/* Draw time strip — Solo visible si NO hay selector de tiempo detallado para evitar duplicidad */}
-        {!supportsTimeSelection && (
+        {/* Lotería Nacional: selector de sorteo siempre expandido */}
+        {isNationalLottery && !supportsTimeSelection && (
           <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={drawsCount} />
         )}
 
-        {supportsTimeSelection && !isNationalLottery && !isTimeSelectorExpanded && (
+        {supportsTimeSelection && isNationalLottery && (
+          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
+            <div className="rounded-[1.2rem] border border-slate-200/50 bg-white/88 p-2.5 shadow-sm backdrop-blur-sm">
+              <div className="mb-2 flex items-center gap-2 px-0.5">
+                <Calendar className="w-3 h-3 text-manises-blue/40" />
+                <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Cuándo jugar</span>
+              </div>
+              <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={drawsCount} className="mb-2.5" />
+              <NationalDrawSelector
+                availableNationalDates={availableNationalDates}
+                effectiveSelectedDrawDates={effectiveSelectedDrawDates}
+                onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
+              />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Config bar — estado colapsado (solo juegos no-nacionales) */}
+        {!isNationalLottery && !isConfigPanelOpen && (
           <div className="flex items-center justify-between gap-2 rounded-[1.2rem] border border-slate-200/50 bg-white/88 px-3 py-2.5 shadow-sm">
             <div className="flex min-w-0 items-center gap-2">
               <span className={cn(
@@ -916,229 +949,208 @@ export function GamePlayPage() {
                 drawStatus.state === 'closed' && 'bg-slate-400',
               )} />
               <p className="truncate text-[11px] font-black text-manises-blue">
-                {drawTimeSummary}
+                {configSummary}
               </p>
             </div>
             <Button
               variant="ghost"
               size="sm"
               className="h-7 shrink-0 rounded-xl px-2.5 text-[9px] font-black uppercase tracking-wider text-manises-blue/60 hover:bg-manises-blue/5 hover:text-manises-blue"
-              onClick={() => setIsTimeSelectorExpanded(true)}
+              onClick={() => setIsConfigPanelOpen(true)}
             >
               Cambiar
             </Button>
           </div>
         )}
 
-        {supportsTimeSelection && (isNationalLottery || isTimeSelectorExpanded) && (
+        {/* Config panel — estado expandido (solo juegos no-nacionales) */}
+        {!isNationalLottery && isConfigPanelOpen && (
           <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
-            <div className="rounded-[1.2rem] border border-slate-200/50 bg-white/88 p-2.5 shadow-sm backdrop-blur-sm">
-              <div className="mb-2 flex items-center justify-between px-0.5">
+            <div className="space-y-2.5 rounded-[1.2rem] border border-slate-200/50 bg-white/88 p-2.5 shadow-sm backdrop-blur-sm">
+              <div className="flex items-center justify-between px-0.5">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-3 h-3 text-manises-blue/40" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Cuándo jugar</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Configuración</span>
                 </div>
-                {isTimeSelectorExpanded && (
-                  <button
-                    onClick={() => setIsTimeSelectorExpanded(false)}
-                    className="text-[9px] font-bold text-manises-blue/60 uppercase hover:text-manises-blue"
-                  >
-                    Cerrar
-                  </button>
-                )}
+                <button
+                  onClick={() => setIsConfigPanelOpen(false)}
+                  className="text-[9px] font-bold uppercase text-manises-blue/60 hover:text-manises-blue"
+                >
+                  Cerrar
+                </button>
               </div>
 
-              <DrawStatusPill
-                drawStatus={drawStatus}
-                selectedDrawsCount={drawsCount}
-                className="mb-2.5"
-              />
+              <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={drawsCount} />
 
-              {isNationalLottery ? (
-                <NationalDrawSelector
-                  availableNationalDates={availableNationalDates}
-                  effectiveSelectedDrawDates={effectiveSelectedDrawDates}
-                  onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
-                />
-              ) : (
-                <div className="space-y-3">
-                  {/* Acciones rápidas */}
-                  <div className="flex flex-wrap gap-1.5 px-0.5">
-                    {[
-                      { id: 'next_draw', label: 'Próximo' },
-                      { id: 'full_week', label: 'Esta semana' },
-                      { id: 'next_week', label: 'Próxima semana' },
-                      { id: 'two_weeks', label: '2 semanas' },
-                    ].map((opt) => {
-                      let isActive = false;
-                      if (opt.id === 'next_draw') isActive = timeMode === 'next_draw';
-                      else if (opt.id === 'full_week') isActive = timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates);
-                      else if (opt.id === 'next_week') isActive = areDatesEqual(effectiveSelectedDrawDates, nextWeekDates);
-                      else if (opt.id === 'two_weeks') isActive = timeMode === 'two_weeks' || areDatesEqual(effectiveSelectedDrawDates, twoWeeksDates);
-
-                      return (
-                        <button
-                          key={opt.id}
-                          onClick={() => {
-                            if (opt.id === 'next_week') {
-                              setTimeMode('specific_days');
-                              setSelectedDrawDates(nextWeekDates);
-                            } else if (opt.id === 'two_weeks') {
-                              setTimeMode('specific_days');
-                              setSelectedDrawDates(twoWeeksDates);
-                            } else {
-                              setTimeMode(opt.id as ScheduleMode);
-                              setSelectedDrawDates([]);
-                            }
-                          }}
-                          className={cn(
-                            "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border",
-                            isActive
-                              ? "bg-manises-blue text-white border-manises-blue shadow-sm"
-                              : "bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300"
-                          )}
-                        >
-                          {opt.label}
-                        </button>
-                      );
-                    })}
-                    <button
-                      onClick={() => {
-                        setTimeMode('specific_days');
-                        setSelectedDrawDates([]);
-                      }}
-                      className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200 hover:border-slate-300 ml-auto"
-                    >
-                      Limpiar
-                    </button>
-                  </div>
-
-                  {/* Selector multi-semana */}
-                  <div className="custom-scrollbar max-h-[220px] space-y-3 overflow-y-auto pr-1">
-                    {(Object.entries(groupedAllDraws) as [string, ScheduledDraw[]][]).map(([weekLabel, draws], index) => {
-                      const displayLabel = index === 0 ? 'Esta semana' : index === 1 ? 'Próxima semana' : weekLabel;
-                      return (
-                        <div key={weekLabel} className="space-y-2">
-                          <p className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 pl-1">
-                            {displayLabel}
-                          </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {draws.map((draw) => {
-                            const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
-                            return (
-                              <button
-                                key={draw.drawDate}
-                                onClick={() => {
-                                  setTimeMode('specific_days');
-                                  setSelectedDrawDates(prev =>
-                                    prev.includes(draw.drawDate)
-                                      ? prev.filter(d => d !== draw.drawDate)
-                                      : [...prev, draw.drawDate].sort()
-                                  );
-                                }}
-                                className={cn(
-                                  "relative flex min-w-[68px] flex-col items-center justify-center rounded-xl border px-2 py-1.5 transition-all",
-                                  isSelected
-                                    ? "bg-manises-blue/5 border-manises-blue shadow-[0_4px_12px_rgba(10,71,146,0.08)]"
-                                    : "bg-white border-slate-100 hover:border-slate-200"
-                                )}
-                              >
-                                {isSelected && (
-                                  <motion.div
-                                    layoutId="selected-draw-indicator"
-                                    className="absolute inset-0 rounded-xl border-2 border-manises-blue z-0"
-                                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                                  />
-                                )}
-                                <span className={cn(
-                                  "relative z-10 text-[9px] font-black uppercase tracking-tight",
-                                  isSelected ? "text-manises-blue" : "text-slate-400"
-                                )}>
-                                  {new Date(draw.drawDate).toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '')} · {formatDrawTime(draw.drawDate)}
-                                </span>
-                                <span className={cn(
-                                  "relative z-10 text-[11px] font-black",
-                                  isSelected ? "text-manises-blue" : "text-slate-600"
-                                )}>
-                                  {new Date(draw.drawDate).getDate()} {new Date(draw.drawDate).toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  </div>
-
-                  <p className="text-[10px] font-medium text-slate-400 px-1 italic">
-                    * Puedes combinar días sueltos de distintas semanas
-                  </p>
+              {availableModes.length > 1 && (
+                <div>
+                  <p className="mb-1 px-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">Tipo de jugada</p>
+                  <GameModeSelector
+                    gameType={game.type}
+                    availableModes={availableModes}
+                    currentMode={mode}
+                    onModeChange={(m) => {
+                      setMode(m);
+                      const nextReductionSystems = getReductionSystemsForMode(game.id, m);
+                      if (m === 'reduced' && nextReductionSystems.length > 0) {
+                        setSelectedReductionSystemId(nextReductionSystems[0].id);
+                      }
+                      handleClear();
+                      if (m !== 'simple') setIsMulticolumnMode(false);
+                      setIsConfigPanelOpen(false);
+                    }}
+                  />
                 </div>
               )}
 
+              {!isQuiniela && mode === 'simple' && (
+                <div>
+                  <p className="mb-1 px-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">Método</p>
+                  <div className="flex p-0.5 bg-slate-100/50 rounded-xl border border-slate-200/50">
+                    <button
+                      onClick={() => { setIsQuickPickMode(false); setIsMulticolumnMode(false); }}
+                      className={cn(
+                        "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
+                        !isQuickPickMode && !isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
+                      )}
+                    >
+                      Manual
+                    </button>
+                    <button
+                      onClick={() => { setIsQuickPickMode(true); setIsMulticolumnMode(false); setIsConfigPanelOpen(false); }}
+                      className={cn(
+                        "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
+                        isQuickPickMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
+                      )}
+                    >
+                      Rápida
+                    </button>
+                    <button
+                      onClick={() => { setIsQuickPickMode(false); setIsMulticolumnMode(true); setIsConfigPanelOpen(false); }}
+                      className={cn(
+                        "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
+                        isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
+                      )}
+                    >
+                      Multi-columna
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {supportsTimeSelection && (
+                <div>
+                  <p className="mb-1 px-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">Sorteo</p>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap gap-1.5 px-0.5">
+                      {[
+                        { id: 'next_draw', label: 'Próximo' },
+                        { id: 'full_week', label: 'Esta semana' },
+                        { id: 'next_week', label: 'Próxima semana' },
+                        { id: 'two_weeks', label: '2 semanas' },
+                      ].map((opt) => {
+                        let isActive = false;
+                        if (opt.id === 'next_draw') isActive = timeMode === 'next_draw';
+                        else if (opt.id === 'full_week') isActive = timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates);
+                        else if (opt.id === 'next_week') isActive = areDatesEqual(effectiveSelectedDrawDates, nextWeekDates);
+                        else if (opt.id === 'two_weeks') isActive = timeMode === 'two_weeks' || areDatesEqual(effectiveSelectedDrawDates, twoWeeksDates);
+                        return (
+                          <button
+                            key={opt.id}
+                            onClick={() => {
+                              if (opt.id === 'next_week') {
+                                setTimeMode('specific_days');
+                                setSelectedDrawDates(nextWeekDates);
+                              } else if (opt.id === 'two_weeks') {
+                                setTimeMode('specific_days');
+                                setSelectedDrawDates(twoWeeksDates);
+                              } else {
+                                setTimeMode(opt.id as ScheduleMode);
+                                setSelectedDrawDates([]);
+                              }
+                            }}
+                            className={cn(
+                              "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border",
+                              isActive
+                                ? "bg-manises-blue text-white border-manises-blue shadow-sm"
+                                : "bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300"
+                            )}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                      <button
+                        onClick={() => { setTimeMode('specific_days'); setSelectedDrawDates([]); }}
+                        className="ml-auto px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200 hover:border-slate-300"
+                      >
+                        Limpiar
+                      </button>
+                    </div>
+
+                    <div className="custom-scrollbar max-h-[220px] space-y-3 overflow-y-auto pr-1">
+                      {(Object.entries(groupedAllDraws) as [string, ScheduledDraw[]][]).map(([weekLabel, draws], index) => {
+                        const displayLabel = index === 0 ? 'Esta semana' : index === 1 ? 'Próxima semana' : weekLabel;
+                        return (
+                          <div key={weekLabel} className="space-y-2">
+                            <p className="pl-1 text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">{displayLabel}</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {draws.map((draw) => {
+                                const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
+                                return (
+                                  <button
+                                    key={draw.drawDate}
+                                    onClick={() => {
+                                      setTimeMode('specific_days');
+                                      setSelectedDrawDates(prev =>
+                                        prev.includes(draw.drawDate)
+                                          ? prev.filter(d => d !== draw.drawDate)
+                                          : [...prev, draw.drawDate].sort()
+                                      );
+                                    }}
+                                    className={cn(
+                                      "relative flex min-w-[68px] flex-col items-center justify-center rounded-xl border px-2 py-1.5 transition-all",
+                                      isSelected
+                                        ? "bg-manises-blue/5 border-manises-blue shadow-[0_4px_12px_rgba(10,71,146,0.08)]"
+                                        : "bg-white border-slate-100 hover:border-slate-200"
+                                    )}
+                                  >
+                                    {isSelected && (
+                                      <motion.div
+                                        layoutId="selected-draw-indicator"
+                                        className="absolute inset-0 rounded-xl border-2 border-manises-blue z-0"
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                      />
+                                    )}
+                                    <span className={cn(
+                                      "relative z-10 text-[9px] font-black uppercase tracking-tight",
+                                      isSelected ? "text-manises-blue" : "text-slate-400"
+                                    )}>
+                                      {new Date(draw.drawDate).toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '')} · {formatDrawTime(draw.drawDate)}
+                                    </span>
+                                    <span className={cn(
+                                      "relative z-10 text-[11px] font-black",
+                                      isSelected ? "text-manises-blue" : "text-slate-600"
+                                    )}>
+                                      {new Date(draw.drawDate).getDate()} {new Date(draw.drawDate).toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <p className="px-1 text-[10px] font-medium italic text-slate-400">
+                      * Puedes combinar días sueltos de distintas semanas
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
-        )}
-
-        {/* Selector de Modo (Solo si hay varios disponibles) */}
-        {!isNationalLottery && (
-          <GameModeSelector
-            gameType={game.type}
-            availableModes={availableModes}
-            currentMode={mode}
-            onModeChange={(m) => {
-              setMode(m);
-              const nextReductionSystems = getReductionSystemsForMode(game.id, m);
-              if (m === 'reduced' && nextReductionSystems.length > 0) {
-                setSelectedReductionSystemId(nextReductionSystems[0].id);
-              }
-              handleClear(); // Limpiar al cambiar de modo para evitar estados inconsistentes
-              if (m !== 'simple') setIsMulticolumnMode(false);
-            }}
-          />
-        )}
-
-        {/* Toggle de Modo (Manual / Rápida / Multi-columna) */}
-        {!isNationalLottery && !isQuiniela && mode === 'simple' && (
-          <div className="flex p-0.5 bg-slate-100/50 rounded-xl border border-slate-200/50">
-            <button
-              onClick={() => {
-                setIsQuickPickMode(false);
-                setIsMulticolumnMode(false);
-              }}
-              className={cn(
-                "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
-                !isQuickPickMode && !isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
-              )}
-            >
-              Manual
-            </button>
-            <button
-              onClick={() => {
-                setIsQuickPickMode(true);
-                setIsMulticolumnMode(false);
-              }}
-              className={cn(
-                "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
-                isQuickPickMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
-              )}
-            >
-              Rápida
-            </button>
-            <button
-              onClick={() => {
-                setIsQuickPickMode(false);
-                setIsMulticolumnMode(true);
-              }}
-              className={cn(
-                "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
-                isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
-              )}
-            >
-              Multi-columna
-            </button>
-          </div>
         )}
 
         {/* Advertencia de Saldo Insuficiente */}
@@ -1215,8 +1227,7 @@ export function GamePlayPage() {
                 ) : (
                   <>
                     {/* ---- Selección visual ---- */}
-                    <div className="surface-neo-soft flex flex-col items-center gap-2.5 rounded-[1.35rem] border border-white/70 p-2.5 shadow-[0_12px_28px_rgba(15,23,42,0.08)]" style={theme.surface}>
-                      {/* Números seleccionados */}
+                    <div className="surface-neo-soft flex flex-col items-center gap-2 rounded-[1.2rem] border border-white/70 p-2 shadow-sm" style={theme.surface}>
                       <div className="flex flex-wrap justify-center gap-1.5">
                         {(mode === 'reduced'
                           ? Array.from({ length: Math.max(minNums, selectedNumbers.length || minNums) })
@@ -1225,7 +1236,7 @@ export function GamePlayPage() {
                           <motion.div
                             key={`slot-${i}`}
                             animate={{ scale: selectedNumbers[i] ? 1 : 0.95 }}
-                            className={`flex h-[34px] w-[34px] items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedNumbers[i]
+                            className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedNumbers[i]
                                 ? 'shadow-sm'
                                 : 'bg-white border-dashed border-gray-200 text-gray-200'
                               }`}
@@ -1241,7 +1252,7 @@ export function GamePlayPage() {
                               <motion.div
                                 key={`star-slot-${i}`}
                                 animate={{ scale: selectedStars[i] ? 1 : 0.95 }}
-                                className={`flex h-[34px] w-[34px] items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedStars[i]
+                                className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedStars[i]
                                     ? 'bg-manises-gold border-manises-gold text-manises-blue shadow-gold'
                                     : 'bg-white border-dashed border-yellow-200 text-yellow-200'
                                   }`}
@@ -1253,21 +1264,20 @@ export function GamePlayPage() {
                         )}
                       </div>
 
-                      {/* Acciones */}
                       <div className="flex gap-1.5">
-                        <Button
-                          variant="outline" size="sm"
-                          className="h-7 rounded-lg border-gray-200 px-3 text-[9px] font-bold uppercase tracking-wider text-gray-500 hover:bg-gray-50"
-                          onClick={handleClear}
-                        >
-                          <RefreshCircle className="w-3 h-3 mr-1" /> Limpiar
-                        </Button>
                         <Button
                           variant="outline" size="sm"
                           className="h-7 rounded-lg border-manises-gold/50 px-3 text-[9px] font-bold uppercase tracking-wider text-manises-gold hover:bg-manises-gold/5"
                           onClick={handleRandom}
                         >
                           <Spark className="w-3 h-3 mr-1" /> Aleatorio
+                        </Button>
+                        <Button
+                          variant="outline" size="sm"
+                          className="h-7 rounded-lg border-gray-200 px-3 text-[9px] font-bold uppercase tracking-wider text-gray-500 hover:bg-gray-50"
+                          onClick={handleClear}
+                        >
+                          <RefreshCircle className="w-3 h-3 mr-1" /> Limpiar
                         </Button>
                       </div>
                     </div>
