@@ -17,7 +17,6 @@ import {
   Repeat2,
   Archive,
   ScrollText,
-  ReceiptText,
   Hash,
   Target,
   Maximize2,
@@ -247,6 +246,7 @@ export function TicketsPage() {
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
   const [archivedIds, setArchivedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<'all' | 'won' | 'lost'>('all');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [receiptTicket, setReceiptTicket] = useState<Ticket | null>(null);
   const [scrutinyState, setScrutinyState] = useState<ScrutinyState>(null);
 
@@ -326,37 +326,51 @@ export function TicketsPage() {
   return (
     <>
       <div className="flex min-h-full flex-col gap-3 overflow-x-hidden bg-background pb-24" ref={containerRef}>
-        <section className="tickets-header space-y-3 px-4 pt-4">
-          <div className="flex items-center justify-between">
-            <div>
+        <section className="tickets-header px-4 pt-4">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-manises-blue/[0.06]">
+                <TicketIcon className="h-3.5 w-3.5 text-manises-blue/70" />
+              </div>
               <h2 className="text-sm font-black uppercase tracking-widest text-manises-blue">Mis Jugadas</h2>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-manises-blue/5">
-              <TicketIcon className="h-5 w-5 text-manises-blue" />
-            </div>
+            <button
+              onClick={() => { setSearchOpen((v) => !v); if (searchOpen) setSearch(''); }}
+              className={cn(
+                'flex h-8 w-8 items-center justify-center rounded-xl transition-colors',
+                searchOpen ? 'bg-manises-blue text-white' : 'bg-manises-blue/[0.06] text-manises-blue/60 hover:bg-manises-blue/10 hover:text-manises-blue'
+              )}
+              aria-label={searchOpen ? 'Cerrar búsqueda' : 'Buscar jugadas'}
+              aria-expanded={searchOpen}
+            >
+              <Search className="h-3.5 w-3.5" />
+            </button>
           </div>
 
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-manises-blue/40" />
-            <Input
-              placeholder="Buscar por juego o número..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-11 rounded-2xl border-gray-100 bg-white pl-11 shadow-sm focus:ring-manises-blue/20"
-            />
-          </div>
+          {searchOpen && (
+            <div className="relative mt-2">
+              <Search className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-manises-blue/40" />
+              <Input
+                placeholder="Buscar por juego o número..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                autoFocus
+                className="h-10 rounded-xl border-gray-100 bg-white pl-10 text-sm shadow-sm focus:ring-manises-blue/20"
+              />
+            </div>
+          )}
         </section>
 
         <section className="tabs-container px-4">
-          <div className="flex gap-1 rounded-2xl border border-gray-100/50 bg-gray-100/50 p-1 backdrop-blur-md">
+          <div className="flex gap-1 rounded-xl border border-gray-100/60 bg-gray-50/90 p-1">
             {(['activos', 'historial'] as Tab[]).map((currentTab) => (
-              <PremiumTouchInteraction key={currentTab} scale={0.96} className="flex-1">
+              <PremiumTouchInteraction key={currentTab} scale={0.97} className="flex-1">
                 <button
                   onClick={() => { setTab(currentTab); setGameFilter('all'); }}
                   className={cn(
-                    'w-full rounded-xl py-2 text-[10px] font-black uppercase tracking-wider transition-all',
+                    'w-full rounded-lg py-1.5 text-[10px] font-black uppercase tracking-wider transition-all',
                     tab === currentTab
-                      ? 'scale-[1.02] bg-white text-manises-blue shadow-md'
+                      ? 'bg-white text-manises-blue shadow-sm'
                       : 'text-manises-blue/40 hover:text-manises-blue'
                   )}
                 >
@@ -367,73 +381,82 @@ export function TicketsPage() {
           </div>
         </section>
 
-        {availableGames.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4">
-            <button
-              onClick={() => setGameFilter('all')}
-              className={cn(
-                'shrink-0 inline-flex items-center px-3.5 py-1.5 rounded-xl border text-[11px] font-bold uppercase tracking-wider transition-all',
-                gameFilter === 'all'
-                  ? 'bg-manises-blue text-white border-manises-blue shadow-sm'
-                  : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25'
-              )}
-            >
-              Todos
-            </button>
-            {availableGames.map((g) => (
-              <button
-                key={g.id}
-                onClick={() => setGameFilter(g.id)}
-                className={cn(
-                  'shrink-0 inline-flex items-center px-3.5 py-1.5 rounded-xl border text-[11px] font-bold uppercase tracking-wider transition-all',
-                  gameFilter === g.id
-                    ? 'bg-manises-blue text-white border-manises-blue shadow-sm'
-                    : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25'
-                )}
-              >
-                {g.name}
-              </button>
-            ))}
-          </div>
-        )}
+        {(availableGames.length > 1 || tab === 'historial') && (
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide px-4 py-0.5">
+            {/* Chips por juego */}
+            {availableGames.length > 1 && (
+              <>
+                <button
+                  onClick={() => setGameFilter('all')}
+                  className={cn(
+                    'shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all',
+                    gameFilter === 'all'
+                      ? 'bg-manises-blue text-white border-manises-blue shadow-sm'
+                      : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25'
+                  )}
+                >
+                  Todos
+                </button>
+                {availableGames.map((g) => (
+                  <button
+                    key={g.id}
+                    onClick={() => setGameFilter(g.id)}
+                    className={cn(
+                      'shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all',
+                      gameFilter === g.id
+                        ? 'bg-manises-blue text-white border-manises-blue shadow-sm'
+                        : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25'
+                    )}
+                  >
+                    {g.name}
+                  </button>
+                ))}
+              </>
+            )}
 
-        {tab === 'historial' && (
-          <div className="flex gap-2 px-4">
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all',
-                statusFilter === 'all'
-                  ? 'bg-slate-800 text-white border-slate-800 shadow-sm'
-                  : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
-              )}
-            >
-              Todos
-            </button>
-            <button
-              onClick={() => setStatusFilter('won')}
-              className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all',
-                statusFilter === 'won'
-                  ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
-                  : 'bg-white text-emerald-500/60 border-emerald-100 hover:border-emerald-200'
-              )}
-            >
-              <Trophy className="h-3 w-3" />
-              Premiados
-            </button>
-            <button
-              onClick={() => setStatusFilter('lost')}
-              className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all',
-                statusFilter === 'lost'
-                  ? 'bg-slate-200 text-slate-700 border-slate-200 shadow-sm'
-                  : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
-              )}
-            >
-              <XCircle className="h-3 w-3" />
-              No premiados
-            </button>
+            {/* Separador y chips de estado (solo historial) */}
+            {tab === 'historial' && (
+              <>
+                {availableGames.length > 1 && (
+                  <div className="h-5 w-px shrink-0 self-center bg-slate-200/80 mx-0.5" />
+                )}
+                <button
+                  onClick={() => setStatusFilter('all')}
+                  className={cn(
+                    'shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition-all',
+                    statusFilter === 'all'
+                      ? 'bg-slate-700 text-white border-slate-700 shadow-sm'
+                      : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
+                  )}
+                >
+                  Todos
+                </button>
+                <button
+                  onClick={() => setStatusFilter('won')}
+                  className={cn(
+                    'shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition-all',
+                    statusFilter === 'won'
+                      ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                      : 'bg-white text-emerald-600/60 border-emerald-100 hover:border-emerald-200'
+                  )}
+                >
+                  <Trophy className="h-2.5 w-2.5" />
+                  Premiados
+                </button>
+                <button
+                  onClick={() => setStatusFilter('lost')}
+                  className={cn(
+                    'shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition-all',
+                    statusFilter === 'lost'
+                      ? 'bg-slate-200 text-slate-700 border-slate-200 shadow-sm'
+                      : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
+                  )}
+                >
+                  <XCircle className="h-2.5 w-2.5" />
+                  Sin premio
+                </button>
+              </>
+            )}
           </div>
         )}
 
@@ -538,7 +561,7 @@ export function TicketsPage() {
                           <button
                             type="button"
                             onClick={() => setExpandedIds((current) => current.includes(ticket.id) ? current.filter((id) => id !== ticket.id) : [...current, ticket.id])}
-                            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white text-manises-blue transition-all hover:border-manises-blue/20 hover:bg-manises-blue/[0.04]"
+                            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white text-manises-blue transition-all hover:border-manises-blue/20 hover:bg-manises-blue/[0.04]"
                             aria-expanded={isExpanded}
                             aria-label={isExpanded ? 'Ocultar detalle' : 'Mostrar detalle'}
                           >
@@ -564,11 +587,15 @@ export function TicketsPage() {
                                 ) : nationalTicket ? (
                                   <NationalDecimoCard ticket={ticket} displayNumber={ticketDisplayNumber} />
                                 ) : (
-                                  <div className="rounded-xl border border-white bg-white/90 p-3">
-                                    <p className="mb-2 text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Combinación</p>
-                                    <BallSelection 
-                                      numbers={ticket.numbers} 
-                                      stars={ticket.stars} 
+                                  <div className="rounded-xl border border-slate-100 bg-white/90 px-3 py-2.5">
+                                    {hasResolvedDraw && (
+                                      <p className="mb-2 text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
+                                        {totalHits > 0 ? `${totalHits} ${totalHits === 1 ? 'acierto' : 'aciertos'}` : 'Sin aciertos'}
+                                      </p>
+                                    )}
+                                    <BallSelection
+                                      numbers={ticket.numbers}
+                                      stars={ticket.stars}
                                       matchedNumbers={matched.numbers}
                                       matchedStars={matched.stars}
                                       type={game.type}
@@ -576,36 +603,21 @@ export function TicketsPage() {
                                   </div>
                                 )}
 
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div className="rounded-xl border border-white/50 bg-white/40 p-2">
-                                    <div className="flex items-center gap-1.5 text-slate-400">
-                                      <Hash className="h-3 w-3" />
-                                      <p className="text-[8px] font-black uppercase tracking-[0.14em]">Código</p>
-                                    </div>
-                                    <p className="mt-0.5 text-[11px] font-black text-manises-blue">{getTicketCode(ticket.id)}</p>
+                                <div className="flex items-center gap-2 rounded-xl bg-slate-50/80 px-3 py-2 border border-slate-100">
+                                  <div className="flex items-center gap-1">
+                                    <Hash className="h-3 w-3 shrink-0 text-slate-400" />
+                                    <span className="text-[10px] font-black text-manises-blue">{getTicketCode(ticket.id)}</span>
                                   </div>
-                                  <div className="rounded-xl border border-white/50 bg-white/40 p-2">
-                                    <div className="flex items-center gap-1.5 text-slate-400">
-                                      <ReceiptText className="h-3 w-3" />
-                                      <p className="text-[8px] font-black uppercase tracking-[0.14em]">Pedido</p>
-                                    </div>
-                                    <p className="mt-0.5 truncate text-[11px] font-black text-manises-blue">
-                                      {ticket.orderId ? ticket.orderId.slice(-8).toUpperCase() : 'Individual'}
-                                    </p>
-                                  </div>
-                                  <div className="rounded-xl border border-white/50 bg-white/40 p-2">
-                                    <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Creada</p>
-                                    <p className="mt-0.5 text-[11px] font-black text-manises-blue">{formatDate(ticket.createdAt)}</p>
-                                  </div>
-                                  <div className="rounded-xl border border-white/50 bg-white/40 p-2">
-                                    <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Extras</p>
-                                    <p className="mt-0.5 text-[11px] font-black text-manises-blue">
-                                      {[
-                                        ticket.hasInsurance ? 'Seguro' : null,
-                                        ticket.isSubscription ? 'Abono' : null,
-                                        !ticket.hasInsurance && !ticket.isSubscription ? 'Ninguno' : null
-                                      ].filter(Boolean).join(' · ')}
-                                    </p>
+                                  {(ticket.hasInsurance || ticket.isSubscription) && (
+                                    <>
+                                      <div className="h-3 w-px shrink-0 bg-slate-200" />
+                                      <span className="text-[10px] font-semibold text-slate-500">
+                                        {[ticket.hasInsurance ? 'Seguro' : null, ticket.isSubscription ? 'Abono' : null].filter(Boolean).join(' · ')}
+                                      </span>
+                                    </>
+                                  )}
+                                  <div className="ml-auto shrink-0 text-[9px] font-medium text-slate-400">
+                                    {formatCompactDate(ticket.createdAt)}
                                   </div>
                                 </div>
 
