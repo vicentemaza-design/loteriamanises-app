@@ -12,6 +12,7 @@ import {
   InfoCircle,
   WarningTriangle,
   Calendar,
+  ControlSlider,
 } from 'iconoir-react/regular';
 import { toast } from 'sonner';
 import { generateRandomPlay } from '@/features/play/services/play.service';
@@ -441,6 +442,20 @@ export function GamePlayPage() {
     parts.push(drawTimeSummary);
     return parts.join(' · ');
   }, [availableModes.length, drawTimeSummary, isMulticolumnMode, isQuickPickMode, isQuiniela, mode]);
+
+  const configMainLine = useMemo(() => {
+    const parts: string[] = [];
+    if (availableModes.length > 1) {
+      const modeLabels: Record<PlayMode, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
+      parts.push(modeLabels[mode]);
+    }
+    if (!isQuiniela && mode === 'simple') {
+      if (isQuickPickMode) parts.push('Rápida');
+      else if (isMulticolumnMode) parts.push('Multi-columna');
+      else parts.push('Manual');
+    }
+    return parts.length > 0 ? parts.join(' · ') : 'Jugada';
+  }, [availableModes.length, isMulticolumnMode, isQuickPickMode, isQuiniela, mode]);
 
   // Auxiliares para botones de acción rápida
   const currentWeekDraws = useMemo(() => getDrawsForCurrentWeek(game.type, new Date()), [game.type]);
@@ -940,41 +955,59 @@ export function GamePlayPage() {
 
         {/* Config bar — estado colapsado (solo juegos no-nacionales) */}
         {!isNationalLottery && !isConfigPanelOpen && (
-          <div className="flex items-center justify-between gap-2 rounded-[1.2rem] border border-slate-200/50 bg-white/88 px-3 py-2.5 shadow-sm">
-            <div className="flex min-w-0 items-center gap-2">
-              <span className={cn(
-                'h-1.5 w-1.5 shrink-0 rounded-full',
-                drawStatus.state === 'open' && 'bg-emerald-400',
-                drawStatus.state === 'closingSoon' && 'bg-amber-400',
-                drawStatus.state === 'closed' && 'bg-slate-400',
-              )} />
-              <p className="truncate text-[11px] font-black text-manises-blue">
-                {configSummary}
-              </p>
+          <button
+            onClick={() => setIsConfigPanelOpen(true)}
+            className="group w-full text-left rounded-[1.2rem] border border-slate-200/60 bg-white px-3.5 py-3 shadow-sm hover:border-manises-blue/20 hover:shadow-md transition-all active:scale-[0.99]"
+            aria-expanded={false}
+            aria-label="Abrir configuración de jugada"
+          >
+            <div className="flex items-center gap-3">
+              <div className={cn(
+                'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors',
+                drawStatus.state === 'open' ? 'bg-emerald-50 text-emerald-600' :
+                drawStatus.state === 'closingSoon' ? 'bg-amber-50 text-amber-600' :
+                'bg-slate-100 text-slate-400',
+              )}>
+                <ControlSlider className="w-4 h-4" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className={cn(
+                    'h-1.5 w-1.5 shrink-0 rounded-full',
+                    drawStatus.state === 'open' ? 'bg-emerald-400' :
+                    drawStatus.state === 'closingSoon' ? 'bg-amber-400' :
+                    'bg-slate-300',
+                  )} />
+                  <span className="text-[12px] font-black text-manises-blue leading-tight">
+                    {configMainLine}
+                  </span>
+                </div>
+                <p className="text-[10px] font-medium text-slate-400 truncate pl-3">
+                  {drawTimeSummary}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-xl bg-manises-blue/[0.06] px-3 py-2 text-[9px] font-black uppercase tracking-widest text-manises-blue/60 group-hover:bg-manises-blue/10 group-hover:text-manises-blue transition-colors">
+                Cambiar
+              </span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 shrink-0 rounded-xl px-2.5 text-[9px] font-black uppercase tracking-wider text-manises-blue/60 hover:bg-manises-blue/5 hover:text-manises-blue"
-              onClick={() => setIsConfigPanelOpen(true)}
-            >
-              Cambiar
-            </Button>
-          </div>
+          </button>
         )}
 
         {/* Config panel — estado expandido (solo juegos no-nacionales) */}
         {!isNationalLottery && isConfigPanelOpen && (
           <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
-            <div className="space-y-2.5 rounded-[1.2rem] border border-slate-200/50 bg-white/88 p-2.5 shadow-sm backdrop-blur-sm">
-              <div className="flex items-center justify-between px-0.5">
+            <div className="space-y-3 rounded-[1.2rem] border border-manises-blue/10 bg-white p-3 shadow-sm">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-3 h-3 text-manises-blue/40" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Configuración</span>
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-manises-blue/[0.06]">
+                    <ControlSlider className="w-3.5 h-3.5 text-manises-blue/60" />
+                  </div>
+                  <span className="text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue">Configurar jugada</span>
                 </div>
                 <button
                   onClick={() => setIsConfigPanelOpen(false)}
-                  className="text-[9px] font-bold uppercase text-manises-blue/60 hover:text-manises-blue"
+                  className="flex h-9 items-center justify-center rounded-xl px-3 text-[10px] font-bold uppercase tracking-widest text-manises-blue/60 hover:bg-manises-blue/[0.06] hover:text-manises-blue transition-colors"
+                  aria-label="Cerrar configuración"
                 >
                   Cerrar
                 </button>
@@ -984,7 +1017,7 @@ export function GamePlayPage() {
 
               {availableModes.length > 1 && (
                 <div>
-                  <p className="mb-1 px-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">Tipo de jugada</p>
+                  <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">Tipo de jugada</p>
                   <GameModeSelector
                     gameType={game.type}
                     availableModes={availableModes}
@@ -1005,12 +1038,12 @@ export function GamePlayPage() {
 
               {!isQuiniela && mode === 'simple' && (
                 <div>
-                  <p className="mb-1 px-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">Método</p>
-                  <div className="flex p-0.5 bg-slate-100/50 rounded-xl border border-slate-200/50">
+                  <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">Método</p>
+                  <div className="flex p-1 bg-slate-100/70 rounded-xl border border-slate-200/50">
                     <button
                       onClick={() => { setIsQuickPickMode(false); setIsMulticolumnMode(false); }}
                       className={cn(
-                        "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
+                        "flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
                         !isQuickPickMode && !isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
                       )}
                     >
@@ -1019,7 +1052,7 @@ export function GamePlayPage() {
                     <button
                       onClick={() => { setIsQuickPickMode(true); setIsMulticolumnMode(false); setIsConfigPanelOpen(false); }}
                       className={cn(
-                        "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
+                        "flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
                         isQuickPickMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
                       )}
                     >
@@ -1028,7 +1061,7 @@ export function GamePlayPage() {
                     <button
                       onClick={() => { setIsQuickPickMode(false); setIsMulticolumnMode(true); setIsConfigPanelOpen(false); }}
                       className={cn(
-                        "flex-1 py-1.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
+                        "flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
                         isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
                       )}
                     >
@@ -1040,7 +1073,7 @@ export function GamePlayPage() {
 
               {supportsTimeSelection && (
                 <div>
-                  <p className="mb-1 px-0.5 text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">Sorteo</p>
+                  <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">Sorteo</p>
                   <div className="space-y-3">
                     <div className="flex flex-wrap gap-1.5 px-0.5">
                       {[
@@ -1481,7 +1514,7 @@ export function GamePlayPage() {
                   ? 'border border-manises-blue/15 bg-white/80 text-manises-blue'
                   : 'border border-manises-blue/10 bg-manises-blue/[0.05] text-manises-blue/80'
               )}>
-                {isSubscription ? (isNationalLottery ? 'Abono activado en esta simulación' : 'Abono activado en esta compra') : 'Actívalo con un toque'}
+                {isSubscription ? 'Abono activado en esta simulación' : 'Actívalo con un toque'}
               </span>
               <span className="inline-flex items-center rounded-full border border-slate-200 bg-white/80 px-2.5 py-1 text-[10px] font-bold text-slate-500">
                 Sin permanencia
