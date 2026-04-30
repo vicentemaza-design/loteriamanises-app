@@ -11,7 +11,7 @@ import { NationalCartSummary } from './NationalCartSummary';
 import { NationalDeliverySelector, type DeliveryMode } from './NationalDeliverySelector';
 import { NationalDrawSelector } from './NationalDrawSelector';
 import { NationalReservationCard } from './NationalReservationCard';
-import { DrawStatusPill } from '../../draw-status/components/DrawStatusPill';
+
 import type {
   NationalShowcaseItem,
   NationalCartLine,
@@ -64,6 +64,17 @@ interface NationalAdvancedFlowProps {
   onChangeNationalQuantity: (quantity: number) => void;
   onRandomNationalNumber: () => void;
   onClear: () => void;
+}
+
+function formatDrawMoment(iso: string): string {
+  const d = new Date(iso);
+  const weekday = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
+  const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return `${weekday} ${time}`;
+}
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 export function NationalAdvancedFlow({
@@ -158,19 +169,18 @@ export function NationalAdvancedFlow({
             animate={{ opacity: 1, y: 0 }}
             className="mt-3 space-y-3"
           >
-            <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={1} />
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-1 text-[10px] font-semibold text-slate-500">
+              <span>Sorteo {formatDrawMoment(drawStatus.drawDate)}</span>
+              <span className="text-slate-300">·</span>
+              <span>{drawStatus.isDemoCutoff ? 'Límite demo' : 'Límite'} {formatTime(drawStatus.salesCloseAt)}</span>
+            </div>
 
             {supportsTimeSelection && availableNationalDates.length > 0 && (
-              <div className="rounded-[1.2rem] border border-slate-200/50 bg-white p-3 shadow-sm">
-                <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
-                  Fecha del sorteo
-                </p>
-                <NationalDrawSelector
-                  availableNationalDates={availableNationalDates}
-                  effectiveSelectedDrawDates={effectiveSelectedDrawDates}
-                  onSelectDate={onSelectDate}
-                />
-              </div>
+              <NationalDrawSelector
+                availableNationalDates={availableNationalDates}
+                effectiveSelectedDrawDates={effectiveSelectedDrawDates}
+                onSelectDate={onSelectDate}
+              />
             )}
 
             <NationalDeliverySelector
