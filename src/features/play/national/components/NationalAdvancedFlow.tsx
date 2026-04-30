@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@/shared/ui/Button';
-import { Spark } from 'iconoir-react/regular';
+import { Spark, ControlSlider } from 'iconoir-react/regular';
+import { cn, formatDate } from '@/shared/lib/utils';
 import { NationalTicketVisual, type NationalDrawType } from '@/features/play/components/NationalTicketVisual';
 import { NationalSearchBar } from './NationalSearchBar';
 import { NationalNumberShowcase } from './NationalNumberShowcase';
@@ -9,11 +10,11 @@ import { NationalTicketQuantitySelector } from './NationalTicketQuantitySelector
 import { NationalCartSummary } from './NationalCartSummary';
 import { NationalDeliverySelector, type DeliveryMode } from './NationalDeliverySelector';
 import { NationalReservationCard } from './NationalReservationCard';
-import type { 
-  NationalShowcaseItem, 
-  NationalCartLine, 
-  NationalOrderBreakdown, 
-  NationalSearchState 
+import type {
+  NationalShowcaseItem,
+  NationalCartLine,
+  NationalOrderBreakdown,
+  NationalSearchState
 } from '../contracts/national-play.contract';
 import type { LotteryGame } from '@/shared/types/domain';
 import { toast } from 'sonner';
@@ -33,16 +34,14 @@ interface NationalAdvancedFlowProps {
   selectedNationalQuantity: number;
   maxNationalQuantity: number;
   drawsCount: number;
-  
-  // Showcase state/actions
+
   nationalShowcase: {
     items: NationalShowcaseItem[];
     count: number;
     searchState: NationalSearchState;
     setSearchState: (state: NationalSearchState) => void;
   };
-  
-  // Cart state/actions
+
   nationalCart: {
     lines: NationalCartLine[];
     breakdown: NationalOrderBreakdown;
@@ -59,10 +58,6 @@ interface NationalAdvancedFlowProps {
   onClear: () => void;
 }
 
-/**
- * Flujo avanzado de Lotería Nacional (Refinado en Fase 3B.4).
- * Incluye reserva demo, entrega, buscador y escaparate.
- */
 export function NationalAdvancedFlow({
   game,
   selectedNationalDraw,
@@ -79,6 +74,7 @@ export function NationalAdvancedFlow({
 }: NationalAdvancedFlowProps) {
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
   const [mockReservation, setMockReservation] = useState<{ number: string; drawLabel: string; drawDate: string } | null>(null);
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
 
   const handleReserve = () => {
     if (!selectedNationalNumber) return;
@@ -90,45 +86,67 @@ export function NationalAdvancedFlow({
     toast.success(`Reserva demo preparada para el nº ${selectedNationalNumber}`);
   };
 
-  const drawType: NationalDrawType = game.id === 'loteria-navidad' ? 'navidad' : 
-                                   game.id === 'loteria-nino' ? 'nino' : 'ordinary';
+  const drawType: NationalDrawType = game.id === 'loteria-navidad' ? 'navidad' :
+                                     game.id === 'loteria-nino' ? 'nino' : 'ordinary';
+
+  const deliveryLabel = deliveryMode === 'custody' ? 'Custodia digital' : 'Mensajería';
 
   return (
     <div className="space-y-5">
-      {/* 1. Selector de Entrega (Decisión previa compacta) */}
+      {/* 1. Config compacto (sorteo + entrega) */}
       <section className="stagger-item">
-        <NationalDeliverySelector 
-          selectedMode={deliveryMode} 
-          onChange={setDeliveryMode} 
-        />
-      </section>
+        <button
+          onClick={() => setIsConfigOpen(!isConfigOpen)}
+          className="group w-full text-left rounded-[1.2rem] border border-slate-200/60 bg-white px-3.5 py-3 shadow-sm hover:border-manises-blue/20 hover:shadow-md transition-all active:scale-[0.99]"
+          aria-expanded={isConfigOpen}
+          aria-label="Configurar sorteo y entrega"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-manises-blue/[0.06]">
+              <ControlSlider className="w-4 h-4 text-manises-blue/60" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="text-[12px] font-black text-manises-blue leading-tight">
+                {selectedNationalDraw.label}
+              </span>
+              <p className="mt-0.5 text-[10px] font-medium text-slate-400 truncate">
+                {formatDate(selectedNationalDraw.nextDraw)} · {deliveryLabel}
+              </p>
+            </div>
+            <span className={cn(
+              'shrink-0 rounded-xl px-3 py-2 text-[9px] font-black uppercase tracking-widest transition-colors',
+              isConfigOpen
+                ? 'bg-manises-blue/10 text-manises-blue'
+                : 'bg-manises-blue/[0.06] text-manises-blue/60 group-hover:bg-manises-blue/10 group-hover:text-manises-blue'
+            )}>
+              {isConfigOpen ? 'Cerrar' : 'Cambiar'}
+            </span>
+          </div>
+        </button>
 
-      {/* 2. Buscador Protagonista */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="font-black text-sm text-manises-blue">Busca tu número</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-slate-400"
-            onClick={onClear}
+        {isConfigOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-3"
           >
-            Limpiar filtros
-          </Button>
-        </div>
-
-        <NationalSearchBar
-          searchState={nationalShowcase.searchState}
-          onChange={nationalShowcase.setSearchState}
-        />
+            <NationalDeliverySelector
+              selectedMode={deliveryMode}
+              onChange={(mode) => { setDeliveryMode(mode); setIsConfigOpen(false); }}
+            />
+          </motion.div>
+        )}
       </section>
 
-      {/* 3. Escaparate visible rápido */}
-      <section className="space-y-3">
+      {/* 2. Escaparate — protagonista */}
+      <section className="space-y-3 stagger-item">
         <div className="flex items-center justify-between px-1">
-          <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-            Escaparate demo ({nationalShowcase.count} números)
-          </p>
+          <div>
+            <h2 className="font-black text-sm text-manises-blue">Elige tu décimo</h2>
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              {nationalShowcase.count} {nationalShowcase.count === 1 ? 'número disponible' : 'números disponibles'}
+            </p>
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -147,10 +165,30 @@ export function NationalAdvancedFlow({
         />
       </section>
 
-      {/* 4. Visual del Décimo (Solo cuando hay selección o como bloque secundario) */}
+      {/* 3. Búsqueda y filtros */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="font-black text-sm text-manises-blue">Busca por número</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-slate-400"
+            onClick={onClear}
+          >
+            Limpiar filtros
+          </Button>
+        </div>
+
+        <NationalSearchBar
+          searchState={nationalShowcase.searchState}
+          onChange={nationalShowcase.setSearchState}
+        />
+      </section>
+
+      {/* 4. Décimo seleccionado */}
       {selectedNationalNumber && (
         <section className="space-y-3 border-t border-slate-100 pt-3">
-           <div>
+          <div>
             <h2 className="font-black text-sm text-manises-blue">Tu décimo seleccionado</h2>
             <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-manises-blue/50">
               Personaliza la cantidad de décimos iguales
@@ -185,7 +223,7 @@ export function NationalAdvancedFlow({
         </section>
       )}
 
-      {/* 4.5 Reservas Demo */}
+      {/* 5. Reserva demo */}
       {mockReservation && (
         <section className="stagger-item">
           <NationalReservationCard
@@ -197,7 +235,7 @@ export function NationalAdvancedFlow({
         </section>
       )}
 
-      {/* 5. Cesta Clara Después */}
+      {/* 6. Cesta nacional */}
       <NationalCartSummary
         lines={nationalCart.lines}
         breakdown={nationalCart.breakdown}
