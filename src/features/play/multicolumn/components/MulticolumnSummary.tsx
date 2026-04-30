@@ -36,10 +36,10 @@ export function MulticolumnSummary({
         onClick={onReview}
         disabled={!summary.isValid}
       >
-        Añadir boleto multi-columna ({summary.completeColumns})
+        Añadir boleto · {summary.completeColumns} {summary.completeColumns === 1 ? 'bloque' : 'bloques'}
       </Button>
       <p className="text-[10px] text-center font-medium text-slate-400">
-        Cada columna completa se añadirá como una jugada individual
+        Cada bloque completado se añade como una apuesta
       </p>
     </div>
   );

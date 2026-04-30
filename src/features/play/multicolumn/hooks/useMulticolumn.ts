@@ -106,6 +106,21 @@ export function useMulticolumn(
     }));
   }, []);
 
+  /** Elimina la columna en el índice dado. No actúa si solo queda 1 columna. */
+  const removeColumn = useCallback((index: number) => {
+    setState((prev) => {
+      if (prev.columns.length <= 1) return prev;
+      const nextColumns = prev.columns.filter((_, i) => i !== index);
+      const nextActive = Math.min(prev.activeColumnIndex, nextColumns.length - 1);
+      return {
+        ...prev,
+        columns: nextColumns,
+        activeColumnIndex: nextActive,
+        visibleColumnsCount: prev.visibleColumnsCount - 1,
+      };
+    });
+  }, []);
+
   return {
     state,
     summary,
@@ -116,5 +131,6 @@ export function useMulticolumn(
     randomizeActiveColumn,
     randomizeAllColumns,
     addColumn,
+    removeColumn,
   };
 }
