@@ -1,28 +1,32 @@
 import { Button } from '@/shared/ui/Button';
-import { RefreshCircle, Spark } from 'iconoir-react/regular';
+import { RefreshCircle, Spark, Trash } from 'iconoir-react/regular';
 
 interface MulticolumnActionsProps {
   onClearColumn: () => void;
   onClearAll: () => void;
   onRandomColumn: () => void;
   onRandomAll: () => void;
+  onRemoveColumn?: () => void;
+  canRemoveColumn?: boolean;
   activeColor: string;
 }
 
 /**
- * Acciones rápidas para el flujo multi-columna.
- * Permite gestionar la columna activa o el boleto completo.
+ * Acciones rápidas para el flujo multi-bloque.
+ * Permite gestionar el bloque activo o el boleto completo.
  */
 export function MulticolumnActions({
   onClearColumn,
   onClearAll,
   onRandomColumn,
   onRandomAll,
+  onRemoveColumn,
+  canRemoveColumn = false,
   activeColor,
 }: MulticolumnActionsProps) {
   return (
     <div className="space-y-4">
-      {/* Acciones Columna Activa */}
+      {/* Acciones Bloque Activo */}
       <div className="flex items-center justify-between px-1">
         <h3 className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
           Bloque actual
@@ -46,6 +50,24 @@ export function MulticolumnActions({
           </Button>
         </div>
       </div>
+
+      {/* Eliminar bloque — solo si hay más de 1 */}
+      {canRemoveColumn && onRemoveColumn && (
+        <div className="flex items-center justify-between px-1 pt-2 border-t border-slate-100">
+          <h3 className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+            Gestión
+          </h3>
+          <Button
+            variant="ghost" size="sm"
+            aria-label="Eliminar bloque"
+            className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-rose-400 hover:bg-rose-50 hover:text-rose-500"
+            onClick={onRemoveColumn}
+          >
+            <Trash className="w-3 h-3 mr-1" />
+            Eliminar bloque
+          </Button>
+        </div>
+      )}
 
       {/* Acciones Globales */}
       <div className="flex items-center justify-between px-1 pt-2 border-t border-slate-100">

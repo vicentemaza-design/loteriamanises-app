@@ -38,6 +38,7 @@ export function MulticolumnTicketFlow({
     randomizeActiveColumn,
     randomizeAllColumns,
     addColumn,
+    removeColumn,
   } = useMulticolumn(game, initialColumnsCount, drawDates.length);
 
   const theme = useMemo(() => getGameTheme(game), [game]);
@@ -141,6 +142,8 @@ export function MulticolumnTicketFlow({
           onClearAll={clearAllColumns}
           onRandomColumn={randomizeActiveColumn}
           onRandomAll={randomizeAllColumns}
+          onRemoveColumn={() => removeColumn(state.activeColumnIndex)}
+          canRemoveColumn={state.columns.length > 1}
           activeColor={game.color}
         />
       </section>
