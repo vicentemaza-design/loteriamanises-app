@@ -6,9 +6,9 @@ import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInterac
 
 const navItems = [
   { icon: Home,        label: 'Inicio',      path: '/home' },
-  { icon: JournalPage, label: 'Mis jugadas', path: '/tickets' },
-  { icon: ViewGrid,    label: 'Juegos',      path: '/games' },
   { icon: Trophy,      label: 'Resultados',  path: '/results' },
+  { icon: ViewGrid,    label: 'Juegos',      path: '/games' },
+  { icon: JournalPage, label: 'Mis jugadas', path: '/tickets' },
   { icon: User,        label: 'Perfil',      path: '/profile' },
 ];
 
