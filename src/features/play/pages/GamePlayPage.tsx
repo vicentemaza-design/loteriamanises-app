@@ -873,7 +873,7 @@ export function GamePlayPage() {
       if (isNationalLottery) return editingDraft ? 'Actualizar' : 'Añadir décimo';
       return editingDraft ? 'Actualizar' : 'Añadir jugada';
     }
-    if (isMulticolumnMode) return 'Revisa las columnas';
+    if (isMulticolumnMode) return 'Añadir boleto';
     if (isNationalLottery) return 'Elige un décimo';
     if (isQuiniela) return 'Completa el pronóstico';
     if (mode === 'reduced' && !isSupportedReducedSelection) return 'Completa la reducida';
@@ -1048,7 +1048,7 @@ export function GamePlayPage() {
                         isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
                       )}
                     >
-                      Multi-columna
+                      Varios bloques
                     </button>
                   </div>
                 </div>
@@ -1567,7 +1567,7 @@ export function GamePlayPage() {
               <div className="border-t border-slate-100/50 px-1 pt-1.5">
                 <p className="text-[9px] font-bold text-slate-400 uppercase text-center leading-tight">
                   {isMulticolumnMode
-                    ? 'Revisa las columnas para añadir'
+                    ? 'Completa al menos un bloque'
                     : isNationalLottery
                       ? 'Elige un décimo del escaparate'
                       : isQuiniela

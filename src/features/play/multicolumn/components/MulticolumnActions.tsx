@@ -25,7 +25,7 @@ export function MulticolumnActions({
       {/* Acciones Columna Activa */}
       <div className="flex items-center justify-between px-1">
         <h3 className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-          Columna actual
+          Bloque actual
         </h3>
         <div className="flex gap-2">
           <Button

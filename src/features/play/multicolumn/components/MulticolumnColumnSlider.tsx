@@ -38,7 +38,7 @@ export function MulticolumnColumnSlider({
             style={isActive ? { borderColor: activeColor, color: activeColor } : undefined}
           >
             <span className="text-[10px] font-black uppercase tracking-tighter opacity-70">
-              Col
+              Blq
             </span>
             <span className="text-sm font-black leading-none">
               {i + 1}
