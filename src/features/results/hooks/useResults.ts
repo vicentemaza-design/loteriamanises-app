@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createApiClient } from '@/services/api/factory/createApiClient';
 import { resultsMapper } from '@/services/api/mappers/results.mapper';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
+import type { ResultDto } from '@/services/api/contracts/results.contracts';
 
 /**
  * useResults Hook
@@ -9,7 +10,7 @@ import { FEATURE_FLAGS } from '@/config/featureFlags';
  * Abstracts the data source and provides loading/error states.
  */
 export function useResults() {
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<ResultDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
