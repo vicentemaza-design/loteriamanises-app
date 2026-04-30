@@ -92,14 +92,86 @@ export function NationalAdvancedFlow({
   const deliveryLabel = deliveryMode === 'custody' ? 'Custodia digital' : 'Mensajería';
 
   return (
-    <div className="space-y-5">
-      {/* 1. Config compacto (sorteo + entrega) */}
+    <div className="space-y-6">
+      {/* 1. Cabecera — título igual que en main */}
+      <section className="flex flex-col gap-5">
+        <div>
+          <h2 className="font-black text-base text-manises-blue">Configuración de tu jugada</h2>
+          <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-manises-blue/70">
+            Visualiza y personaliza tu décimo
+          </p>
+        </div>
+
+        {/* 2. Décimo visual — protagonista, siempre visible */}
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="stagger-item"
+        >
+          <NationalTicketVisual
+            number={selectedNationalNumber}
+            drawLabel={selectedNationalDraw.label}
+            drawDate={selectedNationalDraw.nextDraw}
+            price={selectedNationalDraw.decimoPrice}
+            gameId={game.id}
+            drawType={drawType}
+          />
+        </motion.div>
+      </section>
+
+      {/* 3. Selector de números — "Números en administración" */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="font-black text-sm text-manises-blue">Números en administración</h2>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-slate-400"
+              onClick={onClear}
+            >
+              Limpiar
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest border-manises-gold/40 text-manises-gold bg-manises-gold/5"
+              onClick={onRandomNationalNumber}
+            >
+              <Spark className="w-3 h-3 mr-1" />
+              Aleatorio
+            </Button>
+          </div>
+        </div>
+
+        <NationalNumberShowcase
+          items={nationalShowcase.items}
+          selectedNumber={selectedNationalNumber}
+          onSelect={onSelectNationalNumber}
+        />
+      </section>
+
+      {/* 4. Cantidad y acciones — solo cuando hay número seleccionado */}
+      {selectedNationalNumber && (
+        <NationalTicketQuantitySelector
+          selectedNumber={selectedNationalNumber}
+          selectedQuantity={selectedNationalQuantity}
+          maxQuantity={maxNationalQuantity}
+          decimoPrice={selectedNationalDraw.decimoPrice}
+          firstPrize={selectedNationalDraw.firstPrize}
+          onQuantityChange={onChangeNationalQuantity}
+          onAddToCart={() => nationalCart.addSelectedToCart(deliveryMode)}
+          onReserve={handleReserve}
+        />
+      )}
+
+      {/* 5. Configuración de entrega — secundaria, colapsable */}
       <section className="stagger-item">
         <button
           onClick={() => setIsConfigOpen(!isConfigOpen)}
           className="group w-full text-left rounded-[1.2rem] border border-slate-200/60 bg-white px-3.5 py-3 shadow-sm hover:border-manises-blue/20 hover:shadow-md transition-all active:scale-[0.99]"
           aria-expanded={isConfigOpen}
-          aria-label="Configurar sorteo y entrega"
+          aria-label="Configurar tipo de entrega"
         >
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-manises-blue/[0.06]">
@@ -107,10 +179,10 @@ export function NationalAdvancedFlow({
             </div>
             <div className="min-w-0 flex-1">
               <span className="text-[12px] font-black text-manises-blue leading-tight">
-                {selectedNationalDraw.label}
+                Tipo de entrega
               </span>
               <p className="mt-0.5 text-[10px] font-medium text-slate-400 truncate">
-                {formatDate(selectedNationalDraw.nextDraw)} · {deliveryLabel}
+                {deliveryLabel} · {formatDate(selectedNationalDraw.nextDraw)}
               </p>
             </div>
             <span className={cn(
@@ -138,34 +210,7 @@ export function NationalAdvancedFlow({
         )}
       </section>
 
-      {/* 2. Escaparate — protagonista */}
-      <section className="space-y-3 stagger-item">
-        <div className="flex items-center justify-between px-1">
-          <div>
-            <h2 className="font-black text-sm text-manises-blue">Elige tu décimo</h2>
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              {nationalShowcase.count} {nationalShowcase.count === 1 ? 'número disponible' : 'números disponibles'}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest border-manises-gold/40 text-manises-gold bg-manises-gold/5"
-            onClick={onRandomNationalNumber}
-          >
-            <Spark className="w-3 h-3 mr-1" />
-            Aleatorio
-          </Button>
-        </div>
-
-        <NationalNumberShowcase
-          items={nationalShowcase.items}
-          selectedNumber={selectedNationalNumber}
-          onSelect={onSelectNationalNumber}
-        />
-      </section>
-
-      {/* 3. Búsqueda y filtros */}
+      {/* 6. Búsqueda y filtros — secundaria */}
       <section className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h2 className="font-black text-sm text-manises-blue">Busca por número</h2>
@@ -185,45 +230,7 @@ export function NationalAdvancedFlow({
         />
       </section>
 
-      {/* 4. Décimo seleccionado */}
-      {selectedNationalNumber && (
-        <section className="space-y-3 border-t border-slate-100 pt-3">
-          <div>
-            <h2 className="font-black text-sm text-manises-blue">Tu décimo seleccionado</h2>
-            <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-manises-blue/50">
-              Personaliza la cantidad de décimos iguales
-            </p>
-          </div>
-
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="stagger-item"
-          >
-            <NationalTicketVisual
-              number={selectedNationalNumber}
-              drawLabel={selectedNationalDraw.label}
-              drawDate={selectedNationalDraw.nextDraw}
-              price={selectedNationalDraw.decimoPrice}
-              gameId={game.id}
-              drawType={drawType}
-            />
-          </motion.div>
-
-          <NationalTicketQuantitySelector
-            selectedNumber={selectedNationalNumber}
-            selectedQuantity={selectedNationalQuantity}
-            maxQuantity={maxNationalQuantity}
-            decimoPrice={selectedNationalDraw.decimoPrice}
-            firstPrize={selectedNationalDraw.firstPrize}
-            onQuantityChange={onChangeNationalQuantity}
-            onAddToCart={() => nationalCart.addSelectedToCart(deliveryMode)}
-            onReserve={handleReserve}
-          />
-        </section>
-      )}
-
-      {/* 5. Reserva demo */}
+      {/* 7. Reserva demo */}
       {mockReservation && (
         <section className="stagger-item">
           <NationalReservationCard
@@ -235,7 +242,7 @@ export function NationalAdvancedFlow({
         </section>
       )}
 
-      {/* 6. Cesta nacional */}
+      {/* 8. Cesta nacional */}
       <NationalCartSummary
         lines={nationalCart.lines}
         breakdown={nationalCart.breakdown}
