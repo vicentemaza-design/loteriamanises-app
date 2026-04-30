@@ -121,7 +121,11 @@ export function GamePlayPage() {
 
   // Features Laguinda Style
   const [isSubscription, setIsSubscription] = useState(false);
-  const [isMulticolumnMode, setIsMulticolumnMode] = useState(false);
+  const [isMulticolumnMode, setIsMulticolumnMode] = useState(() => {
+    if (!game) return false;
+    const isNat = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
+    return !isNat && game.id !== 'quiniela' && Boolean(game.selectionRange?.numbers);
+  });
   const [isQuickPickMode, setIsQuickPickMode] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
@@ -168,7 +172,7 @@ export function GamePlayPage() {
     setSelectedStars([]);
     setSelectedNationalNumber(null);
     setSelectedNationalQuantity(1);
-    setIsMulticolumnMode(false);
+    setIsMulticolumnMode(!isNationalLottery && !isQuiniela && Boolean(game?.selectionRange?.numbers));
 
     // Sincronizar sorteo nacional por defecto
     if (gameId === 'loteria-nacional-jueves') setSelectedNationalDrawId('jueves');

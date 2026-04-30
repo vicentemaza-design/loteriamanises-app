@@ -73,8 +73,11 @@ export function MulticolumnTicketFlow({
       {/* Selector de apuestas */}
       <section className="space-y-2">
         <div className="flex items-center justify-between px-1">
-          <h2 className="font-black text-sm text-manises-blue">Boleto {game.name}</h2>
-          <span className="text-[10px] font-medium text-slate-400">{counterLabel}</span>
+          <div>
+            <h2 className="font-black text-sm text-manises-blue">Boleto {game.name}</h2>
+            <p className="text-[10px] font-medium text-slate-400 mt-0.5">Rellena una o varias apuestas manuales</p>
+          </div>
+          <span className="text-[10px] font-medium text-slate-400 shrink-0 ml-2">{counterLabel}</span>
         </div>
         <MulticolumnColumnSlider
           columnsCount={blockCount}
