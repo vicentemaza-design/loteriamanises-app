@@ -112,7 +112,7 @@ export function MulticolumnTicketFlow({
         </div>
 
         {maxStars > 0 && (
-          <div className="rounded-2xl p-3" style={theme.surface}>
+          <div className="rounded-2xl p-3 pb-6" style={theme.surface}>
             <StarsGrid
               starValues={Array.from(
                 { length: totalStars },
