@@ -141,7 +141,7 @@ export function ResultsPage() {
               <button
                 onClick={() => setActiveFilter(filter.key)}
                 className={cn(
-                  'filter-chip inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap border transition-all shrink-0 uppercase tracking-widest',
+                  'filter-chip inline-flex items-center gap-1.5 text-[10px] font-bold px-3 py-1 rounded-lg whitespace-nowrap border transition-all shrink-0 uppercase tracking-widest',
                   isActive
                     ? 'bg-manises-blue text-white border-manises-blue shadow-sm'
                     : 'bg-white text-manises-blue/60 border-manises-blue/5 hover:border-manises-blue/20'
@@ -200,24 +200,16 @@ export function ResultsPage() {
           return (
             <div
               key={`${result.gameId}-${result.date}`}
-              className="result-card bg-card rounded-2xl border border-white/80 overflow-hidden surface-neo-soft"
+              className="result-card relative bg-card rounded-2xl border border-white/80 overflow-hidden surface-neo-soft"
             >
-              <div className="h-0.5" style={{ backgroundColor: game.color }} />
+              <div className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: game.color }} />
 
-              <div className="px-3 py-2.5" style={{ ...theme.surface, backgroundImage: `linear-gradient(to right, ${game.color}0A, transparent 55%)` }}>
-                <div className="flex items-center justify-between mb-2">
+              <div className="px-3 py-2 pl-3.5" style={{ ...theme.surface, backgroundImage: `linear-gradient(to right, ${game.color}0A, transparent 55%)` }}>
+                <div className="flex items-center justify-between mb-1.5">
                   <div className="flex min-w-0 items-center gap-2">
                     <GameBadge game={game} size="sm" />
                     <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-[11px] font-black leading-tight text-manises-blue">{identity.shortName}</p>
-                        <span
-                          className="inline-flex rounded-full px-1.5 py-px text-[8px] font-black uppercase tracking-[0.1em]"
-                          style={{ backgroundColor: identity.chipBackground, color: identity.chipText }}
-                        >
-                          {identity.badgeLabel}
-                        </span>
-                      </div>
+                      <p className="text-[11px] font-black leading-tight text-manises-blue">{identity.shortName}</p>
                       <p className="text-[10px] font-medium text-muted-foreground">{formatDate(result.date)}</p>
                     </div>
                   </div>
@@ -232,8 +224,8 @@ export function ResultsPage() {
                   </Button>
                 </div>
 
-                {LOTTERY_GAMES.find(g => g.id === result.gameId)?.type !== 'loteria-nacional' ? (
-                  <div className="flex flex-wrap gap-1.5 mb-2">
+                {game.type !== 'loteria-nacional' ? (
+                  <div className="flex flex-wrap gap-1.5 mb-1.5">
                     {result.numbers.map((n: number, i: number) => (
                       <NumberBall key={i} number={n} variant="default" size="sm" />
                     ))}
@@ -251,34 +243,32 @@ export function ResultsPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="mb-2 rounded-xl border border-manises-blue/15 bg-[linear-gradient(135deg,rgba(10,25,47,0.06)_0%,rgba(227,182,87,0.09)_100%)] p-2.5 space-y-1.5">
+                  <div className="mb-1.5 rounded-xl border border-manises-blue/15 bg-[linear-gradient(135deg,rgba(10,25,47,0.06)_0%,rgba(227,182,87,0.09)_100%)] p-2.5 space-y-1.5">
                     <div className="flex items-center justify-between">
                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">1º Premio</p>
                       <p className="font-black text-manises-blue text-lg tracking-[0.08em]">
                         {Array.isArray(result.numbers) ? result.numbers.join('') : result.numbers}
                       </p>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Reintegros</p>
-                      <div className="flex gap-2">
-                        {result.reintegros?.map((digit: number) => (
-                          <span key={digit} className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-manises-blue/10 px-2 text-[10px] font-black text-manises-blue">
-                            {digit}
-                          </span>
-                        )) ?? result.numbers.slice(0, 3).map((digit: number) => (
-                          <span key={digit} className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-manises-blue/10 px-2 text-[10px] font-black text-manises-blue">
-                            {digit}
-                          </span>
-                        ))}
+                    {result.reintegros && result.reintegros.length > 0 && (
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Reintegros</p>
+                        <div className="flex gap-2">
+                          {result.reintegros.map((digit: number) => (
+                            <span key={digit} className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-manises-blue/10 px-2 text-[10px] font-black text-manises-blue">
+                              {digit}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
 
-                <div className="flex items-center gap-1 border-t border-border/60 pt-2">
+                <div className="flex items-center gap-1 border-t border-border/60 pt-1.5">
                   <TrendingUp className="w-2.5 h-2.5 shrink-0 text-muted-foreground/60" />
                   <span className="text-[9px] font-medium text-muted-foreground">
-                    {LOTTERY_GAMES.find(g => g.id === result.gameId)?.type === 'loteria-nacional' ? 'Premio por décimo: ' : 'Siguiente bote: '}
+                    {game.type === 'loteria-nacional' ? 'Premio por décimo: ' : 'Siguiente bote: '}
                     <span className="font-bold" style={theme.title}>
                       {(result.jackpotNext || 0) >= 1_000_000
                         ? `${((result.jackpotNext || 0) / 1_000_000).toFixed(0)}M €`
