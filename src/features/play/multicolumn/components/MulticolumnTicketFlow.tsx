@@ -18,10 +18,6 @@ interface MulticolumnTicketFlowProps {
   onReviewColumns?: (intent: MulticolumnDraftIntent) => void;
 }
 
-/**
- * Orquestador visual del flujo multi-columna.
- * Integra la navegación, edición y resumen de apuestas múltiples.
- */
 export function MulticolumnTicketFlow({
   game,
   drawDates,
@@ -44,13 +40,11 @@ export function MulticolumnTicketFlow({
   const theme = useMemo(() => getGameTheme(game), [game]);
   const activeColumn = state.columns[state.activeColumnIndex];
 
-  // Configuración de rangos (Euromillones, Primitiva, etc.)
   const totalNums = game.selectionRange?.numbers?.total ?? 49;
   const maxNums = game.selectionRange?.numbers?.max ?? game.selectionRange?.numbers?.min ?? 6;
   const totalStars = game.selectionRange?.stars?.total ?? 0;
   const maxStars = game.selectionRange?.stars?.max ?? game.selectionRange?.stars?.min ?? 0;
 
-  // Generamos el mapeo de completitud para el slider
   const columnStatus = useMemo(() => {
     const status: Record<number, { isComplete: boolean; hasData: boolean }> = {};
     state.columns.forEach((col, i) => {
@@ -62,23 +56,28 @@ export function MulticolumnTicketFlow({
     return status;
   }, [state.columns]);
 
+  const blockCount = state.columns.length;
+  const completeCount = summary.completeColumns;
+  const counterLabel = blockCount === 1
+    ? '1 apuesta'
+    : `${completeCount} de ${blockCount} completas`;
+
+  const blockSubtitle = activeColumn.isComplete
+    ? 'Apuesta completa'
+    : activeColumn.numbers.length > 0 || activeColumn.stars.length > 0
+      ? 'Faltan números'
+      : 'Apuesta vacía';
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Slider de Navegación */}
-      <section className="space-y-4">
-        <div className="flex flex-col gap-1 px-1">
-          <div className="flex items-center justify-between">
-            <h2 className="font-black text-sm text-manises-blue">Boleto multibloque</h2>
-            <span className="text-[10px] font-black text-manises-blue/60 uppercase tracking-wider">
-              {summary.completeColumns}/{state.columns.length} bloques
-            </span>
-          </div>
-          <p className="text-[10px] font-medium text-slate-500">
-            Rellena cada bloque con tus números, como en un boleto físico
-          </p>
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Selector de apuestas */}
+      <section className="space-y-2">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="font-black text-sm text-manises-blue">Boleto {game.name}</h2>
+          <span className="text-[10px] font-medium text-slate-400">{counterLabel}</span>
         </div>
         <MulticolumnColumnSlider
-          columnsCount={state.columns.length}
+          columnsCount={blockCount}
           activeIndex={state.activeColumnIndex}
           onSelect={setActiveColumn}
           activeColor={game.color}
@@ -87,14 +86,14 @@ export function MulticolumnTicketFlow({
         />
       </section>
 
-      {/* Editor de la Columna Activa */}
-      <motion.section 
+      {/* Editor de la apuesta activa */}
+      <motion.section
         key={state.activeColumnIndex}
         initial={{ opacity: 0, x: 10 }}
         animate={{ opacity: 1, x: 0 }}
-        className="space-y-6"
+        className="space-y-3"
       >
-        <div className="flex flex-col items-center gap-4 rounded-[1.6rem] border border-white/70 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)] surface-neo-soft" style={theme.surface}>
+        <div className="rounded-2xl p-3" style={theme.surface}>
           <NumbersGrid
             totalNums={totalNums}
             selectedNumbers={activeColumn.numbers}
@@ -107,14 +106,16 @@ export function MulticolumnTicketFlow({
               updateActiveColumn(nextNumbers, activeColumn.stars);
             }}
             theme={theme}
-            title={`Bloque ${state.activeColumnIndex + 1} de ${state.columns.length}`}
-            subtitle={activeColumn.isComplete ? "Bloque completo" : activeColumn.numbers.length > 0 || activeColumn.stars.length > 0 ? "Faltan números" : "Bloque vacío"}
+            title={`Apuesta ${state.activeColumnIndex + 1} de ${blockCount}`}
+            subtitle={blockSubtitle}
           />
+        </div>
 
-          {maxStars > 0 && (
+        {maxStars > 0 && (
+          <div className="rounded-2xl p-3" style={theme.surface}>
             <StarsGrid
               starValues={Array.from(
-                { length: totalStars }, 
+                { length: totalStars },
                 (_, i) => game.type === 'gordo' ? i : i + 1
               )}
               selectedStars={activeColumn.stars}
@@ -129,27 +130,27 @@ export function MulticolumnTicketFlow({
               theme={theme}
               title={game.type === 'gordo' ? 'Clave' : 'Estrellas'}
               labelPrefix={game.type === 'gordo' ? 'Clave' : 'Estrella'}
-              subtitle={activeColumn.isComplete ? "Bloque completo" : activeColumn.numbers.length > 0 || activeColumn.stars.length > 0 ? "Faltan números" : "Bloque vacío"}
+              subtitle={blockSubtitle}
             />
-          )}
-        </div>
+          </div>
+        )}
       </motion.section>
 
-      {/* Acciones de Edición */}
-      <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+      {/* Acciones */}
+      <section className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
         <MulticolumnActions
           onClearColumn={clearActiveColumn}
           onClearAll={clearAllColumns}
           onRandomColumn={randomizeActiveColumn}
           onRandomAll={randomizeAllColumns}
           onRemoveColumn={() => removeColumn(state.activeColumnIndex)}
-          canRemoveColumn={state.columns.length > 1}
+          canRemoveColumn={blockCount > 1}
           activeColor={game.color}
         />
       </section>
 
-      {/* Resumen y Persistencia (Futura) */}
-      <section className="rounded-3xl border border-manises-blue/10 bg-white p-5 shadow-sm">
+      {/* Resumen y CTA */}
+      <section className="rounded-2xl border border-manises-blue/10 bg-white p-4 shadow-sm">
         <MulticolumnSummary
           summary={summary}
           activeColor={game.color}

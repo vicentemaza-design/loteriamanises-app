@@ -36,10 +36,10 @@ export function MulticolumnSummary({
         onClick={onReview}
         disabled={!summary.isValid}
       >
-        Añadir boleto · {summary.completeColumns} {summary.completeColumns === 1 ? 'bloque' : 'bloques'}
+        Añadir boleto · {summary.completeColumns} {summary.completeColumns === 1 ? 'apuesta' : 'apuestas'}
       </Button>
       <p className="text-[10px] text-center font-medium text-slate-400">
-        Cada bloque completado se añade como una apuesta
+        Cada apuesta completada se añade al boleto
       </p>
     </div>
   );

@@ -441,7 +441,7 @@ export function GamePlayPage() {
     }
     if (!isQuiniela && mode === 'simple') {
       if (isQuickPickMode) parts.push('Rápida');
-      else if (isMulticolumnMode) parts.push('Multi-columna');
+      else if (isMulticolumnMode) parts.push('Varios bloques');
       else parts.push('Manual');
     }
     parts.push(drawTimeSummary);
@@ -456,7 +456,7 @@ export function GamePlayPage() {
     }
     if (!isQuiniela && mode === 'simple') {
       if (isQuickPickMode) parts.push('Rápida');
-      else if (isMulticolumnMode) parts.push('Multi-columna');
+      else if (isMulticolumnMode) parts.push('Varios bloques');
       else parts.push('Manual');
     }
     return parts.length > 0 ? parts.join(' · ') : 'Jugada';
