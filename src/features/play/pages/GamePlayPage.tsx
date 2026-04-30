@@ -441,7 +441,7 @@ export function GamePlayPage() {
     }
     if (!isQuiniela && mode === 'simple') {
       if (isQuickPickMode) parts.push('Rápida');
-      else if (isMulticolumnMode) parts.push('Varios bloques');
+      else if (isMulticolumnMode) parts.push('Varias apuestas');
       else parts.push('Manual');
     }
     parts.push(drawTimeSummary);
@@ -456,7 +456,7 @@ export function GamePlayPage() {
     }
     if (!isQuiniela && mode === 'simple') {
       if (isQuickPickMode) parts.push('Rápida');
-      else if (isMulticolumnMode) parts.push('Varios bloques');
+      else if (isMulticolumnMode) parts.push('Varias apuestas');
       else parts.push('Manual');
     }
     return parts.length > 0 ? parts.join(' · ') : 'Jugada';
@@ -751,7 +751,7 @@ export function GamePlayPage() {
       });
 
       if (allDrafts.length === 0) {
-        toast.error('No se han podido procesar las columnas.');
+        toast.error('No se han podido procesar las apuestas.');
         return;
       }
 
@@ -768,7 +768,7 @@ export function GamePlayPage() {
       }
     } catch (error) {
       console.error('[handleMulticolumnPersist] Error:', error);
-      toast.error('Ocurrió un error al procesar las columnas.');
+      toast.error('Ocurrió un error al procesar las apuestas.');
     }
   };
 
@@ -1048,7 +1048,7 @@ export function GamePlayPage() {
                         isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
                       )}
                     >
-                      Varios bloques
+                      Varias apuestas
                     </button>
                   </div>
                 </div>
@@ -1567,7 +1567,7 @@ export function GamePlayPage() {
               <div className="border-t border-slate-100/50 px-1 pt-1.5">
                 <p className="text-[9px] font-bold text-slate-400 uppercase text-center leading-tight">
                   {isMulticolumnMode
-                    ? 'Completa al menos un bloque'
+                    ? 'Completa al menos una apuesta'
                     : isNationalLottery
                       ? 'Elige un décimo del escaparate'
                       : isQuiniela
