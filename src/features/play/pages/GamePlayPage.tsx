@@ -80,6 +80,13 @@ interface QuinielaMatch {
   result: string | null;
 }
 
+function formatChipContext(iso: string): string {
+  const d = new Date(iso);
+  const weekday = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
+  const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return `${weekday} · ${time}`;
+}
+
 export function GamePlayPage() {
   const { gameId } = useParams();
   const navigate = useNavigate();
@@ -1103,7 +1110,7 @@ export function GamePlayPage() {
                         return (
                           <div key={weekLabel} className="space-y-2">
                             <p className="pl-1 text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">{displayLabel}</p>
-                            <div className="flex flex-wrap gap-1.5">
+                            <div className="flex flex-wrap gap-2">
                               {draws.map((draw) => {
                                 const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
                                 return (
@@ -1118,7 +1125,7 @@ export function GamePlayPage() {
                                       );
                                     }}
                                     className={cn(
-                                      "relative flex min-w-[68px] flex-col items-center justify-center rounded-xl border px-2 py-1.5 transition-all",
+                                      "relative flex min-w-[60px] flex-col items-center justify-center rounded-xl border px-2.5 py-2 transition-all",
                                       isSelected
                                         ? "bg-manises-blue/10 border-manises-blue shadow-[0_4px_12px_rgba(10,71,146,0.14)]"
                                         : "bg-white border-slate-100 hover:border-slate-200"
@@ -1132,14 +1139,14 @@ export function GamePlayPage() {
                                       />
                                     )}
                                     <span className={cn(
-                                      "relative z-10 text-[9px] font-black uppercase tracking-tight",
-                                      isSelected ? "text-manises-blue" : "text-slate-400"
+                                      "relative z-10 text-[9px] font-semibold leading-tight",
+                                      isSelected ? "text-manises-blue/80" : "text-slate-400"
                                     )}>
-                                      {new Date(draw.drawDate).toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '')} · {formatDrawTime(draw.drawDate)}
+                                      {formatChipContext(draw.drawDate)}
                                     </span>
                                     <span className={cn(
-                                      "relative z-10 text-[11px] font-black",
-                                      isSelected ? "text-manises-blue" : "text-slate-600"
+                                      "relative z-10 text-[12px] font-black leading-tight mt-0.5",
+                                      isSelected ? "text-manises-blue" : "text-slate-700"
                                     )}>
                                       {new Date(draw.drawDate).getDate()} {new Date(draw.drawDate).toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}
                                     </span>
