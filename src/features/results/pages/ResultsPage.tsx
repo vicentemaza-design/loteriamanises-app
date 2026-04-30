@@ -21,8 +21,15 @@ import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInterac
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { getGameIdentity } from '@/shared/lib/game-identity';
+import loteriaJuevesTicket from '@/assets/images/loteria_jueves_ticket.jpg';
+import loteriaSabadoTicket from '@/assets/images/loteria_sabado_ticket.jpg';
 
 gsap.registerPlugin(useGSAP);
+
+const NATIONAL_TICKET_IMAGES: Record<string, string> = {
+  'loteria-nacional-jueves': loteriaJuevesTicket,
+  'loteria-nacional-sabado': loteriaSabadoTicket,
+};
 
 // Tickets de muestra para el modo demo (para que funcione el comparador)
 // TODO: Mover a tickets.mock.ts en el Sprint 2
@@ -243,26 +250,38 @@ export function ResultsPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="mb-1.5 rounded-xl border border-manises-blue/15 bg-[linear-gradient(135deg,rgba(10,25,47,0.06)_0%,rgba(227,182,87,0.09)_100%)] p-2.5 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">1º Premio</p>
-                      <p className="font-black text-manises-blue text-lg tracking-[0.08em]">
-                        {Array.isArray(result.numbers) ? result.numbers.join('') : result.numbers}
-                      </p>
+                  <>
+                    <div className="relative mb-1.5 overflow-hidden rounded-xl">
+                      {NATIONAL_TICKET_IMAGES[result.gameId] ? (
+                        <img
+                          src={NATIONAL_TICKET_IMAGES[result.gameId]}
+                          alt={`Décimo de ${identity.shortName}`}
+                          className="h-[76px] w-full object-cover object-center"
+                        />
+                      ) : (
+                        <div className="h-[76px] w-full rounded-xl bg-manises-blue/10" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/25 to-transparent" />
+                      <div className="absolute inset-y-0 left-0 flex flex-col justify-center px-3">
+                        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-white/55">1º Premio</p>
+                        <p className="text-xl font-black tracking-[0.1em] text-white leading-none">
+                          {Array.isArray(result.numbers) ? result.numbers.join('') : result.numbers}
+                        </p>
+                      </div>
                     </div>
                     {result.reintegros && result.reintegros.length > 0 && (
-                      <div className="flex items-center justify-between">
+                      <div className="mb-1.5 flex items-center justify-between rounded-xl border border-manises-blue/15 bg-manises-blue/[0.03] px-2.5 py-1.5">
                         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Reintegros</p>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1.5">
                           {result.reintegros.map((digit: number) => (
-                            <span key={digit} className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-manises-blue/10 px-2 text-[10px] font-black text-manises-blue">
+                            <span key={digit} className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-manises-blue/10 px-1.5 text-[9px] font-black text-manises-blue">
                               {digit}
                             </span>
                           ))}
                         </div>
                       </div>
                     )}
-                  </div>
+                  </>
                 )}
 
                 <div className="flex items-center gap-1 border-t border-border/60 pt-1.5">
