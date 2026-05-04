@@ -617,6 +617,16 @@ export function GamePlayPage() {
       ? isQuinielaValid
       : selectedNumbers.length >= minNums && selectedNumbers.length <= maxNums && hasValidStarSelection && isSupportedReducedSelection && betsCount > 0);
 
+  // Sticky CTA is hidden until the user has an active in-progress selection.
+  const shouldShowStickyCta = (() => {
+    if (isQuickPickMode) return false;
+    if (isNationalLottery) return selectedNationalNumber !== null;
+    if (isQuiniela) return quinielaMatches.some((m: QuinielaMatch) => m.result !== null);
+    if (supportsQuickPick && mode === 'simple' && betMethod === null) return false;
+    if (isMulticolumnMode) return false;
+    return selectedNumbers.length > 0;
+  })();
+
   const handlePlay = async () => {
     if (!canPlay)           { 
       if (isQuiniela && !isQuinielaValid && mode === 'reduced') {
@@ -691,6 +701,15 @@ export function GamePlayPage() {
     const result = addDrafts(nextDrafts);
     if (result.addedCount > 0) {
       toast.success(result.addedCount === 1 ? 'Jugada añadida.' : `${result.addedCount} jugadas añadidas.`);
+      if (isNationalLottery) {
+        setSelectedNationalNumber(null);
+        setSelectedNationalQuantity(1);
+      } else if (isQuiniela) {
+        setQuinielaMatches((prev: QuinielaMatch[]) => prev.map((m: QuinielaMatch) => ({ ...m, result: null })));
+      } else {
+        setSelectedNumbers([]);
+        setSelectedStars([]);
+      }
     }
     if (result.duplicateCount > 0) {
       toast.error(result.duplicateCount === 1 ? 'Ya tenías esa jugada en la sesión.' : `${result.duplicateCount} jugadas duplicadas no se añadieron.`);
@@ -907,7 +926,7 @@ export function GamePlayPage() {
 
   return (
     <div
-      className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-32"
+      className={cn("flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] transition-[padding]", shouldShowStickyCta ? "pb-32" : "pb-6")}
       style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 56px)' }}
     >
       <div
@@ -1783,7 +1802,7 @@ export function GamePlayPage() {
       </div>
 
       {/* ---- Barra de confirmación ---- */}
-      {!isQuickPickMode && (
+      {shouldShowStickyCta && (
         <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-safe">
           <div className={cn(
             "mx-auto flex max-w-screen-sm flex-col gap-2 rounded-[1.5rem] border p-2.5 shadow-[0_-10px_30px_rgba(15,23,42,0.14)] backdrop-blur-2xl transition-all",
