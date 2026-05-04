@@ -1,5 +1,6 @@
 import { formatCurrency, cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
+import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
 import type { NationalCartLine, NationalOrderBreakdown } from '../contracts/national-play.contract';
 import { MAX_NATIONAL_DECIMOS } from '../hooks/useNationalCart';
 import { NationalShippingForm } from './NationalShippingForm';
@@ -55,11 +56,14 @@ export function NationalCartSummary({
             key={`${line.drawId}-${line.number}`}
             className="flex items-center gap-2.5 rounded-2xl border border-slate-100 bg-slate-50/50 p-2.5"
           >
-            {/* Número */}
-            <div className="flex min-w-[3.25rem] flex-col items-center justify-center rounded-xl bg-manises-blue py-1.5 text-white shadow-sm">
-              <p className="text-[8px] font-black uppercase opacity-60">Número</p>
-              <p className="text-sm font-black tracking-widest">{line.number}</p>
-            </div>
+            {/* Mini ticket thumbnail */}
+            <NationalTicketThumbnail
+              drawId={line.drawId}
+              number={line.number}
+              serie={line.serie}
+              fraccion={line.fraccion}
+              className="w-[72px] shadow-sm"
+            />
 
             {/* Info */}
             <div className="flex-1 min-w-0">

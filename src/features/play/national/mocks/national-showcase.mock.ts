@@ -10,23 +10,29 @@ export const NATIONAL_DRAW_CONFIG: NationalDrawConfig[] = [
   { id: 'sabado', label: 'Sábado', weekday: 6, hour: 13, decimoPrice: 6, firstPrize: 60_000, secondPrize: 12_000 },
 ];
 
+// MOCK TEMPORAL — serie y fraccion son ficticios hasta integración con listado oficial SELAE.
+// Cuando el backend provea el listado semanal real, reemplazar estos valores por los del API.
+// El campo `serie` representa el número de serie (3 dígitos).
+// El campo `fraccion` representa la décima parte del billete (1–10).
 const BASE_NATIONAL_NUMBERS: Array<{
   number: string;
+  serie: string;
+  fraccion: string;
   available: number;
   badge?: NationalShowcaseItem['badge'];
 }> = [
-  { number: '69844', available: 8, badge: 'destacado' },
-  { number: '15432', available: 12 },
-  { number: '90877', available: 5 },
-  { number: '44501', available: 10 },
-  { number: '77123', available: 3, badge: 'agotandose' },
-  { number: '23019', available: 7 },
-  { number: '58264', available: 9 },
-  { number: '11038', available: 6 },
-  { number: '32741', available: 2, badge: 'ultimo' },
-  { number: '48390', available: 11 },
-  { number: '90712', available: 4, badge: 'agotandose' },
-  { number: '26518', available: 1, badge: 'ultimo' },
+  { number: '69844', serie: '024', fraccion: '3', available: 8, badge: 'destacado' },
+  { number: '15432', serie: '011', fraccion: '7', available: 12 },
+  { number: '90877', serie: '005', fraccion: '1', available: 5 },
+  { number: '44501', serie: '018', fraccion: '4', available: 10 },
+  { number: '77123', serie: '003', fraccion: '9', available: 3, badge: 'agotandose' },
+  { number: '23019', serie: '031', fraccion: '2', available: 7 },
+  { number: '58264', serie: '007', fraccion: '6', available: 9 },
+  { number: '11038', serie: '015', fraccion: '8', available: 6 },
+  { number: '32741', serie: '042', fraccion: '5', available: 2, badge: 'ultimo' },
+  { number: '48390', serie: '009', fraccion: '10', available: 11 },
+  { number: '90712', serie: '027', fraccion: '3', available: 4, badge: 'agotandose' },
+  { number: '26518', serie: '001', fraccion: '1', available: 1, badge: 'ultimo' },
 ];
 
 function resolveStockLabel(available: number): string {
@@ -38,6 +44,8 @@ function resolveStockLabel(available: number): string {
 function buildDrawShowcase(draw: NationalDrawConfig): NationalShowcaseItem[] {
   return BASE_NATIONAL_NUMBERS.map((item) => ({
     number: item.number,
+    serie: item.serie,
+    fraccion: item.fraccion,
     available: item.available,
     drawId: draw.id,
     drawLabel: draw.label,
@@ -51,6 +59,8 @@ export const NATIONAL_SHOWCASE_ITEMS: NationalShowcaseItem[] = NATIONAL_DRAW_CON
 
 export const NATIONAL_SPECIAL_SHOWCASE_ITEMS: NationalShowcaseItem[] = BASE_NATIONAL_NUMBERS.map((item) => ({
   number: item.number,
+  serie: item.serie,
+  fraccion: item.fraccion,
   available: item.available,
   drawId: 'especial',
   drawLabel: 'Especial',

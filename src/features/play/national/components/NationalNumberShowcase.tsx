@@ -1,4 +1,5 @@
 import { cn } from '@/shared/lib/utils';
+import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
 import type { NationalCartLine, NationalShowcaseItem } from '../contracts/national-play.contract';
 
 interface NationalNumberShowcaseProps {
@@ -24,7 +25,7 @@ export function NationalNumberShowcase({
           <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mt-1">Prueba con un filtro menor</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2">
           {items.map((item) => {
             const activeLine = cartLines.find(l => l.number === item.number && l.drawId === item.drawId);
             const active = activeLine !== undefined;
@@ -37,65 +38,81 @@ export function NationalNumberShowcase({
                 type="button"
                 onClick={() => onToggle(item)}
                 className={cn(
-                  'group relative overflow-hidden rounded-2xl border-2 p-3.5 text-left transition-all',
+                  'group w-full relative overflow-hidden rounded-2xl border-2 p-2.5 text-left transition-all',
                   active
-                    ? 'border-manises-blue bg-manises-blue text-white shadow-manises'
+                    ? 'border-manises-blue bg-manises-blue/[0.04] shadow-sm'
                     : 'border-slate-100 bg-white hover:border-manises-blue/20'
                 )}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <p className={cn(
-                    'text-2xl font-black tracking-widest leading-none',
-                    active ? 'text-white' : 'text-manises-blue'
-                  )}>
-                    {item.number}
-                  </p>
+                <div className="flex items-center gap-3">
+                  {/* Mini ticket thumbnail */}
+                  <NationalTicketThumbnail
+                    drawId={item.drawId}
+                    number={item.number}
+                    serie={item.serie}
+                    fraccion={item.fraccion}
+                    className="w-[88px] shadow-sm"
+                  />
 
-                  {active ? (
-                    <div
-                      className="flex items-center gap-0.5 rounded-lg bg-white/15 p-0.5"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => onDecrement(item.number, item.drawId)}
-                        className="flex h-6 w-6 items-center justify-center rounded-md text-sm font-black text-white/80 transition-colors hover:bg-white/20 hover:text-white"
-                        aria-label="Restar décimo"
-                      >
-                        −
-                      </button>
-                      <span className="w-5 text-center text-[13px] font-black leading-none text-white">
-                        {qty}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => onIncrement(item.number, item.drawId)}
-                        disabled={qty >= item.available}
-                        className="flex h-6 w-6 items-center justify-center rounded-md text-sm font-black text-white/80 transition-colors hover:bg-white/20 hover:text-white disabled:opacity-30"
-                        aria-label="Sumar décimo"
-                      >
-                        +
-                      </button>
+                  {/* Number + meta */}
+                  <div className="flex flex-1 items-center justify-between gap-2 min-w-0">
+                    <div>
+                      <p className={cn(
+                        'text-xl font-black tracking-widest leading-none',
+                        active ? 'text-manises-blue' : 'text-manises-blue'
+                      )}>
+                        {item.number}
+                      </p>
+                      <p className={cn(
+                        'mt-1 text-[9px] font-semibold leading-none',
+                        active
+                          ? 'text-manises-blue/60'
+                          : item.available <= 1
+                            ? 'text-amber-600'
+                            : item.available <= 4
+                              ? 'text-red-500'
+                              : 'text-slate-400'
+                      )}>
+                        {active ? `${availabilityText} · máx. ${item.available}` : availabilityText}
+                      </p>
                     </div>
-                  ) : item.badge === 'destacado' ? (
-                    <span className="rounded-full border border-manises-blue/10 bg-manises-blue/[0.05] px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-manises-blue">
-                      Top
-                    </span>
-                  ) : null}
-                </div>
 
-                <p className={cn(
-                  'mt-1.5 text-[9px] font-semibold leading-none',
-                  active
-                    ? 'text-white/60'
-                    : item.available <= 1
-                      ? 'text-amber-600'
-                      : item.available <= 4
-                        ? 'text-red-500'
-                        : 'text-slate-400'
-                )}>
-                  {active ? `${availabilityText} · máx. ${item.available}` : availabilityText}
-                </p>
+                    {/* Stepper (selected) or badge (not selected) */}
+                    <div className="shrink-0">
+                      {active ? (
+                        <div
+                          className="flex items-center gap-0.5 rounded-lg border border-manises-blue/20 bg-white p-0.5 shadow-sm"
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => onDecrement(item.number, item.drawId)}
+                            className="flex h-6 w-6 items-center justify-center rounded-md text-sm font-black text-manises-blue transition-colors hover:bg-manises-blue/10"
+                            aria-label="Restar décimo"
+                          >
+                            −
+                          </button>
+                          <span className="w-5 text-center text-[13px] font-black leading-none text-manises-blue">
+                            {qty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => onIncrement(item.number, item.drawId)}
+                            disabled={qty >= item.available}
+                            className="flex h-6 w-6 items-center justify-center rounded-md text-sm font-black text-manises-blue transition-colors hover:bg-manises-blue/10 disabled:opacity-30"
+                            aria-label="Sumar décimo"
+                          >
+                            +
+                          </button>
+                        </div>
+                      ) : item.badge === 'destacado' ? (
+                        <span className="rounded-full border border-manises-blue/10 bg-manises-blue/[0.05] px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-manises-blue">
+                          Top
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
               </button>
             );
           })}

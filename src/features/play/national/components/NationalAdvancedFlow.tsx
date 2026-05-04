@@ -78,7 +78,10 @@ export function NationalAdvancedFlow({
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
   const [selectionMode, setSelectionMode] = useState<'random' | 'manual'>('random');
 
-  const previewNumber = nationalCart.lines[0]?.number ?? null;
+  const previewLine = nationalCart.lines[0] ?? null;
+  const previewNumber = previewLine?.number ?? null;
+  const previewSerie = previewLine?.serie;
+  const previewFraccion = previewLine?.fraccion;
 
   const handleDecrement = (number: string, drawId: NationalCartLine['drawId']) => {
     const line = nationalCart.lines.find(l => l.number === number && l.drawId === drawId);
@@ -147,6 +150,8 @@ export function NationalAdvancedFlow({
       >
         <NationalTicketVisual
           number={previewNumber}
+          serie={previewSerie}
+          fraccion={previewFraccion}
           drawLabel={selectedNationalDraw.label}
           drawDate={selectedNationalDraw.nextDraw}
           price={selectedNationalDraw.decimoPrice}

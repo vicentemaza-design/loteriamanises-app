@@ -12,6 +12,10 @@ export interface NationalDrawConfig {
 
 export interface NationalShowcaseItem {
   number: string;
+  /** Serie del décimo, e.g. "024". Vendrá del listado oficial SELAE. */
+  serie?: string;
+  /** Fracción del décimo, e.g. "3". Vendrá del listado oficial SELAE. */
+  fraccion?: string;
   available: number;
   drawId: NationalDrawId;
   drawLabel: string;
@@ -29,6 +33,10 @@ export interface NationalSearchState {
 
 export interface NationalCartLine {
   number: string;
+  /** Serie del décimo seleccionado. Fluye desde NationalShowcaseItem. */
+  serie?: string;
+  /** Fracción del décimo seleccionado. Fluye desde NationalShowcaseItem. */
+  fraccion?: string;
   drawId: NationalDrawId;
   drawLabel: string;
   drawDates: string[];

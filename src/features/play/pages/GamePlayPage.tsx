@@ -538,6 +538,8 @@ export function GamePlayPage() {
       }
       addOrUpdateNationalCartLine({
         number: randomTicket.number,
+        serie: randomTicket.serie,
+        fraccion: randomTicket.fraccion,
         drawId: isExplicitNationalProduct ? selectedNationalDrawId : 'especial',
         drawLabel: selectedNationalDraw.label,
         drawDates: effectiveSelectedDrawDates,
@@ -1708,6 +1710,8 @@ export function GamePlayPage() {
                   } else {
                     addOrUpdateNationalCartLine({
                       number: ticket.number,
+                      serie: ticket.serie,
+                      fraccion: ticket.fraccion,
                       drawId,
                       drawLabel: selectedNationalDraw.label,
                       drawDates: effectiveSelectedDrawDates,
