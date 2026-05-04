@@ -1177,85 +1177,7 @@ export function GamePlayPage() {
         {supportsQuickPick && (
           <div className="space-y-2.5">
 
-            {/* Tipo de jugada (compacto, solo si hay >1 modo) */}
-            {availableModes.length > 1 && (
-              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
-                <p className="mb-1.5 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Tipo de jugada</p>
-                <div className="flex gap-1.5 flex-wrap">
-                  {availableModes.map((m) => {
-                    const modeLabels: Record<string, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
-                    return (
-                      <button
-                        key={m}
-                        onClick={() => {
-                          setMode(m as typeof mode);
-                          const nextSystems = getReductionSystemsForMode(game.id, m as typeof mode);
-                          if (m === 'reduced' && nextSystems.length > 0) setSelectedReductionSystemId(nextSystems[0].id);
-                          handleClear();
-                          if (m !== 'simple') setBetMethod('manual');
-                        }}
-                        className={cn(
-                          'px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all',
-                          mode === m
-                            ? 'text-white border-transparent shadow-sm'
-                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
-                        )}
-                        style={mode === m ? { backgroundColor: game.color } : undefined}
-                      >
-                        {modeLabels[m] ?? m}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Bloque Método — PRIMERO, antes de fechas. Aleatorio = camino rápido */}
-            {mode === 'simple' && (
-              <div
-                className="rounded-[1.2rem] border-2 bg-white px-3.5 py-3 shadow-sm transition-colors"
-                style={{ borderColor: betMethod ? `${game.color}28` : '#e2e8f0' }}
-              >
-                <p className="mb-0.5 px-0.5 text-[11px] font-black uppercase tracking-[0.10em] text-manises-blue">¿Cómo quieres jugar?</p>
-                <p className="mb-2.5 px-0.5 text-[9px] font-medium text-slate-400">Jugada rápida o elige tus números manualmente</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setBetMethod('random')}
-                    className={cn(
-                      'flex flex-col items-center justify-center gap-1 rounded-xl border-2 py-3.5 px-2 transition-all active:scale-[0.97]',
-                      betMethod === 'random'
-                        ? 'text-white shadow-lg'
-                        : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'
-                    )}
-                    style={betMethod === 'random' ? { backgroundColor: game.color, borderColor: game.color } : undefined}
-                  >
-                    <Spark className={cn('w-4 h-4', betMethod === 'random' ? 'text-white/90' : 'text-manises-gold')} />
-                    <span className="text-[11px] font-black uppercase tracking-widest">Aleatorio</span>
-                    <span className={cn('text-[8px] font-semibold', betMethod === 'random' ? 'text-white/70' : 'text-slate-400')}>
-                      Rápido
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => setBetMethod('manual')}
-                    className={cn(
-                      'flex flex-col items-center justify-center gap-1 rounded-xl border-2 py-3.5 px-2 transition-all active:scale-[0.97]',
-                      betMethod === 'manual'
-                        ? 'bg-white shadow-sm'
-                        : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300'
-                    )}
-                    style={betMethod === 'manual' ? { borderColor: game.color, color: game.color } : undefined}
-                  >
-                    <ControlSlider className="w-4 h-4" />
-                    <span className="text-[11px] font-black uppercase tracking-widest">Manual</span>
-                    <span className={cn('text-[8px] font-semibold', betMethod === 'manual' ? 'opacity-60' : 'text-slate-400')}>
-                      Tus números
-                    </span>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Bloque Fechas — agrupadas por mes */}
+            {/* 1. Bloque Fechas — agrupadas por mes */}
             {supportsTimeSelection && mode === 'simple' && (
               <div className="rounded-[1.2rem] border border-slate-100 bg-white overflow-hidden shadow-sm">
                 {/* Cabecera compacta full-width */}
@@ -1379,7 +1301,7 @@ export function GamePlayPage() {
               </div>
             )}
 
-            {/* Bloque Sorteo compacto (juegos sin multiselección) */}
+            {/* 2. Bloque Sorteo compacto (juegos sin multiselección) */}
             {!supportsTimeSelection && mode === 'simple' && (
               <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
                 <div className="flex items-center justify-between">
@@ -1389,7 +1311,84 @@ export function GamePlayPage() {
               </div>
             )}
 
-            {/* Bloque Número de apuestas (manual) */}
+            {/* 3. Bloque Método — selector compacto horizontal */}
+            {mode === 'simple' && (
+              <div
+                className="rounded-[1.2rem] border-2 bg-white px-3.5 py-2.5 shadow-sm transition-colors"
+                style={{ borderColor: betMethod ? `${game.color}28` : '#e2e8f0' }}
+              >
+                <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">¿Cómo quieres jugar?</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setBetMethod('random')}
+                    className={cn(
+                      'flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all active:scale-[0.97]',
+                      betMethod === 'random'
+                        ? 'text-white shadow-lg'
+                        : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'
+                    )}
+                    style={betMethod === 'random' ? { backgroundColor: game.color, borderColor: game.color } : undefined}
+                  >
+                    <Spark className={cn('w-3.5 h-3.5 shrink-0', betMethod === 'random' ? 'text-white/90' : 'text-manises-gold')} />
+                    <div className="text-left">
+                      <p className="text-[10px] font-black uppercase tracking-widest leading-none">Aleatorio</p>
+                      <p className={cn('text-[8px] font-semibold mt-0.5 leading-none', betMethod === 'random' ? 'text-white/70' : 'text-slate-400')}>Rápido</p>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setBetMethod('manual')}
+                    className={cn(
+                      'flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all active:scale-[0.97]',
+                      betMethod === 'manual'
+                        ? 'bg-white shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300'
+                    )}
+                    style={betMethod === 'manual' ? { borderColor: game.color, color: game.color } : undefined}
+                  >
+                    <ControlSlider className="w-3.5 h-3.5 shrink-0" />
+                    <div className="text-left">
+                      <p className="text-[10px] font-black uppercase tracking-widest leading-none">Manual</p>
+                      <p className={cn('text-[8px] font-semibold mt-0.5 leading-none', betMethod === 'manual' ? 'opacity-60' : 'text-slate-400')}>Tus números</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 4. Tipo de jugada — grid full-width */}
+            {availableModes.length > 1 && (
+              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
+                <p className="mb-1.5 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Tipo de jugada</p>
+                <div className={cn('grid gap-1.5', availableModes.length >= 3 ? 'grid-cols-3' : 'grid-cols-2')}>
+                  {availableModes.map((m) => {
+                    const modeLabels: Record<string, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
+                    return (
+                      <button
+                        key={m}
+                        onClick={() => {
+                          setMode(m as typeof mode);
+                          const nextSystems = getReductionSystemsForMode(game.id, m as typeof mode);
+                          if (m === 'reduced' && nextSystems.length > 0) setSelectedReductionSystemId(nextSystems[0].id);
+                          handleClear();
+                          if (m !== 'simple') setBetMethod('manual');
+                        }}
+                        className={cn(
+                          'py-2 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all text-center',
+                          mode === m
+                            ? 'text-white border-transparent shadow-sm'
+                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
+                        )}
+                        style={mode === m ? { backgroundColor: game.color } : undefined}
+                      >
+                        {modeLabels[m] ?? m}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 5. Bloque Número de apuestas (manual) */}
             {mode === 'simple' && betMethod === 'manual' && (
               <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm">
                 <div className="flex items-center justify-between">
