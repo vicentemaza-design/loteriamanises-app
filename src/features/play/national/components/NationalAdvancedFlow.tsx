@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Button } from '@/shared/ui/Button';
 import { Spark, ControlSlider } from 'iconoir-react/regular';
 import { cn, formatDate } from '@/shared/lib/utils';
 import { NationalTicketVisual, type NationalDrawType } from '@/features/play/components/NationalTicketVisual';
@@ -98,6 +97,7 @@ export function NationalAdvancedFlow({
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
   const [mockReservation, setMockReservation] = useState<{ number: string; drawLabel: string; drawDate: string } | null>(null);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [selectionMode, setSelectionMode] = useState<'random' | 'manual'>('random');
 
   const handleReserve = () => {
     if (!selectedNationalNumber) return;
@@ -125,8 +125,8 @@ export function NationalAdvancedFlow({
     : 'Cerrado';
 
   return (
-    <div className="space-y-6">
-      {/* 1. Resumen compacto de configuración — unifica sorteo + entrega */}
+    <div className="space-y-5">
+      {/* 1. Config: sorteo + entrega */}
       <section className="stagger-item">
         <button
           onClick={() => setIsConfigOpen(!isConfigOpen)}
@@ -135,10 +135,7 @@ export function NationalAdvancedFlow({
           aria-label="Configurar sorteo y tipo de entrega"
         >
           <div className="flex items-center gap-3">
-            <div className={cn(
-              'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors',
-              statusColor.bg,
-            )}>
+            <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors', statusColor.bg)}>
               <ControlSlider className={cn('w-4 h-4', statusColor.icon)} />
             </div>
             <div className="min-w-0 flex-1">
@@ -191,98 +188,141 @@ export function NationalAdvancedFlow({
         )}
       </section>
 
-      {/* 2. Cabecera + décimo hero — siempre visible */}
-      <section className="flex flex-col gap-5">
-        <div>
-          <h2 className="font-black text-base text-manises-blue">Configuración de tu jugada</h2>
-          <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-manises-blue/70">
-            Visualiza y personaliza tu décimo
-          </p>
-        </div>
-
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="stagger-item"
-        >
-          <NationalTicketVisual
-            number={selectedNationalNumber}
-            drawLabel={selectedNationalDraw.label}
-            drawDate={selectedNationalDraw.nextDraw}
-            price={selectedNationalDraw.decimoPrice}
-            gameId={game.id}
-            drawType={drawType}
-          />
-        </motion.div>
-      </section>
-
-      {/* 3. Números en administración */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="font-black text-sm text-manises-blue">Números en administración</h2>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-slate-400"
-              onClick={onClear}
-            >
-              Limpiar
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest border-manises-gold/40 text-manises-gold bg-manises-gold/5"
-              onClick={onRandomNationalNumber}
-            >
-              <Spark className="w-3 h-3 mr-1" />
-              Aleatorio
-            </Button>
-          </div>
-        </div>
-
-        <NationalNumberShowcase
-          items={nationalShowcase.items}
-          selectedNumber={selectedNationalNumber}
-          onSelect={onSelectNationalNumber}
+      {/* 2. Décimo visual — protagonista */}
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="stagger-item"
+      >
+        <NationalTicketVisual
+          number={selectedNationalNumber}
+          drawLabel={selectedNationalDraw.label}
+          drawDate={selectedNationalDraw.nextDraw}
+          price={selectedNationalDraw.decimoPrice}
+          gameId={game.id}
+          drawType={drawType}
         />
-      </section>
+      </motion.div>
 
-      {/* 4. Cantidad — solo cuando hay número seleccionado */}
-      {selectedNationalNumber && (
-        <NationalTicketQuantitySelector
-          selectedNumber={selectedNationalNumber}
-          selectedQuantity={selectedNationalQuantity}
-          maxQuantity={maxNationalQuantity}
-          decimoPrice={selectedNationalDraw.decimoPrice}
-          firstPrize={selectedNationalDraw.firstPrize}
-          onQuantityChange={onChangeNationalQuantity}
-          onAddToCart={() => nationalCart.addSelectedToCart(deliveryMode)}
-          onReserve={handleReserve}
-        />
+      {/* 3. ¿Cómo quieres elegir tu número? */}
+      <div
+        className="rounded-[1.2rem] border-2 bg-white px-3.5 py-2.5 shadow-sm transition-colors"
+        style={{ borderColor: `${game.color}30` }}
+      >
+        <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">
+          ¿Cómo quieres elegir tu número?
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => setSelectionMode('random')}
+            className={cn(
+              'flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all active:scale-[0.97]',
+              selectionMode === 'random'
+                ? 'text-white shadow-lg'
+                : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'
+            )}
+            style={selectionMode === 'random' ? { backgroundColor: game.color, borderColor: game.color } : undefined}
+          >
+            <Spark className={cn('w-3.5 h-3.5 shrink-0', selectionMode === 'random' ? 'text-white/90' : 'text-manises-gold')} />
+            <div className="text-left">
+              <p className="text-[10px] font-black uppercase tracking-widest leading-none">Aleatorio</p>
+              <p className={cn('text-[8px] font-semibold mt-0.5 leading-none', selectionMode === 'random' ? 'text-white/70' : 'text-slate-400')}>
+                Número demo
+              </p>
+            </div>
+          </button>
+          <button
+            onClick={() => setSelectionMode('manual')}
+            className={cn(
+              'flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all active:scale-[0.97]',
+              selectionMode === 'manual'
+                ? 'bg-white shadow-sm'
+                : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300'
+            )}
+            style={selectionMode === 'manual' ? { borderColor: game.color, color: game.color } : undefined}
+          >
+            <ControlSlider className="w-3.5 h-3.5 shrink-0" />
+            <div className="text-left">
+              <p className="text-[10px] font-black uppercase tracking-widest leading-none">Elegir</p>
+              <p className={cn('text-[8px] font-semibold mt-0.5 leading-none', selectionMode === 'manual' ? 'opacity-60' : 'text-slate-400')}>
+                De la lista
+              </p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* 4a. Modo Aleatorio */}
+      {selectionMode === 'random' && (
+        <section className="space-y-4">
+          {!selectedNationalNumber ? (
+            <div className="flex flex-col items-center gap-3 rounded-[1.6rem] border border-dashed border-slate-200 bg-slate-50/50 px-4 py-8 text-center">
+              <Spark className="w-6 h-6 text-manises-gold" />
+              <p className="text-[11px] font-bold text-slate-400">
+                Generaremos un número disponible al azar
+              </p>
+              <button
+                onClick={onRandomNationalNumber}
+                className="rounded-2xl px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-md transition-all active:scale-[0.97]"
+                style={{ backgroundColor: game.color }}
+              >
+                Generar número aleatorio
+              </button>
+            </div>
+          ) : (
+            <NationalTicketQuantitySelector
+              selectedNumber={selectedNationalNumber}
+              selectedQuantity={selectedNationalQuantity}
+              maxQuantity={maxNationalQuantity}
+              decimoPrice={selectedNationalDraw.decimoPrice}
+              firstPrize={selectedNationalDraw.firstPrize}
+              onQuantityChange={onChangeNationalQuantity}
+              onAddToCart={() => nationalCart.addSelectedToCart(deliveryMode)}
+              onReserve={handleReserve}
+            />
+          )}
+        </section>
       )}
 
-      {/* 5. Búsqueda y filtros — secundaria */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="font-black text-sm text-manises-blue">Busca por número</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 rounded-lg font-bold text-[10px] uppercase tracking-widest text-slate-400"
-            onClick={onClear}
-          >
-            Limpiar filtros
-          </Button>
-        </div>
+      {/* 4b. Modo Manual */}
+      {selectionMode === 'manual' && (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between px-0.5">
+            <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+              Números disponibles
+            </p>
+            <button
+              onClick={onClear}
+              className="text-[9px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              Limpiar
+            </button>
+          </div>
+          <NationalSearchBar
+            searchState={nationalShowcase.searchState}
+            onChange={nationalShowcase.setSearchState}
+          />
+          <NationalNumberShowcase
+            items={nationalShowcase.items}
+            selectedNumber={selectedNationalNumber}
+            onSelect={onSelectNationalNumber}
+          />
+          {selectedNationalNumber && (
+            <NationalTicketQuantitySelector
+              selectedNumber={selectedNationalNumber}
+              selectedQuantity={selectedNationalQuantity}
+              maxQuantity={maxNationalQuantity}
+              decimoPrice={selectedNationalDraw.decimoPrice}
+              firstPrize={selectedNationalDraw.firstPrize}
+              onQuantityChange={onChangeNationalQuantity}
+              onAddToCart={() => nationalCart.addSelectedToCart(deliveryMode)}
+              onReserve={handleReserve}
+            />
+          )}
+        </section>
+      )}
 
-        <NationalSearchBar
-          searchState={nationalShowcase.searchState}
-          onChange={nationalShowcase.setSearchState}
-        />
-      </section>
-
-      {/* 6. Reserva demo */}
+      {/* 5. Reserva demo */}
       {mockReservation && (
         <section className="stagger-item">
           <NationalReservationCard
@@ -294,7 +334,7 @@ export function NationalAdvancedFlow({
         </section>
       )}
 
-      {/* 7. Cesta nacional */}
+      {/* 6. Resumen de décimos seleccionados */}
       <NationalCartSummary
         lines={nationalCart.lines}
         breakdown={nationalCart.breakdown}

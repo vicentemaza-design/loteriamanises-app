@@ -54,7 +54,7 @@ import {
 } from '@/features/play/national/mocks/national-showcase.mock';
 import type { NationalDrawId } from '@/features/play/national/contracts/national-play.contract';
 import { useNationalShowcase } from '@/features/play/national/hooks/useNationalShowcase';
-import { useNationalCart } from '@/features/play/national/hooks/useNationalCart';
+import { useNationalCart, MAX_NATIONAL_DECIMOS } from '@/features/play/national/hooks/useNationalCart';
 import { buildNationalCartDraftIntent } from '@/features/play/national/application/build-national-cart-intent';
 import { useQuickPick } from '../quick-pick/hooks/useQuickPick';
 import { buildQuickPickDrafts } from '../quick-pick/application/build-quick-pick-drafts';
@@ -791,6 +791,11 @@ export function GamePlayPage() {
       return;
     }
 
+    if (nationalCartBreakdown.totalDecimos >= MAX_NATIONAL_DECIMOS) {
+      toast.error(`Máximo de ${MAX_NATIONAL_DECIMOS} décimos en la reserva demo.`);
+      return;
+    }
+
     addOrUpdateNationalCartLine({
       number: selectedNationalNumber,
       drawId: isExplicitNationalProduct ? selectedNationalDrawId : 'especial',
@@ -803,7 +808,9 @@ export function GamePlayPage() {
       maxQuantity: maxNationalQuantity,
     });
 
-    toast.success('Añadido a la cesta demo nacional.');
+    toast.success(`${selectedNationalQuantity} ${selectedNationalQuantity === 1 ? 'décimo' : 'décimos'} añadidos a tu reserva demo.`);
+    setSelectedNationalNumber(null);
+    setSelectedNationalQuantity(1);
   };
   
   const handlePersistNationalCart = () => {
