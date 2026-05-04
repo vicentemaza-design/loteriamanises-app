@@ -90,6 +90,15 @@ export function groupDrawsByWeek(draws: ScheduledDraw[]): Record<string, Schedul
   }, {});
 }
 
+export function groupDrawsByMonth(draws: ScheduledDraw[]): Record<string, ScheduledDraw[]> {
+  return draws.reduce<Record<string, ScheduledDraw[]>>((acc, draw) => {
+    const month = new Date(draw.drawDate).toLocaleDateString('es-ES', { month: 'long' }).toUpperCase();
+    if (!acc[month]) acc[month] = [];
+    acc[month].push(draw);
+    return acc;
+  }, {});
+}
+
 export function getDrawsForCurrentWeek(gameId: GameType, fromDate: Date | string): ScheduledDraw[] {
   const origin = typeof fromDate === 'string' ? new Date(fromDate) : new Date(fromDate);
   const weekEnd = endOfWeek(origin);
