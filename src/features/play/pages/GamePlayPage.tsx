@@ -1246,49 +1246,83 @@ export function GamePlayPage() {
                   )}
                 </div>
 
-                {/* Carrusel horizontal de sorteos */}
+                {/* Carrusel horizontal agrupado por semana */}
                 <div className="flex gap-2 overflow-x-auto border-t border-slate-50 px-3.5 pb-3 pt-2.5">
-                  {allAvailableDraws.map((draw) => {
-                    const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
-                    const chip = formatDrawChip(draw.drawDate);
-                    return (
+                  {(Object.entries(groupedAllDraws) as [string, ScheduledDraw[]][]).flatMap(([weekKey, weekDraws], weekIndex) => {
+                    const weekLabel = weekIndex === 0 ? 'Esta sem.' : weekIndex === 1 ? 'Próx. sem.' : `Sem. ${weekIndex + 1}`;
+                    const weekDates = weekDraws.map((d: ScheduledDraw) => d.drawDate);
+                    const allSelected = weekDates.length > 0 && weekDates.every((d: string) => effectiveSelectedDrawDates.includes(d));
+                    const someSelected = weekDates.some((d: string) => effectiveSelectedDrawDates.includes(d));
+
+                    const separator = (
                       <button
-                        key={draw.drawDate}
+                        key={`sep-${weekKey}`}
                         onClick={() => {
                           setTimeMode('specific_days');
                           setSelectedDrawDates((prev: string[]) =>
-                            prev.includes(draw.drawDate)
-                              ? prev.filter((d: string) => d !== draw.drawDate)
-                              : [...prev, draw.drawDate].sort()
+                            allSelected
+                              ? prev.filter((d: string) => !weekDates.includes(d))
+                              : Array.from(new Set([...prev, ...weekDates])).sort()
                           );
                         }}
                         className={cn(
-                          'relative flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border min-w-[52px] px-1.5 py-2 transition-all',
-                          isSelected
-                            ? 'border-transparent shadow-[0_4px_12px_rgba(10,71,146,0.10)]'
-                            : 'bg-white border-slate-100 hover:border-slate-200'
+                          'flex shrink-0 items-center self-center rounded-lg border px-2 py-1.5 text-[8px] font-black uppercase tracking-wider transition-all',
+                          allSelected
+                            ? 'text-white border-transparent shadow-sm'
+                            : someSelected
+                              ? 'bg-slate-50 border-slate-200 text-slate-500'
+                              : 'bg-slate-50 border-dashed border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'
                         )}
-                        style={isSelected ? { backgroundColor: `${game.color}12`, borderColor: game.color } : undefined}
+                        style={allSelected ? { backgroundColor: game.color, borderColor: game.color } : undefined}
                       >
-                        {isSelected && (
-                          <motion.div
-                            layoutId="selected-draw-chip"
-                            className="absolute inset-0 rounded-xl border-2 z-0"
-                            style={{ borderColor: game.color }}
-                            transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                          />
-                        )}
-                        <span className={cn('relative z-10 text-[8px] font-semibold leading-none', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>
-                          {chip.weekday}
-                        </span>
-                        <span className={cn('relative z-10 text-[13px] font-black leading-none', isSelected ? 'text-manises-blue' : 'text-slate-700')}>
-                          {chip.day}
-                        </span>
-                        <span className={cn('relative z-10 text-[7px] font-semibold leading-none tabular-nums', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>
-                          {chip.time}
-                        </span>
+                        {weekLabel}
                       </button>
                     );
+
+                    const chips = weekDraws.map((draw: ScheduledDraw) => {
+                      const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
+                      const chip = formatDrawChip(draw.drawDate);
+                      return (
+                        <button
+                          key={draw.drawDate}
+                          onClick={() => {
+                            setTimeMode('specific_days');
+                            setSelectedDrawDates((prev: string[]) =>
+                              prev.includes(draw.drawDate)
+                                ? prev.filter((d: string) => d !== draw.drawDate)
+                                : [...prev, draw.drawDate].sort()
+                            );
+                          }}
+                          className={cn(
+                            'relative flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border min-w-[52px] px-1.5 py-2 transition-all',
+                            isSelected
+                              ? 'border-transparent shadow-[0_4px_12px_rgba(10,71,146,0.10)]'
+                              : 'bg-white border-slate-100 hover:border-slate-200'
+                          )}
+                          style={isSelected ? { backgroundColor: `${game.color}12`, borderColor: game.color } : undefined}
+                        >
+                          {isSelected && (
+                            <motion.div
+                              layoutId="selected-draw-chip"
+                              className="absolute inset-0 rounded-xl border-2 z-0"
+                              style={{ borderColor: game.color }}
+                              transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                            />
+                          )}
+                          <span className={cn('relative z-10 text-[8px] font-semibold leading-none', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>
+                            {chip.weekday}
+                          </span>
+                          <span className={cn('relative z-10 text-[13px] font-black leading-none', isSelected ? 'text-manises-blue' : 'text-slate-700')}>
+                            {chip.day}
+                          </span>
+                          <span className={cn('relative z-10 text-[7px] font-semibold leading-none tabular-nums', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>
+                            {chip.time}
+                          </span>
+                        </button>
+                      );
+                    });
+
+                    return [separator, ...chips];
                   })}
                 </div>
               </div>
