@@ -76,51 +76,75 @@ export function QuickPickPanel({
         </div>
       </section>
 
-      {/* 2. Preview de combinaciones */}
+      {/* 2. Preview — primera combinación siempre visible */}
       <section className="overflow-hidden rounded-[1.6rem] border border-manises-blue/10 bg-slate-50/50">
-        <button
-          onClick={() => setIsPreviewOpen(!isPreviewOpen)}
-          className="flex w-full items-center justify-between p-3.5 transition-colors hover:bg-slate-100/50"
-        >
-          <div className="flex items-center gap-2.5">
-            <Spark className="w-4 h-4 text-manises-gold" />
-            <span className="text-[11px] font-black text-manises-blue uppercase tracking-widest">
-              Ver combinaciones generadas
-            </span>
+        <div className="px-3.5 pt-3 pb-2.5">
+          <div className="flex items-center gap-2 mb-2">
+            <Spark className="w-3.5 h-3.5 text-manises-gold shrink-0" />
+            <span className="text-[10px] font-black text-manises-blue uppercase tracking-widest">Combinaciones generadas</span>
           </div>
-          {isPreviewOpen ? <NavArrowUp className="w-4 h-4" /> : <NavArrowDown className="w-4 h-4" />}
-        </button>
-
-        <AnimatePresence>
-          {isPreviewOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden px-3.5 pb-3.5"
-            >
-              <div className="space-y-1.5 pt-1.5">
-                {combinations.map((combo, idx) => (
-                  <div key={combo.id} className="flex items-center justify-between rounded-xl border border-slate-100 bg-white p-2 shadow-sm">
-                    <span className="text-[10px] font-black text-slate-300 w-4">#{idx + 1}</span>
-                    <div className="flex-1 flex flex-wrap gap-1 items-center justify-end">
-                      {combo.numbers.map((n) => (
-                        <span key={n} className="w-5 h-5 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200 text-[10px] font-black text-manises-blue">
-                          {n}
-                        </span>
-                      ))}
-                      {combo.stars?.map((s) => (
-                        <span key={s} className="w-5 h-5 flex items-center justify-center rounded-full bg-manises-gold text-white text-[10px] font-black">
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+          {combinations[0] && (
+            <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-white px-2.5 py-2 shadow-sm">
+              <span className="text-[9px] font-black text-slate-300 w-3 shrink-0">#1</span>
+              <div className="flex flex-wrap gap-1 items-center">
+                {combinations[0].numbers.map((n) => (
+                  <span key={n} className="w-5 h-5 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200 text-[10px] font-black text-manises-blue">
+                    {n}
+                  </span>
+                ))}
+                {combinations[0].stars?.map((s) => (
+                  <span key={s} className="w-5 h-5 flex items-center justify-center rounded-full bg-manises-gold text-white text-[10px] font-black">
+                    {s}
+                  </span>
                 ))}
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
+        </div>
+
+        {combinations.length > 1 && (
+          <>
+            <button
+              onClick={() => setIsPreviewOpen(!isPreviewOpen)}
+              className="flex w-full items-center justify-between border-t border-slate-100/70 px-3.5 py-2 transition-colors hover:bg-slate-100/50"
+            >
+              <span className="text-[10px] font-medium text-slate-400">
+                {isPreviewOpen ? 'Ocultar' : `Ver ${combinations.length - 1} combinaciones más`}
+              </span>
+              {isPreviewOpen ? <NavArrowUp className="w-3.5 h-3.5 text-slate-400" /> : <NavArrowDown className="w-3.5 h-3.5 text-slate-400" />}
+            </button>
+            <AnimatePresence>
+              {isPreviewOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden px-3.5 pb-3"
+                >
+                  <div className="space-y-1.5">
+                    {combinations.slice(1).map((combo, idx) => (
+                      <div key={combo.id} className="flex items-center gap-2 rounded-xl border border-slate-100 bg-white px-2.5 py-2 shadow-sm">
+                        <span className="text-[9px] font-black text-slate-300 w-3 shrink-0">#{idx + 2}</span>
+                        <div className="flex flex-wrap gap-1 items-center">
+                          {combo.numbers.map((n) => (
+                            <span key={n} className="w-5 h-5 flex items-center justify-center rounded-full bg-slate-50 border border-slate-200 text-[10px] font-black text-manises-blue">
+                              {n}
+                            </span>
+                          ))}
+                          {combo.stars?.map((s) => (
+                            <span key={s} className="w-5 h-5 flex items-center justify-center rounded-full bg-manises-gold text-white text-[10px] font-black">
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
       </section>
 
       {/* 3. Footer con Resumen y CTA */}
@@ -153,7 +177,7 @@ export function QuickPickPanel({
           onClick={onAdd}
           disabled={isAdding || availableBalance < totalPrice}
         >
-          {isAdding ? 'Generando...' : `Añadir ${count} apuestas rápidas demo`}
+          {isAdding ? 'Generando...' : count === 1 ? 'Añadir 1 apuesta' : `Añadir ${count} apuestas`}
         </Button>
         
         <p className="mt-2.5 text-center text-[8px] font-medium text-slate-400">

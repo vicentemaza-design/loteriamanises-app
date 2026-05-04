@@ -1163,14 +1163,14 @@ export function GamePlayPage() {
           </motion.div>
         )}
 
-        {/* === Nueva secuencia visible para juegos de apuestas/combinaciones === */}
+        {/* === Flujo secuencial para juegos de combinaciones === */}
         {supportsQuickPick && (
-          <div className="space-y-3">
+          <div className="space-y-2.5">
 
-            {/* Tipo de jugada secundario (Simple / Múltiple / Reducida) */}
+            {/* Tipo de jugada (compacto, solo si hay >1 modo) */}
             {availableModes.length > 1 && (
-              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm">
-                <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Tipo de jugada</p>
+              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
+                <p className="mb-1.5 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Tipo de jugada</p>
                 <div className="flex gap-1.5 flex-wrap">
                   {availableModes.map((m) => {
                     const modeLabels: Record<string, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
@@ -1200,11 +1200,56 @@ export function GamePlayPage() {
               </div>
             )}
 
-            {/* Bloque 1 — Fechas (solo si el juego soporta multiselección y modo simple) */}
+            {/* Bloque Método — PRIMERO, antes de fechas. Aleatorio = camino rápido */}
+            {mode === 'simple' && (
+              <div
+                className="rounded-[1.2rem] border-2 bg-white px-3.5 py-3 shadow-sm transition-colors"
+                style={{ borderColor: betMethod ? `${game.color}28` : '#e2e8f0' }}
+              >
+                <p className="mb-0.5 px-0.5 text-[11px] font-black uppercase tracking-[0.10em] text-manises-blue">¿Cómo quieres jugar?</p>
+                <p className="mb-2.5 px-0.5 text-[9px] font-medium text-slate-400">Jugada rápida o elige tus números manualmente</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setBetMethod('random')}
+                    className={cn(
+                      'flex flex-col items-center justify-center gap-1 rounded-xl border-2 py-3.5 px-2 transition-all active:scale-[0.97]',
+                      betMethod === 'random'
+                        ? 'text-white shadow-lg'
+                        : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'
+                    )}
+                    style={betMethod === 'random' ? { backgroundColor: game.color, borderColor: game.color } : undefined}
+                  >
+                    <Spark className={cn('w-4 h-4', betMethod === 'random' ? 'text-white/90' : 'text-manises-gold')} />
+                    <span className="text-[11px] font-black uppercase tracking-widest">Aleatorio</span>
+                    <span className={cn('text-[8px] font-semibold', betMethod === 'random' ? 'text-white/70' : 'text-slate-400')}>
+                      Rápido
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setBetMethod('manual')}
+                    className={cn(
+                      'flex flex-col items-center justify-center gap-1 rounded-xl border-2 py-3.5 px-2 transition-all active:scale-[0.97]',
+                      betMethod === 'manual'
+                        ? 'bg-white shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300'
+                    )}
+                    style={betMethod === 'manual' ? { borderColor: game.color, color: game.color } : undefined}
+                  >
+                    <ControlSlider className="w-4 h-4" />
+                    <span className="text-[11px] font-black uppercase tracking-widest">Manual</span>
+                    <span className={cn('text-[8px] font-semibold', betMethod === 'manual' ? 'opacity-60' : 'text-slate-400')}>
+                      Tus números
+                    </span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Bloque Fechas — siempre visible, compacto */}
             {supportsTimeSelection && mode === 'simple' && (
-              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm space-y-3">
+              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm space-y-2">
                 <div className="flex items-center justify-between">
-                  <p className="px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Elige una o varias fechas</p>
+                  <p className="px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Sorteo</p>
                   <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={drawsCount} />
                 </div>
 
@@ -1230,11 +1275,12 @@ export function GamePlayPage() {
                           else { setTimeMode(opt.id as ScheduleMode); setSelectedDrawDates([]); }
                         }}
                         className={cn(
-                          'px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border',
+                          'px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border',
                           isActive
-                            ? 'bg-manises-blue text-white border-manises-blue shadow-sm'
+                            ? 'text-white border-transparent shadow-sm'
                             : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
                         )}
+                        style={isActive ? { backgroundColor: game.color, borderColor: game.color } : undefined}
                       >
                         {opt.label}
                       </button>
@@ -1248,14 +1294,14 @@ export function GamePlayPage() {
                   </button>
                 </div>
 
-                {/* Grid de sorteos */}
-                <div className="custom-scrollbar max-h-[220px] space-y-3 overflow-y-auto pr-1">
+                {/* Grid de sorteos — columnas iguales, sin espacio vacío a la derecha */}
+                <div className="custom-scrollbar max-h-[200px] space-y-2 overflow-y-auto pr-1">
                   {(Object.entries(groupedAllDraws) as [string, ScheduledDraw[]][]).map(([weekLabel, draws], index) => {
                     const displayLabel = index === 0 ? 'Esta semana' : index === 1 ? 'Próxima semana' : weekLabel;
                     return (
-                      <div key={weekLabel} className="space-y-2">
+                      <div key={weekLabel} className="space-y-1.5">
                         <p className="pl-1 text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">{displayLabel}</p>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="grid grid-cols-4 gap-1.5">
                           {draws.map((draw) => {
                             const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
                             return (
@@ -1270,23 +1316,25 @@ export function GamePlayPage() {
                                   );
                                 }}
                                 className={cn(
-                                  'relative flex min-w-[60px] flex-col items-center justify-center rounded-xl border px-2.5 py-2 transition-all',
+                                  'relative flex flex-col items-center justify-center rounded-xl border px-1 py-2 transition-all',
                                   isSelected
-                                    ? 'bg-manises-blue/10 border-manises-blue shadow-[0_4px_12px_rgba(10,71,146,0.14)]'
+                                    ? 'border-transparent shadow-[0_4px_12px_rgba(10,71,146,0.12)]'
                                     : 'bg-white border-slate-100 hover:border-slate-200'
                                 )}
+                                style={isSelected ? { backgroundColor: `${game.color}12`, borderColor: game.color } : undefined}
                               >
                                 {isSelected && (
                                   <motion.div
-                                    layoutId="selected-draw-indicator"
-                                    className="absolute inset-0 rounded-xl border-2 border-manises-blue z-0"
+                                    layoutId="selected-draw-chip"
+                                    className="absolute inset-0 rounded-xl border-2 z-0"
+                                    style={{ borderColor: game.color }}
                                     transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                                   />
                                 )}
-                                <span className={cn('relative z-10 text-[9px] font-semibold leading-tight', isSelected ? 'text-manises-blue/80' : 'text-slate-400')}>
+                                <span className={cn('relative z-10 text-[8px] font-semibold leading-tight', isSelected ? 'text-manises-blue/80' : 'text-slate-400')}>
                                   {formatChipContext(draw.drawDate)}
                                 </span>
-                                <span className={cn('relative z-10 text-[12px] font-black leading-tight mt-0.5', isSelected ? 'text-manises-blue' : 'text-slate-700')}>
+                                <span className={cn('relative z-10 text-[11px] font-black leading-tight mt-0.5', isSelected ? 'text-manises-blue' : 'text-slate-700')}>
                                   {new Date(draw.drawDate).getDate()} {new Date(draw.drawDate).toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}
                                 </span>
                               </button>
@@ -1297,13 +1345,12 @@ export function GamePlayPage() {
                     );
                   })}
                 </div>
-                <p className="px-1 text-[10px] font-medium italic text-slate-400">* Puedes combinar días sueltos de distintas semanas</p>
               </div>
             )}
 
-            {/* Bloque 1b — Sin multiselección: resumen compacto del sorteo */}
+            {/* Bloque Sorteo compacto (juegos sin multiselección) */}
             {!supportsTimeSelection && mode === 'simple' && (
-              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm">
+              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Sorteo</p>
                   <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={1} />
@@ -1311,36 +1358,7 @@ export function GamePlayPage() {
               </div>
             )}
 
-            {/* Bloque 2 — Método de selección (solo modo simple) */}
-            {mode === 'simple' && (
-              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm">
-                <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">¿Cómo quieres elegir tus números?</p>
-                <div className="flex p-1 bg-slate-100/70 rounded-xl border border-slate-200/50 gap-0">
-                  <button
-                    onClick={() => setBetMethod('manual')}
-                    className={cn(
-                      'flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all',
-                      betMethod === 'manual' ? 'bg-white shadow-sm' : 'text-slate-400'
-                    )}
-                    style={betMethod === 'manual' ? { color: game.color } : undefined}
-                  >
-                    Manual
-                  </button>
-                  <button
-                    onClick={() => setBetMethod('random')}
-                    className={cn(
-                      'flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all',
-                      betMethod === 'random' ? 'bg-white shadow-sm' : 'text-slate-400'
-                    )}
-                    style={betMethod === 'random' ? { color: game.color } : undefined}
-                  >
-                    Aleatorio
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Bloque 3 — Número de apuestas (solo modo simple + manual) */}
+            {/* Bloque Número de apuestas (manual) */}
             {mode === 'simple' && betMethod === 'manual' && (
               <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm">
                 <div className="flex items-center justify-between">
@@ -1650,6 +1668,7 @@ export function GamePlayPage() {
         </AnimatePresence>
 
         {/* ---- SECCIÓN LAGUINDA: Abono ---- */}
+        {(!supportsQuickPick || betMethod !== null) && (
         <div className="mt-2 space-y-3">
 
           <motion.div
@@ -1719,6 +1738,7 @@ export function GamePlayPage() {
             </div>
           </motion.div>
         </div>
+        )}
       </div>
 
       {/* ---- Barra de confirmación ---- */}
