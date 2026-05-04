@@ -537,7 +537,7 @@ export function GamePlayPage() {
         return;
       }
       setSelectedNationalNumber(randomTicket.number);
-      setSelectedNationalQuantity(Math.min(2, randomTicket.available));
+      setSelectedNationalQuantity(1);
       toast.success(`Décimo ${randomTicket.number} seleccionado`);
       return;
     }
