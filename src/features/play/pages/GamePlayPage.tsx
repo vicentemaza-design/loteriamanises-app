@@ -1453,9 +1453,13 @@ export function GamePlayPage() {
                     combinations={quickPick.combinations}
                     isRegenerating={quickPick.isRegenerating}
                     regenerate={quickPick.regenerate}
+                    regenerateAt={quickPick.regenerateAt}
+                    generationPreset={quickPick.generationPreset}
+                    setGenerationPreset={quickPick.setGenerationPreset}
                     totalPrice={quickPickTotalPrice}
                     availableBalance={profile?.balance ?? 0}
                     drawsCount={effectiveSelectedDrawDates.length || 1}
+                    activeColor={game.color}
                     onAdd={handlePersistQuickPick}
                   />
                 ) : isMulticolumnMode ? (

@@ -1,6 +1,8 @@
 import type { LotteryGame } from '@/shared/types/domain';
 import type { GameSelection } from '@/features/session/types/session.types';
 
+export type GenerationPreset = 'random' | 'odd' | 'even';
+
 export interface QuickPickCombination {
   id: string;
   numbers: number[];

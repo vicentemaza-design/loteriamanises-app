@@ -38,3 +38,39 @@ export function generateRandomPlay(
     stars: starCount > 0 ? pickFrom(totalStars, starCount) : [],
   };
 }
+
+export type GenerationPreset = 'random' | 'odd' | 'even';
+
+export function generateWithPreset(
+  totalNumbers: number,
+  pickCount: number,
+  totalStars: number,
+  starCount: number,
+  preset: GenerationPreset
+): { numbers: number[]; stars: number[] } {
+  const pickFrom = (pool: number[], count: number): number[] => {
+    const arr = [...pool];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr.slice(0, count).sort((a, b) => a - b);
+  };
+
+  const fullPool = Array.from({ length: totalNumbers }, (_, i) => i + 1);
+
+  let numbers: number[];
+  if (preset === 'odd') {
+    const oddPool = fullPool.filter(n => n % 2 !== 0);
+    numbers = oddPool.length >= pickCount ? pickFrom(oddPool, pickCount) : pickFrom(fullPool, pickCount);
+  } else if (preset === 'even') {
+    const evenPool = fullPool.filter(n => n % 2 === 0);
+    numbers = evenPool.length >= pickCount ? pickFrom(evenPool, pickCount) : pickFrom(fullPool, pickCount);
+  } else {
+    numbers = pickFrom(fullPool, pickCount);
+  }
+
+  const starPool = Array.from({ length: totalStars }, (_, i) => i + 1);
+  const stars = starCount > 0 ? pickFrom(starPool, starCount) : [];
+  return { numbers, stars };
+}
