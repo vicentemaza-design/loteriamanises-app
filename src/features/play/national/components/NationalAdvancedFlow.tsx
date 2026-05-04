@@ -29,9 +29,6 @@ interface NationalDrawMeta {
 interface NationalAdvancedFlowProps {
   game: LotteryGame;
   selectedNationalDraw: NationalDrawMeta;
-  selectedNationalNumber: string | null;
-  selectedNationalQuantity: number;
-  maxNationalQuantity: number;
   drawsCount: number;
   drawStatus: ResolvedDrawStatus;
   supportsTimeSelection: boolean;
@@ -52,12 +49,10 @@ interface NationalAdvancedFlowProps {
     removeLine: (number: string, drawId: NationalCartLine['drawId']) => void;
     updateQuantity: (number: string, drawId: NationalCartLine['drawId'], delta: number) => void;
     clearCart: () => void;
-    addSelectedToCart: (deliveryMode: DeliveryMode) => void;
     onPersistToSession?: () => void;
   };
 
   onSelectNationalNumber: (ticket: NationalShowcaseItem) => void;
-  onChangeNationalQuantity: (quantity: number) => void;
   onRandomNationalNumber: () => void;
   onClear: () => void;
 }
@@ -69,9 +64,6 @@ function formatTime(iso: string): string {
 export function NationalAdvancedFlow({
   game,
   selectedNationalDraw,
-  selectedNationalNumber,
-  selectedNationalQuantity,
-  maxNationalQuantity,
   drawStatus,
   supportsTimeSelection,
   availableNationalDates,
@@ -80,28 +72,30 @@ export function NationalAdvancedFlow({
   nationalShowcase,
   nationalCart,
   onSelectNationalNumber,
-  onChangeNationalQuantity,
   onRandomNationalNumber,
   onClear,
 }: NationalAdvancedFlowProps) {
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
   const [selectionMode, setSelectionMode] = useState<'random' | 'manual'>('random');
 
-  // qty 0 → deselect; qty > 0 → update quantity
-  const handleInlineQuantityChange = (qty: number) => {
-    if (qty <= 0) {
-      onClear();
+  const previewNumber = nationalCart.lines[0]?.number ?? null;
+
+  const handleDecrement = (number: string, drawId: NationalCartLine['drawId']) => {
+    const line = nationalCart.lines.find(l => l.number === number && l.drawId === drawId);
+    if (!line) return;
+    if (line.quantity <= 1) {
+      nationalCart.removeLine(number, drawId);
     } else {
-      onChangeNationalQuantity(qty);
+      nationalCart.updateQuantity(number, drawId, -1);
     }
   };
 
   // Auto-assign when switching to random mode and nothing is selected yet
   useEffect(() => {
-    if (selectionMode === 'random' && !selectedNationalNumber && nationalShowcase.items.length > 0) {
+    if (selectionMode === 'random' && nationalCart.lines.length === 0 && nationalShowcase.items.length > 0) {
       onRandomNationalNumber();
     }
-    // Only fires on mode change, not on every selectedNationalNumber update
+    // Only fires on mode change, not on every cart update
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectionMode]);
 
@@ -152,7 +146,7 @@ export function NationalAdvancedFlow({
         className="stagger-item"
       >
         <NationalTicketVisual
-          number={selectedNationalNumber}
+          number={previewNumber}
           drawLabel={selectedNationalDraw.label}
           drawDate={selectedNationalDraw.nextDraw}
           price={selectedNationalDraw.decimoPrice}
@@ -216,7 +210,7 @@ export function NationalAdvancedFlow({
             Números disponibles
           </p>
           <div className="flex items-center gap-3">
-            {selectionMode === 'random' && selectedNationalNumber && (
+            {selectionMode === 'random' && nationalCart.lines.length > 0 && (
               <button
                 onClick={onRandomNationalNumber}
                 className="text-[9px] font-black uppercase tracking-wider text-manises-blue/60 hover:text-manises-blue transition-colors"
@@ -240,11 +234,10 @@ export function NationalAdvancedFlow({
 
         <NationalNumberShowcase
           items={nationalShowcase.items}
-          selectedNumber={selectedNationalNumber}
-          selectedQuantity={selectedNationalQuantity}
-          maxQuantity={maxNationalQuantity}
-          onSelect={onSelectNationalNumber}
-          onQuantityChange={handleInlineQuantityChange}
+          cartLines={nationalCart.lines}
+          onToggle={onSelectNationalNumber}
+          onIncrement={(number, drawId) => nationalCart.updateQuantity(number, drawId, 1)}
+          onDecrement={handleDecrement}
         />
       </section>
 

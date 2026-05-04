@@ -1,22 +1,20 @@
 import { cn } from '@/shared/lib/utils';
-import type { NationalShowcaseItem } from '../contracts/national-play.contract';
+import type { NationalCartLine, NationalShowcaseItem } from '../contracts/national-play.contract';
 
 interface NationalNumberShowcaseProps {
   items: NationalShowcaseItem[];
-  selectedNumber: string | null;
-  selectedQuantity: number;
-  maxQuantity: number;
-  onSelect: (item: NationalShowcaseItem) => void;
-  onQuantityChange: (qty: number) => void;
+  cartLines: NationalCartLine[];
+  onToggle: (item: NationalShowcaseItem) => void;
+  onIncrement: (number: string, drawId: NationalCartLine['drawId']) => void;
+  onDecrement: (number: string, drawId: NationalCartLine['drawId']) => void;
 }
 
 export function NationalNumberShowcase({
   items,
-  selectedNumber,
-  selectedQuantity,
-  maxQuantity,
-  onSelect,
-  onQuantityChange,
+  cartLines,
+  onToggle,
+  onIncrement,
+  onDecrement,
 }: NationalNumberShowcaseProps) {
   return (
     <div className="space-y-4">
@@ -28,14 +26,16 @@ export function NationalNumberShowcase({
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {items.map((item) => {
-            const active = item.number === selectedNumber;
+            const activeLine = cartLines.find(l => l.number === item.number && l.drawId === item.drawId);
+            const active = activeLine !== undefined;
+            const qty = activeLine?.quantity ?? 1;
             const availabilityText = item.available <= 1 ? 'Último' : `Quedan ${item.available}`;
 
             return (
               <button
                 key={`${item.drawId}-${item.number}`}
                 type="button"
-                onClick={() => onSelect(item)}
+                onClick={() => onToggle(item)}
                 className={cn(
                   'group relative overflow-hidden rounded-2xl border-2 p-3.5 text-left transition-all',
                   active
@@ -52,26 +52,25 @@ export function NationalNumberShowcase({
                   </p>
 
                   {active ? (
-                    // Mini stepper replaces badge when this card is selected
                     <div
                       className="flex items-center gap-0.5 rounded-lg bg-white/15 p-0.5"
                       onClick={e => e.stopPropagation()}
                     >
                       <button
                         type="button"
-                        onClick={() => onQuantityChange(selectedQuantity - 1)}
+                        onClick={() => onDecrement(item.number, item.drawId)}
                         className="flex h-6 w-6 items-center justify-center rounded-md text-sm font-black text-white/80 transition-colors hover:bg-white/20 hover:text-white"
                         aria-label="Restar décimo"
                       >
                         −
                       </button>
                       <span className="w-5 text-center text-[13px] font-black leading-none text-white">
-                        {selectedQuantity}
+                        {qty}
                       </span>
                       <button
                         type="button"
-                        onClick={() => onQuantityChange(Math.min(maxQuantity, selectedQuantity + 1))}
-                        disabled={selectedQuantity >= maxQuantity}
+                        onClick={() => onIncrement(item.number, item.drawId)}
+                        disabled={qty >= item.available}
                         className="flex h-6 w-6 items-center justify-center rounded-md text-sm font-black text-white/80 transition-colors hover:bg-white/20 hover:text-white disabled:opacity-30"
                         aria-label="Sumar décimo"
                       >
@@ -95,7 +94,7 @@ export function NationalNumberShowcase({
                         ? 'text-red-500'
                         : 'text-slate-400'
                 )}>
-                  {active ? `${availabilityText} · máx. ${maxQuantity}` : availabilityText}
+                  {active ? `${availabilityText} · máx. ${item.available}` : availabilityText}
                 </p>
               </button>
             );

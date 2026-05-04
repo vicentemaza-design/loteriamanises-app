@@ -54,7 +54,7 @@ import {
 } from '@/features/play/national/mocks/national-showcase.mock';
 import type { NationalDrawId } from '@/features/play/national/contracts/national-play.contract';
 import { useNationalShowcase } from '@/features/play/national/hooks/useNationalShowcase';
-import { useNationalCart, MAX_NATIONAL_DECIMOS } from '@/features/play/national/hooks/useNationalCart';
+import { useNationalCart } from '@/features/play/national/hooks/useNationalCart';
 import { buildNationalCartDraftIntent } from '@/features/play/national/application/build-national-cart-intent';
 import { useQuickPick } from '../quick-pick/hooks/useQuickPick';
 import { buildQuickPickDrafts } from '../quick-pick/application/build-quick-pick-drafts';
@@ -389,12 +389,12 @@ export function GamePlayPage() {
     selectedNationalDraw,
     drawsCount,
   });
-  const isOverBalance = profile ? profile.balance < totalPrice : false;
+  const displayTotalPrice = isNationalLottery ? nationalCartBreakdown.subtotal : totalPrice;
+  const isOverBalance = profile ? profile.balance < displayTotalPrice : false;
   const availableBalance = profile?.balance ?? 0;
-  const remainingBalance = Math.max(availableBalance - totalPrice, 0);
+  const remainingBalance = Math.max(availableBalance - displayTotalPrice, 0);
 
-  const selectedNationalTicket = nationalShowcase.find((ticket) => ticket.number === selectedNationalNumber);
-  const maxNationalQuantity = selectedNationalTicket?.available ?? 1;
+
 
   const helpContent = getGameHelpContent({
     game,
@@ -536,9 +536,18 @@ export function GamePlayPage() {
         toast.error('No hay décimos disponibles en el escaparate demo.');
         return;
       }
-      setSelectedNationalNumber(randomTicket.number);
-      setSelectedNationalQuantity(1);
-      toast.success(`Décimo ${randomTicket.number} seleccionado`);
+      addOrUpdateNationalCartLine({
+        number: randomTicket.number,
+        drawId: isExplicitNationalProduct ? selectedNationalDrawId : 'especial',
+        drawLabel: selectedNationalDraw.label,
+        drawDates: effectiveSelectedDrawDates,
+        quantity: 1,
+        unitPrice: selectedNationalDraw.decimoPrice,
+        totalPrice: selectedNationalDraw.decimoPrice * drawsCount,
+        deliveryMode: 'custody',
+        maxQuantity: randomTicket.available,
+      });
+      toast.success(`Décimo ${randomTicket.number} añadido`);
       return;
     }
 
@@ -558,6 +567,7 @@ export function GamePlayPage() {
     setSelectedStars([]);
     setSelectedNationalNumber(null);
     setSelectedNationalQuantity(1);
+    clearNationalCart();
 
     if (isNationalLottery) {
       setNationalSearchState(DEFAULT_NATIONAL_SEARCH_STATE);
@@ -565,8 +575,9 @@ export function GamePlayPage() {
   };
 
   const handleShare = async () => {
-    const nationalShare = selectedNationalNumber
-      ? `décimo ${selectedNationalNumber} (${selectedNationalQuantity} ud.) para el sorteo de ${selectedNationalDraw.label}`
+    const firstLine = nationalCartLines[0];
+    const nationalShare = firstLine
+      ? `${firstLine.quantity} ${firstLine.quantity === 1 ? 'décimo' : 'décimos'} del ${firstLine.number} para el sorteo de ${selectedNationalDraw.label}`
       : 'un décimo de Lotería Nacional';
     const text = isNationalLottery
       ? `¡Acabo de jugar ${nationalShare} en Lotería Manises! ¡A por el premio!`
@@ -612,7 +623,7 @@ export function GamePlayPage() {
   const hasSufficientReducedForecast = compatibleReducedSystems.length > 0;
 
   const canPlay = !isMulticolumnMode && !isQuickPickMode && (isNationalLottery
-    ? selectedNationalNumber !== null
+    ? nationalCartLines.length > 0
     : isQuiniela
       ? isQuinielaValid
       : selectedNumbers.length >= minNums && selectedNumbers.length <= maxNums && hasValidStarSelection && isSupportedReducedSelection && betsCount > 0);
@@ -620,7 +631,7 @@ export function GamePlayPage() {
   // Sticky CTA is hidden until the user has an active in-progress selection.
   const shouldShowStickyCta = (() => {
     if (isQuickPickMode) return false;
-    if (isNationalLottery) return selectedNationalNumber !== null;
+    if (isNationalLottery) return nationalCartLines.length > 0;
     if (isQuiniela) return quinielaMatches.some((m: QuinielaMatch) => m.result !== null);
     if (supportsQuickPick && mode === 'simple' && betMethod === null) return false;
     if (isMulticolumnMode) return false;
@@ -628,16 +639,22 @@ export function GamePlayPage() {
   })();
 
   const handlePlay = async () => {
-    if (!canPlay)           { 
+    if (!canPlay)           {
       if (isQuiniela && !isQuinielaValid && mode === 'reduced') {
         const config = QUINIELA_REDUCED_TABLES[selectedReductionSystemId as QuinielaReducedType];
         toast.error(`Requisitos: ${config.dobles}D y ${config.triples}T`);
       } else if (mode === 'reduced' && !isSupportedReducedSelection) {
         toast.error('La selección actual no encaja en una fila válida de la tabla reducida');
       } else {
-        toast.error('Completa tu apuesta'); 
+        toast.error('Completa tu apuesta');
       }
-      return; 
+      return;
+    }
+
+    if (isNationalLottery) {
+      handlePersistNationalCart();
+      clearNationalCart();
+      return;
     }
 
     const draftSelection = buildGameSelection({
@@ -701,10 +718,7 @@ export function GamePlayPage() {
     const result = addDrafts(nextDrafts);
     if (result.addedCount > 0) {
       toast.success(result.addedCount === 1 ? 'Jugada añadida.' : `${result.addedCount} jugadas añadidas.`);
-      if (isNationalLottery) {
-        setSelectedNationalNumber(null);
-        setSelectedNationalQuantity(1);
-      } else if (isQuiniela) {
+      if (isQuiniela) {
         setQuinielaMatches((prev: QuinielaMatch[]) => prev.map((m: QuinielaMatch) => ({ ...m, result: null })));
       } else {
         setSelectedNumbers([]);
@@ -804,34 +818,6 @@ export function GamePlayPage() {
   };
 
 
-  const handleAddSelectedNationalToDemoCart = (deliveryMode: 'custody' | 'shipping' = 'custody') => {
-    if (!selectedNationalNumber) {
-      toast.error('Selecciona antes un décimo.');
-      return;
-    }
-
-    if (nationalCartBreakdown.totalDecimos >= MAX_NATIONAL_DECIMOS) {
-      toast.error(`Máximo de ${MAX_NATIONAL_DECIMOS} décimos en la reserva demo.`);
-      return;
-    }
-
-    addOrUpdateNationalCartLine({
-      number: selectedNationalNumber,
-      drawId: isExplicitNationalProduct ? selectedNationalDrawId : 'especial',
-      drawLabel: selectedNationalDraw.label,
-      drawDates: effectiveSelectedDrawDates,
-      quantity: selectedNationalQuantity,
-      unitPrice: selectedNationalDraw.decimoPrice,
-      totalPrice: selectedNationalDraw.decimoPrice * selectedNationalQuantity * drawsCount,
-      deliveryMode,
-      maxQuantity: maxNationalQuantity,
-    });
-
-    toast.success(`${selectedNationalQuantity} ${selectedNationalQuantity === 1 ? 'décimo' : 'décimos'} añadidos a tu reserva demo.`);
-    setSelectedNationalNumber(null);
-    setSelectedNationalQuantity(1);
-  };
-  
   const handlePersistNationalCart = () => {
     if (nationalCartLines.length === 0) return;
 
@@ -907,8 +893,11 @@ export function GamePlayPage() {
 
   const ctaLabel = (() => {
     if (canPlay) {
+      if (isNationalLottery) {
+        const n = nationalCartBreakdown.totalDecimos;
+        return `Confirmar ${n} ${n === 1 ? 'décimo' : 'décimos'}`;
+      }
       if (drawsCount > 1) return `Añadir ${drawsCount} jugadas`;
-      if (isNationalLottery) return editingDraft ? 'Actualizar' : 'Añadir décimo';
       return editingDraft ? 'Actualizar' : 'Añadir jugada';
     }
     if (supportsQuickPick && mode === 'simple' && betMethod === null) return 'Elige cómo quieres jugar';
@@ -1691,9 +1680,6 @@ export function GamePlayPage() {
               <NationalAdvancedFlow
                 game={game}
                 selectedNationalDraw={selectedNationalDraw}
-                selectedNationalNumber={selectedNationalNumber}
-                selectedNationalQuantity={selectedNationalQuantity}
-                maxNationalQuantity={maxNationalQuantity}
                 drawsCount={drawsCount}
                 drawStatus={drawStatus}
                 supportsTimeSelection={supportsTimeSelection}
@@ -1712,14 +1698,27 @@ export function GamePlayPage() {
                   removeLine: removeNationalCartLine,
                   updateQuantity: updateNationalCartQuantity,
                   clearCart: clearNationalCart,
-                  addSelectedToCart: handleAddSelectedNationalToDemoCart,
                   onPersistToSession: handlePersistNationalCart,
                 }}
                 onSelectNationalNumber={(ticket) => {
-                  setSelectedNationalNumber(ticket.number);
-                  setSelectedNationalQuantity((qty) => Math.min(qty, ticket.available));
+                  const drawId = isExplicitNationalProduct ? selectedNationalDrawId : 'especial';
+                  const existing = nationalCartLines.find((l) => l.number === ticket.number && l.drawId === drawId);
+                  if (existing) {
+                    removeNationalCartLine(ticket.number, drawId);
+                  } else {
+                    addOrUpdateNationalCartLine({
+                      number: ticket.number,
+                      drawId,
+                      drawLabel: selectedNationalDraw.label,
+                      drawDates: effectiveSelectedDrawDates,
+                      quantity: 1,
+                      unitPrice: selectedNationalDraw.decimoPrice,
+                      totalPrice: selectedNationalDraw.decimoPrice * drawsCount,
+                      deliveryMode: 'custody',
+                      maxQuantity: ticket.available,
+                    });
+                  }
                 }}
-                onChangeNationalQuantity={setSelectedNationalQuantity}
                 onRandomNationalNumber={handleRandom}
                 onClear={handleClear}
               />
@@ -1816,7 +1815,7 @@ export function GamePlayPage() {
                   <span className="text-[11px] font-black text-manises-blue">{formatCurrency(availableBalance)}</span>
                   <span className="text-slate-300 mx-0.5">·</span>
                   <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-wider">Total:</span>
-                  <span className="text-[13px] font-black text-manises-blue" style={theme.title}>{formatCurrency(totalPrice)}</span>
+                  <span className="text-[13px] font-black text-manises-blue" style={theme.title}>{formatCurrency(displayTotalPrice)}</span>
                 </div>
                 <div className="mt-0.5 flex items-center gap-2">
                   <p className={cn(
