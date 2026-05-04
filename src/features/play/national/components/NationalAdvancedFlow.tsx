@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Spark, ControlSlider } from 'iconoir-react/regular';
 import { cn, formatDate } from '@/shared/lib/utils';
@@ -9,7 +9,6 @@ import { NationalTicketQuantitySelector } from './NationalTicketQuantitySelector
 import { NationalCartSummary } from './NationalCartSummary';
 import { NationalDeliverySelector, type DeliveryMode } from './NationalDeliverySelector';
 import { NationalDrawSelector } from './NationalDrawSelector';
-import { NationalReservationCard } from './NationalReservationCard';
 
 import type {
   NationalShowcaseItem,
@@ -19,7 +18,6 @@ import type {
 } from '../contracts/national-play.contract';
 import type { LotteryGame } from '@/shared/types/domain';
 import type { ResolvedDrawStatus } from '../../draw-status/contracts/draw-status.contract';
-import { toast } from 'sonner';
 
 interface NationalDrawMeta {
   id: string;
@@ -65,13 +63,6 @@ interface NationalAdvancedFlowProps {
   onClear: () => void;
 }
 
-function formatDrawMoment(iso: string): string {
-  const d = new Date(iso);
-  const weekday = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
-  const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
-  return `${weekday} ${time}`;
-}
-
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
@@ -95,30 +86,25 @@ export function NationalAdvancedFlow({
   onClear,
 }: NationalAdvancedFlowProps) {
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
-  const [mockReservation, setMockReservation] = useState<{ number: string; drawLabel: string; drawDate: string } | null>(null);
-  const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [selectionMode, setSelectionMode] = useState<'random' | 'manual'>('random');
 
-  const handleReserve = () => {
-    if (!selectedNationalNumber) return;
-    setMockReservation({
-      number: selectedNationalNumber,
-      drawLabel: selectedNationalDraw.label,
-      drawDate: selectedNationalDraw.nextDraw,
-    });
-    toast.success(`Reserva demo preparada para el nº ${selectedNationalNumber}`);
-  };
+  // Auto-assign a random number when entering random mode with no number selected
+  useEffect(() => {
+    if (selectionMode === 'random' && !selectedNationalNumber && nationalShowcase.items.length > 0) {
+      onRandomNationalNumber();
+    }
+    // Only re-run when selection mode changes, not on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectionMode]);
 
   const drawType: NationalDrawType = game.id === 'loteria-navidad' ? 'navidad' :
                                      game.id === 'loteria-nino' ? 'nino' : 'ordinary';
 
-  const deliveryLabel = deliveryMode === 'custody' ? 'Custodia digital' : 'Mensajería';
-
   const statusColor = drawStatus.state === 'open'
-    ? { dot: 'bg-emerald-400', icon: 'text-emerald-600', bg: 'bg-emerald-50' }
+    ? { dot: 'bg-emerald-400', text: 'text-emerald-600' }
     : drawStatus.state === 'closingSoon'
-    ? { dot: 'bg-amber-400', icon: 'text-amber-600', bg: 'bg-amber-50' }
-    : { dot: 'bg-slate-300', icon: 'text-slate-400', bg: 'bg-slate-100' };
+    ? { dot: 'bg-amber-400', text: 'text-amber-600' }
+    : { dot: 'bg-slate-300', text: 'text-slate-400' };
 
   const statusLabel = drawStatus.state === 'open' ? 'Abierto'
     : drawStatus.state === 'closingSoon' ? 'Cierra pronto'
@@ -126,65 +112,28 @@ export function NationalAdvancedFlow({
 
   return (
     <div className="space-y-5">
-      {/* 1. Config: sorteo + entrega */}
+      {/* 1. Inline date context */}
       <section className="stagger-item">
-        <button
-          onClick={() => setIsConfigOpen(!isConfigOpen)}
-          className="group w-full text-left rounded-[1.2rem] border border-slate-200/60 bg-white px-3.5 py-3 shadow-sm hover:border-manises-blue/20 hover:shadow-md transition-all active:scale-[0.99]"
-          aria-expanded={isConfigOpen}
-          aria-label="Configurar sorteo y tipo de entrega"
-        >
-          <div className="flex items-center gap-3">
-            <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors', statusColor.bg)}>
-              <ControlSlider className={cn('w-4 h-4', statusColor.icon)} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', statusColor.dot)} />
-                <span className="text-[12px] font-black text-manises-blue leading-tight truncate">
-                  {formatDate(selectedNationalDraw.nextDraw)}
-                </span>
-              </div>
-              <p className="text-[10px] font-medium text-slate-400 truncate pl-3">
-                {deliveryLabel} · {statusLabel}
-              </p>
-            </div>
-            <span className={cn(
-              'shrink-0 rounded-xl px-3 py-2 text-[9px] font-black uppercase tracking-widest transition-colors',
-              isConfigOpen
-                ? 'bg-manises-blue/10 text-manises-blue'
-                : 'bg-manises-blue/[0.06] text-manises-blue/60 group-hover:bg-manises-blue/10 group-hover:text-manises-blue'
-            )}>
-              {isConfigOpen ? 'Cerrar' : 'Cambiar'}
-            </span>
-          </div>
-        </button>
-
-        {isConfigOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-3 space-y-3"
-          >
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-1 text-[10px] font-semibold text-slate-500">
-              <span>Sorteo {formatDrawMoment(drawStatus.drawDate)}</span>
-              <span className="text-slate-300">·</span>
-              <span>{drawStatus.isDemoCutoff ? 'Límite demo' : 'Límite'} {formatTime(drawStatus.salesCloseAt)}</span>
-            </div>
-
-            {supportsTimeSelection && availableNationalDates.length > 0 && (
-              <NationalDrawSelector
-                availableNationalDates={availableNationalDates}
-                effectiveSelectedDrawDates={effectiveSelectedDrawDates}
-                onSelectDate={onSelectDate}
-              />
-            )}
-
-            <NationalDeliverySelector
-              selectedMode={deliveryMode}
-              onChange={setDeliveryMode}
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2">
+          <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', statusColor.dot)} />
+          <span className="text-[11px] font-black text-manises-blue">
+            {formatDate(selectedNationalDraw.nextDraw)}
+          </span>
+          <span className="text-slate-300">·</span>
+          <span className={cn('text-[10px] font-semibold', statusColor.text)}>{statusLabel}</span>
+          <span className="text-slate-300">·</span>
+          <span className="text-[10px] font-semibold text-slate-400">
+            {drawStatus.isDemoCutoff ? 'Límite demo' : 'Límite'} {formatTime(drawStatus.salesCloseAt)}
+          </span>
+        </div>
+        {supportsTimeSelection && availableNationalDates.length > 0 && (
+          <div className="mt-2">
+            <NationalDrawSelector
+              availableNationalDates={availableNationalDates}
+              effectiveSelectedDrawDates={effectiveSelectedDrawDates}
+              onSelectDate={onSelectDate}
             />
-          </motion.div>
+          </div>
         )}
       </section>
 
@@ -254,32 +203,39 @@ export function NationalAdvancedFlow({
 
       {/* 4a. Modo Aleatorio */}
       {selectionMode === 'random' && (
-        <section className="space-y-4">
-          {!selectedNationalNumber ? (
-            <div className="flex flex-col items-center gap-3 rounded-[1.6rem] border border-dashed border-slate-200 bg-slate-50/50 px-4 py-8 text-center">
-              <Spark className="w-6 h-6 text-manises-gold" />
+        <section className="space-y-3">
+          {selectedNationalNumber ? (
+            <>
+              <NationalTicketQuantitySelector
+                selectedNumber={selectedNationalNumber}
+                selectedQuantity={selectedNationalQuantity}
+                maxQuantity={maxNationalQuantity}
+                decimoPrice={selectedNationalDraw.decimoPrice}
+                firstPrize={selectedNationalDraw.firstPrize}
+                onQuantityChange={onChangeNationalQuantity}
+                onAddToCart={() => nationalCart.addSelectedToCart(deliveryMode)}
+              />
+              <button
+                onClick={onRandomNationalNumber}
+                className="w-full py-1.5 text-center text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-manises-blue transition-colors"
+              >
+                Cambiar número
+              </button>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-3 rounded-[1.6rem] border border-dashed border-slate-200 bg-slate-50/50 px-4 py-6 text-center">
+              <Spark className="w-5 h-5 text-manises-gold" />
               <p className="text-[11px] font-bold text-slate-400">
-                Generaremos un número disponible al azar
+                Buscando décimos disponibles…
               </p>
               <button
                 onClick={onRandomNationalNumber}
-                className="rounded-2xl px-6 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-md transition-all active:scale-[0.97]"
+                className="rounded-2xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest text-white shadow-md transition-all active:scale-[0.97]"
                 style={{ backgroundColor: game.color }}
               >
-                Generar número aleatorio
+                Asignar número
               </button>
             </div>
-          ) : (
-            <NationalTicketQuantitySelector
-              selectedNumber={selectedNationalNumber}
-              selectedQuantity={selectedNationalQuantity}
-              maxQuantity={maxNationalQuantity}
-              decimoPrice={selectedNationalDraw.decimoPrice}
-              firstPrize={selectedNationalDraw.firstPrize}
-              onQuantityChange={onChangeNationalQuantity}
-              onAddToCart={() => nationalCart.addSelectedToCart(deliveryMode)}
-              onReserve={handleReserve}
-            />
           )}
         </section>
       )}
@@ -316,23 +272,16 @@ export function NationalAdvancedFlow({
               firstPrize={selectedNationalDraw.firstPrize}
               onQuantityChange={onChangeNationalQuantity}
               onAddToCart={() => nationalCart.addSelectedToCart(deliveryMode)}
-              onReserve={handleReserve}
             />
           )}
         </section>
       )}
 
-      {/* 5. Reserva demo */}
-      {mockReservation && (
-        <section className="stagger-item">
-          <NationalReservationCard
-            number={mockReservation.number}
-            drawLabel={mockReservation.drawLabel}
-            drawDate={mockReservation.drawDate}
-            onRemove={() => setMockReservation(null)}
-          />
-        </section>
-      )}
+      {/* 5. Selector de entrega */}
+      <NationalDeliverySelector
+        selectedMode={deliveryMode}
+        onChange={setDeliveryMode}
+      />
 
       {/* 6. Resumen de décimos seleccionados */}
       <NationalCartSummary

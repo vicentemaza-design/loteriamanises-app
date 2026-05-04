@@ -11,13 +11,8 @@ interface NationalTicketQuantitySelectorProps {
   firstPrize: number;
   onQuantityChange: (quantity: number) => void;
   onAddToCart: () => void;
-  onReserve: () => void;
 }
 
-/**
- * Panel de configuración de cantidad y resumen de premio (Fase 2B.3B).
- * Extraído de NationalAdvancedFlow.
- */
 export function NationalTicketQuantitySelector({
   selectedNumber,
   selectedQuantity,
@@ -26,7 +21,6 @@ export function NationalTicketQuantitySelector({
   firstPrize,
   onQuantityChange,
   onAddToCart,
-  onReserve,
 }: NationalTicketQuantitySelectorProps) {
   const potentialFirstPrize = firstPrize * selectedQuantity;
 
@@ -91,19 +85,12 @@ export function NationalTicketQuantitySelector({
         </p>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-2">
+      <div className="mt-4">
         <Button
-          variant="ghost"
-          className="flex-1 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-manises-blue hover:bg-slate-50"
-          onClick={onReserve}
-        >
-          Reservar número demo
-        </Button>
-        <Button
-          className="flex-1 rounded-2xl bg-manises-blue text-[10px] font-bold text-white shadow-lg"
+          className="w-full rounded-2xl bg-manises-blue py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-[0.98]"
           onClick={onAddToCart}
         >
-          Añadir a cesta demo
+          {selectedQuantity === 1 ? 'Añadir décimo' : `Añadir ${selectedQuantity} décimos`}
         </Button>
       </div>
 
