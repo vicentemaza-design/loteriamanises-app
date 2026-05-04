@@ -1598,6 +1598,7 @@ export function GamePlayPage() {
                     {/* ---- Grid de estrellas ---- */}
                     {maxStars > 0 && (
                       <StarsGrid
+                        compact
                         starValues={starValues}
                         selectedStars={selectedStars}
                         maxStarsLimit={maxStars}

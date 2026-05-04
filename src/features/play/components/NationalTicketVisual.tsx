@@ -59,9 +59,9 @@ interface TicketFieldConfig {
 
 const MONO = '"Courier New", Courier, monospace';
 const INK = '#111827';
-// Fills ~71% of white-zone width at 390px: 5×(0.6+0.12)×35.1px = 126px / 178px ≈ 71%
-const NUMBER_SIZE = 'clamp(26px, 9vw, 46px)';
-const FIELD_SIZE = 'clamp(13px, 4.0vw, 20px)';
+// Fills ~79% of white-zone width at 390px: 5×(0.6+0.18)×39px = 152px / 193px ≈ 79%
+const NUMBER_SIZE = 'clamp(28px, 10vw, 52px)';
+const FIELD_SIZE = 'clamp(14px, 4.5vw, 22px)';
 
 const TICKET_FIELD_PLACEMENT: Record<string, TicketFieldConfig> = {
   sabado: {
@@ -233,9 +233,9 @@ export const NationalTicketVisual: React.FC<NationalTicketVisualProps> = ({
                 fontSize: NUMBER_SIZE,
                 fontWeight: 900,
                 fontFamily: MONO,
-                letterSpacing: '0.12em',
+                letterSpacing: '0.18em',
                 lineHeight: 1,
-                color: isPlaceholder ? `${INK}1a` : INK,
+                color: isPlaceholder ? `${INK}40` : INK,
               }}
             >
               {displayNumber}

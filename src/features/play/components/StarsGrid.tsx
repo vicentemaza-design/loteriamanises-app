@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import type { CSSProperties } from 'react';
+import { cn } from '@/shared/lib/utils';
 
 interface StarsGridProps {
   starValues: number[];
@@ -14,6 +15,8 @@ interface StarsGridProps {
   labelPrefix?: string;
   gridCols?: number;
   subtitle?: string;
+  /** Renderiza celdas más pequeñas para bloques secundarios */
+  compact?: boolean;
 }
 
 /**
@@ -29,16 +32,16 @@ export function StarsGrid({
   title = "Estrellas",
   labelPrefix = "Estrella",
   gridCols,
-  subtitle
+  subtitle,
+  compact = false,
 }: StarsGridProps) {
-  // Lógica de columnas original de GamePlayPage
   const finalGridCols = gridCols ?? (starValues.length <= 9 ? 5 : 6);
 
   return (
-    <div className="space-y-2">
+    <div className={compact ? 'space-y-1.5' : 'space-y-2'}>
       <div className="flex items-center justify-between px-1">
         <div className="flex flex-col">
-          <h2 className="font-bold text-sm" style={theme.title}>
+          <h2 className={compact ? 'font-semibold text-xs' : 'font-bold text-sm'} style={theme.title}>
             {title}
           </h2>
           {subtitle && (
@@ -49,7 +52,12 @@ export function StarsGrid({
           {selectedStars.length}/{maxStarsLimit}
         </span>
       </div>
-      <div className={`grid gap-2 ${finalGridCols === 5 ? 'grid-cols-5' : 'grid-cols-6'}`}>
+      <div className={cn(
+        'grid',
+        compact
+          ? `gap-1.5 justify-items-center ${finalGridCols === 5 ? 'grid-cols-5' : 'grid-cols-6'}`
+          : `gap-2 ${finalGridCols === 5 ? 'grid-cols-5' : 'grid-cols-6'}`
+      )}>
         {starValues.map(n => {
           const isSelected = selectedStars.includes(n);
           return (
@@ -57,11 +65,15 @@ export function StarsGrid({
               key={n}
               type="button"
               onClick={() => onToggle(n)}
-              className={`aspect-square rounded-xl flex items-center justify-center border font-bold text-sm transition-all active:scale-90 ${
+              className={cn(
+                'flex items-center justify-center border font-bold transition-all active:scale-90',
+                compact
+                  ? 'w-10 h-10 rounded-lg text-xs font-semibold'
+                  : 'aspect-square rounded-xl text-sm',
                 isSelected
                   ? 'border-transparent bg-manises-gold text-manises-blue shadow-gold scale-95'
                   : 'border-amber-100 bg-white text-amber-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] hover:border-amber-300 hover:bg-amber-50'
-              }`}
+              )}
               aria-pressed={isSelected}
               aria-label={`${labelPrefix} ${n}`}
             >

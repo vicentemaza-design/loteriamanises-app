@@ -117,6 +117,7 @@ export function MulticolumnTicketFlow({
         {maxStars > 0 && (
           <div className="rounded-2xl p-3 pb-6" style={theme.surface}>
             <StarsGrid
+              compact
               starValues={Array.from(
                 { length: totalStars },
                 (_, i) => game.type === 'gordo' ? i : i + 1

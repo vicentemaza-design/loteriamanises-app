@@ -82,10 +82,10 @@ export function NationalTicketThumbnail({
       >
         <span
           style={{
-            fontSize: 'clamp(5px, 1.6vw, 9px)',
+            fontSize: 'clamp(7px, 2.2vw, 11px)',
             fontWeight: 900,
             fontFamily: '"Courier New", Courier, monospace',
-            letterSpacing: '0.1em',
+            letterSpacing: '0.12em',
             lineHeight: 1,
             color: '#111827',
             whiteSpace: 'nowrap',

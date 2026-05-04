@@ -174,7 +174,12 @@ export function NationalAdvancedFlow({
         </p>
         <div className="grid grid-cols-2 gap-2">
           <button
-            onClick={() => setSelectionMode('random')}
+            onClick={() => {
+              setSelectionMode('random');
+              if (nationalCart.lines.length === 0) {
+                onRandomNationalNumber();
+              }
+            }}
             className={cn(
               'flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all active:scale-[0.97]',
               selectionMode === 'random'
