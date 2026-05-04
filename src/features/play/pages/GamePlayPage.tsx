@@ -121,12 +121,8 @@ export function GamePlayPage() {
 
   // Features Laguinda Style
   const [isSubscription, setIsSubscription] = useState(false);
-  const [isMulticolumnMode, setIsMulticolumnMode] = useState(() => {
-    if (!game) return false;
-    const isNat = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
-    return !isNat && game.id !== 'quiniela' && Boolean(game.selectionRange?.numbers);
-  });
-  const [isQuickPickMode, setIsQuickPickMode] = useState(false);
+  const [betMethod, setBetMethod] = useState<'random' | 'manual'>('manual');
+  const [manualBetCount, setManualBetCount] = useState(1);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   if (!game) {
@@ -145,6 +141,8 @@ export function GamePlayPage() {
   const isExplicitNationalProduct = gameId === 'loteria-nacional-jueves' || gameId === 'loteria-nacional-sabado';
 
   const supportsQuickPick = !isNationalLottery && !isQuiniela && Boolean(game.selectionRange?.numbers);
+  const isQuickPickMode = supportsQuickPick && mode === 'simple' && betMethod === 'random';
+  const isMulticolumnMode = supportsQuickPick && mode === 'simple' && betMethod === 'manual';
   const quickPick = useQuickPick(game, supportsQuickPick);
 
   const availableNationalDates = useMemo(() => {
@@ -172,7 +170,8 @@ export function GamePlayPage() {
     setSelectedStars([]);
     setSelectedNationalNumber(null);
     setSelectedNationalQuantity(1);
-    setIsMulticolumnMode(!isNationalLottery && !isQuiniela && Boolean(game?.selectionRange?.numbers));
+    setBetMethod('manual');
+    setManualBetCount(1);
 
     // Sincronizar sorteo nacional por defecto
     if (gameId === 'loteria-nacional-jueves') setSelectedNationalDrawId('jueves');
@@ -194,7 +193,6 @@ export function GamePlayPage() {
 
     setMode((editingDraft.mode as PlayMode) ?? availableModes[0]);
     setIsSubscription(editingDraft.isSubscription);
-    setIsMulticolumnMode(false);
     
     // Reconstrucción inteligente de la intención temporal (UI mapping)
     const draftDates = Array.isArray(editingDraft.metadata?.orderDrawDates)
@@ -367,7 +365,7 @@ export function GamePlayPage() {
 
     addDrafts(drafts);
     toast.success(`${quickPick.count} jugadas rápidas demo añadidas.`);
-    setIsQuickPickMode(false);
+    setBetMethod('manual');
   };
 
   const { betsCount, drawPrice, totalPrice } = resolvePlayPricing({
@@ -940,8 +938,8 @@ export function GamePlayPage() {
       />
 
       <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-2.5 p-4 pt-2">
-        {/* Config bar — estado colapsado (solo juegos no-nacionales) */}
-        {!isNationalLottery && !isConfigPanelOpen && (
+        {/* Config bar — estado colapsado (solo Quiniela y juegos sin flujo secuencial) */}
+        {!isNationalLottery && !supportsQuickPick && !isConfigPanelOpen && (
           <button
             onClick={() => setIsConfigPanelOpen(true)}
             className="group w-full text-left rounded-[1.2rem] border border-slate-200/60 bg-white px-3.5 py-3 shadow-sm hover:border-manises-blue/20 hover:shadow-md transition-all active:scale-[0.99]"
@@ -980,8 +978,8 @@ export function GamePlayPage() {
           </button>
         )}
 
-        {/* Config panel — estado expandido (solo juegos no-nacionales) */}
-        {!isNationalLottery && isConfigPanelOpen && (
+        {/* Config panel — estado expandido (solo Quiniela) */}
+        {!isNationalLottery && !supportsQuickPick && isConfigPanelOpen && (
           <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
             <div className="space-y-3 rounded-[1.2rem] border border-manises-blue/10 bg-white p-3 shadow-sm">
               <div className="flex items-center justify-between">
@@ -1016,7 +1014,7 @@ export function GamePlayPage() {
                         setSelectedReductionSystemId(nextReductionSystems[0].id);
                       }
                       handleClear();
-                      if (m !== 'simple') setIsMulticolumnMode(false);
+                      if (m !== 'simple') setBetMethod('manual');
                       setIsConfigPanelOpen(false);
                     }}
                   />
@@ -1028,31 +1026,22 @@ export function GamePlayPage() {
                   <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">Método</p>
                   <div className="flex p-1 bg-slate-100/70 rounded-xl border border-slate-200/50">
                     <button
-                      onClick={() => { setIsQuickPickMode(false); setIsMulticolumnMode(false); }}
+                      onClick={() => setBetMethod('manual')}
                       className={cn(
                         "flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
-                        !isQuickPickMode && !isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
+                        betMethod === 'manual' ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
                       )}
                     >
                       Manual
                     </button>
                     <button
-                      onClick={() => { setIsQuickPickMode(true); setIsMulticolumnMode(false); setIsConfigPanelOpen(false); }}
+                      onClick={() => { setBetMethod('random'); setIsConfigPanelOpen(false); }}
                       className={cn(
                         "flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
-                        isQuickPickMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
+                        betMethod === 'random' ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
                       )}
                     >
-                      Rápida
-                    </button>
-                    <button
-                      onClick={() => { setIsQuickPickMode(false); setIsMulticolumnMode(true); setIsConfigPanelOpen(false); }}
-                      className={cn(
-                        "flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all",
-                        isMulticolumnMode ? "bg-white text-manises-blue shadow-sm" : "text-slate-400"
-                      )}
-                    >
-                      Varias apuestas
+                      Aleatorio
                     </button>
                   </div>
                 </div>
@@ -1173,6 +1162,218 @@ export function GamePlayPage() {
           </motion.div>
         )}
 
+        {/* === Nueva secuencia visible para juegos de apuestas/combinaciones === */}
+        {supportsQuickPick && (
+          <div className="space-y-3">
+
+            {/* Tipo de jugada secundario (Simple / Múltiple / Reducida) */}
+            {availableModes.length > 1 && (
+              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm">
+                <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Tipo de jugada</p>
+                <div className="flex gap-1.5 flex-wrap">
+                  {availableModes.map((m) => {
+                    const modeLabels: Record<string, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
+                    return (
+                      <button
+                        key={m}
+                        onClick={() => {
+                          setMode(m as typeof mode);
+                          const nextSystems = getReductionSystemsForMode(game.id, m as typeof mode);
+                          if (m === 'reduced' && nextSystems.length > 0) setSelectedReductionSystemId(nextSystems[0].id);
+                          handleClear();
+                          if (m !== 'simple') setBetMethod('manual');
+                        }}
+                        className={cn(
+                          'px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all',
+                          mode === m
+                            ? 'text-white border-transparent shadow-sm'
+                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
+                        )}
+                        style={mode === m ? { backgroundColor: game.color } : undefined}
+                      >
+                        {modeLabels[m] ?? m}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Bloque 1 — Fechas (solo si el juego soporta multiselección y modo simple) */}
+            {supportsTimeSelection && mode === 'simple' && (
+              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Elige una o varias fechas</p>
+                  <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={drawsCount} />
+                </div>
+
+                {/* Chips rápidos */}
+                <div className="flex flex-wrap gap-1.5 px-0.5">
+                  {[
+                    { id: 'next_draw', label: 'Próximo' },
+                    { id: 'full_week', label: 'Esta semana' },
+                    { id: 'next_week', label: 'Próxima semana' },
+                    { id: 'two_weeks', label: '2 semanas' },
+                  ].map((opt) => {
+                    let isActive = false;
+                    if (opt.id === 'next_draw') isActive = timeMode === 'next_draw';
+                    else if (opt.id === 'full_week') isActive = timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates);
+                    else if (opt.id === 'next_week') isActive = areDatesEqual(effectiveSelectedDrawDates, nextWeekDates);
+                    else if (opt.id === 'two_weeks') isActive = timeMode === 'two_weeks' || areDatesEqual(effectiveSelectedDrawDates, twoWeeksDates);
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => {
+                          if (opt.id === 'next_week') { setTimeMode('specific_days'); setSelectedDrawDates(nextWeekDates); }
+                          else if (opt.id === 'two_weeks') { setTimeMode('specific_days'); setSelectedDrawDates(twoWeeksDates); }
+                          else { setTimeMode(opt.id as ScheduleMode); setSelectedDrawDates([]); }
+                        }}
+                        className={cn(
+                          'px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border',
+                          isActive
+                            ? 'bg-manises-blue text-white border-manises-blue shadow-sm'
+                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={() => { setTimeMode('specific_days'); setSelectedDrawDates([]); }}
+                    className="ml-auto px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200 hover:border-slate-300"
+                  >
+                    Limpiar
+                  </button>
+                </div>
+
+                {/* Grid de sorteos */}
+                <div className="custom-scrollbar max-h-[220px] space-y-3 overflow-y-auto pr-1">
+                  {(Object.entries(groupedAllDraws) as [string, ScheduledDraw[]][]).map(([weekLabel, draws], index) => {
+                    const displayLabel = index === 0 ? 'Esta semana' : index === 1 ? 'Próxima semana' : weekLabel;
+                    return (
+                      <div key={weekLabel} className="space-y-2">
+                        <p className="pl-1 text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">{displayLabel}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {draws.map((draw) => {
+                            const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
+                            return (
+                              <button
+                                key={draw.drawDate}
+                                onClick={() => {
+                                  setTimeMode('specific_days');
+                                  setSelectedDrawDates((prev: string[]) =>
+                                    prev.includes(draw.drawDate)
+                                      ? prev.filter((d: string) => d !== draw.drawDate)
+                                      : [...prev, draw.drawDate].sort()
+                                  );
+                                }}
+                                className={cn(
+                                  'relative flex min-w-[60px] flex-col items-center justify-center rounded-xl border px-2.5 py-2 transition-all',
+                                  isSelected
+                                    ? 'bg-manises-blue/10 border-manises-blue shadow-[0_4px_12px_rgba(10,71,146,0.14)]'
+                                    : 'bg-white border-slate-100 hover:border-slate-200'
+                                )}
+                              >
+                                {isSelected && (
+                                  <motion.div
+                                    layoutId="selected-draw-indicator"
+                                    className="absolute inset-0 rounded-xl border-2 border-manises-blue z-0"
+                                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                                  />
+                                )}
+                                <span className={cn('relative z-10 text-[9px] font-semibold leading-tight', isSelected ? 'text-manises-blue/80' : 'text-slate-400')}>
+                                  {formatChipContext(draw.drawDate)}
+                                </span>
+                                <span className={cn('relative z-10 text-[12px] font-black leading-tight mt-0.5', isSelected ? 'text-manises-blue' : 'text-slate-700')}>
+                                  {new Date(draw.drawDate).getDate()} {new Date(draw.drawDate).toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="px-1 text-[10px] font-medium italic text-slate-400">* Puedes combinar días sueltos de distintas semanas</p>
+              </div>
+            )}
+
+            {/* Bloque 1b — Sin multiselección: resumen compacto del sorteo */}
+            {!supportsTimeSelection && mode === 'simple' && (
+              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Sorteo</p>
+                  <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={1} />
+                </div>
+              </div>
+            )}
+
+            {/* Bloque 2 — Método de selección (solo modo simple) */}
+            {mode === 'simple' && (
+              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm">
+                <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">¿Cómo quieres elegir tus números?</p>
+                <div className="flex p-1 bg-slate-100/70 rounded-xl border border-slate-200/50 gap-0">
+                  <button
+                    onClick={() => setBetMethod('manual')}
+                    className={cn(
+                      'flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all',
+                      betMethod === 'manual' ? 'bg-white shadow-sm' : 'text-slate-400'
+                    )}
+                    style={betMethod === 'manual' ? { color: game.color } : undefined}
+                  >
+                    Manual
+                  </button>
+                  <button
+                    onClick={() => setBetMethod('random')}
+                    className={cn(
+                      'flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all',
+                      betMethod === 'random' ? 'bg-white shadow-sm' : 'text-slate-400'
+                    )}
+                    style={betMethod === 'random' ? { color: game.color } : undefined}
+                  >
+                    Aleatorio
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Bloque 3 — Número de apuestas (solo modo simple + manual) */}
+            {mode === 'simple' && betMethod === 'manual' && (
+              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Número de apuestas</p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setManualBetCount((c: number) => Math.max(1, c - 1))}
+                      disabled={manualBetCount <= 1}
+                      className={cn(
+                        'w-8 h-8 rounded-lg border flex items-center justify-center text-base font-bold transition-all active:scale-95',
+                        manualBetCount <= 1 ? 'border-slate-100 text-slate-200' : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                      )}
+                    >
+                      −
+                    </button>
+                    <span className="text-base font-black text-manises-blue w-6 text-center tabular-nums">{manualBetCount}</span>
+                    <button
+                      onClick={() => setManualBetCount((c: number) => Math.min(10, c + 1))}
+                      disabled={manualBetCount >= 10}
+                      className={cn(
+                        'w-8 h-8 rounded-lg border flex items-center justify-center text-base font-bold transition-all active:scale-95',
+                        manualBetCount >= 10 ? 'border-slate-100 text-slate-200' : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                      )}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
+
         {/* Advertencia de Saldo Insuficiente */}
         {isOverBalance && (
           <motion.div
@@ -1239,11 +1440,14 @@ export function GamePlayPage() {
                     onAdd={handlePersistQuickPick}
                   />
                 ) : isMulticolumnMode ? (
-                  <MulticolumnTicketFlow 
-                    game={game} 
-                    drawDates={effectiveSelectedDrawDates}
-                    onReviewColumns={handleMulticolumnPersist}
-                  />
+                  <motion.div key={manualBetCount} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                    <MulticolumnTicketFlow
+                      game={game}
+                      drawDates={effectiveSelectedDrawDates}
+                      initialColumnsCount={manualBetCount}
+                      onReviewColumns={handleMulticolumnPersist}
+                    />
+                  </motion.div>
                 ) : (
                   <>
                     {/* ---- Selección visual ---- */}
