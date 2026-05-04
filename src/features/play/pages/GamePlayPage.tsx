@@ -121,7 +121,7 @@ export function GamePlayPage() {
 
   // Features Laguinda Style
   const [isSubscription, setIsSubscription] = useState(false);
-  const [betMethod, setBetMethod] = useState<'random' | 'manual'>('manual');
+  const [betMethod, setBetMethod] = useState<'random' | 'manual' | null>(null);
   const [manualBetCount, setManualBetCount] = useState(1);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
@@ -170,7 +170,7 @@ export function GamePlayPage() {
     setSelectedStars([]);
     setSelectedNationalNumber(null);
     setSelectedNationalQuantity(1);
-    setBetMethod('manual');
+    setBetMethod(null);
     setManualBetCount(1);
 
     // Sincronizar sorteo nacional por defecto
@@ -875,6 +875,7 @@ export function GamePlayPage() {
       if (isNationalLottery) return editingDraft ? 'Actualizar' : 'Añadir décimo';
       return editingDraft ? 'Actualizar' : 'Añadir jugada';
     }
+    if (supportsQuickPick && mode === 'simple' && betMethod === null) return 'Elige cómo quieres jugar';
     if (isMulticolumnMode) return 'Añadir boleto';
     if (isNationalLottery) return 'Elige un décimo';
     if (isQuiniela) return 'Completa el pronóstico';
@@ -1448,7 +1449,7 @@ export function GamePlayPage() {
                       onReviewColumns={handleMulticolumnPersist}
                     />
                   </motion.div>
-                ) : (
+                ) : (supportsQuickPick && mode === 'simple' && betMethod === null) ? null : (
                   <>
                     {/* ---- Selección visual ---- */}
                     <div className="surface-neo-soft flex flex-col items-center gap-2 rounded-[1.2rem] border border-white/70 p-2 shadow-sm" style={theme.surface}>
@@ -1774,13 +1775,15 @@ export function GamePlayPage() {
             {!canPlay && (
               <div className="border-t border-slate-100/50 px-1 pt-1.5">
                 <p className="text-[9px] font-bold text-slate-400 uppercase text-center leading-tight">
-                  {isMulticolumnMode
-                    ? 'Completa al menos una apuesta'
-                    : isNationalLottery
-                      ? 'Elige un décimo del escaparate'
-                      : isQuiniela
-                        ? 'Completa el pronóstico de los 15 partidos'
-                        : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' números' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
+                  {supportsQuickPick && mode === 'simple' && betMethod === null
+                    ? 'Elige cómo quieres jugar arriba'
+                    : isMulticolumnMode
+                      ? 'Completa al menos una apuesta'
+                      : isNationalLottery
+                        ? 'Elige un décimo del escaparate'
+                        : isQuiniela
+                          ? 'Completa el pronóstico de los 15 partidos'
+                          : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' números' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
                   }
                 </p>
               </div>
