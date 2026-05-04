@@ -45,14 +45,14 @@ interface TicketFieldConfig {
 
 const MONO = '"Courier New", Courier, monospace';
 const INK = '#111827';
-const NUMBER_SIZE = 'clamp(18px, 7vw, 32px)';
+const NUMBER_SIZE = 'clamp(20px, 7.5vw, 34px)';
 
 const TICKET_FIELD_PLACEMENT: Record<string, TicketFieldConfig> = {
   sabado: {
-    numberBox: { top: '8%', left: '30%', width: '38%', height: '14%' },
+    numberBox: { top: '10%', left: '32%', width: '38%', height: '15%' },
   },
   jueves: {
-    numberBox: { top: '11%', left: '32%', width: '38%', height: '14%' },
+    numberBox: { top: '13%', left: '34%', width: '38%', height: '15%' },
   },
 };
 
@@ -218,43 +218,7 @@ export const NationalTicketVisual: React.FC<NationalTicketVisualProps> = ({
         </motion.div>
       )}
 
-      {/* ── Serie / Fracción — bottom gradient band for real-image tickets ── */}
-      {config.realImage && (
-        <div
-          className="absolute bottom-0 left-0 right-0 z-20 flex items-center justify-center gap-4 px-3 py-2 pointer-events-none"
-          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.52) 0%, transparent 100%)' }}
-        >
-          <div className="text-center">
-            <p className="text-[6px] font-bold uppercase tracking-[0.15em] text-white/50 leading-none mb-0.5">
-              Serie
-            </p>
-            <p
-              className="text-[11px] font-black leading-none"
-              style={{
-                fontFamily: MONO,
-                color: serie ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.22)',
-              }}
-            >
-              {serie ?? '—'}
-            </p>
-          </div>
-          <div className="h-4 w-px bg-white/15" />
-          <div className="text-center">
-            <p className="text-[6px] font-bold uppercase tracking-[0.15em] text-white/50 leading-none mb-0.5">
-              Fracción
-            </p>
-            <p
-              className="text-[11px] font-black leading-none"
-              style={{
-                fontFamily: MONO,
-                color: fraccion ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.22)',
-              }}
-            >
-              {fraccion ?? '—'}
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Serie / Fracción reserved for future certificate/receipt view — not shown in showcase */}
 
       {/* ── Body for non-real-image tickets (navidad, niño, especial) ── */}
       {!config.realImage && (
