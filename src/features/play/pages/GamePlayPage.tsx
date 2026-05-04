@@ -886,8 +886,9 @@ export function GamePlayPage() {
     
     if (result.addedCount > 0) {
       toast.success(result.addedCount === 1 ? 'Borrador añadido a tu sesión de prueba.' : `${result.addedCount} borradores añadidos a tu sesión de prueba.`);
+      clearNationalCart();
     }
-    
+
     if (result.duplicateCount > 0) {
       toast.error(result.duplicateCount === 1 ? '1 décimo ya estaba en tu sesión (omitido).' : `${result.duplicateCount} décimos ya estaban en tu sesión (omitidos).`);
     }

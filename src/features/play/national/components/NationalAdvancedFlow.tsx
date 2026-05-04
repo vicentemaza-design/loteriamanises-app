@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Spark, ControlSlider } from 'iconoir-react/regular';
 import { cn, formatDate } from '@/shared/lib/utils';
@@ -77,6 +77,7 @@ export function NationalAdvancedFlow({
 }: NationalAdvancedFlowProps) {
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
   const [selectionMode, setSelectionMode] = useState<'random' | 'manual'>('random');
+  const hasMounted = useRef(false);
 
   const previewLine = nationalCart.lines[0] ?? null;
   const previewNumber = previewLine?.number ?? null;
@@ -93,12 +94,15 @@ export function NationalAdvancedFlow({
     }
   };
 
-  // Auto-assign when switching to random mode and nothing is selected yet
+  // Auto-assign only when user explicitly switches to random mode (skip mount)
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
     if (selectionMode === 'random' && nationalCart.lines.length === 0 && nationalShowcase.items.length > 0) {
       onRandomNationalNumber();
     }
-    // Only fires on mode change, not on every cart update
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectionMode]);
 
