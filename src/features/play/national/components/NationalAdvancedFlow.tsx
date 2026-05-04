@@ -88,6 +88,15 @@ export function NationalAdvancedFlow({
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
   const [selectionMode, setSelectionMode] = useState<'random' | 'manual'>('random');
 
+  // Quantity 0 means deselect: clear the active number and quantity
+  const handleInlineQuantityChange = (qty: number) => {
+    if (qty <= 0) {
+      onClear();
+    } else {
+      onChangeNationalQuantity(qty);
+    }
+  };
+
   // Auto-assign a random number when entering random mode with no number selected
   useEffect(() => {
     if (selectionMode === 'random' && !selectedNationalNumber && nationalShowcase.items.length > 0) {
@@ -261,7 +270,10 @@ export function NationalAdvancedFlow({
           <NationalNumberShowcase
             items={nationalShowcase.items}
             selectedNumber={selectedNationalNumber}
+            selectedQuantity={selectedNationalQuantity}
+            maxQuantity={maxNationalQuantity}
             onSelect={onSelectNationalNumber}
+            onQuantityChange={handleInlineQuantityChange}
           />
           {selectedNationalNumber && (
             <NationalTicketQuantitySelector
