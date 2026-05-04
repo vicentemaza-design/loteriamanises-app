@@ -5,7 +5,6 @@ import { cn, formatDate } from '@/shared/lib/utils';
 import { NationalTicketVisual, type NationalDrawType } from '@/features/play/components/NationalTicketVisual';
 import { NationalSearchBar } from './NationalSearchBar';
 import { NationalNumberShowcase } from './NationalNumberShowcase';
-import { NationalTicketQuantitySelector } from './NationalTicketQuantitySelector';
 import { NationalCartSummary } from './NationalCartSummary';
 import { NationalDeliverySelector, type DeliveryMode } from './NationalDeliverySelector';
 import { NationalDrawSelector } from './NationalDrawSelector';
@@ -88,7 +87,7 @@ export function NationalAdvancedFlow({
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
   const [selectionMode, setSelectionMode] = useState<'random' | 'manual'>('random');
 
-  // Quantity 0 means deselect: clear the active number and quantity
+  // qty 0 → deselect; qty > 0 → update quantity
   const handleInlineQuantityChange = (qty: number) => {
     if (qty <= 0) {
       onClear();
@@ -97,12 +96,12 @@ export function NationalAdvancedFlow({
     }
   };
 
-  // Auto-assign a random number when entering random mode with no number selected
+  // Auto-assign when switching to random mode and nothing is selected yet
   useEffect(() => {
     if (selectionMode === 'random' && !selectedNationalNumber && nationalShowcase.items.length > 0) {
       onRandomNationalNumber();
     }
-    // Only re-run when selection mode changes, not on every render
+    // Only fires on mode change, not on every selectedNationalNumber update
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectionMode]);
 
@@ -210,52 +209,21 @@ export function NationalAdvancedFlow({
         </div>
       </div>
 
-      {/* 4a. Modo Aleatorio */}
-      {selectionMode === 'random' && (
-        <section className="space-y-3">
-          {selectedNationalNumber ? (
-            <>
-              <NationalTicketQuantitySelector
-                selectedNumber={selectedNationalNumber}
-                selectedQuantity={selectedNationalQuantity}
-                maxQuantity={maxNationalQuantity}
-                decimoPrice={selectedNationalDraw.decimoPrice}
-                firstPrize={selectedNationalDraw.firstPrize}
-                onQuantityChange={onChangeNationalQuantity}
-                onAddToCart={() => nationalCart.addSelectedToCart(deliveryMode)}
-              />
+      {/* 4. Escaparate unificado — visible en ambos modos */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between px-0.5">
+          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+            Números disponibles
+          </p>
+          <div className="flex items-center gap-3">
+            {selectionMode === 'random' && selectedNationalNumber && (
               <button
                 onClick={onRandomNationalNumber}
-                className="w-full py-1.5 text-center text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-manises-blue transition-colors"
+                className="text-[9px] font-black uppercase tracking-wider text-manises-blue/60 hover:text-manises-blue transition-colors"
               >
                 Cambiar número
               </button>
-            </>
-          ) : (
-            <div className="flex flex-col items-center gap-3 rounded-[1.6rem] border border-dashed border-slate-200 bg-slate-50/50 px-4 py-6 text-center">
-              <Spark className="w-5 h-5 text-manises-gold" />
-              <p className="text-[11px] font-bold text-slate-400">
-                Buscando décimos disponibles…
-              </p>
-              <button
-                onClick={onRandomNationalNumber}
-                className="rounded-2xl px-6 py-2.5 text-[11px] font-black uppercase tracking-widest text-white shadow-md transition-all active:scale-[0.97]"
-                style={{ backgroundColor: game.color }}
-              >
-                Asignar número
-              </button>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* 4b. Modo Manual */}
-      {selectionMode === 'manual' && (
-        <section className="space-y-3">
-          <div className="flex items-center justify-between px-0.5">
-            <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
-              Números disponibles
-            </p>
+            )}
             <button
               onClick={onClear}
               className="text-[9px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-600 transition-colors"
@@ -263,31 +231,22 @@ export function NationalAdvancedFlow({
               Limpiar
             </button>
           </div>
-          <NationalSearchBar
-            searchState={nationalShowcase.searchState}
-            onChange={nationalShowcase.setSearchState}
-          />
-          <NationalNumberShowcase
-            items={nationalShowcase.items}
-            selectedNumber={selectedNationalNumber}
-            selectedQuantity={selectedNationalQuantity}
-            maxQuantity={maxNationalQuantity}
-            onSelect={onSelectNationalNumber}
-            onQuantityChange={handleInlineQuantityChange}
-          />
-          {selectedNationalNumber && (
-            <NationalTicketQuantitySelector
-              selectedNumber={selectedNationalNumber}
-              selectedQuantity={selectedNationalQuantity}
-              maxQuantity={maxNationalQuantity}
-              decimoPrice={selectedNationalDraw.decimoPrice}
-              firstPrize={selectedNationalDraw.firstPrize}
-              onQuantityChange={onChangeNationalQuantity}
-              onAddToCart={() => nationalCart.addSelectedToCart(deliveryMode)}
-            />
-          )}
-        </section>
-      )}
+        </div>
+
+        <NationalSearchBar
+          searchState={nationalShowcase.searchState}
+          onChange={nationalShowcase.setSearchState}
+        />
+
+        <NationalNumberShowcase
+          items={nationalShowcase.items}
+          selectedNumber={selectedNationalNumber}
+          selectedQuantity={selectedNationalQuantity}
+          maxQuantity={maxNationalQuantity}
+          onSelect={onSelectNationalNumber}
+          onQuantityChange={handleInlineQuantityChange}
+        />
+      </section>
 
       {/* 5. Selector de entrega */}
       <NationalDeliverySelector
