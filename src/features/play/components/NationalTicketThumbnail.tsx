@@ -9,11 +9,11 @@ const THUMB_CONFIG: Record<string, {
 }> = {
   jueves: {
     image: juevesTicket,
-    numberBox: { top: '9%', left: '24.2%', width: '49.4%', height: '15.9%' },
+    numberBox: { top: '11%', left: '32%', width: '38%', height: '14%' },
   },
   sabado: {
     image: sabadoTicket,
-    numberBox: { top: '6.2%', left: '27.4%', width: '45.3%', height: '16.2%' },
+    numberBox: { top: '8%', left: '30%', width: '38%', height: '14%' },
   },
 };
 
@@ -82,10 +82,10 @@ export function NationalTicketThumbnail({
       >
         <span
           style={{
-            fontSize: 'clamp(7px, 2.2vw, 11px)',
+            fontSize: 'clamp(6px, 2vw, 10px)',
             fontWeight: 900,
             fontFamily: '"Courier New", Courier, monospace',
-            letterSpacing: '0.12em',
+            letterSpacing: '0.15em',
             lineHeight: 1,
             color: '#111827',
             whiteSpace: 'nowrap',
