@@ -36,7 +36,7 @@ import { MulticolumnTicketFlow } from '../multicolumn/components/MulticolumnTick
 import type { MulticolumnDraftIntent } from '../multicolumn/contracts/multicolumn-play.contract';
 import { inferMulticolumnPlayMode } from '../multicolumn/application/infer-multicolumn-play-mode';
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
-import { getDrawsForCurrentWeek, groupDrawsByWeek, groupDrawsByMonth, getUpcomingDraws, type ScheduledDraw } from '../lib/draw-schedule';
+import { getDrawsForCurrentWeek, groupDrawsByWeek, getUpcomingDraws, type ScheduledDraw } from '../lib/draw-schedule';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
 import { buildGameSelection } from '@/features/play/application/build-game-selection';
@@ -421,7 +421,6 @@ export function GamePlayPage() {
   }, [game.type, isNationalLottery, availableNationalDates]);
 
   const groupedAllDraws = useMemo(() => groupDrawsByWeek(allAvailableDraws), [allAvailableDraws]);
-  const groupedAllDrawsByMonth = useMemo(() => groupDrawsByMonth(allAvailableDraws), [allAvailableDraws]);
   const highlightedDrawDate = useMemo(() => {
     const sortedDrawDates = [...effectiveSelectedDrawDates].sort((left, right) => left.localeCompare(right));
     if (sortedDrawDates.length > 0) {
@@ -1223,98 +1222,74 @@ export function GamePlayPage() {
                   </span>
                 </div>
 
-                {/* Filtros rápidos */}
-                <div className="flex flex-wrap gap-1.5 px-3.5 pb-2">
-                  {[
-                    { id: 'next_draw', label: 'Próximo' },
-                    { id: 'full_week', label: 'Esta semana' },
-                    { id: 'next_week', label: 'Próx. semana' },
-                    { id: 'two_weeks', label: '2 semanas' },
-                  ].map((opt) => {
-                    let isActive = false;
-                    if (opt.id === 'next_draw') isActive = timeMode === 'next_draw';
-                    else if (opt.id === 'full_week') isActive = timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates);
-                    else if (opt.id === 'next_week') isActive = areDatesEqual(effectiveSelectedDrawDates, nextWeekDates);
-                    else if (opt.id === 'two_weeks') isActive = timeMode === 'two_weeks' || areDatesEqual(effectiveSelectedDrawDates, twoWeeksDates);
+                {/* Única acción rápida + Limpiar condicional */}
+                <div className="flex items-center gap-1.5 px-3.5 pb-2">
+                  <button
+                    onClick={() => { setTimeMode('full_week'); setSelectedDrawDates([]); }}
+                    className={cn(
+                      'px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border',
+                      (timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates))
+                        ? 'text-white border-transparent shadow-sm'
+                        : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
+                    )}
+                    style={(timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates)) ? { backgroundColor: game.color, borderColor: game.color } : undefined}
+                  >
+                    Toda la semana
+                  </button>
+                  {effectiveSelectedDrawDates.length > 0 && (
+                    <button
+                      onClick={() => { setTimeMode('specific_days'); setSelectedDrawDates([]); }}
+                      className="ml-auto px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200 hover:border-slate-300"
+                    >
+                      Limpiar
+                    </button>
+                  )}
+                </div>
+
+                {/* Carrusel horizontal de sorteos */}
+                <div className="flex gap-2 overflow-x-auto border-t border-slate-50 px-3.5 pb-3 pt-2.5">
+                  {allAvailableDraws.map((draw) => {
+                    const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
+                    const chip = formatDrawChip(draw.drawDate);
                     return (
                       <button
-                        key={opt.id}
+                        key={draw.drawDate}
                         onClick={() => {
-                          if (opt.id === 'next_week') { setTimeMode('specific_days'); setSelectedDrawDates(nextWeekDates); }
-                          else if (opt.id === 'two_weeks') { setTimeMode('specific_days'); setSelectedDrawDates(twoWeeksDates); }
-                          else { setTimeMode(opt.id as ScheduleMode); setSelectedDrawDates([]); }
+                          setTimeMode('specific_days');
+                          setSelectedDrawDates((prev: string[]) =>
+                            prev.includes(draw.drawDate)
+                              ? prev.filter((d: string) => d !== draw.drawDate)
+                              : [...prev, draw.drawDate].sort()
+                          );
                         }}
                         className={cn(
-                          'px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border',
-                          isActive
-                            ? 'text-white border-transparent shadow-sm'
-                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
+                          'relative flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border min-w-[52px] px-1.5 py-2 transition-all',
+                          isSelected
+                            ? 'border-transparent shadow-[0_4px_12px_rgba(10,71,146,0.10)]'
+                            : 'bg-white border-slate-100 hover:border-slate-200'
                         )}
-                        style={isActive ? { backgroundColor: game.color, borderColor: game.color } : undefined}
+                        style={isSelected ? { backgroundColor: `${game.color}12`, borderColor: game.color } : undefined}
                       >
-                        {opt.label}
+                        {isSelected && (
+                          <motion.div
+                            layoutId="selected-draw-chip"
+                            className="absolute inset-0 rounded-xl border-2 z-0"
+                            style={{ borderColor: game.color }}
+                            transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                          />
+                        )}
+                        <span className={cn('relative z-10 text-[8px] font-semibold leading-none', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>
+                          {chip.weekday}
+                        </span>
+                        <span className={cn('relative z-10 text-[13px] font-black leading-none', isSelected ? 'text-manises-blue' : 'text-slate-700')}>
+                          {chip.day}
+                        </span>
+                        <span className={cn('relative z-10 text-[7px] font-semibold leading-none tabular-nums', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>
+                          {chip.time}
+                        </span>
                       </button>
                     );
                   })}
-                  <button
-                    onClick={() => { setTimeMode('specific_days'); setSelectedDrawDates([]); }}
-                    className="ml-auto px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200 hover:border-slate-300"
-                  >
-                    Limpiar
-                  </button>
-                </div>
-
-                {/* Grid agrupado por mes */}
-                <div className="custom-scrollbar max-h-[220px] space-y-2.5 overflow-y-auto border-t border-slate-50 px-3.5 pb-3 pt-2.5">
-                  {(Object.entries(groupedAllDrawsByMonth) as [string, ScheduledDraw[]][]).map(([monthLabel, draws]) => (
-                    <div key={monthLabel} className="space-y-1.5">
-                      <p className="pl-0.5 text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">{monthLabel}</p>
-                      <div className="grid grid-cols-4 gap-1.5">
-                        {draws.map((draw) => {
-                          const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
-                          const chip = formatDrawChip(draw.drawDate);
-                          return (
-                            <button
-                              key={draw.drawDate}
-                              onClick={() => {
-                                setTimeMode('specific_days');
-                                setSelectedDrawDates((prev: string[]) =>
-                                  prev.includes(draw.drawDate)
-                                    ? prev.filter((d: string) => d !== draw.drawDate)
-                                    : [...prev, draw.drawDate].sort()
-                                );
-                              }}
-                              className={cn(
-                                'relative flex flex-col items-center justify-center gap-0.5 rounded-xl border px-1 py-2 transition-all',
-                                isSelected
-                                  ? 'border-transparent shadow-[0_4px_12px_rgba(10,71,146,0.10)]'
-                                  : 'bg-white border-slate-100 hover:border-slate-200'
-                              )}
-                              style={isSelected ? { backgroundColor: `${game.color}12`, borderColor: game.color } : undefined}
-                            >
-                              {isSelected && (
-                                <motion.div
-                                  layoutId="selected-draw-chip"
-                                  className="absolute inset-0 rounded-xl border-2 z-0"
-                                  style={{ borderColor: game.color }}
-                                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                                />
-                              )}
-                              <span className={cn('relative z-10 text-[8px] font-semibold leading-none', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>
-                                {chip.weekday}
-                              </span>
-                              <span className={cn('relative z-10 text-[13px] font-black leading-none', isSelected ? 'text-manises-blue' : 'text-slate-700')}>
-                                {chip.day}
-                              </span>
-                              <span className={cn('relative z-10 text-[7px] font-semibold leading-none tabular-nums', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>
-                                {chip.time}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </div>
             )}
