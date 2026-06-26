@@ -1,26 +1,22 @@
 import { useMemo, useRef, useState, useEffect, type ComponentType } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { StatusBadge } from '@/shared/ui/StatusBadge';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { Input } from '@/shared/ui/Input';
-import { Button } from '@/shared/ui/Button';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { formatDate, formatCurrency, cn } from '@/shared/lib/utils';
-import { getBusinessDate } from '@/shared/lib/timezone';
 import {
   Ticket as TicketIcon,
   Search,
   Shield,
-  Sparkles,
-  ChevronDown,
   Repeat2,
-  Archive,
   ScrollText,
-  Target,
-  Maximize2,
+  Eye,
+  Plus,
+  Minus,
+  Truck,
+  Bell,
   Trophy,
-  XCircle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTickets } from '../hooks/useTickets';
@@ -28,61 +24,50 @@ import { TicketCardSkeleton } from '@/shared/ui/Skeleton';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import { useResults } from '@/features/results/hooks/useResults';
-import { ComparisonModal } from '@/features/results/components/ComparisonModal';
 import { toast } from 'sonner';
 import type { Ticket } from '@/shared/types/domain';
 import { getGameIdentity } from '@/shared/lib/game-identity';
-import { BallSelection } from '../components/BallSelection';
-import { NationalDecimoCard } from '../components/NationalDecimoCard';
 import { TicketReceiptModal } from '../components/TicketReceiptModal';
 
 gsap.registerPlugin(useGSAP);
 
-type Tab = 'activos' | 'historial';
-
-interface TicketResultLike {
-  gameId: string;
-  date: string;
-  numbers?: number[];
-  stars?: number[];
-}
-
-type ScrutinyState =
-  | { ticket: Ticket; result: TicketResultLike }
-  | { ticket: Ticket; result: null }
-  | null;
+type Tab = 'todas' | 'activas' | 'premiadas' | 'abonos';
+type PlayStatus = 'pending' | 'processing' | 'confirmed' | 'scrutinized' | 'rejected';
 
 function getTicketCode(ticketId: string) {
   return ticketId.slice(-8).toUpperCase();
 }
 
-function getTicketResultMatch(ticket: Ticket, results: TicketResultLike[]) {
-  return results.find((result) => (
-    result.gameId === ticket.gameId &&
-    ticket.drawDate === getBusinessDate(result.date)
-  )) ?? null;
+function getPlayStatus(ticket: Ticket): PlayStatus {
+  const s = ticket.metadata?.playStatus;
+  if (s === 'pending' || s === 'processing' || s === 'confirmed' || s === 'scrutinized' || s === 'rejected') return s;
+  if (ticket.status === 'won' || ticket.status === 'lost') return 'scrutinized';
+  return 'pending';
 }
 
-function getMatchedValues(ticket: Ticket, result: TicketResultLike | null) {
-  if (!result || ticket.gameType === 'loteria-nacional' || ticket.gameType === 'navidad' || ticket.gameType === 'nino') {
-    return { numbers: [] as number[], stars: [] as number[] };
-  }
+const PLAY_STATUS_CONFIG: Record<PlayStatus, { label: string; className: string }> = {
+  pending:     { label: 'Pendiente',   className: 'bg-amber-50 text-amber-700 border-amber-200' },
+  processing:  { label: 'Tramitando',  className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  confirmed:   { label: 'Confirmada',  className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  scrutinized: { label: 'Escrutada',   className: 'bg-slate-100 text-slate-700 border-slate-200' },
+  rejected:    { label: 'Rechazada',   className: 'bg-red-50 text-red-700 border-red-200' },
+};
 
-  return {
-    numbers: ticket.numbers.filter((value) => result.numbers?.includes(value)),
-    stars: ticket.stars?.filter((value) => result.stars?.includes(value)) ?? [],
-  };
+function PlayStatusBadge({ status }: { status: PlayStatus }) {
+  const { label, className } = PLAY_STATUS_CONFIG[status];
+  return (
+    <span className={cn('inline-flex rounded-full border px-1.5 py-0 text-[9px] font-black uppercase tracking-wider', className)}>
+      {label}
+    </span>
+  );
 }
 
 function isNationalTicket(ticket: Ticket) {
   return ticket.gameType === 'loteria-nacional' || ticket.gameType === 'navidad' || ticket.gameType === 'nino';
 }
 
-function getTicketDisplayNumber(ticket: Ticket) {
-  if (ticket.metadata?.nationalNumber) return ticket.metadata.nationalNumber;
-  if (isNationalTicket(ticket)) return ticket.numbers.join('');
-  return ticket.numbers.join(', ');
+function getNationalQuantity(ticket: Ticket) {
+  return typeof ticket.metadata?.nationalQuantity === 'number' ? ticket.metadata.nationalQuantity : undefined;
 }
 
 function getOrderDrawDates(ticket: Ticket) {
@@ -90,87 +75,69 @@ function getOrderDrawDates(ticket: Ticket) {
 }
 
 function formatCompactDate(date: string) {
-  return new Date(date).toLocaleDateString('es-ES', {
-    day: 'numeric',
-    month: 'short',
-  });
+  return new Date(date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
 }
 
 function getOrderDatesSummary(ticket: Ticket) {
   const dates = getOrderDrawDates(ticket);
   if (dates.length === 1) return formatDate(dates[0]);
-
-  const visibleDates = dates.slice(0, 3).map(formatCompactDate).join(', ');
-  return dates.length > 3 ? `${visibleDates} y ${dates.length - 3} más` : visibleDates;
-}
-
-function getNationalQuantity(ticket: Ticket) {
-  return typeof ticket.metadata?.nationalQuantity === 'number' ? ticket.metadata.nationalQuantity : undefined;
+  const first = formatCompactDate(dates[0]);
+  const last  = formatCompactDate(dates[dates.length - 1]);
+  return `${first} → ${last}`;
 }
 
 function getOrderTotal(ticket: Ticket) {
   return typeof ticket.metadata?.orderTotalPrice === 'number' ? ticket.metadata.orderTotalPrice : ticket.price;
 }
 
-function getCompactSelectionSummary(ticket: Ticket) {
-  if (isNationalTicket(ticket)) {
-    const number = getTicketDisplayNumber(ticket);
-    const quantity = getNationalQuantity(ticket);
-    const drawCount = getOrderDrawDates(ticket).length;
-    const quantityLabel = quantity
-      ? `${quantity} ${quantity === 1 ? 'décimo' : 'décimos'}`
-      : null;
-    const drawLabel = drawCount > 1 ? `${drawCount} sorteos` : null;
-
-    return [number ? `Nº ${number}` : null, quantityLabel, drawLabel].filter(Boolean).join(' · ');
-  }
-
-  const starsLabel = ticket.stars && ticket.stars.length > 0 ? ` + ${ticket.stars.join(', ')}` : '';
-  return `${ticket.numbers.join(', ')}${starsLabel}`;
+function getPrizeLabel(ticket: Ticket) {
+  if (ticket.prize && ticket.prize > 0) return formatCurrency(ticket.prize);
+  if (getPlayStatus(ticket) === 'scrutinized') return '0,00 €';
+  return '—';
 }
 
-function getScrutinyTone(ticket: Ticket, result: TicketResultLike | null) {
-  if (!result) {
-    return {
-      label: 'Sin resumen',
-      helper: 'Detalle completo pendiente de integración',
-    };
-  }
+function getTicketDisplayNumber(ticket: Ticket) {
+  if (ticket.metadata?.nationalNumber) return ticket.metadata.nationalNumber;
+  if (isNationalTicket(ticket)) return ticket.numbers.join('');
+  return ticket.numbers.join(' ');
+}
 
-  if (ticket.status === 'pending') {
-    return {
-      label: 'Resumen disponible',
-      helper: 'Resultado cargado, escrutinio completo pendiente',
-    };
+function getQuantityLabel(ticket: Ticket): string {
+  if (isNationalTicket(ticket)) {
+    const qty = getNationalQuantity(ticket) ?? 1;
+    return `${qty} ${qty === 1 ? 'décimo' : 'décimos'}`;
   }
+  const dates = getOrderDrawDates(ticket);
+  const betsCount = typeof ticket.metadata?.betsCount === 'number' ? ticket.metadata.betsCount : 1;
+  const betsLabel = `${betsCount} ${betsCount === 1 ? 'apuesta' : 'apuestas'}`;
+  if (dates.length > 1) return `${dates.length} sorteos · ${betsLabel}`;
+  return betsLabel;
+}
 
-  return {
-    label: 'Ver resumen',
-    helper: 'Lectura disponible con el modelo actual',
-  };
+function getSelectionSummary(ticket: Ticket): string {
+  if (isNationalTicket(ticket)) {
+    return (ticket.metadata?.nationalNumber ?? ticket.numbers.join('')).padStart(5, '0');
+  }
+  const starsLabel = ticket.stars && ticket.stars.length > 0
+    ? ` + ${ticket.stars.map(s => String(s).padStart(2, '0')).join(', ')}`
+    : '';
+  return `${ticket.numbers.map(n => String(n).padStart(2, '0')).join(' ')}${starsLabel}`;
 }
 
 function QuickActionButton({
   icon: Icon,
   label,
   onClick,
-  tone = 'default',
 }: {
   icon: ComponentType<{ className?: string }>;
   label: string;
   onClick: () => void;
-  tone?: 'default' | 'danger';
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={cn(
-        'inline-flex h-9 items-center gap-1.5 rounded-xl border px-2.5 text-[10px] font-black uppercase tracking-[0.12em] transition-all active:scale-[0.97]',
-        tone === 'danger'
-          ? 'border-red-100 bg-red-50 text-red-700 hover:border-red-200'
-          : 'border-gray-100 bg-white text-manises-blue hover:border-manises-blue/20 hover:bg-manises-blue/[0.04]'
-      )}
+      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-gray-100 bg-white px-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue transition-all active:scale-[0.97] hover:border-manises-blue/20 hover:bg-manises-blue/[0.04]"
     >
       <Icon className="h-3.5 w-3.5" />
       <span>{label}</span>
@@ -178,104 +145,40 @@ function QuickActionButton({
   );
 }
 
-
-function ScrutinyFallbackModal({
-  state,
-  onClose,
-}: {
-  state: ScrutinyState;
-  onClose: () => void;
-}) {
-  if (!state || state.result) return null;
-
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center sm:p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/55 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        <motion.div
-          initial={{ y: '100%', opacity: 0.96 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: '100%', opacity: 0.96 }}
-          className="relative flex w-full max-w-md flex-col gap-4 rounded-t-[2rem] border border-white/80 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] p-6 shadow-[0_24px_50px_rgba(10,25,47,0.28)] sm:rounded-[2rem]"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Escrutinio</p>
-              <h3 className="mt-1 text-base font-black text-manises-blue">Detalle no disponible todavía</h3>
-            </div>
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full" onClick={onClose}>
-              <ChevronDown className="h-5 w-5 rotate-180" />
-            </Button>
-          </div>
-
-          <div className="rounded-2xl border border-manises-blue/10 bg-white/90 p-4">
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-manises-blue">
-              Jugada {getTicketCode(state.ticket.id)}
-            </p>
-            <p className="mt-1 text-sm font-medium leading-relaxed text-slate-600">
-              No hay un resultado compatible para esta jugada o el detalle de escrutinio todavía no está integrado en el frontend actual.
-            </p>
-            <p className="mt-3 text-[11px] font-semibold text-slate-500">
-              Código, fecha, importe y estado de la jugada.
-            </p>
-          </div>
-
-          <Button className="rounded-2xl" onClick={onClose}>
-            Entendido
-          </Button>
-        </motion.div>
-      </div>
-    </AnimatePresence>
-  );
-}
-
 export function TicketsPage() {
   const navigate = useNavigate();
   const { tickets, isLoading, error } = useTickets();
-  const { results } = useResults();
-  const [tab, setTab] = useState<Tab>('activos');
+  const [tab, setTab] = useState<Tab>('todas');
   const [search, setSearch] = useState('');
   const [gameFilter, setGameFilter] = useState<string>('all');
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
-  const [archivedIds, setArchivedIds] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'won' | 'lost'>('all');
   const [searchOpen, setSearchOpen] = useState(false);
   const [receiptTicket, setReceiptTicket] = useState<Ticket | null>(null);
-  const [scrutinyState, setScrutinyState] = useState<ScrutinyState>(null);
 
-  useEffect(() => {
-    setGameFilter('all');
-  }, [statusFilter]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   const filteredTickets = tickets.filter((ticket) => {
     const game = LOTTERY_GAMES.find((g) => g.id === ticket.gameId);
     if (!game) return false;
-    const searchTerm = search.toLowerCase();
-    const nameMatch = game.name.toLowerCase().includes(searchTerm);
-    const numberMatch = getTicketDisplayNumber(ticket).includes(search);
-    return search === '' || nameMatch || numberMatch;
+    if (!search) return true;
+    const term = search.toLowerCase();
+    return game.name.toLowerCase().includes(term) || getTicketDisplayNumber(ticket).includes(search);
   });
 
-  const visibleTickets = filteredTickets.filter((ticket) => !archivedIds.includes(ticket.id));
-  const activeTickets = visibleTickets.filter((ticket) => ticket.status === 'pending');
-  const historyTickets = visibleTickets.filter((ticket) => ticket.status !== 'pending');
-  
-  const tabTickets = tab === 'activos' 
-    ? activeTickets 
-    : historyTickets.filter((t) => {
-        if (statusFilter === 'all') return true;
-        if (statusFilter === 'won') return t.status === 'won';
-        if (statusFilter === 'lost') return t.status === 'lost';
-        return true;
-      });
+  const activeTickets = filteredTickets.filter((t) => {
+    const s = getPlayStatus(t);
+    return s === 'pending' || s === 'processing' || s === 'confirmed';
+  });
+
+  const premiatedTickets = filteredTickets.filter((t) => t.status === 'won');
+  const abonoTickets = filteredTickets.filter((t) => t.isSubscription);
+
+  const tabTickets =
+    tab === 'todas'     ? filteredTickets :
+    tab === 'activas'   ? activeTickets :
+    tab === 'premiadas' ? premiatedTickets :
+                          abonoTickets;
 
   const availableGames = useMemo(() => {
     const seen = new Set<string>();
@@ -289,42 +192,27 @@ export function TicketsPage() {
     }, []);
   }, [tabTickets]);
 
-  const displayed = gameFilter === 'all'
-    ? tabTickets
-    : tabTickets.filter((t) => t.gameId === gameFilter);
+  const displayed = gameFilter === 'all' ? tabTickets : tabTickets.filter((t) => t.gameId === gameFilter);
 
-  const resultMap = useMemo(() => {
-    return new Map(displayed.map((ticket) => [ticket.id, getTicketResultMatch(ticket, results)]));
-  }, [displayed, results]);
+  function toggleExpand(id: string) {
+    setExpandedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  }
 
   useGSAP(() => {
     if (isLoading) return;
-
-    gsap.fromTo(
-      '.tickets-header > *',
-      { y: -20, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out', clearProps: 'all' }
-    );
-
-    gsap.fromTo(
-      '.tabs-container',
-      { scale: 0.98, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.2, clearProps: 'all' }
-    );
-
+    gsap.fromTo('.tickets-header > *', { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out', clearProps: 'all' });
+    gsap.fromTo('.tabs-container', { scale: 0.98, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: 'power2.out', delay: 0.2, clearProps: 'all' });
     const cards = gsap.utils.toArray('.ticket-card');
     if (cards.length > 0) {
-      gsap.fromTo(
-        cards,
-        { y: 20, opacity: 0 },
-        { y: 0, opacity: 1, stagger: 0.06, duration: 0.55, ease: 'power2.out', clearProps: 'all' }
-      );
+      gsap.fromTo(cards, { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.06, duration: 0.55, ease: 'power2.out', clearProps: 'all' });
     }
   }, { scope: containerRef, dependencies: [tab, isLoading, displayed.length] });
 
   return (
     <>
       <div className="flex min-h-full flex-col gap-3 overflow-x-hidden bg-background pb-24" ref={containerRef}>
+
+        {/* Header */}
         <section className="tickets-header px-4 pt-4">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2.5">
@@ -340,12 +228,10 @@ export function TicketsPage() {
                 searchOpen ? 'bg-manises-blue text-white' : 'bg-manises-blue/[0.06] text-manises-blue/60 hover:bg-manises-blue/10 hover:text-manises-blue'
               )}
               aria-label={searchOpen ? 'Cerrar búsqueda' : 'Buscar jugadas'}
-              aria-expanded={searchOpen}
             >
               <Search className="h-3.5 w-3.5" />
             </button>
           </div>
-
           {searchOpen && (
             <div className="relative mt-2">
               <Search className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-manises-blue/40" />
@@ -360,111 +246,50 @@ export function TicketsPage() {
           )}
         </section>
 
+        {/* Tabs */}
         <section className="tabs-container px-4">
           <div className="flex gap-1 rounded-xl border border-gray-100/60 bg-gray-50/90 p-1">
-            {(['activos', 'historial'] as Tab[]).map((currentTab) => (
-              <PremiumTouchInteraction key={currentTab} scale={0.97} className="flex-1">
+            {([
+              { key: 'todas',     label: 'Todas' },
+              { key: 'activas',   label: 'Activas' },
+              { key: 'premiadas', label: 'Premiadas' },
+              { key: 'abonos',    label: 'Abonos' },
+            ] as const).map(({ key, label }) => (
+              <PremiumTouchInteraction key={key} scale={0.97} className="flex-1">
                 <button
-                  onClick={() => { setTab(currentTab); setGameFilter('all'); }}
+                  onClick={() => { setTab(key); setGameFilter('all'); }}
                   className={cn(
-                    'w-full rounded-lg py-1.5 text-[10px] font-black uppercase tracking-wider transition-all',
-                    tab === currentTab
-                      ? 'bg-white text-manises-blue shadow-sm'
-                      : 'text-manises-blue/40 hover:text-manises-blue'
+                    'w-full rounded-lg py-1.5 text-[9px] font-black uppercase tracking-wider transition-all',
+                    tab === key ? 'bg-white text-manises-blue shadow-sm' : 'text-manises-blue/40 hover:text-manises-blue'
                   )}
                 >
-                  {currentTab === 'activos' ? `Activos (${activeTickets.length})` : `Historial (${historyTickets.length})`}
+                  {label}
                 </button>
               </PremiumTouchInteraction>
             ))}
           </div>
         </section>
 
-        {(availableGames.length > 1 || tab === 'historial') && (
+        {/* Game filter chips */}
+        {availableGames.length > 1 && (
           <div className="flex gap-1.5 overflow-x-auto scrollbar-hide px-4 py-0.5">
-            {/* Chips por juego */}
-            {availableGames.length > 1 && (
-              <>
-                <button
-                  onClick={() => setGameFilter('all')}
-                  className={cn(
-                    'shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all',
-                    gameFilter === 'all'
-                      ? 'bg-manises-blue text-white border-manises-blue shadow-sm'
-                      : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25'
-                  )}
-                >
-                  Todos
-                </button>
-                {availableGames.map((g) => (
-                  <button
-                    key={g.id}
-                    onClick={() => setGameFilter(g.id)}
-                    className={cn(
-                      'shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all',
-                      gameFilter === g.id
-                        ? 'bg-manises-blue text-white border-manises-blue shadow-sm'
-                        : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25'
-                    )}
-                  >
-                    {g.name}
-                  </button>
-                ))}
-              </>
-            )}
-
-            {/* Separador y chips de estado (solo historial) */}
-            {tab === 'historial' && (
-              <>
-                {availableGames.length > 1 && (
-                  <div className="h-5 w-px shrink-0 self-center bg-slate-200/80 mx-0.5" />
-                )}
-                <button
-                  onClick={() => setStatusFilter('all')}
-                  className={cn(
-                    'shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition-all',
-                    statusFilter === 'all'
-                      ? 'bg-slate-700 text-white border-slate-700 shadow-sm'
-                      : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
-                  )}
-                >
-                  Todos
-                </button>
-                <button
-                  onClick={() => setStatusFilter('won')}
-                  className={cn(
-                    'shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition-all',
-                    statusFilter === 'won'
-                      ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
-                      : 'bg-white text-emerald-600/60 border-emerald-100 hover:border-emerald-200'
-                  )}
-                >
-                  <Trophy className="h-2.5 w-2.5" />
-                  Premiados
-                </button>
-                <button
-                  onClick={() => setStatusFilter('lost')}
-                  className={cn(
-                    'shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition-all',
-                    statusFilter === 'lost'
-                      ? 'bg-slate-200 text-slate-700 border-slate-200 shadow-sm'
-                      : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
-                  )}
-                >
-                  <XCircle className="h-2.5 w-2.5" />
-                  Sin premio
-                </button>
-              </>
-            )}
+            <button
+              onClick={() => setGameFilter('all')}
+              className={cn('shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all', gameFilter === 'all' ? 'bg-manises-blue text-white border-manises-blue shadow-sm' : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25')}
+            >Todos</button>
+            {availableGames.map((g) => (
+              <button key={g.id} onClick={() => setGameFilter(g.id)} className={cn('shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all', gameFilter === g.id ? 'bg-manises-blue text-white border-manises-blue shadow-sm' : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25')}>
+                {g.name}
+              </button>
+            ))}
           </div>
         )}
 
+        {/* List */}
         <section className="min-h-[400px] flex-1 px-4">
           {isLoading ? (
             <div className="flex flex-col gap-3.5">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <TicketCardSkeleton key={index} />
-              ))}
+              {Array.from({ length: 4 }).map((_, i) => <TicketCardSkeleton key={i} />)}
             </div>
           ) : error ? (
             <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
@@ -475,189 +300,135 @@ export function TicketsPage() {
               <EmptyState
                 icon={<TicketIcon className="h-10 w-10 text-manises-blue/20" />}
                 title={search ? 'Sin coincidencias' : `Sin jugadas ${tab}`}
-                description={
-                  search
-                    ? `No hemos encontrado apuestas para "${search}".`
-                    : tab === 'activos'
-                      ? 'Tus próximas apuestas aparecerán aquí en cuanto las realices.'
-                      : 'Todavía no tienes sorteos resueltos en tu historial.'
-                }
+                description={search ? `No hemos encontrado apuestas para "${search}".` : tab === 'activos' ? 'Tus próximas apuestas aparecerán aquí en cuanto las realices.' : 'Todavía no tienes sorteos resueltos en tu historial.'}
                 action={!search && tab === 'activos' ? { label: 'Empezar a jugar', onClick: () => navigate('/games') } : undefined}
               />
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2.5">
               {tab === 'activos' && displayed.length > 0 && displayed.length < 4 && (
                 <div className="order-last mt-1 rounded-[1.5rem] border border-dashed border-manises-blue/15 bg-manises-blue/[0.02] p-4 text-center">
                   <p className="text-[12px] font-black text-manises-blue/50">¿Quieres añadir otra jugada?</p>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/games')}
-                    className="mt-2.5 inline-flex items-center gap-1.5 rounded-2xl bg-manises-blue px-5 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white"
-                  >
+                  <button type="button" onClick={() => navigate('/games')} className="mt-2.5 inline-flex items-center gap-1.5 rounded-2xl bg-manises-blue px-5 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white">
                     Ir a juegos
                   </button>
                 </div>
               )}
+
               {displayed.map((ticket) => {
-                const game = LOTTERY_GAMES.find((entry) => entry.id === ticket.gameId);
+                const game = LOTTERY_GAMES.find((g) => g.id === ticket.gameId);
                 if (!game) return null;
 
                 const isExpanded = expandedIds.includes(ticket.id);
-                const matchingResult = resultMap.get(ticket.id) ?? null;
-                const matched = getMatchedValues(ticket, matchingResult);
-                const totalHits = matched.numbers.length + matched.stars.length;
-                const hasResolvedDraw = ticket.status !== 'pending' && Boolean(matchingResult);
                 const nationalTicket = isNationalTicket(ticket);
-                const ticketDisplayNumber = getTicketDisplayNumber(ticket);
-                const orderDatesSummary = getOrderDatesSummary(ticket);
-                const orderTotal = getOrderTotal(ticket);
+                const playStatus = getPlayStatus(ticket);
                 const identity = getGameIdentity(game);
-                const scrutinyTone = getScrutinyTone(ticket, matchingResult);
+                const orderTotal = getOrderTotal(ticket);
+                const orderDatesSummary = getOrderDatesSummary(ticket);
+                const quantityLabel = getQuantityLabel(ticket);
+                const selectionSummary = getSelectionSummary(ticket);
+                const prize = getPrizeLabel(ticket);
+                const hasMessaging = nationalTicket && ticket.metadata?.deliveryMode === 'shipping';
 
                 return (
-                  <PremiumTouchInteraction key={ticket.id} scale={0.985}>
-                    <div className="ticket-card relative overflow-hidden rounded-[1.5rem] border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition-all">
-                      <div className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: game.color }} />
-                      <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(to right, ${game.color}12, transparent 55%)` }} />
+                  <div key={ticket.id} className="ticket-card relative overflow-hidden rounded-[1.5rem] border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
+                    {/* Game color bar */}
+                    <div className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: game.color }} />
+                    <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(to right, ${game.color}12, transparent 55%)` }} />
 
-                      <div className="px-3 py-2 pl-3.5">
-                        <div className="flex items-start gap-2.5">
-                          <div className="flex min-w-0 flex-1 items-start gap-2.5">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white shadow-sm" style={{ backgroundColor: game.color }}>
-                              <GameBadge game={game} size="sm" variant="white" />
-                            </div>
-
-                            <div className="min-w-0 flex-1 flex flex-col gap-0.5">
-                              <div className="flex items-center gap-1.5">
-                                <h3 className="truncate text-[12px] font-black uppercase leading-tight text-manises-blue">{identity.shortName}</h3>
-                                {ticket.isSubscription && <Sparkles className="h-3 w-3 shrink-0 fill-current text-manises-gold" />}
-                                {ticket.hasInsurance && <Shield className="h-3 w-3 shrink-0 text-manises-gold" />}
-                              </div>
-
-                              <div className="flex flex-wrap items-center gap-1">
-                                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{orderDatesSummary}</p>
-                                <span className="text-slate-300">·</span>
-                                <p className="text-[11px] font-black text-manises-blue">{formatCurrency(orderTotal ?? 0)}</p>
-                                <span className="text-slate-300">·</span>
-                                <StatusBadge status={ticket.status} className="px-1.5 py-0 text-[9px]" />
-                              </div>
-
-                              <p className="truncate text-[11px] font-black text-manises-blue">
-                                {getCompactSelectionSummary(ticket)}
-                                {ticket.status === 'won' && ticket.prize != null && (
-                                  <span className="ml-1 text-emerald-600"> · Premio {formatCurrency(ticket.prize)}</span>
-                                )}
-                              </p>
-                              {hasResolvedDraw && totalHits > 0 && (
-                                <div className="w-fit inline-flex items-center gap-0.5 rounded-full border border-emerald-200 bg-emerald-50 px-1.5 py-px text-[8px] font-black uppercase tracking-[0.1em] text-emerald-700">
-                                  <Target className="h-2.5 w-2.5" />
-                                  {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => setExpandedIds((current) => current.includes(ticket.id) ? current.filter((id) => id !== ticket.id) : [...current, ticket.id])}
-                            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white text-manises-blue transition-all hover:border-manises-blue/20 hover:bg-manises-blue/[0.04]"
-                            aria-expanded={isExpanded}
-                            aria-label={isExpanded ? 'Ocultar detalle' : 'Mostrar detalle'}
-                          >
-                            <ChevronDown className={cn('h-4.5 w-4.5 transition-transform', isExpanded && 'rotate-180')} />
-                          </button>
+                    <div className="relative px-3 py-3 pl-4">
+                      {/* Row 1: icon + name + price + status + expand button */}
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white shadow-sm" style={{ backgroundColor: game.color }}>
+                          <GameBadge game={game} size="sm" variant="white" />
                         </div>
-
-                        <AnimatePresence initial={false}>
-                          {isExpanded && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.22, ease: 'easeOut' }}
-                              className="overflow-hidden"
-                            >
-                              <div className="mt-2 space-y-2">
-                                {game.type === 'quiniela' ? (
-                                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                                    <p className="text-[11px] font-black uppercase tracking-tight text-manises-blue">Pronóstico Quiniela</p>
-                                    <p className="mt-1 text-[10px] font-bold text-slate-500">{ticket.numbers.join(' · ')}</p>
-                                  </div>
-                                ) : nationalTicket ? (
-                                  <NationalDecimoCard ticket={ticket} displayNumber={ticketDisplayNumber} />
-                                ) : hasResolvedDraw && totalHits > 0 ? (
-                                  <div className="rounded-xl border border-slate-100 bg-white/90 px-3 py-2.5">
-                                    <p className="mb-2 text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
-                                      {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'}
-                                    </p>
-                                    <BallSelection
-                                      numbers={ticket.numbers}
-                                      stars={ticket.stars}
-                                      matchedNumbers={matched.numbers}
-                                      matchedStars={matched.stars}
-                                      type={game.type}
-                                    />
-                                  </div>
-                                ) : hasResolvedDraw ? (
-                                  <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2">
-                                    <XCircle className="h-3.5 w-3.5 shrink-0 text-slate-300" />
-                                    <span className="text-[10px] font-semibold text-slate-400">Sin aciertos en este sorteo</span>
-                                  </div>
-                                ) : null}
-
-                                <div className="flex items-center gap-2 rounded-xl bg-slate-50/80 px-3 py-2 border border-slate-100">
-                                  <span className="text-[10px] font-semibold text-slate-500 shrink-0">
-                                    {ticket.userId === 'demo-user' ? 'Pedido demo' : 'Pedido'} {getTicketCode(ticket.id)}
-                                  </span>
-                                  <span className="ml-auto shrink-0 text-[9px] font-medium text-slate-400">
-                                    Creada {formatCompactDate(ticket.createdAt)}
-                                  </span>
-                                </div>
-
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <QuickActionButton
-                                    icon={Repeat2}
-                                    label="Repetir"
-                                    onClick={() => navigate(`/play/${ticket.gameId}`)}
-                                  />
-                                  <QuickActionButton
-                                    icon={Maximize2}
-                                    label={nationalTicket ? "Ver Décimo" : "Ver Resguardo"}
-                                    onClick={() => setReceiptTicket(ticket)}
-                                  />
-                                  <QuickActionButton
-                                    icon={Archive}
-                                    label="Archivar"
-                                    tone="danger"
-                                    onClick={() => {
-                                      setArchivedIds((current) => current.includes(ticket.id) ? current : [...current, ticket.id]);
-                                      toast.success('Jugada archivada');
-                                    }}
-                                  />
-                                  <div className="h-4 w-px bg-slate-200 mx-1" />
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className={cn(
-                                      'h-9 rounded-xl px-2.5 text-[10px] font-black uppercase tracking-[0.12em]',
-                                      matchingResult
-                                        ? 'bg-manises-blue/[0.04] text-manises-blue'
-                                        : 'text-slate-400'
-                                    )}
-                                    onClick={() => setScrutinyState({ ticket, result: matchingResult })}
-                                  >
-                                    <ScrollText className="mr-1.5 h-3.5 w-3.5" />
-                                    {scrutinyTone.label}
-                                  </Button>
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <h3 className="text-[12px] font-black uppercase leading-tight text-manises-blue">{identity.shortName}</h3>
+                            <span className="text-[11px] font-black text-manises-blue">{formatCurrency(orderTotal ?? 0)}</span>
+                            <PlayStatusBadge status={playStatus} />
+                            {ticket.isSubscription && <Repeat2 className="h-3 w-3 shrink-0 text-manises-gold" />}
+                            {ticket.hasInsurance && <Shield className="h-3 w-3 shrink-0 text-manises-gold" />}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => toggleExpand(ticket.id)}
+                          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white text-manises-blue transition-all hover:border-manises-blue/20 hover:bg-manises-blue/[0.04]"
+                          aria-expanded={isExpanded}
+                          aria-label={isExpanded ? 'Ocultar acciones' : 'Ver acciones'}
+                        >
+                          {isExpanded ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                        </button>
                       </div>
+
+                      {/* Rows 2–6: always visible info */}
+                      <div className="mt-2 space-y-0.5 pl-[calc(2rem+0.625rem)]">
+                        {/* Numbers */}
+                        <p className={cn('font-black text-manises-blue leading-snug', nationalTicket ? 'text-[20px] tracking-wider' : 'text-[11px]')}>
+                          {selectionSummary}
+                        </p>
+
+                        {/* Date */}
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{orderDatesSummary}</p>
+
+                        {/* Quantity */}
+                        <p className="text-[10px] font-semibold text-slate-500">{quantityLabel}</p>
+
+                        {/* Delivery type */}
+                        {hasMessaging && (
+                          <div className="flex items-center gap-1.5 pt-0.5">
+                            <Truck className="h-3 w-3 text-slate-400" />
+                            <span className="text-[10px] font-semibold text-slate-500">Mensajería</span>
+                          </div>
+                        )}
+
+                        {/* Prize */}
+                        <div className="flex items-center gap-1 pt-0.5">
+                          <span className="text-[10px] font-bold text-slate-400">Premio:</span>
+                          <span className={cn('text-[11px] font-black', ticket.prize && ticket.prize > 0 ? 'text-emerald-600' : 'text-slate-400')}>
+                            {prize}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Action buttons (expanded only) */}
+                      <AnimatePresence initial={false}>
+                        {isExpanded && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2, ease: 'easeOut' }}
+                            className="overflow-hidden"
+                          >
+                            <div className="mt-3 flex flex-wrap gap-2 border-t border-gray-50 pt-3 pl-[calc(2rem+0.625rem)]">
+                              <QuickActionButton
+                                icon={Repeat2}
+                                label="Repetir"
+                                onClick={() => navigate(`/play/${ticket.gameId}`)}
+                              />
+                              <QuickActionButton
+                                icon={Bell}
+                                label="Abonarse"
+                                onClick={() => toast.info('Abono pendiente de integración desde Mis jugadas.')}
+                              />
+                              <QuickActionButton
+                                icon={Eye}
+                                label="Ver números"
+                                onClick={() => navigate(`/tickets/${ticket.id}`)}
+                              />
+                              <QuickActionButton
+                                icon={ScrollText}
+                                label="Certificado"
+                                onClick={() => setReceiptTicket(ticket)}
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                  </PremiumTouchInteraction>
+                  </div>
                 );
               })}
             </div>
@@ -671,24 +442,12 @@ export function TicketsPage() {
         </div>
       </div>
 
-      <ComparisonModal
-        isOpen={!!scrutinyState?.result}
-        onClose={() => setScrutinyState(null)}
-        result={scrutinyState?.result || { numbers: [], date: '', gameId: '' }}
-        userTickets={scrutinyState?.ticket ? [scrutinyState.ticket] : []}
-      />
-
-      <ScrutinyFallbackModal
-        state={scrutinyState}
-        onClose={() => setScrutinyState(null)}
-      />
-
       <TicketReceiptModal
         ticket={receiptTicket}
         onClose={() => setReceiptTicket(null)}
         ticketCode={receiptTicket ? getTicketCode(receiptTicket.id) : ''}
         orderDatesSummary={receiptTicket ? getOrderDatesSummary(receiptTicket) : ''}
-        selectionSummary={receiptTicket ? getCompactSelectionSummary(receiptTicket) : ''}
+        selectionSummary={receiptTicket ? getSelectionSummary(receiptTicket) : ''}
       />
     </>
   );

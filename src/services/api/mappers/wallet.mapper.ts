@@ -17,6 +17,9 @@ export const walletMapper = {
       amount: dto.amount,
       description: dto.description,
       createdAt: dto.createdAt,
+      orderId: dto.orderId,
+      balanceAfter: dto.balanceAfter,
+      details: dto.details,
     };
   },
 

@@ -1,22 +1,19 @@
 import { useNavigate } from 'react-router-dom';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import type { Key } from 'react';
 import { 
   ChevronRight, 
-  TrendingUp, 
-  Sparkles, 
-  Calendar,
-  Zap,
-  Clock
+  Clock, 
+  Trophy, 
+  Sparkles 
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { GameBadge } from '@/shared/ui/GameBadge';
-import { formatJackpot, formatCurrency, formatDrawTime, getCountdown } from '@/shared/lib/utils';
+import { formatJackpot, formatCurrency, formatDrawTime } from '@/shared/lib/utils';
 import { useLotteryGames } from '@/shared/hooks/useLotteryGames';
 import type { LotteryGame } from '@/shared/types/domain';
 import { getGameIdentity } from '@/shared/lib/game-identity';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
 
 // Assets
 import adminManises from '@/assets/images/administracion_manises.webp';
@@ -28,69 +25,189 @@ import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
 import headerWinner from '@/assets/images/header_winner.jpg';
 import primitivaJoyV2 from '@/assets/images/primitiva_joy_v2.jpg';
 
-gsap.registerPlugin(useGSAP);
+// ─── Sub-component: Notice Ticker ───────────────────────────────────────────
+const NOTICES = [
+  "Hemos repartido un premio de Bonoloto de 33.495,59 € - ¡Enhorabuena al ganador! 🏆",
+  "¡El bote de Euromillones alcanza ya los 105.000.000 €! Juega tu apuesta sencilla 🍀",
+  "Ya está disponible la Lotería de Navidad 2026. ¡Consigue tu décimo oficial! 🎄"
+];
 
-// ─── Sub-component: TodayGameCard ─────────────────────────────────────────────
-function TodayGameCard({ game, onClick }: { key?: Key; game: LotteryGame; onClick: () => void }) {
-  const identity = getGameIdentity(game);
-  const imageMap: Record<string, string> = {
-    primitiva: primitivaJoy,
-    'loteria-nacional-jueves': loteriaJuevesLuck,
-    'loteria-nacional-sabado': loteriaNacionalHero,
-    'loteria-navidad': loteriaNavidadHero,
-    'loteria-nino': primitivaJoyV2,
-  };
-  const image = imageMap[game.id] ?? joySecondary;
+function NoticeTicker() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % NOTICES.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <PremiumTouchInteraction scale={0.98}>
-      <button
-        onClick={onClick}
-        className="today-game-card relative w-full h-32 rounded-[1.75rem] overflow-hidden group shadow-lg transition-all text-left"
-      >
-        <img
-          src={image}
-          alt={game.name}
-          className="absolute inset-0 w-full h-full object-cover opacity-20 transition-transform duration-1000 group-hover:scale-105"
-          style={{ filter: 'grayscale(1) brightness(0.5)' }}
-        />
-        <div className="absolute inset-0" style={{ backgroundColor: game.color, mixBlendMode: 'multiply', opacity: 0.8 }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
-
-        <div className="relative h-full p-5 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <GameBadge game={game} size="lg" tone="ghost" className="shadow-2xl shrink-0" />
-            <div>
-              <div className="mb-1.5">
-                <span
-                  className="inline-flex rounded-full px-2 py-1 text-[8px] font-bold uppercase tracking-[0.16em]"
-                  style={{ backgroundColor: identity.chipBackground, color: identity.chipText }}
-                >
-                  {identity.badgeLabel}
-                </span>
-              </div>
-              <h3 className="text-white text-xl font-black tracking-tight leading-none mb-1">{identity.shortName}</h3>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-manises-gold uppercase tracking-[0.14em]">Bote</span>
-                <span className="text-lg font-black text-white/96 tabular-nums">
-                  {formatJackpot(game.jackpot, game.isMonthly)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-white/10 flex flex-col items-center shrink-0">
-            <Clock className="w-3.5 h-3.5 text-white/54 mb-1.5" />
-            <span className="text-[9px] font-bold text-white/82 uppercase tracking-[0.12em]">{formatDrawTime(game.nextDraw)}</span>
-          </div>
-        </div>
-      </button>
-    </PremiumTouchInteraction>
+    <div className="w-full bg-[#f8fafc] border-y border-slate-100 py-2.5 px-5 flex items-center gap-2 overflow-hidden min-h-[40px] shadow-sm">
+      <Trophy className="w-4 h-4 text-amber-500 shrink-0 animate-bounce" />
+      <div className="relative flex-1 h-5 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={index}
+            initial={{ y: 15, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -15, opacity: 0 }}
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            className="absolute inset-x-0 top-0 text-[11px] font-bold text-manises-blue tracking-wide truncate"
+          >
+            {NOTICES[index]}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+    </div>
   );
 }
 
-// ─── Sub-component: UpcomingGameRow ──────────────────────────────────────────
-function UpcomingGameRow({ game, onClick }: { key?: Key; game: LotteryGame; onClick: () => void }) {
+// ─── Sub-component: Christmas Featured Card ──────────────────────────────────
+function ChristmasCard({ onClick }: { onClick: () => void }) {
+  const year = new Date().getFullYear();
+  return (
+    <motion.div
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
+      onClick={onClick}
+      className="relative overflow-hidden rounded-[2.2rem] bg-gradient-to-br from-[#0c0e17] via-[#111827] to-[#020617] border border-amber-500/10 p-6 flex justify-between items-center cursor-pointer shadow-xl h-44 group"
+    >
+      <img
+        src={loteriaNavidadHero}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover opacity-65 transition-transform duration-[2000ms] group-hover:scale-105 pointer-events-none"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0c0e17] via-[#0c0e17]/50 to-transparent" />
+      
+      <div className="absolute top-0 left-0 w-24 h-24 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-12 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+      
+      <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+        <div className="absolute top-2 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+        <div className="absolute top-12 left-1/3 w-1 h-1 bg-white rounded-full" />
+        <div className="absolute top-6 right-1/4 w-2 h-2 bg-white rounded-full animate-ping [animation-duration:3s]" />
+        <div className="absolute bottom-8 left-10 w-1 h-1 bg-white rounded-full" />
+        <div className="absolute bottom-12 right-1/3 w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-duration:4s]" />
+      </div>
+
+      <div className="relative flex flex-col justify-between h-full z-10">
+        <div>
+          <div className="flex items-center gap-1.5 mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-current" />
+            <span className="text-[9px] font-black text-amber-400 tracking-[0.2em] uppercase">Lotería de</span>
+          </div>
+          <h3 className="text-2xl font-black text-white leading-none tracking-tight mb-2">
+            NAVIDAD
+          </h3>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-white text-sm font-extrabold tracking-tight">400.000 € <span className="text-slate-400 text-xs font-normal">al décimo</span></span>
+            <span className="text-amber-400/90 text-[10px] font-bold uppercase tracking-wider">Ya disponible</span>
+          </div>
+        </div>
+
+        <button className="flex items-center justify-center gap-1 bg-gradient-to-r from-amber-500 to-yellow-400 text-[11px] font-black text-slate-950 px-4 py-2 rounded-xl mt-3 w-fit shadow-[0_4px_12px_rgba(245,158,11,0.25)] border border-yellow-300/20 group-hover:scale-[1.03] duration-200">
+          COMPRAR
+          <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
+        </button>
+      </div>
+
+      <div className="relative flex items-center justify-center h-full w-24 shrink-0 z-10 select-none">
+        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-yellow-400 border border-yellow-300 shadow-xl flex flex-col items-center justify-center p-1 text-center group-hover:scale-105 group-hover:rotate-6 transition-all duration-300">
+          <span className="text-[15px] font-black text-slate-950 leading-none">22</span>
+          <span className="text-[8px] font-black text-slate-900 uppercase tracking-tight leading-none mt-0.5">DIC</span>
+          <span className="text-[7.5px] font-bold text-slate-800 leading-none mt-0.5">{year}</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Sub-component: Euromillions Featured Card ────────────────────────────────
+function EuromillionsCard({ jackpot, nextDraw, onClick }: { jackpot: number; nextDraw: string; onClick: () => void }) {
+  const formatMillions = (value: number) => {
+    const millions = Math.round(value / 1_000_000);
+    return `${millions} MILLONES €`;
+  };
+
+  const getDrawDayText = (iso: string) => {
+    const d = new Date(iso);
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+
+    let dayStr = "";
+    if (d.toDateString() === today.toDateString()) {
+      dayStr = "Hoy";
+    } else if (d.toDateString() === tomorrow.toDateString()) {
+      dayStr = "Mañana";
+    } else {
+      dayStr = d.toLocaleDateString('es-ES', { weekday: 'long' });
+      dayStr = dayStr.charAt(0).toUpperCase() + dayStr.slice(1);
+    }
+    const timeStr = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    return `${dayStr} - ${timeStr}`;
+  };
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
+      onClick={onClick}
+      className="relative overflow-hidden rounded-[2.2rem] bg-gradient-to-r from-blue-900 via-indigo-900 to-blue-950 border border-blue-500/20 p-5 flex justify-between items-center cursor-pointer shadow-xl h-36 group"
+    >
+      <img
+        src={headerWinner}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover opacity-65 transition-transform duration-[2000ms] group-hover:scale-105 pointer-events-none"
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-950 via-blue-950/50 to-transparent" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.2),transparent_70%)]" />
+
+      <div className="relative flex flex-col justify-between h-full z-10">
+        <div>
+          <span className="text-[8px] font-black text-blue-300 tracking-[0.2em] uppercase mb-1 block">
+            BOTE ESPECIAL
+          </span>
+          <h3 className="text-xl font-black text-white tracking-tight leading-none mb-1">
+            EUROMILLONES
+          </h3>
+          <p className="text-2xl font-black text-white tracking-tight drop-shadow-md">
+            {formatMillions(jackpot)}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-1.5 text-blue-200/80 mt-2">
+          <Clock className="w-3.5 h-3.5 text-blue-300" />
+          <span className="text-[10px] font-bold tracking-wide uppercase">
+            {getDrawDayText(nextDraw)}
+          </span>
+        </div>
+      </div>
+
+      <div className="relative flex items-center justify-end h-full w-32 shrink-0 z-10 select-none">
+        <div className="absolute right-12 bottom-4 w-12 h-12 rounded-full bg-gradient-to-br from-yellow-100 via-white to-slate-200 shadow-2xl flex items-center justify-center border border-white/40 rotate-[-12deg] group-hover:translate-y-[-2px] transition-transform duration-300">
+          <span className="text-xs font-black text-slate-800">12</span>
+          <div className="absolute top-1 left-2 w-3 h-1.5 bg-white/70 rounded-full rotate-[-15deg]" />
+        </div>
+        <div className="absolute right-4 top-2 w-14 h-14 rounded-full bg-gradient-to-br from-blue-100 via-white to-blue-200 shadow-2xl flex items-center justify-center border border-white/50 rotate-[15deg] z-10 group-hover:translate-x-[2px] transition-transform duration-300">
+          <span className="text-sm font-black text-blue-900">07</span>
+          <div className="absolute top-1 left-2 w-4.5 h-2 bg-white/80 rounded-full rotate-[-15deg]" />
+        </div>
+        <div className="absolute right-0 bottom-2 w-10 h-10 rounded-full bg-gradient-to-br from-yellow-300 via-amber-400 to-amber-600 shadow-2xl flex items-center justify-center border border-yellow-200/50 rotate-[-5deg] z-20 group-hover:scale-105 transition-transform duration-300">
+          <span className="text-[10px] font-black text-amber-950">★</span>
+          <div className="absolute top-0.5 left-1.5 w-2.5 h-1 bg-white/80 rounded-full rotate-[-15deg]" />
+        </div>
+        
+        <div className="absolute top-4 left-4 w-1.5 h-1.5 bg-yellow-300 rounded-full animate-ping" />
+        <div className="absolute bottom-6 right-2 w-1 h-1 bg-blue-300 rounded-full" />
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Sub-component: Game Card Row (Original Style) ──────────────────────────
+function GameCardRow({ game, onClick }: { key?: Key; game: LotteryGame; onClick: () => void }) {
   const identity = getGameIdentity(game);
   const imageMap: Record<string, string> = {
     primitiva: primitivaJoy,
@@ -103,49 +220,45 @@ function UpcomingGameRow({ game, onClick }: { key?: Key; game: LotteryGame; onCl
     'loteria-nino': primitivaJoyV2,
   };
   const image = imageMap[game.id] ?? joySecondary;
-  const isNationalGame = game.id === 'loteria-nacional-jueves' || game.id === 'loteria-nacional-sabado' || game.id === 'loteria-navidad' || game.id === 'loteria-nino';
-  const imageFilter = game.id === 'loteria-navidad'
-    ? 'grayscale(0.18) brightness(0.62) contrast(1.04)'
-    : game.id === 'loteria-nino'
-      ? 'grayscale(0.26) brightness(0.6) contrast(1.02)'
-      : isNationalGame
-        ? 'grayscale(0.34) brightness(0.56) contrast(1.02)'
-        : 'grayscale(0.82) brightness(0.5)';
+  const isNationalGame = game.id === 'loteria-nacional-jueves' || game.id === 'loteria-nacional-sabado';
+  const imageFilter = isNationalGame
+    ? 'grayscale(0.34) brightness(0.56) contrast(1.02)'
+    : 'grayscale(0.82) brightness(0.5)';
   return (
-    <PremiumTouchInteraction scale={0.97}>
+    <PremiumTouchInteraction scale={0.97} className="w-full">
       <button
         onClick={onClick}
-        className="weekly-game-card relative w-full overflow-hidden rounded-[1.6rem] border border-white/10 p-[1.05rem] text-left shadow-lg transition-all group"
+        className="weekly-game-card relative w-full overflow-hidden rounded-[1.35rem] border border-white/10 p-2.5 text-left shadow-md transition-all group"
       >
         <img
           src={image}
           alt={game.name}
-          className="absolute inset-0 h-full w-full object-cover opacity-[0.15] transition-transform duration-700 group-hover:scale-105"
+          className="absolute inset-0 h-full w-full object-cover opacity-[0.15] transition-transform duration-700 group-hover:scale-105 pointer-events-none"
           style={{ filter: imageFilter }}
         />
         <div className="absolute inset-0" style={{ backgroundColor: game.color, mixBlendMode: 'multiply', opacity: isNationalGame ? 0.74 : 0.8 }} />
         <div className="absolute inset-0 bg-gradient-to-r from-black/58 via-black/18 to-transparent" />
 
-        <div className="relative flex items-center justify-between gap-5">
-          <div className="flex min-w-0 flex-1 items-center gap-3.5">
-            <GameBadge game={game} size="md" tone="ghost" className="border-white/15 bg-white/10 shadow-[0_14px_28px_rgba(0,0,0,0.2)]" />
+        <div className="relative flex items-center justify-between gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <GameBadge game={game} size="sm" tone="ghost" className="border-white/15 bg-white/10 shadow-[0_14px_28px_rgba(0,0,0,0.2)]" />
             <div className="min-w-0">
-              <h3 className="truncate text-[0.96rem] font-black leading-none text-white">{identity.shortName}</h3>
-              <p className="mt-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/68">
+              <h3 className="truncate text-sm font-black leading-none text-white">{identity.shortName}</h3>
+              <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/68">
                 {formatDrawTime(game.nextDraw)}
               </p>
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-3.5 pl-2">
+          <div className="flex shrink-0 items-center gap-3 pl-1">
             <div className="min-w-[4.85rem] text-right">
               <p className="text-[11px] font-black leading-none text-manises-gold">
                 {formatJackpot(game.jackpot, game.isMonthly)}
               </p>
-              <p className="mt-1 text-[9px] font-medium text-white/66">{formatCurrency(game.price)}</p>
+              <p className="mt-0.5 text-[8.5px] font-medium text-white/66">{formatCurrency(game.price)}</p>
             </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/12 bg-white/12 text-white/92 shadow-inner shrink-0">
-              <ChevronRight className="w-4 h-4" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/12 bg-white/12 text-white/92 shadow-inner shrink-0">
+              <ChevronRight className="w-3.5 h-3.5" />
             </div>
           </div>
         </div>
@@ -154,130 +267,107 @@ function UpcomingGameRow({ game, onClick }: { key?: Key; game: LotteryGame; onCl
   );
 }
 
-// ─── Sub-component: EmptyToday ────────────────────────────────────────────────
-function EmptyTodaySection() {
-  return (
-    <div className="bg-manises-blue/5 border border-manises-blue/10 rounded-2xl p-5 text-center">
-      <Sparkles className="w-6 h-6 text-manises-blue/30 mx-auto mb-2" />
-      <p className="text-[11px] font-black text-manises-blue/40 uppercase tracking-widest">
-        No hay sorteos hoy
-      </p>
-      <p className="text-[10px] text-muted-foreground mt-1">
-        Consulta los próximos sorteos más abajo
-      </p>
-    </div>
-  );
-}
+// ─── Main Page ───────────────────────────────────────────────────────────────
+const listAnimation = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05
+    }
+  }
+};
 
-// ─── Main Page ─────────────────────────────────────────────────────────────────
+const itemAnimation = {
+  hidden: { y: 15, opacity: 0 },
+  show: { y: 0, opacity: 1, transition: { duration: 0.35, ease: 'easeOut' } }
+};
+
 export function GamesPage() {
   const navigate = useNavigate();
-  const { todayGames, upcomingGames } = useLotteryGames();
+  const { games } = useLotteryGames();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Los "próximos" excluyen los de hoy
-  const futureGames = upcomingGames.filter(g => {
-    const cd = getCountdown(g.nextDraw);
-    return cd.days > 0;
+  // Filter Christmas/Niño out of the main list as they are highlighted/seasonal
+  const listGames = games.filter(g => g.id !== 'loteria-navidad' && g.id !== 'loteria-nino');
+
+  // Hardcoded ordering corresponding to the mockup hierarchy
+  const gameOrder = [
+    'bonoloto',
+    'eurodreams',
+    'euromillones',
+    'primitiva',
+    'gordo',
+    'quiniela',
+    'loteria-nacional-jueves',
+    'loteria-nacional-sabado'
+  ];
+
+  const sortedListGames = [...listGames].sort((a, b) => {
+    return gameOrder.indexOf(a.id) - gameOrder.indexOf(b.id);
   });
 
-  useGSAP(() => {
-    const sectionTitles = gsap.utils.toArray<HTMLElement>('.section-title');
-    const todayCards = gsap.utils.toArray<HTMLElement>('.today-game-card');
-    const weeklyCards = gsap.utils.toArray<HTMLElement>('.weekly-game-card');
-    const banners = gsap.utils.toArray<HTMLElement>('.banner-info');
-
-    gsap.set(sectionTitles, { y: 10, autoAlpha: 0 });
-    gsap.set(todayCards, { y: 14, autoAlpha: 0 });
-    gsap.set(weeklyCards, { y: 16, autoAlpha: 0 });
-    gsap.set(banners, { y: 10, autoAlpha: 0 });
-
-    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-    tl
-      .to(sectionTitles, { y: 0, autoAlpha: 1, duration: 0.42, stagger: 0.07 })
-      .to(todayCards, { y: 0, autoAlpha: 1, duration: 0.4, stagger: 0.06 }, '-=0.16')
-      .to(weeklyCards, { y: 0, autoAlpha: 1, duration: 0.38, stagger: 0.065 }, '-=0.12')
-      .to(banners, { y: 0, autoAlpha: 1, duration: 0.36 }, '-=0.1');
-  }, { scope: containerRef });
+  const euromillonesGame = games.find(g => g.id === 'euromillones');
 
   return (
-    <div className="flex min-h-full flex-col gap-6 overflow-x-hidden bg-background" ref={containerRef}>
+    <div className="flex min-h-full flex-col overflow-x-hidden bg-background pb-8" ref={containerRef}>
+      {/* 1. Ticker de avisos */}
+      <NoticeTicker />
 
-      {/* ── Sorteos de Hoy ──────────────────────────────────── */}
-      <section className="px-5 pt-4 space-y-3">
-        <div className="flex items-center gap-2 px-1 section-title">
-          <div className="w-8 h-8 rounded-xl bg-manises-blue/5 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-manises-blue" />
-          </div>
-          <h2 className="text-sm font-black text-manises-blue uppercase tracking-widest">Sorteos de Hoy</h2>
-        </div>
+      {/* Main page content layout */}
+      <motion.div 
+        variants={listAnimation}
+        initial="hidden"
+        animate="show"
+        className="px-5 pt-4 flex flex-col gap-5"
+      >
+        {/* 2. Christmas Featured Banner */}
+        <motion.div variants={itemAnimation}>
+          <ChristmasCard onClick={() => navigate('/play/loteria-navidad')} />
+        </motion.div>
 
-        {todayGames.length > 0 ? (
-          <div className="flex flex-col gap-3">
-            {todayGames.map(game => (
-              <TodayGameCard
-                key={game.id}
-                game={game}
-                onClick={() => navigate(`/play/${game.id}`)}
-              />
-            ))}
-          </div>
-        ) : (
-          <EmptyTodaySection />
+        {/* 3. Euromillions Featured Banner */}
+        {euromillonesGame && (
+          <motion.div variants={itemAnimation}>
+            <EuromillionsCard 
+              jackpot={euromillonesGame.jackpot} 
+              nextDraw={euromillonesGame.nextDraw} 
+              onClick={() => navigate('/play/euromillones')} 
+            />
+          </motion.div>
         )}
-      </section>
 
-      {/* ── Próximos Sorteos ────────────────────────────────── */}
-      {futureGames.length > 0 && (
-        <section className="px-5 space-y-3">
-          <div className="flex items-center justify-between px-1 section-title">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-manises-blue/5 flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-manises-blue" />
-              </div>
-              <h2 className="text-sm font-black text-manises-blue uppercase tracking-widest">Próximos Sorteos</h2>
-            </div>
+        {/* 4. Todos los sorteos Title & Separator */}
+        <motion.div variants={itemAnimation} className="mt-2">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-black text-manises-blue/40 tracking-[0.25em] uppercase whitespace-nowrap">
+              Todos los sorteos
+            </span>
+            <div className="h-[1px] bg-slate-100 flex-1" />
           </div>
+        </motion.div>
 
-          <div className="grid grid-cols-1 gap-2.5">
-            {futureGames.map(game => (
-              <UpcomingGameRow
-                key={game.id}
+        {/* 5. Todos los sorteos List (Original Card Grid style) */}
+        <motion.div 
+          variants={listAnimation} 
+          className="grid grid-cols-1 gap-2"
+        >
+          {sortedListGames.map((game) => (
+            <motion.div
+              key={game.id}
+              variants={itemAnimation}
+            >
+              <GameCardRow 
                 game={game}
                 onClick={() => navigate(`/play/${game.id}`)}
               />
-            ))}
-          </div>
-        </section>
-      )}
+            </motion.div>
+          ))}
+        </motion.div>
+      </motion.div>
 
-      {/* ── Banner Emocional ─────────────────────────────────── */}
-      <section className="px-5">
-        <div className="banner-info relative h-44 rounded-3xl overflow-hidden shadow-2xl bg-manises-blue">
-          <img
-            src={adminManises}
-            alt="Administración Manises"
-            className="absolute inset-0 w-full h-full object-cover opacity-60 transition-transform duration-1000 hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-manises-blue/40 mix-blend-multiply" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-
-          <div className="absolute inset-0 p-6 flex flex-col justify-end">
-            <div className="flex items-center gap-2 mb-2">
-              <Zap className="w-4 h-4 text-manises-gold fill-current" />
-              <span className="text-[10px] font-black text-white/80 uppercase tracking-[0.2em]">Punto de Venta Oficial</span>
-            </div>
-            <h4 className="text-xl font-black text-white leading-tight tracking-tight">
-              Administración nº 3 de Manises
-            </h4>
-            <p className="text-white/60 text-[10px] font-medium mt-1">
-              Más de 20 años repartiendo sueños y botes millonarios.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <p className="text-center text-[9px] text-manises-blue/20 font-black uppercase tracking-[0.3em] mt-2">
+      {/* Disclaimer */}
+      <p className="text-center text-[9px] text-manises-blue/20 font-black uppercase tracking-[0.3em] mt-8 mb-4">
         Juego Responsable · +18 · Lotería Manises
       </p>
     </div>

@@ -1,121 +1,106 @@
-import { useRef } from 'react';
-import { ShieldCheck, Timer, Ban, Wallet, AlertTriangle, ChevronRight } from 'lucide-react';
-import { ProfileSubHeader } from '../components/ProfileSubHeader';
-import { PremiumActionRow } from '../components/PremiumActionRow';
-import { PremiumMetricPill } from '../components/PremiumMetricPill';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, Clock3, ShieldCheck, WalletCards } from 'lucide-react';
 import { toast } from 'sonner';
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
+import { Button } from '@/shared/ui/Button';
+import { ProfileSubHeader } from '../components/ProfileSubHeader';
+import { PremiumSectionCard } from '../components/PremiumSectionCard';
+
+const SELF_EXCLUSION_OPTIONS = [
+  { key: 'no', label: 'No' },
+  { key: '15d', label: 'Durante 15 días' },
+  { key: '30d', label: 'Durante 30 días' },
+  { key: '3m', label: 'Durante 3 meses' },
+  { key: '12m', label: 'Durante 12 meses' },
+  { key: 'custom', label: 'Otro periodo' },
+  { key: 'permanent', label: 'Permanente' },
+];
 
 export function ResponsibleGamingPage() {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useGSAP(() => {
-    gsap.from('.gaming-item', {
-      y: 20,
-      opacity: 0,
-      stagger: 0.1,
-      ease: 'power3.out',
-      duration: 0.6
-    });
-  }, { scope: containerRef });
-
-  const handleAction = (title: string) => {
-    toast.info(`${title}: Demo · Los límites no se aplican realmente en esta fase.`);
-  };
+  const navigate = useNavigate();
+  const [monthlyLimit, setMonthlyLimit] = useState('200');
+  const [selfExclusion, setSelfExclusion] = useState('no');
 
   return (
-    <div className="flex min-h-full flex-col bg-background pb-12" ref={containerRef}>
-      <ProfileSubHeader 
-        title="Control de Juego" 
-        subtitle="Juego Responsable y Límites" 
-      />
+    <div className="flex min-h-full flex-col bg-background pb-20">
+      <ProfileSubHeader title="Juego responsable" subtitle="Control del gasto y recursos de ayuda" />
 
-      <div className="p-5 flex flex-col gap-6">
-        {/* Banner Informativo */}
-        <section className="gaming-item">
-          <div className="bg-emerald-600 rounded-[2rem] p-6 text-white relative overflow-hidden shadow-xl">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck className="w-5 h-5 text-emerald-200" />
-                <h3 className="text-xs font-black uppercase tracking-widest text-emerald-100">Compromiso Social</h3>
-              </div>
-              <h4 className="text-lg font-black leading-tight">Juega con responsabilidad</h4>
-              <p className="mt-2 text-[11px] text-emerald-50/70 leading-relaxed font-medium">
-                Demo · los límites no se aplican realmente en esta fase. Esta pantalla solo previsualiza futuras herramientas de control.
-              </p>
-            </div>
-          </div>
+      <div className="flex flex-col gap-4 p-4">
+        <section className="rounded-[1.6rem] bg-manises-blue p-5 text-white shadow-lg">
+          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/60">Compromiso de la administración</p>
+          <h2 className="mt-2 text-xl font-black">Disfruta del juego como una actividad de ocio</h2>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-white/75">
+            Aquí tienes tus herramientas de control y varios apartados informativos para ayudarte a jugar con serenidad, transparencia y criterio.
+          </p>
         </section>
 
-        {/* Límites de Gasto */}
-        <section className="space-y-3 gaming-item">
-          <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Límites de actividad</p>
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <PremiumMetricPill label="Límite Diario" value="600,00 €" tone="blue" />
-            <PremiumMetricPill label="Límite Mensual" value="2.000,00 €" tone="gold" />
-          </div>
-          
-          <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border/50">
-            <PremiumActionRow
-              icon={Wallet}
-              title="Modificar límites"
-              description="Aumentar o disminuir topes de depósito"
-              tone="blue"
-              onClick={() => handleAction('Modificar límites')}
-              trailing={<ChevronRight className="w-4 h-4 text-muted-foreground/40" />}
+        <PremiumSectionCard title="Límite mensual de juego" eyebrow="Control del gasto" description="Establece el importe máximo que podrás gastar al mes en compras." tone="blue">
+          <div className="space-y-3">
+            <input
+              type="number"
+              value={monthlyLimit}
+              onChange={(event) => setMonthlyLimit(event.target.value)}
+              className="h-12 w-full rounded-xl border border-slate-200 px-4 text-lg font-black text-manises-blue outline-none focus:border-manises-blue"
             />
-            <PremiumActionRow
-              icon={Timer}
-              title="Límite de Sesión"
-              description="Tiempo máximo de conexión por día"
-              tone="violet"
-              onClick={() => handleAction('Límite de Sesión')}
-              trailing={<ChevronRight className="w-4 h-4 text-muted-foreground/40" />}
-            />
+            <p className="text-[11px] font-semibold text-slate-500">El límite se reinicia automáticamente el primer día de cada mes.</p>
+            <Button className="w-full rounded-xl bg-manises-blue text-white" onClick={() => toast.success('Límite mensual actualizado en demo.')}>
+              Guardar límite
+            </Button>
           </div>
-        </section>
+        </PremiumSectionCard>
 
-        {/* Autoexclusión */}
-        <section className="space-y-3 gaming-item">
-          <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest px-1">Medidas de protección</p>
-          <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden divide-y divide-border/50">
-            <PremiumActionRow
-              icon={Ban}
-              title="Autoexclusión Temporal"
-              description="Simulación de solicitud de pausa"
-              tone="violet"
-              onClick={() => handleAction('Autoexclusión Temporal')}
-              trailing={<ChevronRight className="w-4 h-4 text-muted-foreground/40" />}
-            />
-            <PremiumActionRow
-              icon={AlertTriangle}
-              title="Autoexclusión Indefinida"
-              description="Simulación de solicitud de bloqueo"
-              tone="default"
-              onClick={() => handleAction('Autoexclusión Indefinida')}
-              trailing={<ChevronRight className="w-4 h-4 text-muted-foreground/40" />}
-            />
+        <PremiumSectionCard title="Autoexclusión" eyebrow="Protección de acceso" description="Restringe temporalmente el acceso a tu cuenta si necesitas parar." tone="default">
+          <div className="space-y-3">
+            <select
+              value={selfExclusion}
+              onChange={(event) => setSelfExclusion(event.target.value)}
+              className="h-12 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold text-manises-blue outline-none focus:border-manises-blue"
+            >
+              {SELF_EXCLUSION_OPTIONS.map((option) => (
+                <option key={option.key} value={option.key}>{option.label}</option>
+              ))}
+            </select>
+            {selfExclusion !== 'no' && (
+              <>
+                <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4">
+                  <p className="text-sm font-black text-amber-800">Aviso importante</p>
+                  <p className="mt-1 text-[11px] font-semibold leading-relaxed text-amber-700/80">
+                    Durante el periodo seleccionado no podrás acceder a tu cuenta ni realizar compras. Si después quieres volver a usarla, la reactivación seguirá el proceso de seguridad correspondiente.
+                  </p>
+                </div>
+                <Button className="w-full rounded-xl bg-red-600 text-white hover:bg-red-700" onClick={() => toast.success('Solicitud de autoexclusión preparada en demo.')}>
+                  Activar autoexclusión
+                </Button>
+              </>
+            )}
           </div>
-        </section>
+        </PremiumSectionCard>
 
-        {/* Footer Demo */}
-        <section className="gaming-item space-y-4">
-          <div className="flex flex-col items-center gap-1 opacity-40">
-            <p className="text-[9px] font-black text-manises-blue uppercase tracking-widest text-center leading-relaxed">
-              Demo · los límites no se aplican realmente en esta fase
-            </p>
-            <p className="text-[8px] font-bold text-manises-blue uppercase tracking-[0.2em] text-center">
-              Los límites configurados no afectarán a tu operativa real
-            </p>
+        <PremiumSectionCard title="Información y ayuda" eyebrow="Recursos" description="Cuatro apartados para entender riesgos, pedir ayuda y conocer nuestras buenas prácticas." tone="gold">
+          <div className="space-y-3">
+            {[
+              { id: 'play-smart', icon: ShieldCheck, title: 'Juega con responsabilidad', copy: 'Consejos y recomendaciones para un uso saludable.' },
+              { id: 'important-info', icon: AlertTriangle, title: 'Información importante', copy: 'Riesgos del juego y señales de alerta.' },
+              { id: 'need-help', icon: Clock3, title: '¿Necesitas ayuda?', copy: 'Recursos y organismos de apoyo.' },
+              { id: 'good-practices', icon: WalletCards, title: 'Normas y buenas prácticas', copy: 'Compromiso de Lotería Manises con un juego seguro.' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => navigate(`/profile/gaming-control/${item.id}`)}
+                className="flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-4 text-left shadow-sm transition-all hover:border-manises-blue/15"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-manises-blue">
+                  <item.icon className="h-4.5 w-4.5" />
+                </span>
+                <div>
+                  <p className="text-sm font-black text-manises-blue">{item.title}</p>
+                  <p className="mt-1 text-[11px] font-semibold text-slate-500">{item.copy}</p>
+                </div>
+              </button>
+            ))}
           </div>
-          
-          <div className="flex justify-center gap-4 opacity-50">
-             <div className="w-8 h-8 rounded-full border border-manises-blue flex items-center justify-center text-[10px] font-black text-manises-blue">+18</div>
-             <div className="px-3 h-8 rounded-full border border-manises-blue flex items-center justify-center text-[9px] font-black text-manises-blue uppercase tracking-widest">Info no oficial</div>
-          </div>
-        </section>
+        </PremiumSectionCard>
       </div>
     </div>
   );

@@ -1,23 +1,21 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { LotteryGame } from '@/shared/types/domain';
-import { generateWithPreset } from '@/features/play/services/play.service';
+import { generateRandomPlay } from '@/features/play/services/play.service';
 import { buildGameSelection } from '@/features/play/application/build-game-selection';
-import type { QuickPickCombination, GenerationPreset } from '../contracts/quick-pick.contract';
+import type { QuickPickCombination } from '../contracts/quick-pick.contract';
 
 export function useQuickPick(game: LotteryGame, enabled: boolean = true) {
   const [count, setCount] = useState<number>(3);
-  const [generationPreset, setGenerationPreset] = useState<GenerationPreset>('random');
   const [combinations, setCombinations] = useState<QuickPickCombination[]>([]);
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   const buildSingleCombo = useCallback((): QuickPickCombination | null => {
     if (!enabled || !game.selectionRange?.numbers) return null;
-    const raw = generateWithPreset(
+    const raw = generateRandomPlay(
       game.selectionRange.numbers.total,
       game.selectionRange.numbers.min,
       game.selectionRange.stars?.total ?? 0,
-      game.selectionRange.stars?.min ?? 0,
-      generationPreset
+      game.selectionRange.stars?.min ?? 0
     );
     const selection = buildGameSelection({
       game,
@@ -38,7 +36,7 @@ export function useQuickPick(game: LotteryGame, enabled: boolean = true) {
       stars: raw.stars,
       selection,
     };
-  }, [game, enabled, generationPreset]);
+  }, [game, enabled]);
 
   const generate = useCallback(() => {
     if (!enabled || !game.selectionRange?.numbers) {
@@ -71,8 +69,6 @@ export function useQuickPick(game: LotteryGame, enabled: boolean = true) {
     combinations,
     isRegenerating,
     regenerate: generate,
-    generationPreset,
-    setGenerationPreset,
     regenerateAt,
   };
 }

@@ -60,6 +60,13 @@ export function useNationalCart(initialLines: NationalCartLine[] = []) {
     }));
   };
 
+  const updateDeliveryMode = (deliveryMode: NationalCartLine['deliveryMode']) => {
+    setLines((current) => current.map((line) => ({
+      ...line,
+      deliveryMode,
+    })));
+  };
+
   const breakdown = useMemo(() => buildNationalOrderBreakdown(lines), [lines]);
 
   return {
@@ -67,6 +74,7 @@ export function useNationalCart(initialLines: NationalCartLine[] = []) {
     addOrUpdateLine,
     removeLine,
     updateQuantity,
+    updateDeliveryMode,
     clearCart,
     breakdown,
   };

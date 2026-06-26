@@ -28,7 +28,7 @@ export function NationalSearchBar({ searchState, onChange }: NationalSearchBarPr
             type="search"
             value={searchState.query}
             onChange={(event) => onChange({ ...searchState, query: event.target.value })}
-            placeholder="Buscar número"
+            placeholder="Número completo o terminación"
             className="w-full bg-transparent text-[12px] font-semibold text-manises-blue outline-none placeholder:text-slate-400"
           />
         </div>
@@ -53,7 +53,7 @@ export function NationalSearchBar({ searchState, onChange }: NationalSearchBarPr
               Mín. décimos iguales · {SORT_LABELS[searchState.sortBy]}
             </p>
             <div className="flex flex-wrap gap-1.5">
-              {[1, 5, 10, 20, 50].map((val) => (
+              {[1, 10, 20, 30, 50].map((val) => (
                 <button
                   key={val}
                   type="button"
@@ -64,7 +64,7 @@ export function NationalSearchBar({ searchState, onChange }: NationalSearchBarPr
                       : 'border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200'
                   }`}
                 >
-                  {val}
+                  {val === 1 ? 'Todos' : `+${val}`}
                 </button>
               ))}
             </div>

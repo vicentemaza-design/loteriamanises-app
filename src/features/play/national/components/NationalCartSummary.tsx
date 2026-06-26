@@ -3,7 +3,6 @@ import { Button } from '@/shared/ui/Button';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
 import type { NationalCartLine, NationalOrderBreakdown } from '../contracts/national-play.contract';
 import { MAX_NATIONAL_DECIMOS } from '../hooks/useNationalCart';
-import { NationalShippingForm } from './NationalShippingForm';
 
 interface NationalCartSummaryProps {
   lines: NationalCartLine[];
@@ -11,8 +10,9 @@ interface NationalCartSummaryProps {
   onRemove: (number: string, drawId: NationalCartLine['drawId']) => void;
   onUpdateQuantity: (number: string, drawId: NationalCartLine['drawId'], delta: number) => void;
   onClear: () => void;
-  onPersistToSession?: () => void;
-  isPersisting?: boolean;
+  onContinue?: () => void;
+  availableBalance?: number;
+  activeColor?: string;
 }
 
 export function NationalCartSummary({
@@ -21,8 +21,9 @@ export function NationalCartSummary({
   onRemove,
   onUpdateQuantity,
   onClear,
-  onPersistToSession,
-  isPersisting,
+  onContinue,
+  availableBalance,
+  activeColor,
 }: NationalCartSummaryProps) {
   if (lines.length === 0) {
     return null;
@@ -34,7 +35,7 @@ export function NationalCartSummary({
     <section className="rounded-[1.55rem] border border-manises-blue/10 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Reserva demo nacional</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Resumen de jugadas</p>
           <h3 className="mt-1 text-lg font-black text-manises-blue">
             {breakdown.totalDecimos} {breakdown.totalDecimos === 1 ? 'décimo' : 'décimos'}
           </h3>
@@ -59,9 +60,6 @@ export function NationalCartSummary({
             {/* Mini ticket thumbnail */}
             <NationalTicketThumbnail
               drawId={line.drawId}
-              number={line.number}
-              serie={line.serie}
-              fraccion={line.fraccion}
               className="w-[72px] shadow-sm"
             />
 
@@ -125,12 +123,6 @@ export function NationalCartSummary({
         ))}
       </div>
 
-      {breakdown.hasShipping && (
-        <div className="mt-4">
-          <NationalShippingForm />
-        </div>
-      )}
-
       <div className="mt-4 space-y-2 border-t border-slate-100 pt-3">
         <div className="flex items-center justify-between px-1">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Subtotal décimos</p>
@@ -150,15 +142,21 @@ export function NationalCartSummary({
         </div>
       </div>
 
-      {onPersistToSession && (
-        <div className="mt-4">
+      {onContinue && (
+        <div className="mt-4 border-t border-slate-100 pt-4">
           <Button
-            className="w-full rounded-2xl bg-manises-blue py-3 text-white shadow-lg transition-all active:scale-[0.98]"
-            onClick={onPersistToSession}
-            disabled={isPersisting}
+            onClick={onContinue}
+            disabled={breakdown.totalDecimos === 0}
+            className="w-full py-3 rounded-2xl font-black text-xs uppercase tracking-widest text-white shadow-manises transition-transform active:scale-[0.98]"
+            style={{ backgroundColor: activeColor ?? '#0a4792' }}
           >
-            {isPersisting ? 'Añadiendo...' : 'Añadir décimos a la sesión demo'}
+            Continuar
           </Button>
+          {availableBalance !== undefined && (
+            <div className="mt-2.5 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              Saldo disponible: {formatCurrency(availableBalance)}
+            </div>
+          )}
         </div>
       )}
     </section>
