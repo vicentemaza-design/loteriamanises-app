@@ -86,29 +86,32 @@ function ResultBalls({ result, gameType }: { result: MatchResult; gameType: stri
 
 function MyBetRow({
   index,
-  ticket,
+  numbers,
+  stars,
   result,
   game,
+  isScrutinized,
 }: {
   index: number;
-  ticket: Ticket;
+  numbers: number[];
+  stars?: number[];
   result: MatchResult;
   game: (typeof LOTTERY_GAMES)[number];
+  isScrutinized: boolean;
 }) {
-  const nums = result ? ticket.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
-  const stars = result && ticket.stars ? ticket.stars.filter(s => result.stars?.includes(s)) : [];
-  const hits = nums.length + stars.length;
-  const isScrutinized = getPlayStatus(ticket) === 'scrutinized';
+  const matchedNums = result ? numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+  const matchedStars = result && stars ? stars.filter(s => result.stars?.includes(s)) : [];
+  const hits = matchedNums.length + matchedStars.length;
 
   return (
     <div className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white px-3 py-2.5">
       <span className="shrink-0 text-[10px] font-black text-slate-300">{index}.</span>
       <div className="min-w-0 flex-1">
         <BallSelection
-          numbers={ticket.numbers}
-          stars={ticket.stars}
-          matchedNumbers={nums}
-          matchedStars={stars}
+          numbers={numbers}
+          stars={stars}
+          matchedNumbers={matchedNums}
+          matchedStars={matchedStars}
           type={game.type}
         />
       </div>
@@ -119,6 +122,16 @@ function MyBetRow({
       )}
     </div>
   );
+}
+
+function getBets(ticket: Ticket): Array<{ numbers: number[]; stars?: number[] }> {
+  if (ticket.bets && ticket.bets.length > 0) {
+    return ticket.bets.map((nums, i) => ({
+      numbers: nums,
+      stars: ticket.betStars?.[i],
+    }));
+  }
+  return [{ numbers: ticket.numbers, stars: ticket.stars }];
 }
 
 function PrizeRow({ ticket, prize }: { ticket: Ticket; prize?: number | null }) {
@@ -228,20 +241,29 @@ function SingleDrawDetail({
   result: MatchResult;
   game: (typeof LOTTERY_GAMES)[number];
 }) {
-  const betsCount = getBetsCount(ticket);
   const status = getPlayStatus(ticket);
   const isScrutinized = status === 'scrutinized';
+  const bets = getBets(ticket);
 
   return (
     <div className="flex flex-col gap-3 px-4 pt-2">
       {isScrutinized && result && <ResultBalls result={result} gameType={game.type} />}
 
       <div className="space-y-2">
-        <p className="px-1 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Mis apuestas</p>
-        {Array.from({ length: betsCount }).map((_, i) => (
+        <p className="px-1 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+          Mis apuestas · {bets.length} columna{bets.length !== 1 ? 's' : ''}
+        </p>
+        {bets.map((bet, i) => (
           // eslint-disable-next-line react/no-array-index-key
           <div key={i}>
-            <MyBetRow index={i + 1} ticket={ticket} result={isScrutinized ? result : null} game={game} />
+            <MyBetRow
+              index={i + 1}
+              numbers={bet.numbers}
+              stars={bet.stars}
+              result={isScrutinized ? result : null}
+              game={game}
+              isScrutinized={isScrutinized}
+            />
           </div>
         ))}
       </div>
@@ -263,8 +285,9 @@ function SemanalDetail({
   dayResults: Array<{ date: string; result: MatchResult }>;
   game: (typeof LOTTERY_GAMES)[number];
 }) {
+  const bets = getBets(ticket);
+
   const [openDays, setOpenDays] = useState<string[]>(() => {
-    // Open the first scrutinized day automatically
     const first = dayResults.find(d => d.result);
     return first ? [first.date] : [dayResults[0]?.date ?? ''];
   });
@@ -273,35 +296,43 @@ function SemanalDetail({
     setOpenDays(prev => prev.includes(date) ? prev.filter(d => d !== date) : [...prev, date]);
   }
 
+  function bestHitsForDay(result: MatchResult): number {
+    if (!result) return 0;
+    return Math.max(...bets.map(bet => {
+      const mn = bet.numbers.filter(n => result.numbers.map(Number).includes(n));
+      const ms = bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
+      return mn.length + ms.length;
+    }));
+  }
+
   const totalPrize = ticket.prize ?? 0;
-  const betsCount = getBetsCount(ticket);
 
   return (
     <div className="flex flex-col gap-2.5 px-4 pt-2">
-      <p className="px-1 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Resultados por día · {betsCount} apuestas</p>
+      <p className="px-1 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+        Resultados por día · {bets.length} apuesta{bets.length !== 1 ? 's' : ''}
+      </p>
 
       {dayResults.map(({ date, result }) => {
         const isOpen = openDays.includes(date);
         const hasResult = !!result;
-        const nums = hasResult ? ticket.numbers.filter(n => result!.numbers.map(Number).includes(n)) : [];
-        const stars = hasResult && ticket.stars ? ticket.stars.filter(s => result!.stars?.includes(s)) : [];
-        const hits = nums.length + stars.length;
+        const bestHits = bestHitsForDay(result);
 
         return (
           <div key={date} className="overflow-hidden rounded-[1.35rem] border border-slate-100 bg-white shadow-sm">
             <button
               type="button"
-              onClick={() => toggleDay(date)}
+              onClick={() => hasResult && toggleDay(date)}
               className="flex w-full items-center justify-between px-4 py-3 text-left"
             >
               <div className="flex items-center gap-3">
                 <Calendar className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                 <div>
                   <p className="text-[11px] font-black capitalize text-manises-blue">{formatWeekday(date)}</p>
-                  {hasResult && hits > 0 && (
-                    <p className="text-[9px] font-black text-emerald-600">{hits} acierto{hits !== 1 ? 's' : ''}</p>
+                  {hasResult && bestHits > 0 && (
+                    <p className="text-[9px] font-black text-emerald-600">{bestHits} acierto{bestHits !== 1 ? 's' : ''} (mejor columna)</p>
                   )}
-                  {hasResult && hits === 0 && (
+                  {hasResult && bestHits === 0 && (
                     <p className="text-[9px] font-semibold text-slate-400">Sin aciertos</p>
                   )}
                   {!hasResult && (
@@ -318,8 +349,23 @@ function SemanalDetail({
             {isOpen && hasResult && (
               <div className="border-t border-slate-50 px-4 pb-4 pt-3 space-y-2">
                 <ResultBalls result={result} gameType={game.type} />
-                <MyBetRow index={1} ticket={ticket} result={result} game={game} />
-                <PrizeRow ticket={ticket} prize={hits > 0 ? undefined : 0} />
+                <p className="px-1 text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                  Mis apuestas · {bets.length} columna{bets.length !== 1 ? 's' : ''}
+                </p>
+                {bets.map((bet, betIdx) => (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <div key={betIdx}>
+                    <MyBetRow
+                      index={betIdx + 1}
+                      numbers={bet.numbers}
+                      stars={bet.stars}
+                      result={result}
+                      game={game}
+                      isScrutinized={true}
+                    />
+                  </div>
+                ))}
+                <PrizeRow ticket={ticket} prize={bestHits > 0 ? undefined : 0} />
               </div>
             )}
           </div>

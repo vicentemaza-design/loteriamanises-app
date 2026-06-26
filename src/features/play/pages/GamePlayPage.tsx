@@ -16,6 +16,7 @@ import {
 import { toast } from 'sonner';
 import { generateRandomPlay } from '@/features/play/services/play.service';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useWallet } from '@/features/wallet/hooks/useWallet';
 import { cn, formatCurrency, formatDrawTime } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { MOTION_EASE_OUT, panelSwap, sectionFadeUp } from '@/shared/lib/motion';
@@ -34,6 +35,7 @@ import { NumbersGrid } from '../components/NumbersGrid';
 import { StarsGrid } from '../components/StarsGrid';
 import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
 import type { DeliveryMode } from '../national/components/NationalDeliverySelector';
+import { NavidadCheckoutFlow } from '../national/components/NavidadCheckoutFlow';
 import { MulticolumnTicketFlow } from '../multicolumn/components/MulticolumnTicketFlow';
 import type { MulticolumnDraftIntent } from '../multicolumn/contracts/multicolumn-play.contract';
 import { inferMulticolumnPlayMode } from '../multicolumn/application/infer-multicolumn-play-mode';
@@ -103,6 +105,7 @@ export function GamePlayPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, profile, isDemo } = useAuth();
+  const { topUp } = useWallet();
   const { drafts, addDrafts, updateDraft, openReview } = usePlaySession();
   const game = LOTTERY_GAMES.find(g => g.id === gameId);
   const editingDraftId = (location.state as GamePlayLocationState | null)?.playDraftId;
@@ -1719,6 +1722,18 @@ export function GamePlayPage() {
                   </>
                 )}
               </>
+            ) : game.id === 'loteria-navidad' ? (
+              <NavidadCheckoutFlow
+                game={game}
+                showcaseItems={nationalShowcase}
+                availableBalance={availableBalance}
+                drawDate={selectedNationalDraw.nextDraw}
+                onTopUp={async (amount) => {
+                  const result = await topUp(amount);
+                  if (!result?.success) throw new Error('Top-up failed');
+                }}
+                onGoToTickets={() => navigate('/tickets')}
+              />
             ) : (
               <NationalAdvancedFlow
                 game={game}

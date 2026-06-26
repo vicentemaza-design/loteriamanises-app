@@ -560,12 +560,12 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
               {/* Icon */}
               <div className="mt-4 mb-4">
                 {checkerResult.isWinner ? (
-                  <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shadow-inner-soft">
-                    <span className="text-3xl animate-bounce">🏆</span>
+                  <div className="w-16 h-16 rounded-full bg-manises-blue flex items-center justify-center shadow-lg">
+                    <Trophy className="w-8 h-8 text-manises-gold" />
                   </div>
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center shadow-inner-soft">
-                    <span className="text-3xl">☁️</span>
+                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Trophy className="w-8 h-8 text-gray-300" />
                   </div>
                 )}
               </div>

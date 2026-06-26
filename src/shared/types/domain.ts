@@ -75,6 +75,8 @@ export interface Ticket {
   gameType: GameType;
   numbers: number[];
   stars?: number[];
+  bets?: number[][];
+  betStars?: number[][];
   drawDate: string;
   status: 'pending' | 'won' | 'lost';
   prize?: number;

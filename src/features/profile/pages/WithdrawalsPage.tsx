@@ -551,7 +551,7 @@ export function WithdrawalsPage() {
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
                   <p className="text-[12px] font-medium text-emerald-800 leading-relaxed">
-                    Hemos registrado tu solicitud de cobro de premios. Nuestro departamento de administración transferirá los fondos en un plazo estimado de <strong>72 horas hábiles</strong>.
+                    Estamos procesando tu transferencia. El importe puede tardar hasta <strong>72 horas hábiles</strong> en reflejarse en tu cuenta bancaria.
                   </p>
                 </div>
                 <div className="flex items-center gap-3 pt-2.5 border-t border-emerald-100">

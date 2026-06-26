@@ -17,7 +17,6 @@ import {
   Truck,
   Bell,
   Trophy,
-  XCircle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTickets } from '../hooks/useTickets';
@@ -32,7 +31,7 @@ import { TicketReceiptModal } from '../components/TicketReceiptModal';
 
 gsap.registerPlugin(useGSAP);
 
-type Tab = 'activos' | 'historial';
+type Tab = 'todas' | 'activas' | 'premiadas' | 'abonos';
 type PlayStatus = 'pending' | 'processing' | 'confirmed' | 'scrutinized' | 'rejected';
 
 function getTicketCode(ticketId: string) {
@@ -149,15 +148,13 @@ function QuickActionButton({
 export function TicketsPage() {
   const navigate = useNavigate();
   const { tickets, isLoading, error } = useTickets();
-  const [tab, setTab] = useState<Tab>('activos');
+  const [tab, setTab] = useState<Tab>('todas');
   const [search, setSearch] = useState('');
   const [gameFilter, setGameFilter] = useState<string>('all');
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'won' | 'lost'>('all');
   const [searchOpen, setSearchOpen] = useState(false);
   const [receiptTicket, setReceiptTicket] = useState<Ticket | null>(null);
 
-  useEffect(() => { setGameFilter('all'); }, [statusFilter]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -174,18 +171,14 @@ export function TicketsPage() {
     return s === 'pending' || s === 'processing' || s === 'confirmed';
   });
 
-  const historyTickets = filteredTickets.filter((t) => {
-    const s = getPlayStatus(t);
-    return s === 'scrutinized' || s === 'rejected';
-  });
+  const premiatedTickets = filteredTickets.filter((t) => t.status === 'won');
+  const abonoTickets = filteredTickets.filter((t) => t.isSubscription);
 
-  const tabTickets = tab === 'activos'
-    ? activeTickets
-    : historyTickets.filter((t) => {
-        if (statusFilter === 'won') return t.status === 'won';
-        if (statusFilter === 'lost') return t.status === 'lost' || getPlayStatus(t) === 'rejected';
-        return true;
-      });
+  const tabTickets =
+    tab === 'todas'     ? filteredTickets :
+    tab === 'activas'   ? activeTickets :
+    tab === 'premiadas' ? premiatedTickets :
+                          abonoTickets;
 
   const availableGames = useMemo(() => {
     const seen = new Set<string>();
@@ -256,50 +249,39 @@ export function TicketsPage() {
         {/* Tabs */}
         <section className="tabs-container px-4">
           <div className="flex gap-1 rounded-xl border border-gray-100/60 bg-gray-50/90 p-1">
-            {(['activos', 'historial'] as Tab[]).map((t) => (
-              <PremiumTouchInteraction key={t} scale={0.97} className="flex-1">
+            {([
+              { key: 'todas',     label: 'Todas' },
+              { key: 'activas',   label: 'Activas' },
+              { key: 'premiadas', label: 'Premiadas' },
+              { key: 'abonos',    label: 'Abonos' },
+            ] as const).map(({ key, label }) => (
+              <PremiumTouchInteraction key={key} scale={0.97} className="flex-1">
                 <button
-                  onClick={() => { setTab(t); setGameFilter('all'); }}
+                  onClick={() => { setTab(key); setGameFilter('all'); }}
                   className={cn(
-                    'w-full rounded-lg py-1.5 text-[10px] font-black uppercase tracking-wider transition-all',
-                    tab === t ? 'bg-white text-manises-blue shadow-sm' : 'text-manises-blue/40 hover:text-manises-blue'
+                    'w-full rounded-lg py-1.5 text-[9px] font-black uppercase tracking-wider transition-all',
+                    tab === key ? 'bg-white text-manises-blue shadow-sm' : 'text-manises-blue/40 hover:text-manises-blue'
                   )}
                 >
-                  {t === 'activos' ? `Activos (${activeTickets.length})` : `Historial (${historyTickets.length})`}
+                  {label}
                 </button>
               </PremiumTouchInteraction>
             ))}
           </div>
         </section>
 
-        {/* Filter chips */}
-        {(availableGames.length > 1 || tab === 'historial') && (
+        {/* Game filter chips */}
+        {availableGames.length > 1 && (
           <div className="flex gap-1.5 overflow-x-auto scrollbar-hide px-4 py-0.5">
-            {availableGames.length > 1 && (
-              <>
-                <button
-                  onClick={() => setGameFilter('all')}
-                  className={cn('shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all', gameFilter === 'all' ? 'bg-manises-blue text-white border-manises-blue shadow-sm' : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25')}
-                >Todos</button>
-                {availableGames.map((g) => (
-                  <button key={g.id} onClick={() => setGameFilter(g.id)} className={cn('shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all', gameFilter === g.id ? 'bg-manises-blue text-white border-manises-blue shadow-sm' : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25')}>
-                    {g.name}
-                  </button>
-                ))}
-              </>
-            )}
-            {tab === 'historial' && (
-              <>
-                {availableGames.length > 1 && <div className="h-5 w-px shrink-0 self-center bg-slate-200/80 mx-0.5" />}
-                <button onClick={() => setStatusFilter('all')} className={cn('shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition-all', statusFilter === 'all' ? 'bg-slate-700 text-white border-slate-700 shadow-sm' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200')}>Todos</button>
-                <button onClick={() => setStatusFilter('won')} className={cn('shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition-all', statusFilter === 'won' ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm' : 'bg-white text-emerald-600/60 border-emerald-100 hover:border-emerald-200')}>
-                  <Trophy className="h-2.5 w-2.5" />Premiados
-                </button>
-                <button onClick={() => setStatusFilter('lost')} className={cn('shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition-all', statusFilter === 'lost' ? 'bg-slate-200 text-slate-700 border-slate-200 shadow-sm' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-200')}>
-                  <XCircle className="h-2.5 w-2.5" />Sin premio
-                </button>
-              </>
-            )}
+            <button
+              onClick={() => setGameFilter('all')}
+              className={cn('shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all', gameFilter === 'all' ? 'bg-manises-blue text-white border-manises-blue shadow-sm' : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25')}
+            >Todos</button>
+            {availableGames.map((g) => (
+              <button key={g.id} onClick={() => setGameFilter(g.id)} className={cn('shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all', gameFilter === g.id ? 'bg-manises-blue text-white border-manises-blue shadow-sm' : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25')}>
+                {g.name}
+              </button>
+            ))}
           </div>
         )}
 

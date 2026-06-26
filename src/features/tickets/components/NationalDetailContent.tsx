@@ -1,4 +1,5 @@
-import { Truck, Lock, Package, Clock, CheckCircle2, Trophy, MapPin, Info } from 'lucide-react';
+import { useState } from 'react';
+import { Truck, Lock, Package, Clock, CheckCircle2, Trophy, MapPin, Info, Wallet } from 'lucide-react';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
 import { formatCurrency, formatDate, cn } from '@/shared/lib/utils';
 import type { Ticket } from '@/shared/types/domain';
@@ -79,17 +80,25 @@ function StateProcessingShipping({ ticket }: { ticket: Ticket }) {
   const shipping = 6.00; // demo shipping cost
   const decimosTotal = qty * (ticket.price);
   const address = ticket.metadata?.shippingAddress;
+  const number = (ticket.metadata?.nationalNumber ?? ticket.numbers.join('')).padStart(5, '0');
 
   return (
     <div className="flex flex-col gap-3 px-4 pt-3">
+      {/* Número solicitado */}
+      <div className="rounded-[1.35rem] border border-slate-100 bg-white px-4 py-4 text-center shadow-sm">
+        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Número solicitado</p>
+        <p className="mt-1 text-[36px] font-black tracking-[0.12em] text-manises-blue">{number}</p>
+        <p className="text-[11px] font-bold text-slate-500">{qty} {qty === 1 ? 'décimo' : 'décimos'}</p>
+      </div>
+
       {/* Status banner */}
-      <div className="flex items-start gap-3 rounded-[1.35rem] border border-blue-100 bg-blue-50 px-4 py-3.5">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-100">
-          <Package className="h-4.5 w-4.5 text-blue-600" />
+      <div className="flex items-start gap-3 rounded-[1.35rem] border border-orange-100 bg-orange-50 px-4 py-3.5">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-orange-100">
+          <Package className="h-4.5 w-4.5 text-orange-600" />
         </div>
         <div>
-          <p className="text-[11px] font-black text-blue-700">Envío a domicilio</p>
-          <p className="text-[10px] font-semibold leading-relaxed text-blue-600">
+          <p className="text-[11px] font-black text-orange-700">Envío a domicilio</p>
+          <p className="text-[10px] font-semibold leading-relaxed text-orange-600">
             Estamos gestionando tu solicitud de compra. Recibirás una notificación cuando el pedido esté listo para su envío.
           </p>
         </div>
@@ -199,6 +208,7 @@ function StateConfirmed({ ticket }: { ticket: Ticket }) {
   const address = ticket.metadata?.shippingAddress;
   const qty = ticket.metadata?.nationalQuantity ?? 1;
   const isShipping = deliveryMode === 'shipping';
+  const [decimoType, setDecimoType] = useState<'tradicional' | 'azul'>('tradicional');
 
   return (
     <div className="flex flex-col gap-3 px-4 pt-3">
@@ -208,15 +218,34 @@ function StateConfirmed({ ticket }: { ticket: Ticket }) {
           'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-black',
           isShipping
             ? 'border-blue-100 bg-blue-50 text-blue-700'
-            : 'border-manises-blue/10 bg-manises-blue/5 text-manises-blue'
+            : 'border-emerald-100 bg-emerald-50 text-emerald-700'
         )}>
           {isShipping ? <Truck className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-          {isShipping ? 'Envío por mensajería' : 'Décimo en custodia'}
+          {isShipping ? 'Envío por mensajería' : 'Décimo custodiado'}
         </div>
         {confirmedAt && (
           <p className="text-[10px] font-semibold text-slate-400">Confirmado {formatDate(confirmedAt)}</p>
         )}
       </div>
+
+      {/* Tipo de décimo selector (solo mensajería) */}
+      {isShipping && (
+        <div className="flex gap-1.5 rounded-xl border border-slate-100 bg-slate-50 p-1">
+          {(['tradicional', 'azul'] as const).map(type => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setDecimoType(type)}
+              className={cn(
+                'flex-1 rounded-lg py-1.5 text-[9px] font-black uppercase tracking-wider transition-all',
+                decimoType === type ? 'bg-white text-manises-blue shadow-sm' : 'text-slate-400 hover:text-slate-600'
+              )}
+            >
+              Décimo {type === 'tradicional' ? 'Tradicional' : 'Azul'}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Decimo image */}
       <DecimoImage ticket={ticket} />
@@ -238,16 +267,28 @@ function StateConfirmed({ ticket }: { ticket: Ticket }) {
         </div>
       )}
 
-      {/* Custody info */}
+      {/* Custody info + "Cómo autorizas el premio" */}
       {!isShipping && (
-        <div className="rounded-xl border border-manises-blue/10 bg-manises-blue/5 px-3 py-2.5">
-          <div className="flex items-center gap-2">
-            <Lock className="h-3.5 w-3.5 shrink-0 text-manises-blue/60" />
-            <p className="text-[9px] font-semibold leading-relaxed text-manises-blue/70">
-              Décimo en custodia en Lotería Manises. Puedes visualizar en todo momento la imagen del décimo depositado.
+        <>
+          <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-2.5">
+            <div className="flex items-center gap-2">
+              <Lock className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+              <p className="text-[9px] font-semibold leading-relaxed text-emerald-700">
+                Décimo en custodia en Lotería Manises. Puedes visualizar en todo momento la imagen del décimo depositado.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-100 bg-white px-4 py-3">
+            <div className="flex items-start gap-2 mb-2">
+              <Wallet className="mt-0.5 h-3.5 w-3.5 shrink-0 text-manises-blue/60" />
+              <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Cómo autorizas el premio</p>
+            </div>
+            <p className="text-[10px] font-semibold text-slate-600 leading-relaxed">
+              Si este décimo resulta premiado, el importe se ingresará automáticamente en tu cuenta de Manises Lotería una vez finalizado el escrutinio. No necesitas hacer ninguna gestión adicional.
             </p>
           </div>
-        </div>
+        </>
       )}
 
       {/* Participation summary */}

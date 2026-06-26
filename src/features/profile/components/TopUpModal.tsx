@@ -58,6 +58,18 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       toast.success('Datos copiados. El saldo se actualizará en hasta 72 h hábiles.');
       return;
     }
+    if (effectiveAmount <= 0) {
+      toast.error('Selecciona o introduce un importe para recargar.');
+      return;
+    }
+    if (effectiveAmount > 500) {
+      toast.error('El importe máximo de recarga es 500 €.');
+      return;
+    }
+    if (isNewCard && (!newCard.number || !newCard.name || !newCard.expiry || !newCard.cvv)) {
+      toast.error('Completa los datos de la tarjeta antes de continuar.');
+      return;
+    }
     setIsProcessing(true);
     await new Promise(resolve => setTimeout(resolve, 1500));
     try {
@@ -70,9 +82,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
     }
   };
 
-  const isDisabled = isProcessing
-    || (!isTransfer && (effectiveAmount <= 0 || effectiveAmount > 500))
-    || (isNewCard && (!newCard.number || !newCard.name || !newCard.expiry || !newCard.cvv));
+  const isDisabled = isProcessing;
 
   const btnBg = selectedMethod === 'apple'
     ? 'bg-black hover:bg-gray-900 border-b-4 border-gray-800'
@@ -348,8 +358,10 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                         <><Loader2 className="w-6 h-6 mr-2 animate-spin" /> Verificando...</>
                       ) : isTransfer ? (
                         <>Ver datos de transferencia <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
-                      ) : (
+                      ) : effectiveAmount > 0 ? (
                         <>Recargar {formatCurrency(effectiveAmount)} demo <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
+                      ) : (
+                        <>Recargar saldo <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
                       )}
                     </Button>
                   </PremiumTouchInteraction>

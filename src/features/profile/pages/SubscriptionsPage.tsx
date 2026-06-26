@@ -108,35 +108,35 @@ export function SubscriptionsPage() {
       <ProfileSubHeader title="Mis abonos de Lotería" subtitle="Reservas preferentes" backTo="/profile" />
 
       <div className={cn('flex flex-col gap-4 p-4', selectedIds.length > 0 && tab === 'pending' && 'pb-[calc(var(--nav-height)+11rem)]')}>
-        <section className="overflow-hidden rounded-[1.75rem] bg-manises-blue p-4 text-white shadow-lg">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/60">Sin cobro automático</p>
-              <h2 className="mt-1 text-xl font-black">Paga los sorteos pendientes de tus números abonados</h2>
-              <p className="mt-2 max-w-[28rem] text-[12px] font-medium leading-relaxed text-white/75">
-                Este apartado funciona como una bandeja de reservas. Tú decides qué sorteos confirmar y pagar en cada momento.
-              </p>
+        <section className="overflow-hidden rounded-2xl border border-manises-blue/10 bg-manises-blue/5">
+          <button
+            type="button"
+            onClick={() => setShowHowItWorks((current) => !current)}
+            className="flex w-full items-center justify-between gap-3 px-4 py-3"
+          >
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-manises-blue/10">
+                <Info className="h-3.5 w-3.5 text-manises-blue" />
+              </div>
+              <span className="text-[11px] font-bold text-manises-blue/70 uppercase tracking-wider">Sin cobro automático</span>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setShowHowItWorks((current) => !current)}
-              className="shrink-0 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white"
-            >
-              {showHowItWorks ? 'Ocultar ayuda' : '¿Cómo funciona?'}
-            </button>
-          </div>
+            <span className="text-[11px] font-bold text-manises-blue/50">
+              {showHowItWorks ? 'Ocultar' : '¿Cómo funciona?'}
+            </span>
+          </button>
 
           {showHowItWorks && (
-            <div className="mt-4 rounded-2xl border border-white/10 bg-white/10 p-3">
-              <div className="flex items-start gap-2">
-                <Info className="mt-0.5 h-4 w-4 shrink-0 text-manises-gold" />
-                <div className="space-y-1 text-[11px] font-medium leading-relaxed text-white/80">
-                  <p>Tu abono reserva un número para futuros sorteos, pero no genera cobros automáticos.</p>
-                  <p>Puedes pagar varios sorteos en una sola operación y gestionar cada número desde la pestaña de números abonados.</p>
-                  <p>Si das de baja un abono, perderás la reserva preferente y también desaparecerán sus sorteos pendientes.</p>
+            <div className="border-t border-manises-blue/8 px-4 py-3 space-y-1.5">
+              {[
+                'Tu abono reserva un número para futuros sorteos, pero no genera cobros automáticos.',
+                'Puedes pagar varios sorteos en una sola operación desde esta pantalla.',
+                'Si das de baja un abono, perderás la reserva y sus sorteos pendientes desaparecerán.',
+              ].map((text, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-manises-blue/30" />
+                  <p className="text-[11px] font-medium leading-relaxed text-slate-500">{text}</p>
                 </div>
-              </div>
+              ))}
             </div>
           )}
         </section>

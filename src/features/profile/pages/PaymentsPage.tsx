@@ -525,7 +525,7 @@ export function PaymentsPage() {
                 </div>
                 <div>
                   <h3 className="font-black text-manises-blue text-base">
-                    {deleteConfirm.type === 'card' ? '¿Eliminar esta tarjeta?' : '¿Eliminar esta cuenta?'}
+                    {deleteConfirm.type === 'card' ? '¿Seguro que quieres eliminar esta tarjeta?' : '¿Seguro que quieres eliminar esta cuenta?'}
                   </h3>
                   <p className="text-[11px] text-muted-foreground mt-1 font-medium leading-relaxed">
                     {deleteConfirm.type === 'card'
