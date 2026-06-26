@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Trophy } from 'lucide-react';
+import { Sparkles, Trophy } from 'lucide-react';
 import adminFacade from '@/assets/images/administracion_manises.webp';
-import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { formatCurrency } from '@/shared/lib/utils';
+import { ProfileSubHeader } from '@/features/profile/components/ProfileSubHeader';
 import {
   getDeliveredPrizeHighlights,
   getDeliveredPrizesTotalAmount,
@@ -27,21 +27,11 @@ export function DeliveredPrizesPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background pb-24">
-      <div className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-gray-100 bg-background/80 px-4 backdrop-blur-md">
-        <PremiumTouchInteraction scale={0.92}>
-          <button
-            onClick={() => navigate(-1)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-manises-blue/80 transition-all hover:bg-muted"
-            aria-label="Volver"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-        </PremiumTouchInteraction>
-        <div>
-          <h1 className="text-sm font-bold leading-none tracking-tight text-manises-blue">Premios entregados</h1>
-          <p className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground opacity-60">Histórico visible</p>
-        </div>
-      </div>
+      <ProfileSubHeader
+        title="Premios entregados"
+        subtitle="Histórico visible"
+        onBack={() => navigate(-1)}
+      />
 
       <div className="flex flex-col gap-4 px-4 pt-4">
         <section className="overflow-hidden rounded-[1.8rem] border border-slate-100 bg-white shadow-sm">

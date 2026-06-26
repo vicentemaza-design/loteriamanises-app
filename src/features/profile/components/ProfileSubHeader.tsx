@@ -7,19 +7,20 @@ interface ProfileSubHeaderProps {
   title: string;
   subtitle?: string;
   backTo?: string;
+  onBack?: () => void;
   rightSlot?: ReactNode;
 }
 
-export function ProfileSubHeader({ title, subtitle, backTo = '/profile', rightSlot }: ProfileSubHeaderProps) {
+export function ProfileSubHeader({ title, subtitle, backTo = '/profile', onBack, rightSlot }: ProfileSubHeaderProps) {
   const navigate = useNavigate();
 
   return (
     <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md flex items-center gap-4 px-4 h-14 border-b border-gray-100">
       <PremiumTouchInteraction scale={0.92}>
         <button
-          onClick={() => navigate(backTo)}
+          onClick={() => onBack ? onBack() : navigate(backTo)}
           className="w-8 h-8 rounded-lg flex items-center justify-center -ml-1 text-manises-blue/80 hover:bg-muted active:scale-95 transition-all"
-          aria-label="Volver al perfil"
+          aria-label="Volver"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>

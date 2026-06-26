@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, BriefcaseBusiness, ShieldCheck } from 'lucide-react';
+import { BriefcaseBusiness, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
-import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
+import { ProfileSubHeader } from '@/features/profile/components/ProfileSubHeader';
 import { CompanyAccessCard } from '../components/CompanyAccessCard';
 import { CompanyFeaturedProduct } from '../components/CompanyFeaturedProduct';
 import {
@@ -53,27 +53,11 @@ export function CompanyLandingPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_16%,#f8fafc_100%)] pb-24">
-      <div className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-100 bg-white/82 px-4 backdrop-blur-md">
-        <PremiumTouchInteraction scale={0.94}>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-manises-blue/80 transition-all hover:bg-slate-100"
-            aria-label="Volver"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-        </PremiumTouchInteraction>
-
-        <div className="min-w-0">
-          <h1 className="text-sm font-black tracking-tight text-manises-blue">
-            Empresas y colectivos
-          </h1>
-          <p className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-slate-400">
-            Acceso por colectivo
-          </p>
-        </div>
-      </div>
+      <ProfileSubHeader
+        title="Empresas y colectivos"
+        subtitle="Acceso por colectivo"
+        onBack={() => navigate(-1)}
+      />
 
       <div className="flex flex-col gap-3.5 px-4 pt-4">
         <section className="overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-[linear-gradient(135deg,#0a4792_0%,#153b6f_62%,#1f2937_100%)] px-4 py-4 text-white shadow-[0_16px_38px_rgba(10,71,146,0.22)]">
