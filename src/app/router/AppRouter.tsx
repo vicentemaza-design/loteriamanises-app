@@ -9,6 +9,7 @@ import { GamesPage } from '@/features/catalog/pages/GamesPage';
 import { GamePlayPage } from '@/features/play/pages/GamePlayPage';
 import { ResultsPage } from '@/features/results/pages/ResultsPage';
 import { TicketsPage } from '@/features/tickets/pages/TicketsPage';
+import { TicketDetailPage } from '@/features/tickets/pages/TicketDetailPage';
 import { ProfilePage } from '@/features/profile/pages/ProfilePage';
 
 import { AccountPage } from '@/features/profile/pages/AccountPage';
@@ -62,6 +63,7 @@ export function AppRouter() {
 
         <Route element={<RequireAuth />}>
           <Route path="/tickets" element={<TicketsPage />} />
+          <Route path="/tickets/:ticketId" element={<TicketDetailPage />} />
           
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/account" element={<AccountPage />} />

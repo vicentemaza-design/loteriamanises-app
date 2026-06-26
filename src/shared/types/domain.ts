@@ -36,6 +36,8 @@ export interface TicketMetadata {
   };
   shippingStatus?: string;
   seriesFractions?: Array<{ serie: string; fraccion: string }>;
+  holderNif?: string;
+  betsCount?: number;
   [key: string]: unknown;
 }
 
