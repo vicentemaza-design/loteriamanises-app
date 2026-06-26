@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { RefreshCircle, NavArrowDown, NavArrowUp } from 'iconoir-react/regular';
-import { Button } from '@/shared/ui/Button';
-import { cn, formatCurrency } from '@/shared/lib/utils';
-import type { QuickPickCombination, GenerationPreset } from '../contracts/quick-pick.contract';
+import { cn } from '@/shared/lib/utils';
+import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
+import type { QuickPickCombination } from '../contracts/quick-pick.contract';
 
 interface QuickPickPanelProps {
   count: number;
@@ -12,8 +12,6 @@ interface QuickPickPanelProps {
   isRegenerating: boolean;
   regenerate: () => void;
   regenerateAt: (index: number) => void;
-  generationPreset: GenerationPreset;
-  setGenerationPreset: (preset: GenerationPreset) => void;
   totalPrice: number;
   availableBalance: number;
   drawsCount: number;
@@ -21,12 +19,6 @@ interface QuickPickPanelProps {
   onAdd: () => void;
   isAdding?: boolean;
 }
-
-const PRESETS: Array<{ id: GenerationPreset; label: string }> = [
-  { id: 'random', label: 'Aleatoria' },
-  { id: 'odd',    label: 'Solo impares' },
-  { id: 'even',   label: 'Solo pares' },
-];
 
 const VISIBLE_THRESHOLD = 5;
 
@@ -37,8 +29,6 @@ export function QuickPickPanel({
   isRegenerating,
   regenerate,
   regenerateAt,
-  generationPreset,
-  setGenerationPreset,
   totalPrice,
   availableBalance,
   drawsCount,
@@ -52,8 +42,8 @@ export function QuickPickPanel({
   const hiddenCount = combinations.length - VISIBLE_THRESHOLD;
 
   return (
-    <div className="space-y-3">
-      {/* Config compacta: stepper + presets */}
+    <div className="space-y-3 pb-28">
+      {/* Config compacta: stepper */}
       <section className="rounded-[1.6rem] border border-slate-100 bg-white p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between gap-3">
           <div>
@@ -106,24 +96,6 @@ export function QuickPickPanel({
           </div>
         </div>
 
-        {/* Presets */}
-        <div className="flex gap-1.5">
-          {PRESETS.map(({ id, label }) => (
-            <button
-              key={id}
-              onClick={() => setGenerationPreset(id)}
-              className={cn(
-                'flex-1 rounded-lg border px-2 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all',
-                generationPreset === id
-                  ? 'border-transparent text-white shadow-sm'
-                  : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300'
-              )}
-              style={generationPreset === id ? { backgroundColor: activeColor, borderColor: activeColor } : undefined}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
       </section>
 
       {/* Combinaciones generadas */}
@@ -190,42 +162,16 @@ export function QuickPickPanel({
         )}
       </section>
 
-      {/* Resumen y CTA */}
-      <section className="rounded-[1.8rem] border border-slate-100 bg-white p-4 shadow-sm">
-        <div className="mb-3 space-y-2">
-          <div className="flex items-center justify-between px-1">
-            <p className="text-[10px] font-medium text-slate-400">
-              {count} {count === 1 ? 'apuesta' : 'apuestas'} × {drawsCount} {drawsCount === 1 ? 'sorteo' : 'sorteos'}
-            </p>
-            <p className="text-[12px] font-black text-manises-blue">{formatCurrency(totalPrice)}</p>
-          </div>
-          <div className="flex items-center justify-between border-t border-slate-50 px-1 pt-2">
-            <p className="text-[11px] font-black uppercase tracking-widest text-manises-blue">Total demo</p>
-            <p className="text-lg font-black text-manises-blue">{formatCurrency(totalPrice)}</p>
-          </div>
-          <div className="flex items-center justify-center pt-1">
-            <span className={cn(
-              'rounded-md px-2 py-0.5 text-[9px] font-black uppercase tracking-wider',
-              availableBalance >= totalPrice ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
-            )}>
-              Saldo demo: {formatCurrency(availableBalance)}
-            </span>
-          </div>
-        </div>
-
-        <Button
-          className="w-full rounded-2xl py-3 text-white shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
-          style={{ backgroundColor: activeColor }}
-          onClick={onAdd}
-          disabled={isAdding || availableBalance < totalPrice}
-        >
-          {isAdding ? 'Generando...' : count === 1 ? 'Añadir 1 apuesta' : `Añadir ${count} apuestas`}
-        </Button>
-
-        <p className="mt-2 text-center text-[8px] font-medium text-slate-400">
-          Demo · combinaciones generadas de forma aleatoria · sin operación de compra
-        </p>
-      </section>
+      <PurchaseBottomBar
+        availableBalance={availableBalance}
+        totalPrice={totalPrice}
+        canContinue={!isAdding && combinations.length > 0}
+        ctaLabel={isAdding ? 'Generando...' : count === 1 ? 'Añadir 1 apuesta' : `Añadir ${count} apuestas`}
+        onContinue={onAdd}
+        activeColor={activeColor}
+        drawsCount={drawsCount}
+        validationText="Genera al menos una combinación"
+      />
     </div>
   );
 }

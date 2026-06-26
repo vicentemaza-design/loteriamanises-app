@@ -29,6 +29,8 @@ export function TicketReceiptModal({
   const totalPrice = typeof ticket.metadata?.orderTotalPrice === 'number'
     ? ticket.metadata.orderTotalPrice
     : ticket.price;
+  const isNational = ticket.gameType === 'loteria-nacional' || ticket.gameType === 'navidad' || ticket.gameType === 'nino';
+  const title = isNational ? 'Certificado de décimo' : 'Resguardo de apuesta';
 
   return (
     <AnimatePresence>
@@ -52,7 +54,7 @@ export function TicketReceiptModal({
                 <ReceiptText className="h-8 w-8" />
               </div>
               <h3 className="text-lg font-black uppercase tracking-tight text-manises-blue">
-                Resguardo de Apuesta
+                {title}
               </h3>
               <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                 Lotería Manises · Admin. Nº 6
@@ -108,7 +110,7 @@ export function TicketReceiptModal({
                 DEMO · SIN VALIDEZ OFICIAL
               </p>
               <Button variant="outline" className="h-12 w-full rounded-2xl" onClick={onClose}>
-                Cerrar resguardo
+                Cerrar
               </Button>
             </div>
           </div>

@@ -27,10 +27,21 @@ export function searchNationalShowcase(
       return true;
     }
 
-    return item.number.includes(normalizedQuery);
+    return item.number === normalizedQuery || item.number.endsWith(normalizedQuery) || item.number.includes(normalizedQuery);
   });
 
   return [...filtered].sort((left, right) => {
+    if (normalizedQuery) {
+      const score = (item: NationalShowcaseItem) => {
+        if (item.number === normalizedQuery) return 3;
+        if (item.number.endsWith(normalizedQuery)) return 2;
+        if (item.number.includes(normalizedQuery)) return 1;
+        return 0;
+      };
+      const scoreDiff = score(right) - score(left);
+      if (scoreDiff !== 0) return scoreDiff;
+    }
+
     if (searchState.sortBy === 'availability') {
       return right.available - left.available || left.number.localeCompare(right.number);
     }

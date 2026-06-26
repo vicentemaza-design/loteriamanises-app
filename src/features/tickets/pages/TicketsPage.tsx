@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState, useEffect, type ComponentType } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { StatusBadge } from '@/shared/ui/StatusBadge';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { Input } from '@/shared/ui/Input';
@@ -15,12 +14,14 @@ import {
   Sparkles,
   ChevronDown,
   Repeat2,
-  Archive,
   ScrollText,
   Target,
   Maximize2,
   Trophy,
   XCircle,
+  Heart,
+  Eye,
+  Download,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTickets } from '../hooks/useTickets';
@@ -40,6 +41,7 @@ import { TicketReceiptModal } from '../components/TicketReceiptModal';
 gsap.registerPlugin(useGSAP);
 
 type Tab = 'activos' | 'historial';
+type PlayStatus = 'pending' | 'processing' | 'confirmed' | 'scrutinized' | 'rejected';
 
 interface TicketResultLike {
   gameId: string;
@@ -55,6 +57,38 @@ type ScrutinyState =
 
 function getTicketCode(ticketId: string) {
   return ticketId.slice(-8).toUpperCase();
+}
+
+function getPlayStatus(ticket: Ticket): PlayStatus {
+  const metadataStatus = ticket.metadata?.playStatus;
+  if (
+    metadataStatus === 'pending' ||
+    metadataStatus === 'processing' ||
+    metadataStatus === 'confirmed' ||
+    metadataStatus === 'scrutinized' ||
+    metadataStatus === 'rejected'
+  ) {
+    return metadataStatus;
+  }
+  if (ticket.status === 'won' || ticket.status === 'lost') return 'scrutinized';
+  return 'pending';
+}
+
+const PLAY_STATUS_CONFIG: Record<PlayStatus, { label: string; className: string }> = {
+  pending: { label: 'Pendiente', className: 'bg-amber-50 text-amber-700 border-amber-200' },
+  processing: { label: 'Tramitando', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  confirmed: { label: 'Confirmada', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  scrutinized: { label: 'Escrutada', className: 'bg-slate-100 text-slate-700 border-slate-200' },
+  rejected: { label: 'Rechazada', className: 'bg-red-50 text-red-700 border-red-200' },
+};
+
+function PlayStatusBadge({ status }: { status: PlayStatus }) {
+  const config = PLAY_STATUS_CONFIG[status];
+  return (
+    <span className={cn('inline-flex rounded-full border px-1.5 py-0 text-[9px] font-black uppercase tracking-wider', config.className)}>
+      {config.label}
+    </span>
+  );
 }
 
 function getTicketResultMatch(ticket: Ticket, results: TicketResultLike[]) {
@@ -110,6 +144,26 @@ function getNationalQuantity(ticket: Ticket) {
 
 function getOrderTotal(ticket: Ticket) {
   return typeof ticket.metadata?.orderTotalPrice === 'number' ? ticket.metadata.orderTotalPrice : ticket.price;
+}
+
+function getPrizeLabel(ticket: Ticket) {
+  if (ticket.prize && ticket.prize > 0) return formatCurrency(ticket.prize);
+  if (getPlayStatus(ticket) === 'scrutinized') return '0,00 €';
+  return 'Pendiente';
+}
+
+function getTicketDayGroups(ticket: Ticket) {
+  const dates = getOrderDrawDates(ticket);
+  return dates.map((date, index) => ({
+    date,
+    label: formatDate(date),
+    columns: [{
+      id: `${ticket.id}-${index}`,
+      numbers: ticket.numbers,
+      stars: ticket.stars ?? [],
+      amount: ticket.price,
+    }],
+  }));
 }
 
 function getCompactSelectionSummary(ticket: Ticket) {
@@ -178,6 +232,36 @@ function QuickActionButton({
   );
 }
 
+function WeeklyDrawBreakdown({ ticket, gameType }: { ticket: Ticket; gameType: string }) {
+  const groups = getTicketDayGroups(ticket);
+  return (
+    <div className="space-y-2">
+      {groups.map((group) => (
+        <div key={group.date} className="rounded-xl border border-slate-100 bg-white/90 px-3 py-2.5">
+          <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">{group.label}</p>
+          <div className="mt-2 space-y-2">
+            {group.columns.map((column, index) => (
+              <div key={column.id} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-2.5 py-2">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Columna {index + 1}</p>
+                  <BallSelection
+                    numbers={column.numbers}
+                    stars={column.stars}
+                    matchedNumbers={[]}
+                    matchedStars={[]}
+                    type={gameType}
+                  />
+                </div>
+                <span className="shrink-0 text-[11px] font-black text-manises-blue">{formatCurrency(column.amount)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 
 function ScrutinyFallbackModal({
   state,
@@ -243,11 +327,11 @@ export function TicketsPage() {
   const [search, setSearch] = useState('');
   const [gameFilter, setGameFilter] = useState<string>('all');
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
-  const [archivedIds, setArchivedIds] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<'all' | 'won' | 'lost'>('all');
   const [searchOpen, setSearchOpen] = useState(false);
   const [receiptTicket, setReceiptTicket] = useState<Ticket | null>(null);
   const [scrutinyState, setScrutinyState] = useState<ScrutinyState>(null);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
   useEffect(() => {
     setGameFilter('all');
@@ -264,16 +348,22 @@ export function TicketsPage() {
     return search === '' || nameMatch || numberMatch;
   });
 
-  const visibleTickets = filteredTickets.filter((ticket) => !archivedIds.includes(ticket.id));
-  const activeTickets = visibleTickets.filter((ticket) => ticket.status === 'pending');
-  const historyTickets = visibleTickets.filter((ticket) => ticket.status !== 'pending');
+  const visibleTickets = filteredTickets;
+  const activeTickets = visibleTickets.filter((ticket) => {
+    const status = getPlayStatus(ticket);
+    return status === 'pending' || status === 'processing' || status === 'confirmed';
+  });
+  const historyTickets = visibleTickets.filter((ticket) => {
+    const status = getPlayStatus(ticket);
+    return status === 'scrutinized' || status === 'rejected';
+  });
   
   const tabTickets = tab === 'activos' 
     ? activeTickets 
     : historyTickets.filter((t) => {
         if (statusFilter === 'all') return true;
         if (statusFilter === 'won') return t.status === 'won';
-        if (statusFilter === 'lost') return t.status === 'lost';
+        if (statusFilter === 'lost') return t.status === 'lost' || getPlayStatus(t) === 'rejected';
         return true;
       });
 
@@ -514,6 +604,14 @@ export function TicketsPage() {
                 const orderTotal = getOrderTotal(ticket);
                 const identity = getGameIdentity(game);
                 const scrutinyTone = getScrutinyTone(ticket, matchingResult);
+                const playStatus = getPlayStatus(ticket);
+                const isFavorite = favoriteIds.includes(ticket.id);
+                const addFavorite = () => {
+                  const name = window.prompt('Nombre para esta jugada favorita', `${identity.shortName} ${getCompactSelectionSummary(ticket)}`);
+                  if (!name) return;
+                  setFavoriteIds((current) => current.includes(ticket.id) ? current : [...current, ticket.id]);
+                  toast.success(`Favorita guardada: ${name}. Disponible en Perfil > Jugadas favoritas.`);
+                };
 
                 return (
                   <PremiumTouchInteraction key={ticket.id} scale={0.985}>
@@ -540,14 +638,14 @@ export function TicketsPage() {
                                 <span className="text-slate-300">·</span>
                                 <p className="text-[11px] font-black text-manises-blue">{formatCurrency(orderTotal ?? 0)}</p>
                                 <span className="text-slate-300">·</span>
-                                <StatusBadge status={ticket.status} className="px-1.5 py-0 text-[9px]" />
+                                <PlayStatusBadge status={playStatus} />
                               </div>
 
                               <p className="truncate text-[11px] font-black text-manises-blue">
                                 {getCompactSelectionSummary(ticket)}
-                                {ticket.status === 'won' && ticket.prize != null && (
-                                  <span className="ml-1 text-emerald-600"> · Premio {formatCurrency(ticket.prize)}</span>
-                                )}
+                                <span className={cn('ml-1', ticket.prize ? 'text-emerald-600' : 'text-slate-400')}>
+                                  · Premio {getPrizeLabel(ticket)}
+                                </span>
                               </p>
                               {hasResolvedDraw && totalHits > 0 && (
                                 <div className="w-fit inline-flex items-center gap-0.5 rounded-full border border-emerald-200 bg-emerald-50 px-1.5 py-px text-[8px] font-black uppercase tracking-[0.1em] text-emerald-700">
@@ -586,10 +684,14 @@ export function TicketsPage() {
                                   </div>
                                 ) : nationalTicket ? (
                                   <NationalDecimoCard ticket={ticket} displayNumber={ticketDisplayNumber} />
-                                ) : hasResolvedDraw && totalHits > 0 ? (
-                                  <div className="rounded-xl border border-slate-100 bg-white/90 px-3 py-2.5">
-                                    <p className="mb-2 text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
-                                      {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'}
+                                ) : (
+                                  <WeeklyDrawBreakdown ticket={ticket} gameType={game.type} />
+                                )}
+
+                                {!nationalTicket && hasResolvedDraw && totalHits > 0 && (
+                                  <div className="rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-2.5">
+                                    <p className="mb-2 text-[9px] font-black uppercase tracking-[0.14em] text-emerald-700">
+                                      {totalHits} {totalHits === 1 ? 'acierto' : 'aciertos'} en el sorteo resuelto
                                     </p>
                                     <BallSelection
                                       numbers={ticket.numbers}
@@ -599,12 +701,14 @@ export function TicketsPage() {
                                       type={game.type}
                                     />
                                   </div>
-                                ) : hasResolvedDraw ? (
+                                )}
+
+                                {!nationalTicket && hasResolvedDraw && totalHits === 0 && (
                                   <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2">
                                     <XCircle className="h-3.5 w-3.5 shrink-0 text-slate-300" />
                                     <span className="text-[10px] font-semibold text-slate-400">Sin aciertos en este sorteo</span>
                                   </div>
-                                ) : null}
+                                )}
 
                                 <div className="flex items-center gap-2 rounded-xl bg-slate-50/80 px-3 py-2 border border-slate-100">
                                   <span className="text-[10px] font-semibold text-slate-500 shrink-0">
@@ -618,22 +722,35 @@ export function TicketsPage() {
                                 <div className="flex flex-wrap items-center gap-2">
                                   <QuickActionButton
                                     icon={Repeat2}
-                                    label="Repetir"
+                                    label="Volver a jugar"
                                     onClick={() => navigate(`/play/${ticket.gameId}`)}
+                                  />
+                                  {!nationalTicket && (
+                                    <QuickActionButton
+                                      icon={Repeat2}
+                                      label="Abonarse"
+                                      onClick={() => toast.info('Abono pendiente de integración desde Mis jugadas.')}
+                                    />
+                                  )}
+                                  <QuickActionButton
+                                    icon={Eye}
+                                    label="Visualizar números"
+                                    onClick={() => setExpandedIds((current) => current.includes(ticket.id) ? current : [...current, ticket.id])}
                                   />
                                   <QuickActionButton
                                     icon={Maximize2}
-                                    label={nationalTicket ? "Ver Décimo" : "Ver Resguardo"}
+                                    label={nationalTicket ? "Ver certificado" : "Ver certificado"}
                                     onClick={() => setReceiptTicket(ticket)}
                                   />
                                   <QuickActionButton
-                                    icon={Archive}
-                                    label="Archivar"
-                                    tone="danger"
-                                    onClick={() => {
-                                      setArchivedIds((current) => current.includes(ticket.id) ? current : [...current, ticket.id]);
-                                      toast.success('Jugada archivada');
-                                    }}
+                                    icon={Download}
+                                    label="Descargar"
+                                    onClick={() => setReceiptTicket(ticket)}
+                                  />
+                                  <QuickActionButton
+                                    icon={Heart}
+                                    label={isFavorite ? 'Favorita' : 'Añadir a favoritas'}
+                                    onClick={addFavorite}
                                   />
                                   <div className="h-4 w-px bg-slate-200 mx-1" />
                                   <Button

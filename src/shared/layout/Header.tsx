@@ -4,6 +4,7 @@ import { motion, animate } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { formatCurrency } from '@/shared/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
 
 function AnimatedBalance({ value }: { value: number }) {
   const [display, setDisplay] = useState(value);
@@ -31,12 +32,11 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-[50] w-full bg-[#0a4792]/80 backdrop-blur-3xl border-b border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
-      {/* Content wrapper with pt-safe + generous breathing room */}
-      <div className="relative flex h-[var(--header-height)] items-center justify-between px-6 pt-[env(safe-area-inset-top,0px)] mx-auto max-w-7xl">
+      <div className="relative mx-auto flex h-[var(--header-height)] max-w-7xl items-center justify-between px-4 pt-[env(safe-area-inset-top,0px)] sm:px-6">
         {/* Logo Section - Institutional and readable */}
         <button
           type="button"
-          className="flex items-center gap-3.5 min-w-0"
+          className="flex min-w-0 items-center gap-3"
           onClick={() => navigate('/')}
           aria-label="Ir al inicio"
         >
@@ -45,7 +45,7 @@ export function Header() {
             alt="Lotería Manises"
             className="h-7 w-auto object-contain shrink-0"
           />
-          <div className="hidden xs:flex flex-col border-l border-white/15 pl-4 py-1 min-w-0">
+          <div className="hidden min-w-0 flex-col border-l border-white/15 py-1 pl-3 xs:flex">
             <span className="text-[9px] font-black text-manises-gold tracking-widest uppercase leading-tight">
               Administración nº 3
             </span>
@@ -57,24 +57,25 @@ export function Header() {
 
         {/* Balance Section - Integrated look */}
         {profile && (
-          <div className="flex items-center gap-2">
+          <div className="flex max-w-[62%] items-center justify-end gap-1.5 sm:max-w-none sm:gap-2">
+            <PlaySessionIndicator variant="header" />
             <motion.button
               whileTap={{ scale: 0.96 }}
               onClick={() => navigate('/profile')}
-              className="bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl px-3 py-1.5 flex items-center gap-2.5 transition-all shadow-lg backdrop-blur-md"
+              className="group flex h-11 min-w-0 max-w-[8.6rem] items-center gap-2 rounded-[1.1rem] border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.05)_100%)] px-2 shadow-[0_10px_20px_rgba(0,0,0,0.12)] backdrop-blur-md transition-all hover:bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0.08)_100%)] xs:max-w-none xs:gap-2.5 xs:px-2.5"
               aria-label={`Mi saldo: ${formatCurrency(profile.balance)}. Pulsar para recargar.`}
             >
-              <div className="bg-manises-gold/10 p-1 rounded-lg">
-                <Wallet className="w-4 h-4 text-manises-gold" />
+              <div className="flex h-7.5 w-7.5 items-center justify-center rounded-[0.8rem] border border-white/12 bg-manises-gold/12">
+                <Wallet className="h-3.5 w-3.5 text-manises-gold" />
               </div>
-              <div className="flex flex-col items-start leading-none">
-                <span className="text-[7px] font-black text-white/50 uppercase tracking-tighter">Mi Saldo</span>
-                <span className="text-[15px] font-black text-white tabular-nums">
+              <div className="flex min-w-0 flex-col items-start leading-none">
+                <span className="text-[6px] font-black uppercase tracking-[0.16em] text-white/50">Mi saldo</span>
+                <span className="max-w-[4.25rem] truncate text-[12px] font-black tabular-nums text-white xs:max-w-[5.4rem] xs:text-[14px]">
                   <AnimatedBalance value={profile.balance} />
                 </span>
               </div>
-              <div className="ml-0.5 w-6 h-6 rounded-xl bg-manises-gold flex items-center justify-center text-manises-blue shadow-md">
-                <PlusCircle className="w-4 h-4 stroke-[3px]" />
+              <div className="ml-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-[0.8rem] bg-manises-gold text-manises-blue shadow-[0_6px_12px_rgba(247,181,0,0.22)]">
+                <PlusCircle className="h-3.5 w-3.5 stroke-[3px]" />
               </div>
             </motion.button>
           </div>

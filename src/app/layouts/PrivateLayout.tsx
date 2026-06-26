@@ -5,7 +5,6 @@ import { Header } from '@/shared/layout/Header';
 import { BottomNav } from '@/shared/layout/BottomNav';
 import { AppLock } from '@/app/components/AppLock';
 import { PlaySessionProvider } from '@/features/session/context/PlaySessionProvider';
-import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
 import { PlaySessionTray } from '@/features/session/components/PlaySessionTray';
 
 // Rutas donde se oculta el BottomNav (flujos de pantalla completa)
@@ -61,7 +60,6 @@ export function PrivateLayout() {
 
             {!hideNav && (
               <>
-                <PlaySessionIndicator variant="fab" />
                 <BottomNav />
               </>
             )}

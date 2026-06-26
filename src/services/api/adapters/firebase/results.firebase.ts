@@ -12,7 +12,7 @@ export async function getLatestResultsFirebase(): Promise<ResultDto[]> {
     const q = query(
       collection(db, 'results'), // Default collection name as per plan
       orderBy('date', 'desc'),
-      limit(20)
+      limit(50)
     );
     
     const snap = await getDocs(q);

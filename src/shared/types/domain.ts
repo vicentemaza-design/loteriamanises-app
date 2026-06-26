@@ -21,6 +21,21 @@ export interface TicketMetadata {
   nationalNumber?: string;
   nationalQuantity?: number;
   nationalDrawLabel?: string;
+  playStatus?: 'pending' | 'processing' | 'confirmed' | 'scrutinized' | 'rejected';
+  confirmedAt?: string;
+  holderName?: string;
+  deliveryMode?: 'custody' | 'shipping';
+  shippingAddress?: {
+    name: string;
+    surnames: string;
+    address: string;
+    postalCode: string;
+    municipality: string;
+    province: string;
+    phone: string;
+  };
+  shippingStatus?: string;
+  seriesFractions?: Array<{ serie: string; fraccion: string }>;
   [key: string]: unknown;
 }
 
@@ -76,6 +91,10 @@ export interface UserProfile {
   balance: number;
   photoURL?: string;
   createdAt?: string;
+  address?: string;
+  postalCode?: string;
+  municipality?: string;
+  province?: string;
 }
 
 export interface WalletMovement {
@@ -85,4 +104,19 @@ export interface WalletMovement {
   amount: number;
   description: string;
   createdAt: string;
+  orderId?: string;
+  balanceAfter?: number;
+  details?: {
+    gameId?: string;
+    gameLabel?: string;
+    combinations?: string[];
+    number?: string;
+    quantity?: number;
+    shippingCost?: number;
+    deliveryMode?: 'custody' | 'shipping';
+    iban?: string;
+    bankName?: string;
+    recipientName?: string;
+  };
 }
+

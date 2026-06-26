@@ -18,8 +18,12 @@ import {
   Lock,
   LockSlash,
   Repeat,
+  InfoCircle,
+  Trophy,
 } from 'iconoir-react/regular';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useSubscriptions } from '@/features/profile/hooks/useSubscriptions';
+import { useGameSubscriptions } from '@/features/profile/hooks/useGameSubscriptions';
 import { formatCurrency } from '@/shared/lib/utils';
 import { toast } from 'sonner';
 import visaLogo from '@/assets/games/visa.svg';
@@ -50,6 +54,8 @@ function PaymentMethodsIcon() {
 
 export function ProfilePage() {
   const { profile, logout } = useAuth();
+  const { pendingCount } = useSubscriptions();
+  const { activeCount } = useGameSubscriptions();
   const navigate = useNavigate();
   const [isLockEnabled, setIsLockEnabled] = useState(() => {
     return localStorage.getItem('app_lock_enabled') === 'true';
@@ -80,7 +86,8 @@ export function ProfilePage() {
       title: 'Mi actividad',
       items: [
         { icon: Heart,          label: 'Jugadas favoritas',    detail: null, color: 'text-rose-600', bg: 'bg-rose-50', onClick: () => navigate('/profile/favorites') },
-        { icon: RefreshCircle,  label: 'Mis abonos',           detail: null, color: 'text-amber-600', bg: 'bg-amber-50', onClick: () => navigate('/profile/subscriptions') },
+        { icon: RefreshCircle,  label: 'Mis abonos de Lotería', detail: () => <span className="text-[10px] font-black text-amber-500">{pendingCount} pendientes</span>, color: 'text-amber-600', bg: 'bg-amber-50', onClick: () => navigate('/profile/subscriptions') },
+        { icon: Repeat,         label: 'Mis abonos de juegos', detail: () => <span className="text-[10px] font-black text-emerald-500">{activeCount} activos</span>, color: 'text-emerald-700', bg: 'bg-emerald-50', onClick: () => navigate('/profile/game-subscriptions') },
         { icon: Repeat,         label: 'Movimientos',          detail: null, color: 'text-cyan-700', bg: 'bg-cyan-50', onClick: () => navigate('/profile/movements') },
         { icon: Bank,           label: 'Cobrar premios',       detail: null, color: 'text-emerald-700', bg: 'bg-emerald-50', onClick: () => navigate('/profile/withdrawals') },
         { icon: Building,       label: 'Empresas y colectivos',detail: null, color: 'text-indigo-700', bg: 'bg-indigo-50', onClick: () => navigate('/profile/companies') },
@@ -104,15 +111,37 @@ export function ProfilePage() {
           isChecked: isLockEnabled,
         },
         { icon: User,        label: 'Verificación de identidad', detail: () => <span className="text-[10px] font-black text-amber-500 uppercase">Pendiente</span>, color: 'text-amber-600', bg: 'bg-amber-50', onClick: () => navigate('/profile/kyc') },
-        { icon: ShieldCheck, label: 'Seguridad biométrica',detail: null, color: 'text-purple-600',  bg: 'bg-purple-50', onClick: () => toast.info('Biometría disponible en App Nativa.') },
+        {
+          icon: ShieldCheck,
+          label: 'Seguridad biométrica',
+          detail: () => {
+            const isBio = localStorage.getItem('app_biometrics_enabled') === 'true';
+            return (
+              <span className={`text-[10px] font-black uppercase ${isBio ? 'text-emerald-500' : 'text-slate-400'}`}>
+                {isBio ? 'Activado' : 'Configurar'}
+              </span>
+            );
+          },
+          color: 'text-purple-600',
+          bg: 'bg-purple-50',
+          onClick: () => navigate('/profile/biometrics'),
+        },
       ],
     },
     {
       title: 'Ajustes',
       items: [
-        { icon: Settings,    label: 'Preferencias',      detail: null, color: 'text-gray-600',    bg: 'bg-gray-100', onClick: () => navigate('/profile/settings') },
+        { icon: Settings,    label: 'Notificaciones y preferencias', detail: null, color: 'text-gray-600', bg: 'bg-gray-100', onClick: () => navigate('/profile/settings') },
         { icon: ShieldCheck, label: 'Control de juego', detail: null, color: 'text-emerald-600', bg: 'bg-emerald-50', onClick: () => navigate('/profile/gaming-control') },
-        { icon: HelpCircle,  label: 'Ayuda, premios y legal', detail: null, color: 'text-orange-500',  bg: 'bg-orange-50', onClick: () => navigate('/profile/help') },
+        { icon: HelpCircle,  label: 'Ayuda y contacto', detail: null, color: 'text-orange-500',  bg: 'bg-orange-50', onClick: () => navigate('/profile/help') },
+        { icon: Trophy,      label: 'Premios y fiscalidad', detail: null, color: 'text-amber-600', bg: 'bg-amber-50', onClick: () => navigate('/profile/prizes-and-tax') },
+      ],
+    },
+    {
+      title: 'Sobre nosotros',
+      items: [
+        { icon: InfoCircle,  label: 'Quiénes somos',     detail: null, color: 'text-indigo-600',  bg: 'bg-indigo-50', onClick: () => navigate('/profile/about') },
+        { icon: Trophy,      label: 'Premios entregados',detail: null, color: 'text-amber-600',   bg: 'bg-amber-50', onClick: () => navigate('/profile/delivered-prizes') },
       ],
     },
   ];

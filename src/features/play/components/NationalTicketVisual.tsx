@@ -74,8 +74,6 @@ interface NationalTicketVisualProps {
 
 export const NationalTicketVisual: React.FC<NationalTicketVisualProps> = ({
   number,
-  serie,
-  fraccion,
   drawLabel,
   drawDate,
   price,
@@ -253,16 +251,6 @@ export const NationalTicketVisual: React.FC<NationalTicketVisualProps> = ({
           </motion.div>
 
           <div className="mt-4 flex gap-4 items-center px-4 py-2 rounded-full bg-current/5">
-            <div className="text-center">
-              <p className={cn('text-[7px] font-black uppercase tracking-widest opacity-40', config.text)}>Serie</p>
-              <p className={cn('text-xs font-black', config.text)}>{serie ?? '—'}</p>
-            </div>
-            <div className="h-4 w-[1px] bg-current/10" />
-            <div className="text-center">
-              <p className={cn('text-[7px] font-black uppercase tracking-widest opacity-40', config.text)}>Fracción</p>
-              <p className={cn('text-xs font-black', config.text)}>{fraccion ?? '—'}</p>
-            </div>
-            <div className="h-4 w-[1px] bg-current/10" />
             <div className="text-center">
               <p className={cn('text-[7px] font-black uppercase tracking-widest opacity-40', config.text)}>Precio</p>
               <p className={cn('text-xs font-black', config.text)}>{formatCurrency(price)}</p>

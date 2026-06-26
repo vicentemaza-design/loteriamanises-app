@@ -1,65 +1,60 @@
-import type { ElementType } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Play, Sparkles } from 'lucide-react';
+import { Play, Pencil } from 'lucide-react';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
-import { premiumDemoData } from '@/features/profile/data/premium-demo';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';
-import { PremiumActionRow } from '../components/PremiumActionRow';
-import { PremiumMetricPill } from '../components/PremiumMetricPill';
+import { Button } from '@/shared/ui/Button';
+import { useFavoritePlays } from '../hooks/useFavoritePlays';
 
 export function FavoritesPage() {
   const navigate = useNavigate();
-  const favorites = premiumDemoData.favoritePlays;
+  const { favorites } = useFavoritePlays();
 
   return (
-    <div className="flex min-h-full flex-col bg-background">
-      <ProfileSubHeader title="Jugadas Favoritas" subtitle={`${favorites.length} guardados`} />
-      <div className="flex flex-col gap-5 p-4">
-        
-        {/* Intro Section - Subtle */}
-        <div className="px-1 space-y-1">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Mis combinaciones</p>
-          <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-            Tus jugadas guardadas y frecuencia para re-jugar rápidamente.
-          </p>
-        </div>
+    <div className="flex min-h-full flex-col bg-background pb-20">
+      <ProfileSubHeader title="Jugadas favoritas" subtitle={`${favorites.length} guardadas`} />
 
-        {/* Individual favorites list */}
-        <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 p-4">
+        <section className="rounded-[1.6rem] border border-slate-100 bg-white p-4 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Reutiliza tus combinaciones</p>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-500">
+            Guarda jugadas esporádicas para volver a cargarlas cuando quieras, sin convertirlas en abono.
+          </p>
+        </section>
+
+        <div className="space-y-3">
           {favorites.map((favorite) => {
             const game = LOTTERY_GAMES.find((item) => item.id === favorite.gameId);
             return (
               <PremiumSectionCard
                 key={favorite.id}
-                eyebrow={game?.name ?? 'Juego'}
                 title={favorite.title}
-                description={favorite.numbersLabel}
-                tone="rose"
+                eyebrow={game?.name ?? 'Juego'}
+                description={`${favorite.betsCount} ${favorite.betsCount === 1 ? 'apuesta' : 'apuestas'}`}
+                tone="blue"
               >
-                <div className="grid grid-cols-2 gap-3 mb-3">
-                  <PremiumMetricPill label="Frecuencia" value={favorite.frequency} tone="rose" />
-                  <PremiumMetricPill label="Presupuesto" value={favorite.budgetLabel} tone="gold" />
-                </div>
-                
-                <div className="flex flex-col bg-muted/30 rounded-xl overflow-hidden border border-border/50">
-                  <PremiumActionRow
-                    icon={Play}
-                    title="Jugar de nuevo"
-                    description="Carga esta combinación en el juego"
-                    onClick={() => navigate(`/play/${favorite.gameId}`)}
-                    tone="rose"
-                    badge="Directo"
-                  />
-                  <div className="h-px bg-border/40 mx-3" />
-                  <PremiumActionRow
-                    icon={Sparkles}
-                    title="Convertir en abono"
-                    description="Suscribirse automáticamente"
-                    tone="gold"
-                    onClick={() => undefined}
-                    badge="Premium"
-                  />
+                <div className="space-y-3">
+                  <div className="rounded-2xl bg-slate-50 px-3 py-3">
+                    <p className="text-sm font-black text-manises-blue">{favorite.numbersLabel}</p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      className="flex-1 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
+                      onClick={() => navigate(`/play/${favorite.gameId}`)}
+                    >
+                      <Play className="mr-2 h-4 w-4" />
+                      Volver a jugar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="rounded-xl border-slate-200 text-manises-blue"
+                      onClick={() => navigate(`/profile/favorites/${favorite.id}`)}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Gestionar
+                    </Button>
+                  </div>
                 </div>
               </PremiumSectionCard>
             );

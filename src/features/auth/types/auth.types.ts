@@ -9,4 +9,5 @@ export interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signInDemo: () => void;
   logout: () => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
 }

@@ -2,83 +2,287 @@ import type { ResultDto } from '../../contracts/results.contracts';
 
 /**
  * Mock Results Adapter
- * Implementation of the results provider using local sample data.
+ * ~3 months of historical data with scrutiny per draw.
  */
 
+function past(daysAgo: number, hour = 21, minute = 0): string {
+  const d = new Date('2026-06-23T00:00:00');
+  d.setDate(d.getDate() - daysAgo);
+  d.setHours(hour, minute, 0, 0);
+  return d.toISOString();
+}
+
 export const MOCK_RESULTS_DATA: ResultDto[] = [
-  {
-    gameId: 'euromillones',
-    gameType: 'euromillones',
-    date: '2026-04-08T21:00:00Z',
-    numbers: [12, 23, 34, 45, 48],
-    stars: [3, 7],
-    jackpotNext: 130_000_000,
-  },
-  {
-    gameId: 'primitiva',
-    gameType: 'primitiva',
-    date: '2026-04-08T21:30:00Z',
-    numbers: [4, 15, 22, 31, 40, 49],
-    jackpotNext: 12_500_000,
-  },
+  // 1. BONOLOTO (Miércoles, 10 de junio de 2026)
   {
     gameId: 'bonoloto',
     gameType: 'bonoloto',
-    date: '2026-04-09T21:30:00Z',
-    numbers: [1, 8, 14, 25, 33, 42],
-    jackpotNext: 1_200_000,
+    date: '2026-06-10T21:30:00.000Z',
+    numbers: [10, 12, 13, 15, 20, 28],
+    complementario: 44,
+    reintegro: 3,
+    drawId: 'Sorteo 3.247',
+    jackpotNext: 2900000,
+    nextDrawDate: '2026-06-11T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 aciertos', winners: 0, prizePerWinner: 2900000 },
+      { category: '5 aciertos + Complementario', winners: 1, prizePerWinner: 78241.15 },
+      { category: '5 aciertos', winners: 95, prizePerWinner: 1045.22 },
+      { category: '4 aciertos', winners: 3890, prizePerWinner: 31.40 },
+      { category: '3 aciertos', winners: 69230, prizePerWinner: 4.00 },
+      { category: 'Reintegro', winners: 412050, prizePerWinner: 0.50 },
+    ],
+  },
+
+  // 2. EUROMILLONES (Martes, 9 de junio de 2026)
+  {
+    gameId: 'euromillones',
+    gameType: 'euromillones',
+    date: '2026-06-09T21:00:00.000Z',
+    numbers: [12, 23, 34, 45, 48],
+    stars: [4, 7],
+    drawId: 'Sorteo 1789',
+    jackpotNext: 105000000,
+    nextDrawDate: '2026-06-12T21:00:00.000Z',
+    scrutiny: [
+      { category: '1ª (5 + 2)', winners: 0, prizePerWinner: 105000000 },
+      { category: '2ª (5 + 1)', winners: 4, prizePerWinner: 483114.25 },
+      { category: '3ª (5 + 0)', winners: 8, prizePerWinner: 74808.49 },
+      { category: '4ª (4 + 2)', winners: 38, prizePerWinner: 1203.57 },
+      { category: '5ª (4 + 1)', winners: 761, prizePerWinner: 121.37 },
+      { category: '6ª (3 + 2)', winners: 1539, prizePerWinner: 52.21 },
+      { category: '7ª (4 + 0)', winners: 1829, prizePerWinner: 31.12 },
+      { category: '8ª (2 + 2)', winners: 20406, prizePerWinner: 17.30 },
+      { category: '9ª (3 + 1)', winners: 28098, prizePerWinner: 13.43 },
+      { category: '10ª (3 + 0)', winners: 55158, prizePerWinner: 8.95 },
+      { category: '11ª (1 + 2)', winners: 102465, prizePerWinner: 8.41 },
+      { category: '12ª (2 + 1)', winners: 450453, prizePerWinner: 6.75 },
+      { category: '13ª (2 + 0)', winners: 945158, prizePerWinner: 4.61 },
+    ],
+  },
+
+  // 3. BONOLOTO (Martes, 9 de junio de 2026)
+  {
+    gameId: 'bonoloto',
+    gameType: 'bonoloto',
+    date: '2026-06-09T21:30:00.000Z',
+    numbers: [2, 8, 14, 21, 32, 45],
+    complementario: 12,
+    reintegro: 6,
+    drawId: 'Sorteo 3.246',
+    jackpotNext: 2600000,
+    nextDrawDate: '2026-06-10T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 aciertos', winners: 0, prizePerWinner: 2600000 },
+      { category: '5 aciertos + Complementario', winners: 2, prizePerWinner: 62450.12 },
+      { category: '5 aciertos', winners: 88, prizePerWinner: 1120.40 },
+      { category: '4 aciertos', winners: 4012, prizePerWinner: 29.50 },
+      { category: '3 aciertos', winners: 72150, prizePerWinner: 4.00 },
+      { category: 'Reintegro', winners: 421800, prizePerWinner: 0.50 },
+    ],
+  },
+
+  // 4. PRIMITIVA (Lunes, 8 de junio de 2026)
+  {
+    gameId: 'primitiva',
+    gameType: 'primitiva',
+    date: '2026-06-08T21:30:00.000Z',
+    numbers: [1, 6, 16, 17, 37, 43],
+    complementario: 5,
+    reintegro: 7,
+    drawId: 'Sorteo 46/26',
+    jackpotNext: 14000000,
+    nextDrawDate: '2026-06-11T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 Aciertos', winners: 0, prizePerWinner: 14000000 },
+      { category: '5 Aciertos + Complementario', winners: 1, prizePerWinner: 198425.40 },
+      { category: '5 Aciertos', winners: 10, prizePerWinner: 3890.15 },
+      { category: '4 Aciertos', winners: 480, prizePerWinner: 65.40 },
+      { category: '3 Aciertos', winners: 14210, prizePerWinner: 8.00 },
+      { category: 'Reintegro', winners: 215430, prizePerWinner: 1.00 },
+    ],
+  },
+
+  // 5. PRIMITIVA (Sábado, 6 de junio de 2026) - Mapped to Saturday
+  {
+    gameId: 'primitiva',
+    gameType: 'primitiva',
+    date: '2026-06-06T21:30:00.000Z',
+    numbers: [6, 11, 20, 21, 31, 47],
+    complementario: 2,
+    reintegro: 8,
+    drawId: 'Sorteo 45/26',
+    jackpotNext: 12500000,
+    nextDrawDate: '2026-06-08T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 Aciertos', winners: 0, prizePerWinner: 12500000 },
+      { category: '5 Aciertos + Complementario', winners: 1, prizePerWinner: 234567.00 },
+      { category: '5 Aciertos', winners: 7, prizePerWinner: 4234.00 },
+      { category: '4 Aciertos', winners: 523, prizePerWinner: 67.00 },
+      { category: '3 Aciertos', winners: 15432, prizePerWinner: 8.00 },
+      { category: 'Reintegro', winners: 234567, prizePerWinner: 1.00 },
+    ],
+  },
+
+  // 6. LOTERÍA NACIONAL SÁBADO (Sábado, 6 de junio de 2026)
+  {
+    gameId: 'loteria-nacional-sabado',
+    gameType: 'loteria-nacional',
+    date: '2026-06-06T13:00:00.000Z',
+    numbers: [5, 8, 2, 4, 7],
+    firstPrizeNumber: '58247',
+    secondPrizeNumber: '13680',
+    reintegros: [7, 4, 1],
+    decimoPrice: 6,
+    drawId: 'Sorteo 46/26',
+    jackpotNext: 60000,
+    nextDrawDate: '2026-06-13T13:00:00.000Z',
+    scrutiny: [
+      { category: '1er Premio', winners: 1, prizePerWinner: 60000 },
+      { category: '2º Premio', winners: 1, prizePerWinner: 24000 },
+      { category: 'Aproximación 1er Premio (anterior/posterior)', winners: 2, prizePerWinner: 18000 },
+      { category: 'Aproximación 2º Premio (anterior/posterior)', winners: 2, prizePerWinner: 4000 },
+      { category: 'Centenas 1er Premio', winners: 700, prizePerWinner: 800 },
+      { category: 'Terminaciones 3 cifras 1er Premio', winners: 7000, prizePerWinner: 200 },
+      { category: 'Terminaciones 2 cifras', winners: 70000, prizePerWinner: 40 },
+      { category: 'Reintegros', winners: 100000, prizePerWinner: 6 },
+    ],
+  },
+
+  // 7. EUROMILLONES (Viernes, 5 de junio de 2026)
+  {
+    gameId: 'euromillones',
+    gameType: 'euromillones',
+    date: '2026-06-05T21:00:00.000Z',
+    numbers: [5, 10, 18, 26, 33],
+    stars: [1, 11],
+    drawId: 'Sorteo 1788',
+    jackpotNext: 85000000,
+    nextDrawDate: '2026-06-09T21:00:00.000Z',
+    scrutiny: [
+      { category: '1ª (5 + 2)', winners: 0, prizePerWinner: 85000000 },
+      { category: '2ª (5 + 1)', winners: 1, prizePerWinner: 312500 },
+      { category: '3ª (5 + 0)', winners: 5, prizePerWinner: 62100 },
+      { category: '4ª (4 + 2)', winners: 12, prizePerWinner: 2340 },
+      { category: '5ª (4 + 1)', winners: 298, prizePerWinner: 132 },
+      { category: '6ª (3 + 2)', winners: 478, prizePerWinner: 72 },
+      { category: '7ª (4 + 0)', winners: 1654, prizePerWinner: 45 },
+      { category: '8ª (2 + 2)', winners: 5876, prizePerWinner: 17 },
+      { category: '9ª (3 + 1)', winners: 7890, prizePerWinner: 13 },
+      { category: '10ª (3 + 0)', winners: 19876, prizePerWinner: 9 },
+      { category: '11ª (1 + 2)', winners: 11234, prizePerWinner: 9 },
+      { category: '12ª (2 + 1)', winners: 61234, prizePerWinner: 6 },
+      { category: '13ª (2 + 0)', winners: 167890, prizePerWinner: 4 },
+    ],
+  },
+
+  // 8. LOTERÍA NACIONAL JUEVES (Jueves, 4 de junio de 2026)
+  {
+    gameId: 'loteria-nacional-jueves',
+    gameType: 'loteria-nacional',
+    date: '2026-06-04T21:00:00.000Z',
+    numbers: [9, 9, 2, 4, 2],
+    firstPrizeNumber: '99242',
+    secondPrizeNumber: '69176',
+    reintegros: [0, 2, 7],
+    decimoPrice: 3,
+    drawId: 'Sorteo 45/26',
+    jackpotNext: 30000,
+    nextDrawDate: '2026-06-11T21:00:00.000Z',
+    scrutiny: [
+      { category: '1er Premio', winners: 1, prizePerWinner: 30000 },
+      { category: '2º Premio', winners: 1, prizePerWinner: 6000 },
+    ],
+    ultimas4cifras: ['1630', '2703', '3755', '7565'],
+    ultimas3cifras: ['079', '081', '084', '292', '406', '690', '926'],
+    ultimas2cifras: ['20', '48', '54', '66', '69', '77', '90', '94'],
+  },
+
+  // Older reference draws
+  // BONOLOTO (Miércoles, 3 de junio de 2026) - matches the third column detail
+  {
+    gameId: 'bonoloto',
+    gameType: 'bonoloto',
+    date: '2026-06-03T21:30:00.000Z',
+    numbers: [7, 14, 22, 31, 41, 48],
+    complementario: 12,
+    reintegro: 3,
+    drawId: 'Sorteo 3.245',
+    jackpotNext: 2300000,
+    nextDrawDate: '2026-06-04T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 aciertos', winners: 0, prizePerWinner: 2300000 },
+      { category: '5 aciertos + Complementario', winners: 1, prizePerWinner: 84512.34 },
+      { category: '5 aciertos', winners: 82, prizePerWinner: 1102.56 },
+      { category: '4 aciertos', winners: 4123, prizePerWinner: 28.31 },
+      { category: '3 aciertos', winners: 77584, prizePerWinner: 4.00 },
+      { category: 'Reintegro', winners: 432105, prizePerWinner: 0.50 },
+    ],
   },
   {
     gameId: 'gordo',
     gameType: 'gordo',
-    date: '2026-04-06T13:00:00Z',
+    date: '2026-05-31T13:00:00.000Z',
     numbers: [2, 17, 28, 35, 51],
     stars: [7],
-    jackpotNext: 5_400_000,
+    jackpotNext: 5400000,
+    nextDrawDate: '2026-06-07T13:00:00.000Z',
+    scrutiny: [
+      { category: '5 + Clave', winners: 0, prizePerWinner: 5400000 },
+      { category: '5', winners: 4, prizePerWinner: 16234 },
+      { category: '4 + Clave', winners: 23, prizePerWinner: 1234 },
+      { category: '4', winners: 456, prizePerWinner: 78 },
+      { category: '3 + Clave', winners: 2345, prizePerWinner: 23 },
+      { category: '3', winners: 12456, prizePerWinner: 8 },
+      { category: '2 + Clave', winners: 18234, prizePerWinner: 5 },
+      { category: 'Reintegro', winners: 45678, prizePerWinner: 1.5 },
+    ],
   },
   {
     gameId: 'eurodreams',
     gameType: 'eurodreams',
-    date: '2026-04-06T21:00:00Z',
+    date: '2026-06-01T21:00:00.000Z',
     numbers: [4, 15, 22, 31, 38, 42],
     stars: [5],
-    jackpotNext: 20_000,
+    jackpotNext: 20000,
+    nextDrawDate: '2026-06-04T21:00:00.000Z',
+    scrutiny: [
+      { category: '6 + 1 (El Sueño)', winners: 0, prizePerWinner: 20000, isMonthly: true },
+      { category: '6', winners: 0, prizePerWinner: 2000, isMonthly: true },
+      { category: '5 + 1', winners: 3, prizePerWinner: 2000 },
+      { category: '5', winners: 23, prizePerWinner: 50 },
+      { category: '4 + 1', winners: 234, prizePerWinner: 20 },
+      { category: '4', winners: 2345, prizePerWinner: 10 },
+      { category: '3 + 1', winners: 12345, prizePerWinner: 6 },
+      { category: '3', winners: 67890, prizePerWinner: 4 },
+      { category: '2 + 1', winners: 234567, prizePerWinner: 4 },
+    ],
   },
   {
     gameId: 'quiniela',
     gameType: 'quiniela',
-    date: '2026-04-05T18:00:00Z',
+    date: '2026-05-31T18:00:00.000Z',
     numbers: [1, 2, 1, 'X', 2, 1, 1, 'X', 1, 2, 1, 1, 'X', 2, 'M-1'],
-    jackpotNext: 4_700_000,
-  },
-  {
-    gameId: 'loteria-nacional-jueves',
-    gameType: 'loteria-nacional',
-    date: '2026-04-09T21:00:00Z',
-    numbers: [3, 1, 4, 2, 5],
-    firstPrizeNumber: '31425',
-    secondPrizeNumber: '27180',
-    reintegros: [1, 5, 7],
-    decimoPrice: 3,
-    jackpotNext: 30_000,
-  },
-  {
-    gameId: 'loteria-nacional-sabado',
-    gameType: 'loteria-nacional',
-    date: '2026-04-11T12:00:00Z',
-    numbers: [6, 9, 8, 4, 4],
-    firstPrizeNumber: '69844',
-    secondPrizeNumber: '58264',
-    reintegros: [4, 8, 9],
-    decimoPrice: 6,
-    jackpotNext: 60_000,
+    jackpotNext: 4700000,
+    nextDrawDate: '2026-06-07T18:00:00.000Z',
+    scrutiny: [
+      { category: '15 Resultados', winners: 0, prizePerWinner: 4700000 },
+      { category: '14 Resultados', winners: 2, prizePerWinner: 45678 },
+      { category: '13 Resultados', winners: 234, prizePerWinner: 567 },
+      { category: '12 Resultados', winners: 8765, prizePerWinner: 12 },
+      { category: 'Especial Pleno al 15', winners: 0, prizePerWinner: 45000 },
+    ],
   },
 ];
 
+// Sorted most recent first (mirrors Firebase's orderBy('date', 'desc'))
+const sorted = [...MOCK_RESULTS_DATA].sort(
+  (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+);
+
 export async function getLatestResultsMock(): Promise<ResultDto[]> {
-  // Simulate network delay
   return new Promise((resolve) => {
-    setTimeout(() => resolve(MOCK_RESULTS_DATA), 500);
+    setTimeout(() => resolve(sorted), 500);
   });
 }
 

@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Spark, ControlSlider } from 'iconoir-react/regular';
+import { Spark, ControlSlider, WarningTriangle } from 'iconoir-react/regular';
 import { cn, formatDate } from '@/shared/lib/utils';
 import { NationalTicketVisual, type NationalDrawType } from '@/features/play/components/NationalTicketVisual';
+import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
 import { NationalSearchBar } from './NationalSearchBar';
 import { NationalNumberShowcase } from './NationalNumberShowcase';
 import { NationalCartSummary } from './NationalCartSummary';
+import { NationalCheckoutReview } from './NationalCheckoutReview';
 import { NationalDeliverySelector, type DeliveryMode } from './NationalDeliverySelector';
 import { NationalDrawSelector } from './NationalDrawSelector';
 
@@ -48,12 +50,14 @@ interface NationalAdvancedFlowProps {
     breakdown: NationalOrderBreakdown;
     removeLine: (number: string, drawId: NationalCartLine['drawId']) => void;
     updateQuantity: (number: string, drawId: NationalCartLine['drawId'], delta: number) => void;
+    updateDeliveryMode: (deliveryMode: NationalCartLine['deliveryMode']) => void;
     clearCart: () => void;
     onPersistToSession?: () => void;
   };
 
-  onSelectNationalNumber: (ticket: NationalShowcaseItem) => void;
-  onRandomNationalNumber: () => void;
+  availableBalance: number;
+  onSelectNationalNumber: (ticket: NationalShowcaseItem, deliveryMode: DeliveryMode) => void;
+  onRandomNationalNumber: (deliveryMode: DeliveryMode) => void;
   onClear: () => void;
 }
 
@@ -71,18 +75,19 @@ export function NationalAdvancedFlow({
   onSelectDate,
   nationalShowcase,
   nationalCart,
+  availableBalance,
   onSelectNationalNumber,
   onRandomNationalNumber,
   onClear,
 }: NationalAdvancedFlowProps) {
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
-  const [selectionMode, setSelectionMode] = useState<'random' | 'manual'>('random');
+  const [selectionMode, setSelectionMode] = useState<'random' | 'manual'>('manual');
+  const [step, setStep] = useState<'selection' | 'checkout'>('selection');
+  const [previewNumberOverride, setPreviewNumberOverride] = useState<string | null>(null);
   const hasMounted = useRef(false);
 
   const previewLine = nationalCart.lines[0] ?? null;
-  const previewNumber = previewLine?.number ?? null;
-  const previewSerie = previewLine?.serie;
-  const previewFraccion = previewLine?.fraccion;
+  const previewNumber = previewNumberOverride ?? previewLine?.number ?? null;
 
   const handleDecrement = (number: string, drawId: NationalCartLine['drawId']) => {
     const line = nationalCart.lines.find(l => l.number === number && l.drawId === drawId);
@@ -94,6 +99,9 @@ export function NationalAdvancedFlow({
     }
   };
 
+  const hoursUntilClose = (new Date(drawStatus.salesCloseAt).getTime() - Date.now()) / 36e5;
+  const isShippingAvailable = drawStatus.state === 'open' && hoursUntilClose >= 48;
+
   // Auto-assign only when user explicitly switches to random mode (skip mount)
   useEffect(() => {
     if (!hasMounted.current) {
@@ -101,10 +109,24 @@ export function NationalAdvancedFlow({
       return;
     }
     if (selectionMode === 'random' && nationalCart.lines.length === 0 && nationalShowcase.items.length > 0) {
-      onRandomNationalNumber();
+      onRandomNationalNumber(deliveryMode);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectionMode]);
+
+  useEffect(() => {
+    if (deliveryMode === 'shipping' && !isShippingAvailable) {
+      setDeliveryMode('custody');
+      nationalCart.updateDeliveryMode('custody');
+    }
+  }, [deliveryMode, isShippingAvailable, nationalCart]);
+
+  useEffect(() => {
+    if (nationalCart.lines.length === 0) {
+      setStep('selection');
+      setPreviewNumberOverride(null);
+    }
+  }, [nationalCart.lines.length]);
 
   const drawType: NationalDrawType = game.id === 'loteria-navidad' ? 'navidad' :
                                      game.id === 'loteria-nino' ? 'nino' : 'ordinary';
@@ -119,9 +141,27 @@ export function NationalAdvancedFlow({
     : drawStatus.state === 'closingSoon' ? 'Cierra pronto'
     : 'Cerrado';
 
+  if (step === 'checkout') {
+    return (
+      <NationalCheckoutReview
+        game={game}
+        lines={nationalCart.lines}
+        breakdown={nationalCart.breakdown}
+        availableBalance={availableBalance}
+        onBack={() => setStep('selection')}
+        onViewTicket={(line) => {
+          setPreviewNumberOverride(line.number);
+          setStep('selection');
+          window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        }}
+        onContinueToPayment={() => nationalCart.onPersistToSession?.()}
+      />
+    );
+  }
+
   return (
     <div className="space-y-5">
-      {/* 1. Inline date context */}
+      {/* 1. Sorteo */}
       <section className="stagger-item">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2">
           <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', statusColor.dot)} />
@@ -146,25 +186,26 @@ export function NationalAdvancedFlow({
         )}
       </section>
 
-      {/* 2. Décimo visual — protagonista */}
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="stagger-item"
-      >
-        <NationalTicketVisual
-          number={previewNumber}
-          serie={previewSerie}
-          fraccion={previewFraccion}
-          drawLabel={selectedNationalDraw.label}
-          drawDate={selectedNationalDraw.nextDraw}
-          price={selectedNationalDraw.decimoPrice}
-          gameId={game.id}
-          drawType={drawType}
-        />
-      </motion.div>
+      {/* 2. Tipo de entrega */}
+      <NationalDeliverySelector
+        selectedMode={deliveryMode}
+        shippingAvailable={isShippingAvailable}
+        onChange={(nextMode) => {
+          setDeliveryMode(nextMode);
+          nationalCart.updateDeliveryMode(nextMode);
+        }}
+      />
 
-      {/* 3. ¿Cómo quieres elegir tu número? */}
+      {!isShippingAvailable && (
+        <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
+          <WarningTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+          <p className="text-[10px] font-bold leading-relaxed text-amber-800">
+            Mensajería no disponible por proximidad al sorteo. Puedes usar custodia digital para este sorteo.
+          </p>
+        </div>
+      )}
+
+      {/* 3. Forma de obtener números */}
       <div
         className="rounded-[1.2rem] border-2 bg-white px-3.5 py-2.5 shadow-sm transition-colors"
         style={{ borderColor: `${game.color}30` }}
@@ -174,50 +215,65 @@ export function NationalAdvancedFlow({
         </p>
         <div className="grid grid-cols-2 gap-2">
           <button
-            onClick={() => {
-              setSelectionMode('random');
-              if (nationalCart.lines.length === 0) {
-                onRandomNationalNumber();
-              }
-            }}
-            className={cn(
-              'flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all active:scale-[0.97]',
-              selectionMode === 'random'
-                ? 'text-white shadow-lg'
-                : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'
-            )}
-            style={selectionMode === 'random' ? { backgroundColor: game.color, borderColor: game.color } : undefined}
-          >
-            <Spark className={cn('w-3.5 h-3.5 shrink-0', selectionMode === 'random' ? 'text-white/90' : 'text-manises-gold')} />
-            <div className="text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest leading-none">Aleatorio</p>
-              <p className={cn('text-[8px] font-semibold mt-0.5 leading-none', selectionMode === 'random' ? 'text-white/70' : 'text-slate-400')}>
-                Número demo
-              </p>
-            </div>
-          </button>
-          <button
             onClick={() => setSelectionMode('manual')}
             className={cn(
               'flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all active:scale-[0.97]',
               selectionMode === 'manual'
-                ? 'bg-white shadow-sm'
-                : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300'
+                ? 'text-white shadow-lg'
+                : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'
             )}
-            style={selectionMode === 'manual' ? { borderColor: game.color, color: game.color } : undefined}
+            style={selectionMode === 'manual' ? { backgroundColor: game.color, borderColor: game.color } : undefined}
           >
             <ControlSlider className="w-3.5 h-3.5 shrink-0" />
             <div className="text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest leading-none">Elegir</p>
-              <p className={cn('text-[8px] font-semibold mt-0.5 leading-none', selectionMode === 'manual' ? 'opacity-60' : 'text-slate-400')}>
-                De la lista
+              <p className="text-[10px] font-black uppercase tracking-widest leading-none">Elegir número</p>
+              <p className={cn('text-[8px] font-semibold mt-0.5 leading-none', selectionMode === 'manual' ? 'text-white/70' : 'text-slate-400')}>
+                Buscar o filtrar
+              </p>
+            </div>
+          </button>
+          <button
+            onClick={() => {
+              setSelectionMode('random');
+              if (nationalCart.lines.length === 0) {
+                onRandomNationalNumber(deliveryMode);
+              }
+            }}
+            className={cn(
+              'flex items-center gap-2.5 rounded-xl border px-3 py-2.5 transition-all active:scale-[0.97]',
+              selectionMode === 'random'
+                ? 'border-manises-gold bg-amber-50 text-manises-blue shadow-sm'
+                : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'
+            )}
+          >
+            <Spark className="w-3.5 h-3.5 shrink-0 text-manises-gold" />
+            <div className="text-left">
+              <p className="text-[10px] font-black uppercase tracking-widest leading-none">Décimo de la Suerte</p>
+              <p className="mt-0.5 text-[8px] font-semibold leading-none text-slate-400">
+                Aleatorio
               </p>
             </div>
           </button>
         </div>
       </div>
 
-      {/* 4. Escaparate unificado — visible en ambos modos */}
+      {/* 4. Décimo visual — protagonista */}
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="stagger-item"
+      >
+        <NationalTicketVisual
+          number={previewNumber}
+          drawLabel={selectedNationalDraw.label}
+          drawDate={selectedNationalDraw.nextDraw}
+          price={selectedNationalDraw.decimoPrice}
+          gameId={game.id}
+          drawType={drawType}
+        />
+      </motion.div>
+
+      {/* 5. Selección de décimos */}
       <section className="space-y-3">
         <div className="flex items-center justify-between px-0.5">
           <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
@@ -226,10 +282,10 @@ export function NationalAdvancedFlow({
           <div className="flex items-center gap-3">
             {selectionMode === 'random' && nationalCart.lines.length > 0 && (
               <button
-                onClick={onRandomNationalNumber}
+                onClick={() => onRandomNationalNumber(deliveryMode)}
                 className="text-[9px] font-black uppercase tracking-wider text-manises-blue/60 hover:text-manises-blue transition-colors"
               >
-                Cambiar número
+                Otro décimo
               </button>
             )}
             <button
@@ -249,26 +305,25 @@ export function NationalAdvancedFlow({
         <NationalNumberShowcase
           items={nationalShowcase.items}
           cartLines={nationalCart.lines}
-          onToggle={onSelectNationalNumber}
+          onToggle={(item) => onSelectNationalNumber(item, deliveryMode)}
           onIncrement={(number, drawId) => nationalCart.updateQuantity(number, drawId, 1)}
           onDecrement={handleDecrement}
         />
       </section>
 
-      {/* 5. Selector de entrega */}
-      <NationalDeliverySelector
-        selectedMode={deliveryMode}
-        onChange={setDeliveryMode}
-      />
-
-      {/* 6. Resumen de décimos seleccionados */}
+      {/* 6. Cesta */}
       <NationalCartSummary
         lines={nationalCart.lines}
         breakdown={nationalCart.breakdown}
         onRemove={nationalCart.removeLine}
         onUpdateQuantity={nationalCart.updateQuantity}
         onClear={nationalCart.clearCart}
-        onPersistToSession={nationalCart.onPersistToSession}
+        onContinue={nationalCart.onPersistToSession ? () => {
+          setStep('checkout');
+          window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        } : undefined}
+        availableBalance={availableBalance}
+        activeColor={game.color}
       />
     </div>
   );

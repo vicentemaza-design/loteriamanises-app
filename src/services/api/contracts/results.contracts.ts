@@ -6,6 +6,13 @@ import type { ApiResponseDto } from './common.contracts';
  * Definitions for game draws and winning combinations.
  */
 
+export interface ScrutinyCategory {
+  category: string;
+  winners: number;
+  prizePerWinner: number;
+  isMonthly?: boolean;
+}
+
 export interface ResultDto {
   gameId: string;
   gameType: GameType;
@@ -20,6 +27,11 @@ export interface ResultDto {
   decimoPrice?: number;
   jackpotNext?: number;
   drawId?: string;
+  scrutiny?: ScrutinyCategory[];
+  nextDrawDate?: string;
+  ultimas4cifras?: string[];
+  ultimas3cifras?: string[];
+  ultimas2cifras?: string[];
 }
 
 export type GetResultsResponseDto = ApiResponseDto<ResultDto[]>;

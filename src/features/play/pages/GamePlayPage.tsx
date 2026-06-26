@@ -24,6 +24,7 @@ import { getGameHelpContent } from '../lib/game-help';
 import { getAvailableModesForGame, getModeDefinition, getReductionSystem, getReductionSystemsForMode, type PlayMode } from '../lib/play-matrix';
 import { GameModeSelector } from '../components/GameModeSelector';
 import { GameInfoSheet } from '../components/GameInfoSheet';
+import { PurchaseBottomBar } from '../components/PurchaseBottomBar';
 import { QuinielaProfessionalSelector } from '../components/QuinielaProfessionalSelector';
 import { ReductionSystemSelector } from '../components/ReductionSystemSelector';
 import { ReducedModeSummary } from '../reduced/components/ReducedModeSummary';
@@ -32,6 +33,7 @@ import { getCompatibleReducedSystems } from '../reduced/application/get-compatib
 import { NumbersGrid } from '../components/NumbersGrid';
 import { StarsGrid } from '../components/StarsGrid';
 import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
+import type { DeliveryMode } from '../national/components/NationalDeliverySelector';
 import { MulticolumnTicketFlow } from '../multicolumn/components/MulticolumnTicketFlow';
 import type { MulticolumnDraftIntent } from '../multicolumn/contracts/multicolumn-play.contract';
 import { inferMulticolumnPlayMode } from '../multicolumn/application/infer-multicolumn-play-mode';
@@ -101,7 +103,7 @@ export function GamePlayPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, profile, isDemo } = useAuth();
-  const { drafts, addDrafts, updateDraft } = usePlaySession();
+  const { drafts, addDrafts, updateDraft, openReview } = usePlaySession();
   const game = LOTTERY_GAMES.find(g => g.id === gameId);
   const editingDraftId = (location.state as GamePlayLocationState | null)?.playDraftId;
   const editingDraft = useMemo(
@@ -169,6 +171,7 @@ export function GamePlayPage() {
     addOrUpdateLine: addOrUpdateNationalCartLine,
     removeLine: removeNationalCartLine,
     updateQuantity: updateNationalCartQuantity,
+    updateDeliveryMode: updateNationalCartDeliveryMode,
     clearCart: clearNationalCart,
     breakdown: nationalCartBreakdown,
   } = useNationalCart();
@@ -389,10 +392,9 @@ export function GamePlayPage() {
     selectedNationalDraw,
     drawsCount,
   });
-  const displayTotalPrice = isNationalLottery ? nationalCartBreakdown.subtotal : totalPrice;
+  const displayTotalPrice = isNationalLottery ? nationalCartBreakdown.total : totalPrice;
   const isOverBalance = profile ? profile.balance < displayTotalPrice : false;
   const availableBalance = profile?.balance ?? 0;
-  const remainingBalance = Math.max(availableBalance - displayTotalPrice, 0);
 
 
 
@@ -528,7 +530,7 @@ export function GamePlayPage() {
     );
   };
 
-  const handleRandom = () => {
+  const handleRandom = (deliveryMode: DeliveryMode = 'custody') => {
     if (isNationalLottery) {
       const randomTicket = nationalShowcase[Math.floor(Math.random() * nationalShowcase.length)];
       if (!randomTicket) {
@@ -545,10 +547,9 @@ export function GamePlayPage() {
         quantity: 1,
         unitPrice: selectedNationalDraw.decimoPrice,
         totalPrice: selectedNationalDraw.decimoPrice * drawsCount,
-        deliveryMode: 'custody',
+        deliveryMode,
         maxQuantity: randomTicket.available,
       });
-      toast.success(`Décimo ${randomTicket.number} añadido`);
       return;
     }
 
@@ -632,7 +633,7 @@ export function GamePlayPage() {
   // Sticky CTA is hidden until the user has an active in-progress selection.
   const shouldShowStickyCta = (() => {
     if (isQuickPickMode) return false;
-    if (isNationalLottery) return nationalCartLines.length > 0;
+    if (isNationalLottery) return false;
     if (isQuiniela) return quinielaMatches.some((m: QuinielaMatch) => m.result !== null);
     if (supportsQuickPick && mode === 'simple' && betMethod === null) return false;
     if (isMulticolumnMode) return false;
@@ -886,6 +887,7 @@ export function GamePlayPage() {
     if (result.addedCount > 0) {
       toast.success(result.addedCount === 1 ? 'Borrador añadido a tu sesión de prueba.' : `${result.addedCount} borradores añadidos a tu sesión de prueba.`);
       clearNationalCart();
+      openReview();
     }
 
     if (result.duplicateCount > 0) {
@@ -914,6 +916,15 @@ export function GamePlayPage() {
     if (starsLeft > 0) return `Elige ${starsLeft} ${starsLeft === 1 ? 'estrella' : 'estrellas'}`;
     return 'Completa la jugada';
   })();
+  const ctaValidationText = supportsQuickPick && mode === 'simple' && betMethod === null
+    ? 'Elige cómo quieres jugar arriba'
+    : isMulticolumnMode
+      ? 'Completa al menos una apuesta'
+      : isNationalLottery
+        ? 'Elige un décimo del escaparate'
+        : isQuiniela
+          ? 'Completa el pronóstico de los 15 partidos'
+          : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' números' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim();
 
   return (
     <div
@@ -1195,7 +1206,7 @@ export function GamePlayPage() {
           <div className="space-y-2.5">
 
             {/* 1. Bloque Fechas — agrupadas por mes */}
-            {supportsTimeSelection && mode === 'simple' && (
+            {supportsTimeSelection && game.type !== 'gordo' && (
               <div className="rounded-[1.2rem] border border-slate-100 bg-white overflow-hidden shadow-sm">
                 {/* Cabecera compacta full-width */}
                 <div className="flex items-start justify-between gap-2 px-3.5 pt-2.5 pb-2">
@@ -1329,7 +1340,7 @@ export function GamePlayPage() {
             )}
 
             {/* 2. Bloque Sorteo compacto (juegos sin multiselección) */}
-            {!supportsTimeSelection && mode === 'simple' && (
+            {(!supportsTimeSelection || game.type === 'gordo') && (
               <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Sorteo</p>
@@ -1338,7 +1349,40 @@ export function GamePlayPage() {
               </div>
             )}
 
-            {/* 3. Bloque Método — selector compacto horizontal */}
+            {/* 3. Tipo de jugada — grid full-width */}
+            {availableModes.length > 1 && (
+              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
+                <p className="mb-1.5 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Tipo de jugada</p>
+                <div className={cn('grid gap-1.5', availableModes.length >= 3 ? 'grid-cols-3' : 'grid-cols-2')}>
+                  {availableModes.map((m) => {
+                    const modeLabels: Record<string, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
+                    return (
+                      <button
+                        key={m}
+                        onClick={() => {
+                          setMode(m as typeof mode);
+                          const nextSystems = getReductionSystemsForMode(game.id, m as typeof mode);
+                          if (m === 'reduced' && nextSystems.length > 0) setSelectedReductionSystemId(nextSystems[0].id);
+                          handleClear();
+                          if (m !== 'simple') setBetMethod('manual');
+                        }}
+                        className={cn(
+                          'py-2 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all text-center',
+                          mode === m
+                            ? 'text-white border-transparent shadow-sm'
+                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
+                        )}
+                        style={mode === m ? { backgroundColor: game.color } : undefined}
+                      >
+                        {modeLabels[m] ?? m}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 4. Bloque Método — selector compacto horizontal */}
             {mode === 'simple' && (
               <div
                 className="rounded-[1.2rem] border-2 bg-white px-3.5 py-2.5 shadow-sm transition-colors"
@@ -1382,39 +1426,7 @@ export function GamePlayPage() {
               </div>
             )}
 
-            {/* 4. Tipo de jugada — grid full-width */}
-            {availableModes.length > 1 && (
-              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
-                <p className="mb-1.5 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Tipo de jugada</p>
-                <div className={cn('grid gap-1.5', availableModes.length >= 3 ? 'grid-cols-3' : 'grid-cols-2')}>
-                  {availableModes.map((m) => {
-                    const modeLabels: Record<string, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
-                    return (
-                      <button
-                        key={m}
-                        onClick={() => {
-                          setMode(m as typeof mode);
-                          const nextSystems = getReductionSystemsForMode(game.id, m as typeof mode);
-                          if (m === 'reduced' && nextSystems.length > 0) setSelectedReductionSystemId(nextSystems[0].id);
-                          handleClear();
-                          if (m !== 'simple') setBetMethod('manual');
-                        }}
-                        className={cn(
-                          'py-2 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all text-center',
-                          mode === m
-                            ? 'text-white border-transparent shadow-sm'
-                            : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
-                        )}
-                        style={mode === m ? { backgroundColor: game.color } : undefined}
-                      >
-                        {modeLabels[m] ?? m}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
+            {/* 5. Bloque Número de apuestas (manual) */}
             {/* 5. Bloque Número de apuestas (manual) */}
             {mode === 'simple' && betMethod === 'manual' && (
               <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm">
@@ -1511,8 +1523,6 @@ export function GamePlayPage() {
                     isRegenerating={quickPick.isRegenerating}
                     regenerate={quickPick.regenerate}
                     regenerateAt={quickPick.regenerateAt}
-                    generationPreset={quickPick.generationPreset}
-                    setGenerationPreset={quickPick.setGenerationPreset}
                     totalPrice={quickPickTotalPrice}
                     availableBalance={profile?.balance ?? 0}
                     drawsCount={effectiveSelectedDrawDates.length || 1}
@@ -1524,6 +1534,7 @@ export function GamePlayPage() {
                     <MulticolumnTicketFlow
                       game={game}
                       drawDates={effectiveSelectedDrawDates}
+                      availableBalance={profile?.balance ?? 0}
                       initialColumnsCount={manualBetCount}
                       onReviewColumns={handleMulticolumnPersist}
                     />
@@ -1572,7 +1583,7 @@ export function GamePlayPage() {
                         <Button
                           variant="outline" size="sm"
                           className="h-7 rounded-lg border-manises-gold/50 px-3 text-[9px] font-bold uppercase tracking-wider text-manises-gold hover:bg-manises-gold/5"
-                          onClick={handleRandom}
+                          onClick={() => handleRandom()}
                         >
                           <Spark className="w-3 h-3 mr-1" /> Aleatorio
                         </Button>
@@ -1586,26 +1597,45 @@ export function GamePlayPage() {
                       </div>
                     </div>
 
-                    {/* ---- Grid de números ---- */}
-                    <NumbersGrid
-                      totalNums={totalNums}
-                      selectedNumbers={selectedNumbers}
-                      maxNumbersLimit={mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
-                      onToggle={toggleNumber}
-                      theme={theme}
-                    />
-
-                    {/* ---- Grid de estrellas ---- */}
-                    {maxStars > 0 && (
-                      <StarsGrid
-                        compact
-                        starValues={starValues}
-                        selectedStars={selectedStars}
-                        maxStarsLimit={maxStars}
-                        onToggle={toggleStar}
+                    {/* ---- Boleto unificado: números + estrellas en una única vista ---- */}
+                    {totalStars > 0 ? (
+                      // Side-by-side: números a la izquierda, estrellas en columna lateral derecha
+                      // Mismo layout para modo simple y reducida — sin scroll entre ambos bloques
+                      <div className="flex gap-2 items-start">
+                        <div className="flex-1 min-w-0">
+                          <NumbersGrid
+                            compact
+                            columns={5}
+                            totalNums={totalNums}
+                            selectedNumbers={selectedNumbers}
+                            maxNumbersLimit={mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
+                            onToggle={toggleNumber}
+                            theme={theme}
+                          />
+                        </div>
+                        <div className="w-px self-stretch bg-gray-100 shrink-0 mt-5" />
+                        <div className="w-[76px] shrink-0">
+                          <StarsGrid
+                            compact
+                            gridCols={2}
+                            starValues={starValues}
+                            selectedStars={selectedStars}
+                            maxStarsLimit={maxStars}
+                            onToggle={toggleStar}
+                            theme={theme}
+                            title={game.type === 'gordo' ? 'Clave' : 'Estrellas'}
+                            labelPrefix={game.type === 'gordo' ? 'Clave' : 'Estrella'}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      // Sin estrellas (Bonoloto, Primitiva…): grid full-width sin cambios
+                      <NumbersGrid
+                        totalNums={totalNums}
+                        selectedNumbers={selectedNumbers}
+                        maxNumbersLimit={mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
+                        onToggle={toggleNumber}
                         theme={theme}
-                        title={game.type === 'gordo' ? 'Clave' : 'Estrellas'}
-                        labelPrefix={game.type === 'gordo' ? 'Clave' : 'Estrella'}
                       />
                     )}
 
@@ -1710,10 +1740,12 @@ export function GamePlayPage() {
                   breakdown: nationalCartBreakdown,
                   removeLine: removeNationalCartLine,
                   updateQuantity: updateNationalCartQuantity,
+                  updateDeliveryMode: updateNationalCartDeliveryMode,
                   clearCart: clearNationalCart,
                   onPersistToSession: handlePersistNationalCart,
                 }}
-                onSelectNationalNumber={(ticket) => {
+                availableBalance={availableBalance}
+                onSelectNationalNumber={(ticket, deliveryMode) => {
                   const drawId = isExplicitNationalProduct ? selectedNationalDrawId : 'especial';
                   const existing = nationalCartLines.find((l) => l.number === ticket.number && l.drawId === drawId);
                   if (existing) {
@@ -1729,7 +1761,7 @@ export function GamePlayPage() {
                       quantity: 1,
                       unitPrice: selectedNationalDraw.decimoPrice,
                       totalPrice: selectedNationalDraw.decimoPrice * drawsCount,
-                      deliveryMode: 'custody',
+                      deliveryMode,
                       maxQuantity: ticket.available,
                     });
                   }
@@ -1742,7 +1774,7 @@ export function GamePlayPage() {
         </AnimatePresence>
 
         {/* ---- SECCIÓN LAGUINDA: Abono ---- */}
-        {(!supportsQuickPick || betMethod !== null) && (
+        {(!supportsQuickPick || betMethod !== null) && !isNationalLottery && (
         <div className="mt-2 space-y-3">
 
           <motion.div
@@ -1817,73 +1849,16 @@ export function GamePlayPage() {
 
       {/* ---- Barra de confirmación ---- */}
       {shouldShowStickyCta && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-safe">
-          <div className={cn(
-            "mx-auto flex max-w-screen-sm flex-col gap-2 rounded-[1.5rem] border p-2.5 shadow-[0_-10px_30px_rgba(15,23,42,0.14)] backdrop-blur-2xl transition-all",
-            isOverBalance ? "bg-red-50/95 border-red-200" : "bg-white/95 border-white/80"
-          )}>
-            {/* Fila Operativa Compacta */}
-            <div className="flex items-center justify-between gap-3 px-1">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-wider">Saldo:</span>
-                  <span className="text-[11px] font-black text-manises-blue">{formatCurrency(availableBalance)}</span>
-                  <span className="text-slate-300 mx-0.5">·</span>
-                  <span className="text-[10px] font-black text-manises-blue/40 uppercase tracking-wider">Total:</span>
-                  <span className="text-[13px] font-black text-manises-blue" style={theme.title}>{formatCurrency(displayTotalPrice)}</span>
-                </div>
-                <div className="mt-0.5 flex items-center gap-2">
-                  <p className={cn(
-                    "text-[9px] font-bold uppercase tracking-tight",
-                    isOverBalance ? "text-red-600" : "text-emerald-600"
-                  )}>
-                    {isOverBalance 
-                      ? `Faltan ${formatCurrency(totalPrice - availableBalance)}` 
-                      : `Quedarán ${formatCurrency(remainingBalance)}`
-                    }
-                  </p>
-                  {!isNationalLottery && drawsCount > 1 && (
-                    <span className="text-[8px] font-black bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full uppercase">
-                      {drawsCount} sorteos
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <AnimatePresence mode="wait">
-                <Button
-                  className={`h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-[0.14em] shadow-sm transition-all active:scale-[0.98] ${canPlay
-                      ? 'text-white'
-                      : 'bg-slate-100 text-slate-400 cursor-not-allowed border-transparent shadow-none'
-                    }`}
-                  style={canPlay ? theme.cta : undefined}
-                  onClick={handlePlay}
-                  disabled={!canPlay}
-                >
-                  {ctaLabel}
-                </Button>
-              </AnimatePresence>
-            </div>
-
-            {/* Estado de validación detallado solo si no se puede jugar y no estamos en modo rápido */}
-            {!canPlay && (
-              <div className="border-t border-slate-100/50 px-1 pt-1.5">
-                <p className="text-[9px] font-bold text-slate-400 uppercase text-center leading-tight">
-                  {supportsQuickPick && mode === 'simple' && betMethod === null
-                    ? 'Elige cómo quieres jugar arriba'
-                    : isMulticolumnMode
-                      ? 'Completa al menos una apuesta'
-                      : isNationalLottery
-                        ? 'Elige un décimo del escaparate'
-                        : isQuiniela
-                          ? 'Completa el pronóstico de los 15 partidos'
-                          : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' números' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim()
-                  }
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+        <PurchaseBottomBar
+          availableBalance={availableBalance}
+          totalPrice={displayTotalPrice}
+          canContinue={canPlay}
+          ctaLabel={ctaLabel}
+          onContinue={handlePlay}
+          activeColor={game.color}
+          drawsCount={!isNationalLottery ? drawsCount : undefined}
+          validationText={ctaValidationText}
+        />
       )}
     </div>
   );

@@ -143,8 +143,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    if (isDemo) {
+      setProfile(prev => prev ? { ...prev, ...updates } : null);
+      toast.success('Perfil actualizado en demo 🎯');
+      return;
+    }
+    if (user) {
+      try {
+        const userDocRef = doc(db, 'users', user.uid);
+        await setDoc(userDocRef, updates, { merge: true });
+        toast.success('Perfil actualizado');
+      } catch (err) {
+        console.error('Error updating profile:', err);
+        toast.error('Error al actualizar el perfil');
+      }
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isDemo, signInWithGoogle, signInDemo, logout }}>
+    <AuthContext.Provider value={{ user, profile, loading, isDemo, signInWithGoogle, signInDemo, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

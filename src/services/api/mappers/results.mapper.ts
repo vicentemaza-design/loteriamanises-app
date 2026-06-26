@@ -25,6 +25,11 @@ export const resultsMapper = {
       decimoPrice: dto.decimoPrice,
       jackpotNext: dto.jackpotNext,
       drawId: dto.drawId,
+      nextDrawDate: dto.nextDrawDate,
+      scrutiny: dto.scrutiny,
+      ultimas4cifras: dto.ultimas4cifras,
+      ultimas3cifras: dto.ultimas3cifras,
+      ultimas2cifras: dto.ultimas2cifras,
       // Add any additional UI-specific computed fields here
     };
   },

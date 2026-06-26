@@ -33,24 +33,28 @@ export function NationalNumberShowcase({
             const availabilityText = item.available <= 1 ? 'Último' : `Quedan ${item.available}`;
 
             return (
-              <button
+              <div
                 key={`${item.drawId}-${item.number}`}
-                type="button"
                 onClick={() => onToggle(item)}
                 className={cn(
-                  'group w-full relative overflow-hidden rounded-2xl border-2 p-2.5 text-left transition-all',
+                  'group w-full relative overflow-hidden rounded-2xl border-2 p-2.5 text-left transition-all cursor-pointer select-none',
                   active
                     ? 'border-manises-blue bg-manises-blue/[0.04] shadow-sm'
                     : 'border-slate-100 bg-white hover:border-manises-blue/20'
                 )}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onToggle(item);
+                  }
+                }}
               >
                 <div className="flex items-center gap-3">
                   {/* Mini ticket thumbnail */}
                   <NationalTicketThumbnail
                     drawId={item.drawId}
-                    number={item.number}
-                    serie={item.serie}
-                    fraccion={item.fraccion}
                     className="w-[88px] shadow-sm"
                   />
 
@@ -113,7 +117,7 @@ export function NationalNumberShowcase({
                     </div>
                   </div>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>

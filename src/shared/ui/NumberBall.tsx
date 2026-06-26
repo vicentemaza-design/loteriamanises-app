@@ -73,3 +73,31 @@ export const NumberBallLabeled = React.forwardRef<HTMLDivElement, NumberBallLabe
   }
 );
 NumberBallLabeled.displayName = 'NumberBallLabeled';
+
+export interface StarNumberBallProps extends React.HTMLAttributes<HTMLDivElement> {
+  number: number;
+  size?: NumberSize;
+}
+
+export const StarNumberBall = React.forwardRef<HTMLDivElement, StarNumberBallProps>(
+  ({ number, size = 'md', className, ...rest }, ref) => {
+    const sizeClasses = size === 'sm' ? 'w-8 h-8 text-[11px]' : 'w-10 h-10 text-[13px]';
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'relative flex items-center justify-center shrink-0 select-none font-black text-amber-950',
+          sizeClasses,
+          className
+        )}
+        {...rest}
+      >
+        <svg viewBox="0 0 24 24" className="absolute inset-0 w-full h-full fill-manises-gold stroke-amber-500/25 drop-shadow-[0_2px_4px_rgba(245,158,11,0.2)]">
+          <path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.787 1.4 8.168L12 18.896l-7.334 3.857 1.4-8.168L.132 9.21l8.2-1.192z" />
+        </svg>
+        <span className="relative z-10 font-black mb-[1.5px]">{number}</span>
+      </div>
+    );
+  }
+);
+StarNumberBall.displayName = 'StarNumberBall';
