@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
-import { Spark, ControlSlider, WarningTriangle } from 'iconoir-react/regular';
+import { motion, AnimatePresence } from 'motion/react';
+import { Spark, ControlSlider } from 'iconoir-react/regular';
+import { Truck, X } from 'lucide-react';
 import { cn, formatDate } from '@/shared/lib/utils';
 import { NationalTicketVisual, type NationalDrawType } from '@/features/play/components/NationalTicketVisual';
-import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
 import { NationalSearchBar } from './NationalSearchBar';
 import { NationalNumberShowcase } from './NationalNumberShowcase';
 import { NationalCartSummary } from './NationalCartSummary';
@@ -84,6 +84,7 @@ export function NationalAdvancedFlow({
   const [selectionMode, setSelectionMode] = useState<'random' | 'manual'>('manual');
   const [step, setStep] = useState<'selection' | 'checkout'>('selection');
   const [previewNumberOverride, setPreviewNumberOverride] = useState<string | null>(null);
+  const [showShippingModal, setShowShippingModal] = useState(false);
   const hasMounted = useRef(false);
 
   const previewLine = nationalCart.lines[0] ?? null;
@@ -194,16 +195,51 @@ export function NationalAdvancedFlow({
           setDeliveryMode(nextMode);
           nationalCart.updateDeliveryMode(nextMode);
         }}
+        onShippingUnavailableClick={() => setShowShippingModal(true)}
       />
 
-      {!isShippingAvailable && (
-        <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
-          <WarningTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-          <p className="text-[10px] font-bold leading-relaxed text-amber-800">
-            Mensajería no disponible por proximidad al sorteo. Puedes usar custodia digital para este sorteo.
-          </p>
-        </div>
-      )}
+      {/* Modal Envíos no disponibles */}
+      <AnimatePresence>
+        {showShippingModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowShippingModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 80 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 80 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-screen-sm rounded-t-[2rem] bg-white px-5 pb-10 pt-5 shadow-2xl"
+            >
+              <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-slate-200" />
+              <div className="mb-6 flex items-start gap-3">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-100">
+                  <Truck className="h-6 w-6 text-slate-400" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-manises-blue">Envíos no disponibles</h3>
+                  <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">
+                    El envío por mensajería no está disponible porque el sorteo cierra en menos de 48 horas.
+                    Puedes elegir <strong>custodia digital</strong> para este sorteo.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowShippingModal(false)}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-manises-blue px-4 py-3.5 font-black text-xs uppercase tracking-widest text-white transition-all active:scale-[0.98]"
+              >
+                <X className="h-4 w-4" />
+                Entendido
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* 3. Forma de obtener números */}
       <div
@@ -273,34 +309,105 @@ export function NationalAdvancedFlow({
         />
       </motion.div>
 
+      {/* 4b. Cantidad (solo en modo aleatorio con número asignado) */}
+      {selectionMode === 'random' && nationalCart.lines.length > 0 && (() => {
+        const primaryLine = nationalCart.lines[0];
+        const sameQty = primaryLine.quantity;
+        const diffCount = nationalCart.lines.length - 1;
+        return (
+          <motion.section
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-[1.2rem] border border-slate-100 bg-white p-4 shadow-sm space-y-3"
+          >
+            <p className="text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">
+              ¿Cuántos décimos?
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Del mismo número */}
+              <div className="flex flex-col items-center gap-2 rounded-2xl border border-slate-100 bg-slate-50/60 px-3 py-3">
+                <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 text-center leading-tight">
+                  Del mismo número
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (sameQty <= 1) {
+                        nationalCart.removeLine(primaryLine.number, primaryLine.drawId);
+                      } else {
+                        nationalCart.updateQuantity(primaryLine.number, primaryLine.drawId, -1);
+                      }
+                    }}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-manises-blue text-sm font-black shadow-sm transition-all active:scale-95"
+                  >
+                    −
+                  </button>
+                  <span className="w-6 text-center text-lg font-black text-manises-blue">{sameQty}</span>
+                  <button
+                    type="button"
+                    onClick={() => nationalCart.updateQuantity(primaryLine.number, primaryLine.drawId, 1)}
+                    disabled={sameQty >= primaryLine.maxQuantity}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-manises-blue text-sm font-black shadow-sm transition-all active:scale-95 disabled:opacity-30"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              {/* De distintos números */}
+              <div className="flex flex-col items-center gap-2 rounded-2xl border border-slate-100 bg-slate-50/60 px-3 py-3">
+                <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 text-center leading-tight">
+                  Distintos números
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (diffCount > 0) {
+                        const lastLine = nationalCart.lines[nationalCart.lines.length - 1];
+                        nationalCart.removeLine(lastLine.number, lastLine.drawId);
+                      }
+                    }}
+                    disabled={diffCount === 0}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-manises-blue text-sm font-black shadow-sm transition-all active:scale-95 disabled:opacity-30"
+                  >
+                    −
+                  </button>
+                  <span className="w-6 text-center text-lg font-black text-manises-blue">{diffCount}</span>
+                  <button
+                    type="button"
+                    onClick={() => onRandomNationalNumber(deliveryMode)}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-manises-blue text-sm font-black shadow-sm transition-all active:scale-95"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+        );
+      })()}
+
       {/* 5. Selección de décimos */}
       <section className="space-y-3">
         <div className="flex items-center justify-between px-0.5">
           <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
-            Números disponibles
+            {selectionMode === 'random' ? 'Cambiar número' : 'Números disponibles'}
           </p>
-          <div className="flex items-center gap-3">
-            {selectionMode === 'random' && nationalCart.lines.length > 0 && (
-              <button
-                onClick={() => onRandomNationalNumber(deliveryMode)}
-                className="text-[9px] font-black uppercase tracking-wider text-manises-blue/60 hover:text-manises-blue transition-colors"
-              >
-                Otro décimo
-              </button>
-            )}
-            <button
-              onClick={onClear}
-              className="text-[9px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-600 transition-colors"
-            >
-              Limpiar
-            </button>
-          </div>
+          <button
+            onClick={onClear}
+            className="text-[9px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            Limpiar
+          </button>
         </div>
 
-        <NationalSearchBar
-          searchState={nationalShowcase.searchState}
-          onChange={nationalShowcase.setSearchState}
-        />
+        {selectionMode === 'manual' && (
+          <NationalSearchBar
+            searchState={nationalShowcase.searchState}
+            onChange={nationalShowcase.setSearchState}
+          />
+        )}
 
         <NationalNumberShowcase
           items={nationalShowcase.items}

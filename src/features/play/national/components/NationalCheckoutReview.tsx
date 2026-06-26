@@ -171,7 +171,7 @@ export function NationalCheckoutReview({
                 <span className="text-[12px] font-black text-manises-blue">{formatCurrency(breakdown.subtotal)}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-slate-500">Gastos de envío</span>
+                <span className="text-[11px] font-bold text-slate-500">Envío MRW</span>
                 <span className="text-[12px] font-black text-manises-blue">{formatCurrency(breakdown.shippingCost)}</span>
               </div>
               <div className="flex items-center justify-between border-t border-slate-100 pt-2">

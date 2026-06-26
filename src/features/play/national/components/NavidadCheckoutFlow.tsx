@@ -1,9 +1,10 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { NavArrowLeft, Spark } from 'iconoir-react/regular';
+import { NavArrowLeft, Spark, QrCode } from 'iconoir-react/regular';
+import { Repeat2 } from 'lucide-react';
 import {
   Smartphone, Truck, Check, Loader2, CreditCard, ShoppingCart,
-  Wallet, AlertTriangle, CheckCircle2, Gift, ArrowRight,
+  Wallet, AlertTriangle, CheckCircle2, Gift, ArrowRight, Eye,
 } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { cn, formatCurrency } from '@/shared/lib/utils';
@@ -396,6 +397,7 @@ export function NavidadCheckoutFlow({
   const [cart, setCart] = useState<CartItem[]>([]);
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
   const [searchQuery, setSearchQuery] = useState('');
+  const [minAvailability, setMinAvailability] = useState<0 | 10 | 20 | 30 | 50>(0);
   const [showFaltaSaldo, setShowFaltaSaldo] = useState(false);
   const [currentBalance, setCurrentBalance] = useState(availableBalance);
   const [orderRef] = useState(() => `NAV-${Date.now().toString(36).toUpperCase().slice(-6)}`);
@@ -405,9 +407,11 @@ export function NavidadCheckoutFlow({
     setCurrentBalance(availableBalance);
   }, [availableBalance]);
 
-  const filteredItems = searchQuery
-    ? showcaseItems.filter(i => i.number.includes(searchQuery))
-    : showcaseItems;
+  const filteredItems = showcaseItems.filter(i => {
+    if (searchQuery && !i.number.includes(searchQuery)) return false;
+    if (minAvailability > 0 && i.available < minAvailability) return false;
+    return true;
+  });
 
   const totalDecimos = cart.reduce((s, i) => s + i.quantity, 0);
   const totalPrice = cart.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
@@ -522,8 +526,18 @@ export function NavidadCheckoutFlow({
           >
             <NavArrowLeft className="h-4 w-4" />
           </button>
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mi cesta</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mi cesta</p>
+              <span className={cn(
+                'rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-wider',
+                deliveryMode === 'custody'
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-amber-100 text-amber-700 border border-amber-200'
+              )}>
+                {deliveryMode === 'custody' ? 'Décimos digitales' : 'Mensajería'}
+              </span>
+            </div>
             <h2 className="text-base font-black text-manises-blue">
               {totalDecimos} {totalDecimos === 1 ? 'décimo' : 'décimos'}
             </h2>
@@ -546,40 +560,75 @@ export function NavidadCheckoutFlow({
           </div>
         )}
 
+        {/* Sorteo group header */}
+        <div className="flex items-center justify-between px-0.5">
+          <div>
+            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Sorteo</p>
+            <p className="text-sm font-black text-manises-blue">
+              {new Date(drawDate).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+          </div>
+          <span className="text-[10px] font-medium text-slate-400">
+            {cart.length} {cart.length === 1 ? 'número' : 'números'}
+          </span>
+        </div>
+
         {/* Cart items */}
         <div className="space-y-2.5">
           {cart.map(item => (
             <div
               key={item.number}
-              className="flex items-center gap-3 rounded-[1.35rem] border border-slate-100 bg-white p-3 shadow-sm"
+              className="rounded-[1.35rem] border border-slate-100 bg-white p-3 shadow-sm space-y-2.5"
             >
-              <NavidadDecimoCard number={item.number} active />
-              <div className="min-w-0 flex-1">
-                <p className="font-mono text-lg font-black tracking-[0.12em] text-manises-blue">{item.number}</p>
-                <p className="mt-0.5 text-[9px] font-semibold text-slate-400">
-                  {formatCurrency(item.unitPrice)} / décimo
-                </p>
+              <div className="flex items-center gap-3">
+                <NavidadDecimoCard number={item.number} active />
+                <div className="min-w-0 flex-1">
+                  <p className="font-mono text-lg font-black tracking-[0.12em] text-manises-blue">{item.number}</p>
+                  <p className="mt-0.5 text-[9px] font-semibold text-slate-400">
+                    {formatCurrency(item.unitPrice)} / décimo
+                  </p>
+                </div>
+                {/* Quantity stepper */}
+                <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 p-0.5">
+                  <button
+                    onClick={() => removeFromCart(item.number)}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-sm font-black text-slate-400 hover:bg-white hover:text-manises-blue transition-colors"
+                  >
+                    {item.quantity <= 1 ? '×' : '−'}
+                  </button>
+                  <span className="w-6 text-center text-[13px] font-black text-manises-blue">{item.quantity}</span>
+                  <button
+                    onClick={() => setCart(prev => prev.map(i => i.number === item.number && i.quantity < i.maxQuantity ? { ...i, quantity: i.quantity + 1 } : i))}
+                    disabled={item.quantity >= item.maxQuantity}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-sm font-black text-slate-400 hover:bg-white hover:text-manises-blue transition-colors disabled:opacity-30"
+                  >
+                    +
+                  </button>
+                </div>
+                <span className="min-w-[52px] text-right text-[13px] font-black text-manises-blue">
+                  {formatCurrency(item.quantity * item.unitPrice)}
+                </span>
               </div>
-              {/* Quantity stepper */}
-              <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 p-0.5">
+
+              {/* Acciones por décimo */}
+              <div className="flex gap-2 border-t border-slate-50 pt-2">
                 <button
-                  onClick={() => removeFromCart(item.number)}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-sm font-black text-slate-400 hover:bg-white hover:text-manises-blue transition-colors"
+                  type="button"
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 py-1.5 text-[9px] font-black uppercase tracking-wider text-slate-500 hover:border-manises-blue/20 hover:text-manises-blue transition-colors"
                 >
-                  {item.quantity <= 1 ? '×' : '−'}
+                  <Eye className="h-3 w-3" />
+                  Ver décimo
                 </button>
-                <span className="w-6 text-center text-[13px] font-black text-manises-blue">{item.quantity}</span>
-                <button
-                  onClick={() => setCart(prev => prev.map(i => i.number === item.number && i.quantity < i.maxQuantity ? { ...i, quantity: i.quantity + 1 } : i))}
-                  disabled={item.quantity >= item.maxQuantity}
-                  className="flex h-7 w-7 items-center justify-center rounded-lg text-sm font-black text-slate-400 hover:bg-white hover:text-manises-blue transition-colors disabled:opacity-30"
-                >
-                  +
-                </button>
+                {deliveryMode === 'custody' && (
+                  <button
+                    type="button"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-manises-blue/20 bg-manises-blue/[0.04] py-1.5 text-[9px] font-black uppercase tracking-wider text-manises-blue hover:bg-manises-blue/[0.08] transition-colors"
+                  >
+                    <Repeat2 className="h-3 w-3" />
+                    Abonarme
+                  </button>
+                )}
               </div>
-              <span className="min-w-[52px] text-right text-[13px] font-black text-manises-blue">
-                {formatCurrency(item.quantity * item.unitPrice)}
-              </span>
             </div>
           ))}
         </div>
@@ -592,7 +641,7 @@ export function NavidadCheckoutFlow({
           </div>
           {deliveryMode === 'shipping' && (
             <div className="flex items-center justify-between text-[11px]">
-              <span className="font-semibold text-slate-400">Envío</span>
+              <span className="font-semibold text-slate-400">Envío MRW</span>
               <span className="font-black text-manises-blue">Gratis demo</span>
             </div>
           )}
@@ -768,37 +817,99 @@ export function NavidadCheckoutFlow({
         </div>
       </div>
 
-      {/* Search */}
-      <div>
-        <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Números disponibles</p>
-        <div className="relative">
-          <input
-            type="text"
-            inputMode="numeric"
-            maxLength={5}
-            placeholder="Buscar por número…"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value.replace(/\D/g, ''))}
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[12px] font-semibold text-manises-blue placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#991b1b]/20 focus:border-[#991b1b]/40"
-          />
-          {searchQuery && (
+      {/* Búsqueda + QR */}
+      <div className="space-y-2.5">
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Números disponibles</p>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={5}
+              placeholder="Buscar por número…"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value.replace(/\D/g, ''))}
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[12px] font-semibold text-manises-blue placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#991b1b]/20 focus:border-[#991b1b]/40"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+              >
+                ×
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:border-[#991b1b]/30 hover:text-[#991b1b] transition-colors"
+            aria-label="Escanear QR"
+          >
+            <QrCode className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Filtros de disponibilidad */}
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5">
+          {([0, 10, 20, 30, 50] as const).map(val => (
             <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+              key={val}
+              type="button"
+              onClick={() => setMinAvailability(val)}
+              className={cn(
+                'shrink-0 rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-wider transition-all',
+                minAvailability === val
+                  ? 'border-[#991b1b] bg-[#991b1b] text-white'
+                  : 'border-slate-200 bg-white text-slate-500 hover:border-[#991b1b]/30'
+              )}
             >
-              ×
+              {val === 0 ? 'Todos' : `+${val}`}
             </button>
-          )}
+          ))}
         </div>
       </div>
 
       {/* Showcase */}
       <div className="space-y-2">
+        {/* Décimo de la Suerte — card destacada */}
+        <motion.div
+          layout
+          className="flex items-center gap-3 rounded-2xl border-2 border-manises-gold/40 bg-amber-50/60 p-3 cursor-pointer select-none transition-all hover:border-manises-gold/60"
+          onClick={() => {
+            const available = showcaseItems.filter(i => i.available > 0 && !getCartItem(i.number));
+            if (available.length > 0) {
+              const random = available[Math.floor(Math.random() * available.length)];
+              updateCart(random, 1);
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const available = showcaseItems.filter(i => i.available > 0 && !getCartItem(i.number)); if (available.length > 0) { const random = available[Math.floor(Math.random() * available.length)]; updateCart(random, 1); } }}}
+        >
+          <div className="flex h-[52px] w-[88px] shrink-0 items-center justify-center rounded-xl border-2 border-manises-gold/40 bg-manises-gold/10">
+            <Spark className="h-6 w-6 text-manises-gold" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <p className="text-[11px] font-black text-manises-blue">Décimo de la Suerte</p>
+              <span className="rounded-full bg-manises-gold/20 px-1.5 py-0.5 text-[7px] font-black uppercase tracking-wider text-manises-gold">
+                Aleatorio
+              </span>
+            </div>
+            <p className="mt-0.5 text-[9px] font-medium text-slate-400">
+              Manises · {formatCurrency(showcaseItems[0]?.decimoPrice ?? 20)} · Número sorpresa
+            </p>
+          </div>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-manises-gold/20 text-manises-gold">
+            +
+          </div>
+        </motion.div>
+
         {filteredItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-100 bg-slate-50 py-10 px-6 text-center">
             <p className="text-sm font-bold text-slate-400">Sin resultados</p>
             <p className="mt-1 text-[10px] font-medium uppercase tracking-widest text-slate-300">
-              Prueba con otro número
+              Prueba con otro número o filtro
             </p>
           </div>
         ) : (
@@ -833,7 +944,11 @@ export function NavidadCheckoutFlow({
                       'mt-0.5 text-[9px] font-semibold',
                       item.available <= 1 ? 'text-amber-600' : item.available <= 4 ? 'text-red-500' : 'text-slate-400'
                     )}>
-                      {item.available <= 1 ? 'Último décimo' : item.available <= 4 ? `Pocas unidades (${item.available})` : `Disponible · ${formatCurrency(item.decimoPrice)}`}
+                      {item.available <= 1
+                        ? 'Último décimo'
+                        : item.available <= 4
+                        ? `Pocas unidades (${item.available})`
+                        : `${item.available} disponibles · ${formatCurrency(item.decimoPrice)}`}
                     </p>
                   </div>
 
@@ -872,21 +987,6 @@ export function NavidadCheckoutFlow({
           })
         )}
       </div>
-
-      {/* Random pick button */}
-      <button
-        onClick={() => {
-          const available = filteredItems.filter(i => i.available > 0 && !getCartItem(i.number));
-          if (available.length > 0) {
-            const random = available[Math.floor(Math.random() * available.length)];
-            updateCart(random, 1);
-          }
-        }}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:border-slate-300 hover:text-slate-600 transition-colors"
-      >
-        <Spark className="h-3.5 w-3.5 text-manises-gold" />
-        Décimo de la suerte
-      </button>
 
       {/* Sticky CTA */}
       {cart.length > 0 && (
