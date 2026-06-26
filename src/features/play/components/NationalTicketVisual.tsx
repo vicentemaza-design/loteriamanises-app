@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 
 import juevesTicket from '@/assets/images/loteria_jueves_ticket.jpg';
 import sabadoTicket from '@/assets/images/loteria_sabado_ticket.jpg';
+import navidadTicket from '@/assets/images/img2.rtve.jpg';
 
 export type NationalDrawType = 'ordinary' | 'special' | 'navidad' | 'nino';
 
@@ -41,6 +42,8 @@ interface TicketFieldBox {
 
 interface TicketFieldConfig {
   numberBox: TicketFieldBox;
+  numberSize?: string;
+  numberLetterSpacing?: string;
 }
 
 const MONO = '"Courier New", Courier, monospace';
@@ -53,6 +56,11 @@ const TICKET_FIELD_PLACEMENT: Record<string, TicketFieldConfig> = {
   },
   jueves: {
     numberBox: { top: '13%', left: '34%', width: '38%', height: '15%' },
+  },
+  navidad: {
+    numberBox: { top: '7%', left: '37%', width: '38%', height: '16%' },
+    numberSize: 'clamp(18px, 6.4vw, 30px)',
+    numberLetterSpacing: '0.12em',
   },
 };
 
@@ -85,9 +93,10 @@ export const NationalTicketVisual: React.FC<NationalTicketVisualProps> = ({
     switch (drawType) {
       case 'navidad':
         return {
-          bg: 'bg-[#991b1b]', accent: 'bg-[#7f1d1d]',
-          text: 'text-white', border: 'border-[#450a0a]',
+          bg: 'bg-white', accent: 'bg-slate-50',
+          text: 'text-slate-900', border: 'border-slate-200',
           label: 'Sorteo de Navidad', seal: '🎄',
+          realImage: navidadTicket,
         };
       case 'nino':
         return {
@@ -117,6 +126,7 @@ export const NationalTicketVisual: React.FC<NationalTicketVisualProps> = ({
   const templateKey =
     gameId === 'loteria-nacional-jueves' ? 'jueves'
     : gameId === 'loteria-nacional-sabado' ? 'sabado'
+    : drawType === 'navidad' ? 'navidad'
     : null;
 
   const fieldConfig: TicketFieldConfig | null = config.realImage && templateKey
@@ -203,10 +213,10 @@ export const NationalTicketVisual: React.FC<NationalTicketVisualProps> = ({
             style={{
               display: 'block',
               whiteSpace: 'nowrap',
-              fontSize: NUMBER_SIZE,
+              fontSize: fieldConfig.numberSize ?? NUMBER_SIZE,
               fontWeight: 900,
               fontFamily: MONO,
-              letterSpacing: '0.18em',
+              letterSpacing: fieldConfig.numberLetterSpacing ?? '0.18em',
               lineHeight: 1,
               color: isPlaceholder ? `${INK}55` : INK,
             }}

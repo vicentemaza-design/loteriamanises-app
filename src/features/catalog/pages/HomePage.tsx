@@ -79,32 +79,32 @@ function HeroTimeChip({ iso }: { iso: string }) {
 function HeroJackpot({ jackpot, isMonthly }: { jackpot: number; isMonthly?: boolean }) {
   if (isMonthly) {
     return (
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-5xl font-black text-manises-gold tracking-tighter">
+      <div className="flex flex-wrap items-baseline gap-1.5">
+        <span className="text-[2.4rem] font-black leading-none tracking-tighter text-manises-gold sm:text-5xl">
           {jackpot.toLocaleString('es-ES')}
         </span>
-        <span className="text-lg font-black text-manises-gold">€/mes</span>
+        <span className="text-base font-black leading-none whitespace-nowrap text-manises-gold sm:text-lg">€/mes</span>
       </div>
     );
   }
 
   if (jackpot >= 1_000_000) {
     return (
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-6xl font-black text-manises-gold tracking-tighter">
+      <div className="flex flex-wrap items-baseline gap-1.5">
+        <span className="text-[2.7rem] font-black leading-none tracking-tighter text-manises-gold sm:text-6xl">
           {Math.floor(jackpot / 1_000_000)}
         </span>
-        <span className="text-xl font-black text-manises-gold">Millones €</span>
+        <span className="text-lg font-black leading-none whitespace-nowrap text-manises-gold sm:text-xl">M €</span>
       </div>
     );
   }
 
   return (
-    <div className="flex items-baseline gap-1.5">
-      <span className="text-5xl font-black text-manises-gold tracking-tighter">
+    <div className="flex flex-wrap items-baseline gap-1.5">
+      <span className="text-[2.4rem] font-black leading-none tracking-tighter text-manises-gold sm:text-5xl">
         {jackpot.toLocaleString('es-ES')}
       </span>
-      <span className="text-lg font-black text-manises-gold">€</span>
+      <span className="text-base font-black leading-none whitespace-nowrap text-manises-gold sm:text-lg">€</span>
     </div>
   );
 }

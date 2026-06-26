@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect, type ComponentType } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { EmptyState } from '@/shared/ui/EmptyState';
@@ -10,13 +10,13 @@ import {
   Search,
   Shield,
   Repeat2,
+  MoreHorizontal,
+  Truck,
+  Trophy,
   ScrollText,
   Eye,
-  Plus,
-  Minus,
-  Truck,
   Bell,
-  Trophy,
+  ChevronRight,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTickets } from '../hooks/useTickets';
@@ -124,34 +124,13 @@ function getSelectionSummary(ticket: Ticket): string {
   return `${ticket.numbers.map(n => String(n).padStart(2, '0')).join(' ')}${starsLabel}`;
 }
 
-function QuickActionButton({
-  icon: Icon,
-  label,
-  onClick,
-}: {
-  icon: ComponentType<{ className?: string }>;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-gray-100 bg-white px-2.5 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue transition-all active:scale-[0.97] hover:border-manises-blue/20 hover:bg-manises-blue/[0.04]"
-    >
-      <Icon className="h-3.5 w-3.5" />
-      <span>{label}</span>
-    </button>
-  );
-}
-
 export function TicketsPage() {
   const navigate = useNavigate();
   const { tickets, isLoading, error } = useTickets();
   const [tab, setTab] = useState<Tab>('todas');
   const [search, setSearch] = useState('');
   const [gameFilter, setGameFilter] = useState<string>('all');
-  const [expandedIds, setExpandedIds] = useState<string[]>([]);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [searchOpen, setSearchOpen] = useState(false);
   const [receiptTicket, setReceiptTicket] = useState<Ticket | null>(null);
 
@@ -195,7 +174,11 @@ export function TicketsPage() {
   const displayed = gameFilter === 'all' ? tabTickets : tabTickets.filter((t) => t.gameId === gameFilter);
 
   function toggleExpand(id: string) {
-    setExpandedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   }
 
   useGSAP(() => {
@@ -305,7 +288,7 @@ export function TicketsPage() {
               />
             </div>
           ) : (
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-1.5">
               {tab === 'activos' && displayed.length > 0 && displayed.length < 4 && (
                 <div className="order-last mt-1 rounded-[1.5rem] border border-dashed border-manises-blue/15 bg-manises-blue/[0.02] p-4 text-center">
                   <p className="text-[12px] font-black text-manises-blue/50">¿Quieres añadir otra jugada?</p>
@@ -319,7 +302,7 @@ export function TicketsPage() {
                 const game = LOTTERY_GAMES.find((g) => g.id === ticket.gameId);
                 if (!game) return null;
 
-                const isExpanded = expandedIds.includes(ticket.id);
+                const isExpanded = expandedIds.has(ticket.id);
                 const nationalTicket = isNationalTicket(ticket);
                 const playStatus = getPlayStatus(ticket);
                 const identity = getGameIdentity(game);
@@ -331,103 +314,103 @@ export function TicketsPage() {
                 const hasMessaging = nationalTicket && ticket.metadata?.deliveryMode === 'shipping';
 
                 return (
-                  <div key={ticket.id} className="ticket-card relative overflow-hidden rounded-[1.5rem] border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
-                    {/* Game color bar */}
-                    <div className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: game.color }} />
-                    <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(to right, ${game.color}12, transparent 55%)` }} />
+                  <div
+                    key={ticket.id}
+                    className="ticket-card relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.04)]"
+                  >
+                    {/* Color bar */}
+                    <div className="absolute bottom-0 left-0 top-0 w-[3px]" style={{ backgroundColor: game.color }} />
 
-                    <div className="relative px-3 py-3 pl-4">
-                      {/* Row 1: icon + name + price + status + expand button */}
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-white shadow-sm" style={{ backgroundColor: game.color }}>
-                          <GameBadge game={game} size="sm" variant="white" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            <h3 className="text-[12px] font-black uppercase leading-tight text-manises-blue">{identity.shortName}</h3>
-                            <span className="text-[11px] font-black text-manises-blue">{formatCurrency(orderTotal ?? 0)}</span>
-                            <PlayStatusBadge status={playStatus} />
-                            {ticket.isSubscription && <Repeat2 className="h-3 w-3 shrink-0 text-manises-gold" />}
-                            {ticket.hasInsurance && <Shield className="h-3 w-3 shrink-0 text-manises-gold" />}
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => toggleExpand(ticket.id)}
-                          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white text-manises-blue transition-all hover:border-manises-blue/20 hover:bg-manises-blue/[0.04]"
-                          aria-expanded={isExpanded}
-                          aria-label={isExpanded ? 'Ocultar acciones' : 'Ver acciones'}
-                        >
-                          {isExpanded ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                        </button>
+                    {/* Main row — tappable → detalle */}
+                    <div
+                      className="relative flex cursor-pointer items-center gap-2.5 pl-4 pr-2 py-2.5 active:bg-slate-50/70 transition-colors"
+                      onClick={() => navigate(`/tickets/${ticket.id}`)}
+                    >
+                      {/* Icon */}
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white" style={{ backgroundColor: game.color }}>
+                        <GameBadge game={game} size="sm" variant="white" />
                       </div>
 
-                      {/* Rows 2–6: always visible info */}
-                      <div className="mt-2 space-y-0.5 pl-[calc(2rem+0.625rem)]">
-                        {/* Numbers */}
-                        <p className={cn('font-black text-manises-blue leading-snug', nationalTicket ? 'text-[20px] tracking-wider' : 'text-[11px]')}>
-                          {selectionSummary}
-                        </p>
-
-                        {/* Date */}
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{orderDatesSummary}</p>
-
-                        {/* Quantity */}
-                        <p className="text-[10px] font-semibold text-slate-500">{quantityLabel}</p>
-
-                        {/* Delivery type */}
-                        {hasMessaging && (
-                          <div className="flex items-center gap-1.5 pt-0.5">
-                            <Truck className="h-3 w-3 text-slate-400" />
-                            <span className="text-[10px] font-semibold text-slate-500">Mensajería</span>
-                          </div>
-                        )}
-
-                        {/* Prize */}
-                        <div className="flex items-center gap-1 pt-0.5">
-                          <span className="text-[10px] font-bold text-slate-400">Premio:</span>
-                          <span className={cn('text-[11px] font-black', ticket.prize && ticket.prize > 0 ? 'text-emerald-600' : 'text-slate-400')}>
-                            {prize}
+                      {/* Content: 2 lines */}
+                      <div className="min-w-0 flex-1">
+                        {/* Line 1: name · price · status */}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[11px] font-black uppercase tracking-tight text-manises-blue">{identity.shortName}</span>
+                          <span className="text-[10px] font-bold text-manises-blue/50">{formatCurrency(orderTotal ?? 0)}</span>
+                          <PlayStatusBadge status={playStatus} />
+                          {ticket.isSubscription && <Repeat2 className="h-2.5 w-2.5 shrink-0 text-manises-gold" />}
+                          {ticket.hasInsurance && <Shield className="h-2.5 w-2.5 shrink-0 text-manises-gold" />}
+                        </div>
+                        {/* Line 2: numbers · date · quantity */}
+                        <p className="mt-0.5 truncate text-[10px] text-slate-400">
+                          <span className={cn('font-black text-manises-blue', nationalTicket && 'font-mono tracking-widest')}>
+                            {selectionSummary}
                           </span>
-                        </div>
+                          <span className="mx-1 text-slate-300">·</span>
+                          {orderDatesSummary}
+                          <span className="mx-1 text-slate-300">·</span>
+                          {quantityLabel}
+                          {hasMessaging && (
+                            <><span className="mx-1 text-slate-300">·</span><Truck className="inline h-2.5 w-2.5 mr-0.5 align-middle" />Mensajería</>
+                          )}
+                        </p>
                       </div>
 
-                      {/* Action buttons (expanded only) */}
-                      <AnimatePresence initial={false}>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2, ease: 'easeOut' }}
-                            className="overflow-hidden"
-                          >
-                            <div className="mt-3 flex flex-wrap gap-2 border-t border-gray-50 pt-3 pl-[calc(2rem+0.625rem)]">
-                              <QuickActionButton
-                                icon={Repeat2}
-                                label="Repetir"
-                                onClick={() => navigate(`/play/${ticket.gameId}`)}
-                              />
-                              <QuickActionButton
-                                icon={Bell}
-                                label="Abonarse"
-                                onClick={() => toast.info('Abono pendiente de integración desde Mis jugadas.')}
-                              />
-                              <QuickActionButton
-                                icon={Eye}
-                                label="Ver números"
-                                onClick={() => navigate(`/tickets/${ticket.id}`)}
-                              />
-                              <QuickActionButton
-                                icon={ScrollText}
-                                label="Certificado"
-                                onClick={() => setReceiptTicket(ticket)}
-                              />
-                            </div>
-                          </motion.div>
+                      {/* Prize (if any) */}
+                      {ticket.prize && ticket.prize > 0 && (
+                        <div className="flex shrink-0 items-center gap-0.5 mr-1">
+                          <Trophy className="h-3 w-3 text-emerald-500" />
+                          <span className="text-[11px] font-black text-emerald-600">{prize}</span>
+                        </div>
+                      )}
+
+                      {/* Actions toggle */}
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); toggleExpand(ticket.id); }}
+                        className={cn(
+                          'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors',
+                          isExpanded
+                            ? 'bg-manises-blue/[0.08] text-manises-blue'
+                            : 'text-slate-300 hover:text-slate-400'
                         )}
-                      </AnimatePresence>
+                        aria-label="Acciones rápidas"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </button>
                     </div>
+
+                    {/* Actions strip (expandable) */}
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.18, ease: 'easeOut' }}
+                          className="overflow-hidden"
+                        >
+                          <div className="flex gap-1.5 border-t border-gray-50 px-4 py-2">
+                            {([
+                              { icon: Repeat2,    label: 'Repetir',    action: () => navigate(`/play/${ticket.gameId}`) },
+                              { icon: Bell,       label: 'Abonarme',   action: () => toast.info('Abono pendiente de integración.') },
+                              { icon: Eye,        label: 'Ver',        action: () => navigate(`/tickets/${ticket.id}`) },
+                              { icon: ScrollText, label: 'Certificado', action: () => setReceiptTicket(ticket) },
+                            ] as const).map(({ icon: Icon, label, action }) => (
+                              <button
+                                key={label}
+                                type="button"
+                                onClick={action}
+                                className="flex flex-1 flex-col items-center gap-0.5 rounded-xl border border-gray-100 bg-white py-2 text-[8px] font-black uppercase tracking-wider text-manises-blue transition-colors hover:border-manises-blue/20 hover:bg-manises-blue/[0.04] active:scale-[0.97]"
+                              >
+                                <Icon className="h-3.5 w-3.5" />
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 );
               })}

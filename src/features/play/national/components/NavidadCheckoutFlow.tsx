@@ -10,6 +10,8 @@ import { Button } from '@/shared/ui/Button';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import type { LotteryGame } from '@/shared/types/domain';
 import type { NationalShowcaseItem } from '../contracts/national-play.contract';
+import { NationalTicketVisual } from '@/features/play/components/NationalTicketVisual';
+import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -41,20 +43,14 @@ interface NavidadCheckoutFlowProps {
 
 function NavidadDecimoCard({ number, active }: { number: string; active?: boolean }) {
   return (
-    <div className={cn(
-      'relative flex h-[52px] w-[88px] shrink-0 flex-col items-center justify-center overflow-hidden rounded-xl border-2',
-      active ? 'border-[#991b1b] bg-[#991b1b]' : 'border-[#450a0a]/30 bg-[#991b1b]/80'
-    )}>
-      <div className="absolute inset-0 opacity-10 pointer-events-none select-none flex flex-wrap gap-1.5 p-1">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div key={i} className="w-2.5 h-2.5 border border-white rounded-full" />
-        ))}
-      </div>
-      <span className="relative z-10 text-[7px] font-black uppercase tracking-[0.18em] text-amber-300/80 leading-none">
-        Navidad
-      </span>
-      <span className="relative z-10 font-mono text-[13px] font-black tracking-[0.14em] text-white leading-tight">
-        {number}
+    <div className="relative shrink-0">
+      <NationalTicketThumbnail
+        drawId="navidad"
+        number={number}
+        className="w-[88px] shadow-sm"
+      />
+      <span className="pointer-events-none absolute right-1 top-1 text-[6px] font-black uppercase tracking-[0.16em] text-slate-400/60">
+        demo
       </span>
     </div>
   );
@@ -750,42 +746,15 @@ export function NavidadCheckoutFlow({
   return (
     <div className="space-y-5">
       {/* Navidad décimo visual */}
-      <div className="relative overflow-hidden rounded-[1.55rem] border-2 border-[#450a0a] bg-[#991b1b] p-5 shadow-xl aspect-[1.8/1] flex flex-col">
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none select-none flex flex-wrap gap-4 rotate-12 scale-150">
-          {Array.from({ length: 40 }).map((_, i) => (
-            <div key={i} className="w-10 h-10 border-2 border-white rounded-full" />
-          ))}
-        </div>
-        {/* Header */}
-        <div className="relative z-10 flex items-center justify-between border-b border-dashed border-white/20 pb-2">
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300/80">
-            Loterías y Apuestas del Estado
-          </span>
-          <span className="text-[8px] font-bold uppercase text-white/40">Validación demo</span>
-        </div>
-        {/* Body */}
-        <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-2">
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-amber-300/80">
-            Sorteo de Navidad · {new Date(drawDate).getFullYear()}
-          </p>
-          <div className="flex items-center justify-center gap-3 rounded-[1.6rem] bg-white/10 border border-white/20 px-6 py-3">
-            {(cart[0]?.number ?? '?????').split('').map((digit, i) => (
-              <span key={i} className="text-5xl font-black text-white tracking-tighter">{digit}</span>
-            ))}
-          </div>
-          <p className="text-[10px] font-semibold text-white/50">
-            {cart.length === 0 ? 'Selecciona un número' : `${totalDecimos} ${totalDecimos === 1 ? 'décimo' : 'décimos'} · ${formatCurrency(totalPrice)}`}
-          </p>
-        </div>
-        {/* Footer */}
-        <div className="relative z-10 flex items-center justify-between border-t border-dashed border-white/20 pt-2">
-          <div className="flex gap-0.5">
-            {[1,2,3,4,5,6,7,8].map(i => <div key={i} className="w-1 h-3 rounded-full bg-white/20" />)}
-          </div>
-          <span className="text-amber-400 animate-pulse text-sm">★</span>
-        </div>
-      </div>
+      <NationalTicketVisual
+        number={cart[0]?.number ?? null}
+        drawLabel={`Sorteo de Navidad ${new Date(drawDate).getFullYear()}`}
+        drawDate={drawDate}
+        price={game.price}
+        drawType="navidad"
+        gameId={game.id}
+        className="shadow-xl"
+      />
 
       {/* Delivery mode */}
       <div className="space-y-2.5">
@@ -923,7 +892,7 @@ export function NavidadCheckoutFlow({
                 key={item.number}
                 layout
                 className={cn(
-                  'flex items-center gap-3 rounded-2xl border-2 p-3 transition-all cursor-pointer select-none',
+                  'flex items-center gap-3 rounded-2xl border-2 p-2.5 transition-all cursor-pointer select-none',
                   isInCart
                     ? 'border-[#991b1b] bg-[#991b1b]/[0.04]'
                     : 'border-slate-100 bg-white hover:border-[#991b1b]/30'
@@ -937,18 +906,24 @@ export function NavidadCheckoutFlow({
 
                 <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="font-mono text-xl font-black tracking-widest text-manises-blue">
+                    <p className="text-xl font-black leading-none tracking-widest text-manises-blue">
                       {item.number}
                     </p>
                     <p className={cn(
-                      'mt-0.5 text-[9px] font-semibold',
-                      item.available <= 1 ? 'text-amber-600' : item.available <= 4 ? 'text-red-500' : 'text-slate-400'
+                      'mt-1 text-[9px] font-semibold leading-none',
+                      isInCart
+                        ? 'text-[#991b1b]/70'
+                        : item.available <= 1
+                          ? 'text-amber-600'
+                          : item.available <= 4
+                            ? 'text-red-500'
+                            : 'text-slate-400'
                     )}>
-                      {item.available <= 1
-                        ? 'Último décimo'
-                        : item.available <= 4
-                        ? `Pocas unidades (${item.available})`
-                        : `${item.available} disponibles · ${formatCurrency(item.decimoPrice)}`}
+                      {isInCart
+                        ? `${item.available <= 1 ? 'Último décimo' : `Quedan ${item.available}`} · máx. ${item.available}`
+                        : item.available <= 1
+                          ? 'Último décimo'
+                          : `Quedan ${item.available}`}
                     </p>
                   </div>
 

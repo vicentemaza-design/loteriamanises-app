@@ -127,7 +127,7 @@ function ChristmasCard({ onClick }: { onClick: () => void }) {
 function EuromillionsCard({ jackpot, nextDraw, onClick }: { jackpot: number; nextDraw: string; onClick: () => void }) {
   const formatMillions = (value: number) => {
     const millions = Math.round(value / 1_000_000);
-    return `${millions} MILLONES €`;
+    return `${millions}M €`;
   };
 
   const getDrawDayText = (iso: string) => {
@@ -172,7 +172,7 @@ function EuromillionsCard({ jackpot, nextDraw, onClick }: { jackpot: number; nex
           <h3 className="text-xl font-black text-white tracking-tight leading-none mb-1">
             EUROMILLONES
           </h3>
-          <p className="text-2xl font-black text-white tracking-tight drop-shadow-md">
+          <p className="text-[1.7rem] font-black text-white tracking-tight drop-shadow-md leading-none">
             {formatMillions(jackpot)}
           </p>
         </div>
@@ -194,10 +194,10 @@ function EuromillionsCard({ jackpot, nextDraw, onClick }: { jackpot: number; nex
           <span className="text-sm font-black text-blue-900">07</span>
           <div className="absolute top-1 left-2 w-4.5 h-2 bg-white/80 rounded-full rotate-[-15deg]" />
         </div>
-        <div className="absolute right-0 bottom-2 w-10 h-10 rounded-full bg-gradient-to-br from-yellow-300 via-amber-400 to-amber-600 shadow-2xl flex items-center justify-center border border-yellow-200/50 rotate-[-5deg] z-20 group-hover:scale-105 transition-transform duration-300">
-          <span className="text-[10px] font-black text-amber-950">★</span>
-          <div className="absolute top-0.5 left-1.5 w-2.5 h-1 bg-white/80 rounded-full rotate-[-15deg]" />
-        </div>
+          <div className="absolute right-0 bottom-2 w-10 h-10 rounded-full bg-gradient-to-br from-yellow-300 via-amber-400 to-amber-600 shadow-2xl flex items-center justify-center border border-yellow-200/50 rotate-[-5deg] z-20 group-hover:scale-105 transition-transform duration-300">
+            <span className="text-[10px] font-black text-amber-950">★</span>
+            <div className="absolute top-0.5 left-1.5 w-2.5 h-1 bg-white/80 rounded-full rotate-[-15deg]" />
+          </div>
         
         <div className="absolute top-4 left-4 w-1.5 h-1.5 bg-yellow-300 rounded-full animate-ping" />
         <div className="absolute bottom-6 right-2 w-1 h-1 bg-blue-300 rounded-full" />
