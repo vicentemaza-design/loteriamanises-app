@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
-import { motion } from 'motion/react';
+import { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { NavArrowLeft, NavArrowRight } from 'iconoir-react/regular';
+import { cn } from '@/shared/lib/utils';
 import type { LotteryGame } from '@/shared/types/domain';
 import type { MulticolumnDraftIntent } from '../contracts/multicolumn-play.contract';
 import { useMulticolumn } from '../hooks/useMulticolumn';
@@ -17,7 +18,15 @@ interface MulticolumnTicketFlowProps {
   drawDates: string[];
   availableBalance: number;
   initialColumnsCount?: number;
+  isSubscription?: boolean;
+  onSubscriptionChange?: (val: boolean) => void;
   onReviewColumns?: (intent: MulticolumnDraftIntent) => void;
+}
+
+function formatConfirmDate(iso: string): string {
+  const d = new Date(iso);
+  const weekday = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '').toUpperCase().slice(0, 3);
+  return `${weekday} ${d.getDate()}`;
 }
 
 export function MulticolumnTicketFlow({
@@ -25,6 +34,8 @@ export function MulticolumnTicketFlow({
   drawDates,
   availableBalance,
   initialColumnsCount = 1,
+  isSubscription = false,
+  onSubscriptionChange,
   onReviewColumns,
 }: MulticolumnTicketFlowProps) {
   const {
@@ -39,6 +50,9 @@ export function MulticolumnTicketFlow({
     addColumn,
     removeColumn,
   } = useMulticolumn(game, initialColumnsCount, drawDates.length);
+
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmExpanded, setConfirmExpanded] = useState(false);
 
   const theme = useMemo(() => getGameTheme(game), [game]);
   const activeColumn = state.columns[state.activeColumnIndex];
@@ -72,13 +86,151 @@ export function MulticolumnTicketFlow({
       : 'Apuesta vacía';
   const goToPreviousColumn = () => setActiveColumn(Math.max(0, state.activeColumnIndex - 1));
   const goToNextColumn = () => setActiveColumn(Math.min(blockCount - 1, state.activeColumnIndex + 1));
-  const handleReview = () => {
+
+  const completeCols = useMemo(() => state.columns.filter(c => c.isComplete), [state.columns]);
+  const CONFIRM_VISIBLE = 3;
+  const visibleConfirmCols = confirmExpanded ? completeCols : completeCols.slice(0, CONFIRM_VISIBLE);
+  const hiddenConfirmCount = completeCols.length - CONFIRM_VISIBLE;
+
+  const handleGoToConfirm = () => {
+    setShowConfirm(true);
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  };
+
+  const handleConfirm = () => {
     if (!onReviewColumns) return;
     const intent = buildMulticolumnDraftIntent(state, drawDates);
     onReviewColumns(intent);
   };
 
   return (
+    <AnimatePresence mode="wait" initial={false}>
+    {showConfirm ? (
+      <motion.div
+        key="confirm"
+        initial={{ opacity: 0, x: 32 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -32 }}
+        transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="space-y-4 pb-28"
+      >
+        {/* Resumen de sorteos */}
+        <div className="rounded-[1.6rem] border border-manises-blue/10 bg-white px-4 py-3.5 shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+            {drawDates.length === 1 ? '1 sorteo seleccionado' : `${drawDates.length} sorteos seleccionados`}
+          </p>
+          <p className="mt-1.5 text-[13px] font-black text-manises-blue leading-tight">
+            {drawDates.map(formatConfirmDate).join(' · ')}
+          </p>
+          <p className="mt-1 text-[11px] font-medium text-slate-400">Revisa tus apuestas antes de confirmar</p>
+        </div>
+
+        {/* Lista de apuestas completadas */}
+        <div className="rounded-[1.6rem] border border-slate-100 bg-white overflow-hidden shadow-sm">
+          <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-slate-50">
+            <p className="text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">Tus apuestas</p>
+            <span className="text-[10px] font-medium text-slate-400">{completeCols.length} {completeCols.length === 1 ? 'completa' : 'completas'}</span>
+          </div>
+          <div className="space-y-1.5 p-3">
+            {visibleConfirmCols.map((col, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 3 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.14, delay: idx * 0.04 }}
+                className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-2.5 py-2"
+              >
+                <span className="w-8 shrink-0 text-[9px] font-black uppercase text-slate-400">
+                  Ap.{idx + 1}
+                </span>
+                <div className="flex flex-1 flex-wrap gap-1 items-center">
+                  {col.numbers.map(n => (
+                    <span
+                      key={n}
+                      className="flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black text-white"
+                      style={{ backgroundColor: game.color }}
+                    >
+                      {n}
+                    </span>
+                  ))}
+                  {col.stars.length > 0 && (
+                    <span className="mx-0.5 text-[8px] text-slate-300">·</span>
+                  )}
+                  {col.stars.map(s => (
+                    <span
+                      key={s}
+                      className="flex h-5 w-5 items-center justify-center rounded-full bg-manises-gold text-[9px] font-black text-white"
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          {completeCols.length > CONFIRM_VISIBLE && (
+            <button
+              onClick={() => setConfirmExpanded(e => !e)}
+              className="flex w-full items-center justify-between border-t border-slate-100 px-4 py-2.5 text-[10px] font-medium text-slate-400 hover:bg-slate-50 transition-colors"
+            >
+              <span>{confirmExpanded ? 'Ocultar' : `Ver ${hiddenConfirmCount} apuestas más`}</span>
+              <span>{confirmExpanded ? '↑' : '↓'}</span>
+            </button>
+          )}
+        </div>
+
+        {/* Toggle suscripción */}
+        <button
+          type="button"
+          onClick={() => onSubscriptionChange?.(!isSubscription)}
+          className={cn(
+            'w-full text-left rounded-[1.6rem] border px-4 py-4 shadow-sm transition-all',
+            isSubscription
+              ? 'border-manises-blue/20 bg-manises-blue/[0.05]'
+              : 'border-slate-100 bg-white hover:border-slate-200'
+          )}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue">Jugar todas las semanas</p>
+              <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate-400">
+                Tus apuestas se jugarán automáticamente en los sorteos seleccionados.
+              </p>
+            </div>
+            <div className={cn(
+              'relative flex h-6 w-10 shrink-0 rounded-full transition-colors',
+              isSubscription ? 'bg-manises-blue' : 'bg-slate-200'
+            )}>
+              <motion.div
+                animate={{ x: isSubscription ? 18 : 2 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                className="absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm"
+              />
+            </div>
+          </div>
+        </button>
+
+        {/* Volver a editar */}
+        <button
+          onClick={() => setShowConfirm(false)}
+          className="flex items-center gap-1.5 px-1 text-[11px] font-bold text-slate-400 hover:text-manises-blue transition-colors"
+        >
+          <NavArrowLeft className="w-3.5 h-3.5" />
+          Editar apuestas
+        </button>
+
+        <PurchaseBottomBar
+          availableBalance={availableBalance}
+          totalPrice={summary.totalPrice}
+          canContinue={summary.isValid}
+          ctaLabel="Jugar"
+          onContinue={handleConfirm}
+          activeColor={game.color}
+          drawsCount={drawDates.length}
+          validationText="Completa al menos una apuesta"
+        />
+      </motion.div>
+    ) : (
     <div className="space-y-4 pb-28 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Selector de apuestas */}
       <section className="space-y-2">
@@ -212,12 +364,14 @@ export function MulticolumnTicketFlow({
         availableBalance={availableBalance}
         totalPrice={summary.totalPrice}
         canContinue={summary.isValid}
-        ctaLabel={`Añadir ${summary.completeColumns || 1} ${summary.completeColumns === 1 ? 'apuesta' : 'apuestas'}`}
-        onContinue={handleReview}
+        ctaLabel={`Revisar ${summary.completeColumns || 1} ${summary.completeColumns === 1 ? 'apuesta' : 'apuestas'}`}
+        onContinue={handleGoToConfirm}
         activeColor={game.color}
         drawsCount={drawDates.length}
         validationText="Completa al menos una apuesta"
       />
     </div>
+    )}
+    </AnimatePresence>
   );
 }

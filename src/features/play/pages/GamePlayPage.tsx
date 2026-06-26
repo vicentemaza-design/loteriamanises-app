@@ -1539,6 +1539,8 @@ export function GamePlayPage() {
                       drawDates={effectiveSelectedDrawDates}
                       availableBalance={profile?.balance ?? 0}
                       initialColumnsCount={manualBetCount}
+                      isSubscription={isSubscription}
+                      onSubscriptionChange={setIsSubscription}
                       onReviewColumns={handleMulticolumnPersist}
                     />
                   </motion.div>
@@ -1789,7 +1791,7 @@ export function GamePlayPage() {
         </AnimatePresence>
 
         {/* ---- SECCIÓN LAGUINDA: Abono ---- */}
-        {(!supportsQuickPick || betMethod !== null) && !isNationalLottery && (
+        {(!supportsQuickPick || betMethod !== null) && !isNationalLottery && !isMulticolumnMode && (
         <div className="mt-2 space-y-3">
 
           <motion.div
