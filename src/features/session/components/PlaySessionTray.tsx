@@ -216,7 +216,7 @@ export function PlaySessionTray() {
             transition={{ type: 'spring', damping: 28, stiffness: 240 }}
             className="fixed inset-x-0 bottom-0 z-[80] mx-auto flex max-h-[86vh] w-full max-w-screen-sm flex-col rounded-t-[2.5rem] bg-slate-50 shadow-[0_-28px_60px_rgba(15,23,42,0.28)]"
           >
-            <div className="px-5 pb-safe pt-4">
+            <div className="px-5 pt-4" style={{ paddingBottom: 'max(1.5rem, calc(0.75rem + env(safe-area-inset-bottom, 0px)))' }}>
               <div className="mx-auto h-1.5 w-14 rounded-full bg-slate-200" />
               
               {/* Header */}
@@ -361,34 +361,38 @@ export function PlaySessionTray() {
                 )}
               </div>
 
-              {/* Footer sticky: Totales y Pago */}
-              <div className="mt-4 rounded-[2rem] border border-manises-blue/10 bg-white p-4 shadow-manises">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Saldo disponible</p>
-                    <p className="mt-1 text-base font-black text-manises-blue leading-none">
-                      {canAttemptCheckout ? formatCurrency(availableBalance) : 'Inicia sesión'}
+              {/* Footer: balance + pago */}
+              <div className="mt-3 overflow-hidden rounded-[2rem] border border-manises-blue/10 bg-white shadow-manises">
+                {/* Fila saldo — compacta */}
+                <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3">
+                  <div className="flex-1">
+                    <p className="mb-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Saldo disponible</p>
+                    <p className="text-[13px] font-black leading-none text-manises-blue">
+                      {canAttemptCheckout ? formatCurrency(availableBalance) : '—'}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
-                      {canAttemptCheckout ? (isOverBalance ? 'Déficit actual' : 'Saldo restante') : 'Siguiente paso'}
+                  <span className="text-xs font-bold text-slate-300">→</span>
+                  <div className="flex-1 text-right">
+                    <p className="mb-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
+                      {isOverBalance ? 'Déficit' : 'Saldo restante'}
                     </p>
-                    <p className={`mt-1 text-base font-black leading-none ${isOverBalance ? 'text-rose-700' : 'text-emerald-700'}`}>
-                      {canAttemptCheckout ? (isOverBalance ? formatCurrency(summary.totalAmount - availableBalance) : formatCurrency(remainingBalance)) : 'Accede para pagar'}
+                    <p className={cn('text-[13px] font-black leading-none', isOverBalance ? 'text-rose-600' : 'text-emerald-600')}>
+                      {canAttemptCheckout
+                        ? (isOverBalance ? formatCurrency(summary.totalAmount - availableBalance) : formatCurrency(remainingBalance))
+                        : '—'}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-150 pt-4">
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Total sesión</p>
-                    <p className="mt-1 text-xl font-black text-manises-blue leading-none">{formatCurrency(summary.totalAmount)}</p>
+                {/* Total + CTA */}
+                <div className="flex items-center gap-3 px-4 py-3.5">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Total sesión</p>
+                    <p className="mt-0.5 text-2xl font-black leading-none text-manises-blue">{formatCurrency(summary.totalAmount)}</p>
                   </div>
-                  
-                  <div className="flex flex-col items-end gap-1">
+                  <div className="flex shrink-0 flex-col items-end gap-1.5">
                     <Button
-                      className="h-11 rounded-2xl bg-manises-blue px-6 text-white font-black text-xs uppercase tracking-widest shadow-manises active:scale-[0.98] transition-transform"
+                      className="h-12 rounded-2xl bg-manises-blue px-8 text-sm font-black uppercase tracking-widest text-white shadow-manises transition-transform active:scale-[0.98]"
                       disabled={!summary.canConfirm || (canAttemptCheckout && isOverBalance) || isSubmitting}
                       onClick={async () => {
                         if (status !== 'reviewing' && status !== 'failed') {
@@ -402,10 +406,10 @@ export function PlaySessionTray() {
                         }
                       }}
                     >
-                      {isSubmitting ? 'Procesando...' : canAttemptCheckout ? 'Pagar >' : 'Inicia sesión para pagar'}
+                      {isSubmitting ? 'Procesando...' : canAttemptCheckout ? 'Pagar >' : 'Accede'}
                     </Button>
-                    <span className="text-[8px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1 pr-1 select-none">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Pago 100% seguro
+                    <span className="flex select-none items-center gap-1 text-[8px] font-bold uppercase tracking-wider text-slate-400">
+                      <ShieldCheck className="h-3 w-3 text-emerald-600" /> Pago 100% seguro
                     </span>
                   </div>
                 </div>
