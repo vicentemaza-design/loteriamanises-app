@@ -1,10 +1,9 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { NavArrowLeft, Spark, QrCode } from 'iconoir-react/regular';
-import { Repeat2 } from 'lucide-react';
+import { NavArrowLeft, Spark, QrCode, NavArrowUp, NavArrowDown } from 'iconoir-react/regular';
 import {
   Smartphone, Truck, Check, Loader2, CreditCard,
-  Wallet, AlertTriangle, CheckCircle2, Gift, ArrowRight, Eye,
+  Wallet, AlertTriangle, CheckCircle2, Gift, ArrowRight, Eye, ShoppingCart, Repeat2,
 } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
@@ -397,6 +396,7 @@ export function NavidadCheckoutFlow({
   const [minAvailability, setMinAvailability] = useState<0 | 10 | 20 | 30 | 50>(0);
   const [showFaltaSaldo, setShowFaltaSaldo] = useState(false);
   const [currentBalance, setCurrentBalance] = useState(availableBalance);
+  const [cartExpanded, setCartExpanded] = useState(false);
   const [orderRef] = useState(() => `NAV-${Date.now().toString(36).toUpperCase().slice(-6)}`);
 
   // Sync balance updates from parent
@@ -746,81 +746,99 @@ export function NavidadCheckoutFlow({
 
   // ── Selection ──────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-5 pb-20">
-      {/* Navidad décimo visual */}
-      <NationalTicketVisual
-        number={cart[0]?.number ?? null}
-        drawLabel={`Sorteo de Navidad ${new Date(drawDate).getFullYear()}`}
-        drawDate={drawDate}
-        price={game.price}
-        drawType="navidad"
-        gameId={game.id}
-        className="shadow-xl"
-      />
+    <div className="space-y-4 pb-[200px]">
+      {/* Tipo de entrega */}
+      <div className="grid grid-cols-2 gap-2">
+        {([
+          { id: 'custody' as DeliveryMode, label: 'Custodia digital', sub: 'Sin envío · digital', icon: <Smartphone className="h-4 w-4" /> },
+          { id: 'shipping' as DeliveryMode, label: 'Mensajería', sub: 'Décimo físico a tu casa', icon: <Truck className="h-4 w-4" /> },
+        ] as { id: DeliveryMode; label: string; sub: string; icon: ReactNode }[]).map(opt => (
+          <button
+            key={opt.id}
+            onClick={() => updateCartDeliveryMode(opt.id)}
+            className={cn(
+              'flex items-center gap-2.5 rounded-2xl border-2 p-3 text-left transition-all active:scale-[0.97]',
+              deliveryMode === opt.id
+                ? 'border-[#991b1b] bg-[#991b1b] text-white shadow-md'
+                : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
+            )}
+          >
+            {opt.icon}
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-wider leading-none">{opt.label}</p>
+              <p className={cn('mt-0.5 text-[8px] font-medium leading-none', deliveryMode === opt.id ? 'text-white/70' : 'text-slate-400')}>
+                {opt.sub}
+              </p>
+            </div>
+          </button>
+        ))}
+      </div>
 
-      {/* Delivery mode */}
-      <div className="space-y-2.5">
-        <p className="text-[10px] font-black uppercase tracking-widest text-manises-blue">Tipo de entrega</p>
-        <div className="grid grid-cols-2 gap-2">
-          {([
-            { id: 'custody' as DeliveryMode, label: 'Custodia digital', sub: 'Sin envío · digital', icon: <Smartphone className="h-4 w-4" /> },
-            { id: 'shipping' as DeliveryMode, label: 'Mensajería', sub: 'Décimo físico a tu casa', icon: <Truck className="h-4 w-4" /> },
-          ] as { id: DeliveryMode; label: string; sub: string; icon: ReactNode }[]).map(opt => (
-            <button
-              key={opt.id}
-              onClick={() => updateCartDeliveryMode(opt.id)}
-              className={cn(
-                'flex items-center gap-2 rounded-2xl border-2 p-3 text-left transition-all',
-                deliveryMode === opt.id
-                  ? 'border-[#991b1b] bg-[#991b1b] text-white shadow-md'
-                  : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
-              )}
-            >
-              {opt.icon}
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-wider">{opt.label}</p>
-                <p className={cn('text-[8px] font-medium opacity-70', deliveryMode === opt.id ? 'text-white' : 'text-slate-400')}>
-                  {opt.sub}
-                </p>
-              </div>
+      {/* Buscador + QR */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={5}
+            placeholder="Escribe un número o terminación"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value.replace(/\D/g, ''))}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[12px] font-semibold text-manises-blue placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#991b1b]/20 focus:border-[#991b1b]/40"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
+              ×
             </button>
-          ))}
+          )}
+        </div>
+        <button
+          type="button"
+          className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:border-[#991b1b]/30 hover:text-[#991b1b] transition-colors"
+          aria-label="Escanear QR"
+        >
+          <QrCode className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Décimo de la Suerte */}
+      <div
+        className="flex items-center gap-3 rounded-2xl border-2 border-manises-gold/40 bg-amber-50/60 p-3 cursor-pointer select-none transition-all hover:border-manises-gold/60 active:scale-[0.98]"
+        onClick={() => {
+          const available = showcaseItems.filter(i => i.available > 0 && !getCartItem(i.number));
+          if (available.length > 0) {
+            const random = available[Math.floor(Math.random() * available.length)];
+            updateCart(random, 1);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const available = showcaseItems.filter(i => i.available > 0 && !getCartItem(i.number));
+            if (available.length > 0) updateCart(available[Math.floor(Math.random() * available.length)], 1);
+          }
+        }}
+      >
+        <div className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-xl border border-manises-gold/30 bg-manises-gold/10">
+          <Spark className="h-5 w-5 text-manises-gold" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-black text-manises-blue">Décimo de la Suerte</p>
+          <p className="mt-0.5 text-[9px] font-medium text-slate-400">Elegido por Lotería Manises</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-1 rounded-xl border border-manises-gold/30 bg-white px-3 py-1.5 text-[10px] font-black text-manises-gold shadow-sm">
+          Añadir {formatCurrency(showcaseItems[0]?.decimoPrice ?? 20)}
+          <span className="text-base leading-none">+</span>
         </div>
       </div>
 
-      {/* Búsqueda + QR */}
-      <div className="space-y-2.5">
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Números disponibles</p>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={5}
-              placeholder="Buscar por número…"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value.replace(/\D/g, ''))}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[12px] font-semibold text-manises-blue placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#991b1b]/20 focus:border-[#991b1b]/40"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
-              >
-                ×
-              </button>
-            )}
-          </div>
-          <button
-            type="button"
-            className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:border-[#991b1b]/30 hover:text-[#991b1b] transition-colors"
-            aria-label="Escanear QR"
-          >
-            <QrCode className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Filtros de disponibilidad */}
+      {/* Filtro disponibilidad mínima */}
+      <div>
+        <p className="mb-2 text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
+          Mostrar números con disponibilidad mínima
+        </p>
         <div className="flex gap-1.5 overflow-x-auto pb-0.5">
           {([0, 10, 20, 30, 50] as const).map(val => (
             <button
@@ -828,7 +846,7 @@ export function NavidadCheckoutFlow({
               type="button"
               onClick={() => setMinAvailability(val)}
               className={cn(
-                'shrink-0 rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-wider transition-all',
+                'shrink-0 rounded-full border px-3.5 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all',
                 minAvailability === val
                   ? 'border-[#991b1b] bg-[#991b1b] text-white'
                   : 'border-slate-200 bg-white text-slate-500 hover:border-[#991b1b]/30'
@@ -840,42 +858,8 @@ export function NavidadCheckoutFlow({
         </div>
       </div>
 
-      {/* Showcase */}
-      <div className="space-y-2">
-        {/* Décimo de la Suerte — card destacada */}
-        <motion.div
-          layout
-          className="flex items-center gap-3 rounded-2xl border-2 border-manises-gold/40 bg-amber-50/60 p-3 cursor-pointer select-none transition-all hover:border-manises-gold/60"
-          onClick={() => {
-            const available = showcaseItems.filter(i => i.available > 0 && !getCartItem(i.number));
-            if (available.length > 0) {
-              const random = available[Math.floor(Math.random() * available.length)];
-              updateCart(random, 1);
-            }
-          }}
-          role="button"
-          tabIndex={0}
-          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const available = showcaseItems.filter(i => i.available > 0 && !getCartItem(i.number)); if (available.length > 0) { const random = available[Math.floor(Math.random() * available.length)]; updateCart(random, 1); } }}}
-        >
-          <div className="flex h-[52px] w-[88px] shrink-0 items-center justify-center rounded-xl border-2 border-manises-gold/40 bg-manises-gold/10">
-            <Spark className="h-6 w-6 text-manises-gold" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <p className="text-[11px] font-black text-manises-blue">Décimo de la Suerte</p>
-              <span className="rounded-full bg-manises-gold/20 px-1.5 py-0.5 text-[7px] font-black uppercase tracking-wider text-manises-gold">
-                Aleatorio
-              </span>
-            </div>
-            <p className="mt-0.5 text-[9px] font-medium text-slate-400">
-              Manises · {formatCurrency(showcaseItems[0]?.decimoPrice ?? 20)} · Número sorpresa
-            </p>
-          </div>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-manises-gold/20 text-manises-gold">
-            +
-          </div>
-        </motion.div>
-
+      {/* Lista de números */}
+      <div className="space-y-1.5">
         {filteredItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-100 bg-slate-50 py-10 px-6 text-center">
             <p className="text-sm font-bold text-slate-400">Sin resultados</p>
@@ -890,90 +874,187 @@ export function NavidadCheckoutFlow({
             const qty = cartItem?.quantity ?? 0;
 
             return (
-              <motion.div
+              <div
                 key={item.number}
-                layout
                 className={cn(
-                  'flex items-center gap-3 rounded-2xl border-2 p-2.5 transition-all cursor-pointer select-none',
+                  'flex items-center gap-2.5 rounded-2xl border-2 p-2.5 transition-all',
                   isInCart
-                    ? 'border-[#991b1b] bg-[#991b1b]/[0.04]'
-                    : 'border-slate-100 bg-white hover:border-[#991b1b]/30'
+                    ? 'border-[#991b1b]/30 bg-[#991b1b]/[0.04]'
+                    : 'border-slate-100 bg-white'
                 )}
-                onClick={() => updateCart(item, isInCart ? 0 : 1)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); updateCart(item, isInCart ? 0 : 1); }}}
               >
                 <NavidadDecimoCard number={item.number} active={isInCart} />
 
-                <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-xl font-black leading-none tracking-widest text-manises-blue">
-                      {item.number}
-                    </p>
-                    <p className={cn(
-                      'mt-1 text-[9px] font-semibold leading-none',
-                      isInCart
-                        ? 'text-[#991b1b]/70'
-                        : item.available <= 1
-                          ? 'text-amber-600'
-                          : item.available <= 4
-                            ? 'text-red-500'
-                            : 'text-slate-400'
-                    )}>
-                      {isInCart
-                        ? `${item.available <= 1 ? 'Último décimo' : `Quedan ${item.available}`} · máx. ${item.available}`
-                        : item.available <= 1
-                          ? 'Último décimo'
-                          : `Quedan ${item.available}`}
-                    </p>
-                  </div>
-
-                  {isInCart ? (
-                    <div
-                      className="flex items-center gap-0.5 rounded-xl border border-[#991b1b]/20 bg-white p-0.5 shadow-sm"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => updateCart(item, -1)}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-sm font-black text-[#991b1b] hover:bg-[#991b1b]/10 transition-colors"
-                      >
-                        {qty <= 1 ? '×' : '−'}
-                      </button>
-                      <span className="w-5 text-center text-[13px] font-black text-[#991b1b]">{qty}</span>
-                      <button
-                        type="button"
-                        onClick={() => updateCart(item, 1)}
-                        disabled={qty >= item.available}
-                        className="flex h-7 w-7 items-center justify-center rounded-lg text-sm font-black text-[#991b1b] hover:bg-[#991b1b]/10 transition-colors disabled:opacity-30"
-                      >
-                        +
-                      </button>
-                    </div>
-                  ) : (
-                    item.badge === 'destacado' ? (
-                      <span className="rounded-full border border-[#991b1b]/15 bg-[#991b1b]/[0.05] px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-[#991b1b]">
-                        Top
-                      </span>
-                    ) : null
-                  )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xl font-black leading-none tracking-widest text-manises-blue">
+                    {item.number}
+                  </p>
+                  <p className={cn(
+                    'mt-1 text-[9px] font-semibold leading-none',
+                    item.available <= 1 ? 'text-amber-600'
+                      : item.available <= 4 ? 'text-red-500'
+                      : 'text-slate-400'
+                  )}>
+                    {item.available <= 1 ? 'Último décimo' : `${item.available} disponibles`}
+                  </p>
                 </div>
-              </motion.div>
+
+                {/* Controles siempre visibles */}
+                <div
+                  className={cn(
+                    'flex items-center rounded-xl border p-0.5 shadow-sm',
+                    isInCart ? 'border-[#991b1b]/30 bg-white' : 'border-slate-200 bg-slate-50'
+                  )}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    onClick={() => updateCart(item, -1)}
+                    disabled={qty === 0}
+                    className={cn(
+                      'flex h-8 w-8 items-center justify-center rounded-lg text-sm font-black transition-colors',
+                      isInCart
+                        ? 'text-[#991b1b] hover:bg-[#991b1b]/10'
+                        : 'text-slate-300 cursor-default'
+                    )}
+                  >
+                    {isInCart && qty <= 1 ? '×' : '−'}
+                  </button>
+                  <span className={cn(
+                    'w-6 text-center text-[13px] font-black tabular-nums',
+                    isInCart ? 'text-[#991b1b]' : 'text-slate-300'
+                  )}>{qty}</span>
+                  <button
+                    type="button"
+                    onClick={() => updateCart(item, 1)}
+                    disabled={qty >= item.available}
+                    className={cn(
+                      'flex h-8 w-8 items-center justify-center rounded-lg text-sm font-black transition-colors disabled:opacity-30',
+                      isInCart
+                        ? 'text-[#991b1b] hover:bg-[#991b1b]/10'
+                        : 'text-[#991b1b] hover:bg-[#991b1b]/10'
+                    )}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
             );
           })
         )}
       </div>
 
-      <PurchaseBottomBar
-        availableBalance={currentBalance}
-        totalPrice={totalPrice}
-        canContinue={cart.length > 0}
-        ctaLabel={cart.length > 0 ? 'Mi cesta' : 'Elegir décimo'}
-        onContinue={handleContinueToCart}
-        activeColor={game.color}
-        validationText="Elige al menos un décimo"
-      />
+      {/* Panel inferior: carrusel colapsable + barra de acción */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 overflow-hidden border-t border-slate-100 bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.10)]"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        {/* Carrusel de thumbnails (expandible) */}
+        <AnimatePresence>
+          {cartExpanded && cart.length > 0 && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="overflow-hidden"
+            >
+              <div className="flex gap-3 overflow-x-auto px-4 py-3 pb-2">
+                {cart.map(item => (
+                  <div key={item.number} className="relative shrink-0">
+                    <NationalTicketThumbnail
+                      drawId="navidad"
+                      number={item.number}
+                      className="w-[72px] rounded-xl shadow-sm"
+                    />
+                    {item.quantity > 1 && (
+                      <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#991b1b] text-[8px] font-black text-white">
+                        {item.quantity}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeFromCart(item.number)}
+                      className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-slate-400 text-[8px] font-black text-white hover:bg-rose-500 transition-colors"
+                      aria-label={`Quitar ${item.number}`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Fila toggle: resumen + flecha */}
+        <button
+          type="button"
+          onClick={() => cart.length > 0 && setCartExpanded(e => !e)}
+          className={cn(
+            'flex w-full items-center justify-between border-b border-slate-50 px-4 py-2.5 transition-colors',
+            cart.length > 0 ? 'hover:bg-slate-50/60' : 'cursor-default'
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <ShoppingCart className="h-3.5 w-3.5 text-manises-blue/60 shrink-0" />
+            {cart.length === 0 ? (
+              <span className="text-[10px] font-medium text-slate-400">Elige al menos un décimo</span>
+            ) : (
+              <span className="text-[10px] font-black text-manises-blue">
+                {cart.length} {cart.length === 1 ? 'número' : 'números'} · {totalDecimos} {totalDecimos === 1 ? 'décimo seleccionado' : 'décimos seleccionados'}
+              </span>
+            )}
+          </div>
+          {cart.length > 0 && (
+            cartExpanded
+              ? <NavArrowDown className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+              : <NavArrowUp className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+          )}
+        </button>
+
+        {/* Barra de acción: total + CONTINUAR */}
+        <div className="mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] bg-[#0a4792]/88 text-white"
+          style={{ backdropFilter: 'blur(24px)' }}>
+          <div className="relative flex min-w-0 flex-col items-center justify-center border-r border-white/12 px-1">
+            <div className="absolute inset-x-1.5 inset-y-1.5 rounded-xl bg-white/[0.035]" />
+            <p className="relative text-[1.05rem] font-black leading-none text-white tabular-nums">
+              {totalDecimos}
+            </p>
+            <p className="relative mt-1 text-[0.5rem] font-bold uppercase leading-none tracking-[0.08em] text-white/58">
+              Total a pagar
+            </p>
+          </div>
+          <div className="relative flex min-w-0 flex-col items-center justify-center border-r border-white/12 px-1">
+            <div className="absolute inset-x-1.5 inset-y-1.5 rounded-xl bg-white/[0.035]" />
+            <p className="relative text-[1.05rem] font-black leading-none text-white tabular-nums">
+              {totalPrice.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              <sup className="ml-0.5 align-super text-[0.5rem] font-black">,00</sup>
+            </p>
+            <p className="relative mt-1 text-[0.5rem] font-bold uppercase leading-none tracking-[0.08em] text-white/58">
+              Precio total
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleContinueToCart}
+            disabled={cart.length === 0}
+            className={cn(
+              'relative m-1.5 flex h-auto min-w-0 flex-col items-center justify-center overflow-hidden rounded-xl px-3 transition-all active:scale-[0.985]',
+              'shadow-[inset_0_1px_0_rgba(255,255,255,0.42),0_6px_14px_rgba(0,0,0,0.14)]',
+              cart.length === 0
+                ? 'cursor-not-allowed bg-white/10 text-white/45 shadow-none'
+                : 'bg-manises-gold text-manises-blue'
+            )}
+          >
+            <span className="absolute inset-x-4 top-0 h-px bg-white/45" />
+            <span className="relative text-[0.9rem] font-black leading-none">Continuar</span>
+            <span className="relative mt-0.5 text-[0.48rem] font-bold uppercase leading-none tracking-[0.08em] opacity-70">
+              Revisar y confirmar
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
