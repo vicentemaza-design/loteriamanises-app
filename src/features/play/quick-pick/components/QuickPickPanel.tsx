@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { RefreshCircle, NavArrowDown, NavArrowUp } from 'iconoir-react/regular';
 import { cn } from '@/shared/lib/utils';
 import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
+import type { GamePlayBottomMenuItem } from '@/features/play/components/GamePlayBottomMenu';
 import type { QuickPickCombination } from '../contracts/quick-pick.contract';
 
 interface QuickPickPanelProps {
@@ -18,9 +19,13 @@ interface QuickPickPanelProps {
   activeColor: string;
   onAdd: () => void;
   isAdding?: boolean;
+  isSubscription?: boolean;
+  onSubscriptionChange?: (val: boolean) => void;
+  menuItems?: GamePlayBottomMenuItem[];
 }
 
-const VISIBLE_THRESHOLD = 5;
+const VISIBLE_THRESHOLD = 3;
+const QUICK_PICK_PRESETS = [1, 2, 3, 5, 10, 15];
 
 export function QuickPickPanel({
   count,
@@ -35,6 +40,9 @@ export function QuickPickPanel({
   activeColor,
   onAdd,
   isAdding,
+  isSubscription = false,
+  onSubscriptionChange,
+  menuItems,
 }: QuickPickPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -42,19 +50,69 @@ export function QuickPickPanel({
   const hiddenCount = combinations.length - VISIBLE_THRESHOLD;
 
   return (
-    <div className="space-y-3 pb-28">
-      {/* Config compacta: stepper */}
+    <div className="space-y-3 pb-40">
       <section className="rounded-[1.6rem] border border-slate-100 bg-white p-4 shadow-sm">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-black text-manises-blue">Jugada aleatoria</h3>
-            <p className="text-[10px] font-medium text-slate-400 mt-0.5">Generamos tus apuestas automáticamente</p>
+        <p className="mb-3 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">Número de apuestas</p>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_PICK_PRESETS.map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => setCount(preset)}
+                className={cn(
+                  'flex h-8 min-w-8 items-center justify-center rounded-lg border px-2 text-[11px] font-black transition-all active:scale-95',
+                  count === preset
+                    ? 'border-transparent text-white shadow-sm'
+                    : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300'
+                )}
+                style={count === preset ? { backgroundColor: activeColor } : undefined}
+              >
+                {preset}
+              </button>
+            ))}
           </div>
+          <div className="flex shrink-0 items-center overflow-hidden rounded-xl border border-manises-blue/40 bg-white shadow-sm">
+            <button
+              onClick={() => setCount(Math.max(1, count - 1))}
+              disabled={count <= 1}
+              className={cn(
+                'flex h-9 w-9 items-center justify-center text-lg font-bold transition-all active:scale-95',
+                count <= 1 ? 'text-slate-200' : 'text-manises-blue hover:bg-manises-blue/[0.06]'
+              )}
+              aria-label="Reducir número de apuestas"
+            >
+              −
+            </button>
+            <span className="w-9 text-center text-lg font-black tabular-nums" style={{ color: activeColor }}>
+              {count}
+            </span>
+            <button
+              onClick={() => setCount(Math.min(15, count + 1))}
+              disabled={count >= 15}
+              className={cn(
+                'flex h-9 w-9 items-center justify-center text-lg font-bold transition-all active:scale-95',
+                count >= 15 ? 'text-slate-200' : 'text-manises-blue hover:bg-manises-blue/[0.06]'
+              )}
+              aria-label="Aumentar número de apuestas"
+            >
+              +
+            </button>
+          </div>
+        </div>
+        <p className="mt-3 text-[10px] font-medium text-slate-400">
+          Se generarán {count} {count === 1 ? 'apuesta aleatoria' : 'apuestas aleatorias'}
+        </p>
+      </section>
+
+      <section className="rounded-[1.6rem] border border-slate-100 bg-white overflow-hidden shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-50 px-4 py-3">
+          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">Tus apuestas aleatorias</p>
           <button
             onClick={regenerate}
             disabled={isRegenerating}
             className={cn(
-              'flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[9px] font-black uppercase tracking-widest text-slate-500 transition-all hover:border-slate-300 active:scale-95',
+              'flex items-center gap-1.5 rounded-xl px-2 py-1.5 text-[9px] font-black uppercase tracking-widest text-manises-blue transition-all hover:bg-manises-blue/[0.06] active:scale-95',
               isRegenerating && 'opacity-50 cursor-not-allowed'
             )}
             aria-label="Regenerar todas las apuestas"
@@ -63,43 +121,6 @@ export function QuickPickPanel({
             Regenerar todas
           </button>
         </div>
-
-        {/* Stepper de cantidad */}
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Número de apuestas</p>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setCount(Math.max(1, count - 1))}
-              disabled={count <= 1}
-              className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-lg border text-base font-bold transition-all active:scale-95',
-                count <= 1 ? 'border-slate-100 text-slate-200' : 'border-slate-200 text-slate-500 hover:border-slate-300'
-              )}
-              aria-label="Reducir número de apuestas"
-            >
-              −
-            </button>
-            <span className="w-6 text-center text-base font-black tabular-nums" style={{ color: activeColor }}>
-              {count}
-            </span>
-            <button
-              onClick={() => setCount(Math.min(50, count + 1))}
-              disabled={count >= 50}
-              className={cn(
-                'flex h-8 w-8 items-center justify-center rounded-lg border text-base font-bold transition-all active:scale-95',
-                count >= 50 ? 'border-slate-100 text-slate-200' : 'border-slate-200 text-slate-500 hover:border-slate-300'
-              )}
-              aria-label="Aumentar número de apuestas"
-            >
-              +
-            </button>
-          </div>
-        </div>
-
-      </section>
-
-      {/* Combinaciones generadas */}
-      <section className="rounded-[1.6rem] border border-slate-100 bg-white overflow-hidden shadow-sm">
         <div className="space-y-1.5 p-3">
           {visibleCombos.map((combo, idx) => (
             <motion.div
@@ -110,7 +131,7 @@ export function QuickPickPanel({
               className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-2.5 py-2"
             >
               <span className="w-8 shrink-0 text-[9px] font-black uppercase text-slate-400">
-                Ap.{idx + 1}
+                AP {idx + 1}
               </span>
               <div className="flex flex-1 flex-wrap gap-1 items-center">
                 {combo.numbers.map((n) => (
@@ -162,15 +183,49 @@ export function QuickPickPanel({
         )}
       </section>
 
+      {/* Toggle "Jugar todas las semanas" */}
+      {onSubscriptionChange && (
+        <button
+          type="button"
+          onClick={() => onSubscriptionChange(!isSubscription)}
+          className={cn(
+            'w-full text-left rounded-[1.2rem] border px-4 py-3 shadow-sm transition-all',
+            isSubscription
+              ? 'border-manises-blue/20 bg-manises-blue/[0.05]'
+              : 'border-slate-100 bg-white hover:border-slate-200'
+          )}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue">
+              Jugar todas las semanas
+            </p>
+            <div className={cn(
+              'relative flex h-5 w-9 shrink-0 rounded-full transition-colors',
+              isSubscription ? 'bg-manises-blue' : 'bg-slate-200'
+            )}>
+              <motion.div
+                animate={{ x: isSubscription ? 16 : 2 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                className="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm"
+              />
+            </div>
+          </div>
+          <p className="mt-1 text-[10px] font-medium leading-relaxed text-slate-400">
+            Tus apuestas se jugarán automáticamente en los sorteos seleccionados.
+          </p>
+        </button>
+      )}
+
       <PurchaseBottomBar
         availableBalance={availableBalance}
         totalPrice={totalPrice}
         canContinue={!isAdding && combinations.length > 0}
-        ctaLabel={isAdding ? 'Generando...' : count === 1 ? 'Añadir 1 apuesta' : `Añadir ${count} apuestas`}
+        ctaLabel={isAdding ? 'Generando...' : 'JUGAR'}
         onContinue={onAdd}
         activeColor={activeColor}
         drawsCount={drawsCount}
         validationText="Genera al menos una combinación"
+        menuItems={menuItems}
       />
     </div>
   );

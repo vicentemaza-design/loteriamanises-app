@@ -5,7 +5,7 @@ import { buildGameSelection } from '@/features/play/application/build-game-selec
 import type { QuickPickCombination } from '../contracts/quick-pick.contract';
 
 export function useQuickPick(game: LotteryGame, enabled: boolean = true) {
-  const [count, setCount] = useState<number>(3);
+  const [count, setCount] = useState<number>(12);
   const [combinations, setCombinations] = useState<QuickPickCombination[]>([]);
   const [isRegenerating, setIsRegenerating] = useState(false);
 

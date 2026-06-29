@@ -19,9 +19,8 @@ import { getAvailableModesForGame, getModeDefinition, getReductionSystem, getRed
 import { GameInfoSheet } from '../components/GameInfoSheet';
 import { GamePlayHeader } from '../components/GamePlayHeader';
 import { PurchaseBottomBar } from '../components/PurchaseBottomBar';
-import { ReductionSystemSelector } from '../components/ReductionSystemSelector';
-import { ReducedModeSummary } from '../reduced/components/ReducedModeSummary';
-import { ReducedSystemPicker } from '../reduced/components/ReducedSystemPicker';
+import type { GamePlayBottomMenuItem } from '../components/GamePlayBottomMenu';
+import { ReducedSystemList } from '../reduced/components/ReducedSystemList';
 import { getCompatibleReducedSystems } from '../reduced/application/get-compatible-reduced-systems';
 import { NumbersGrid } from '../components/NumbersGrid';
 import { StarsGrid } from '../components/StarsGrid';
@@ -274,6 +273,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     if (isMulticolumnMode) return false;
     return selectedNumbers.length > 0;
   })();
+  // MANUAL → ocultar setup (grid a pantalla completa). ALEATORIO o sin elegir → mostrar setup.
+  const shouldShowInlineSetup = !supportsQuickPick || mode !== 'simple' || betMethod !== 'manual';
 
   const drawTimeSummary = useMemo(() => {
     const d = new Date(drawStatus.drawDate);
@@ -299,6 +300,49 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     }
     return parts.length > 0 ? parts.join(' · ') : 'Jugada';
   }, [availableModes.length, isMulticolumnMode, isQuickPickMode, mode]);
+
+  const gameBottomMenuItems = useMemo<GamePlayBottomMenuItem[]>(() => {
+    const modeLabels: Record<PlayMode, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
+    const methodLabel = mode !== 'simple'
+      ? modeLabels[mode]
+      : betMethod === 'random'
+        ? 'Aleatorio'
+        : betMethod === 'manual'
+          ? 'Manual'
+          : 'Elegir';
+
+    return [
+      {
+        id: 'draws',
+        label: 'Sorteos',
+        value: drawsCount === 1 ? '1 sorteo' : `${drawsCount} sorteos`,
+        icon: RefreshCircle,
+        active: isConfigPanelOpen,
+        onClick: () => setIsConfigPanelOpen((open) => !open),
+      },
+      {
+        id: 'type',
+        label: 'Tipo',
+        value: modeLabels[mode],
+        icon: ControlSlider,
+        active: mode !== 'simple',
+        onClick: () => setIsConfigPanelOpen((open) => !open),
+      },
+      {
+        id: 'method',
+        label: 'Método',
+        value: methodLabel,
+        icon: Spark,
+        active: mode === 'simple' && betMethod !== null,
+        disabled: mode !== 'simple' || !supportsQuickPick,
+        onClick: () => {
+          if (mode !== 'simple' || !supportsQuickPick) return;
+          setBetMethod((current) => current === 'random' ? 'manual' : 'random');
+          setIsConfigPanelOpen(false);
+        },
+      },
+    ];
+  }, [betMethod, drawsCount, isConfigPanelOpen, mode, supportsQuickPick]);
 
   const toggleNumber = (n: number) => {
     setSelectedNumbers((prev) =>
@@ -344,9 +388,14 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       drawDates: effectiveSelectedDrawDates,
       isSubscription,
     });
-    addDrafts(quickDrafts);
-    toast.success(`${quickPick.count} jugadas rápidas demo añadidas.`);
-    setBetMethod('manual');
+    const result = addDrafts(quickDrafts);
+    if (result.addedCount > 0 && result.duplicateCount === 0) {
+      toast.success(result.addedCount === 1 ? 'Jugada añadida.' : `${result.addedCount} jugadas añadidas.`);
+    } else if (result.addedCount > 0 && result.duplicateCount > 0) {
+      toast.success(`${result.addedCount} añadidas (${result.duplicateCount} duplicadas).`);
+    } else {
+      toast.error(result.duplicateCount === 1 ? 'Esta jugada ya estaba añadida.' : 'Todas las jugadas ya estaban añadidas.');
+    }
   };
 
   const handleMulticolumnPersist = (intent: MulticolumnDraftIntent) => {
@@ -418,6 +467,78 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       }
     } catch {
       toast.error('Ocurrió un error al procesar las apuestas.');
+    }
+  };
+
+  const handlePlayReduced = (systemId: string) => {
+    if (!selectedNumbers.length || !hasValidStarSelection) {
+      toast.error('Completa tu selección de números y estrellas');
+      return;
+    }
+
+    const draftSelection = buildGameSelection({
+      game,
+      isNationalLottery: false,
+      isQuiniela: false,
+      mode: 'reduced',
+      selectedNumbers,
+      selectedStars,
+      quinielaMatches: [],
+      selectedReductionSystemId: systemId,
+      selectedNationalNumber: null,
+      selectedNationalDraw: { label: '' },
+    });
+
+    if (!draftSelection) {
+      toast.error('No se ha podido construir la jugada.');
+      return;
+    }
+
+    const drawDates =
+      effectiveSelectedDrawDates.length > 0
+        ? effectiveSelectedDrawDates
+        : [getBusinessDate(game.nextDraw)];
+
+    const systemPricing = resolvePlayPricing({
+      game,
+      isNationalLottery: false,
+      isQuiniela: false,
+      mode: 'reduced',
+      selectedNumbersCount: selectedNumbers.length,
+      selectedStarsCount: selectedStars.length,
+      selectedReductionSystemId: systemId,
+      selectedNationalQuantity: 1,
+      selectedNationalDraw: {},
+      drawsCount,
+    });
+
+    const nextDrafts = buildPlayDrafts({
+      game,
+      selection: draftSelection,
+      drawDates,
+      totalPrice: systemPricing.totalPrice,
+      unitPrice: systemPricing.drawPrice,
+      quantity: 1,
+      mode: 'reduced',
+      betsCount: systemPricing.betsCount,
+      isSubscription,
+      supportsTimeSelection,
+      timeMode: drawDateResolution.scheduleMode,
+      weeksCount: drawDateResolution.weeksCount,
+      selectedNationalNumber: null,
+      selectedNationalQuantity: 0,
+      selectedNationalDraw: { label: '' },
+      selectedReductionSystemId: systemId,
+    });
+
+    const result = addDrafts(nextDrafts);
+    if (result.addedCount > 0) {
+      toast.success(result.addedCount === 1 ? 'Jugada reducida añadida.' : `${result.addedCount} jugadas añadidas.`);
+      setSelectedNumbers([]);
+      setSelectedStars([]);
+    }
+    if (result.duplicateCount > 0) {
+      toast.error('Ya tenías esa jugada en la sesión.');
     }
   };
 
@@ -529,7 +650,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     <div
       className={cn(
         'flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] transition-[padding]',
-        shouldShowStickyCta ? 'pb-32' : 'pb-6'
+        shouldShowStickyCta || isQuickPickMode || isMulticolumnMode ? 'pb-40' : 'pb-6'
       )}
       style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 56px)' }}
     >
@@ -549,8 +670,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
 
       <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-2.5 p-4 pt-2">
 
-        {/* Config bar — colapsado */}
-        {!isConfigPanelOpen && (
+        {/* Config bar — oculta cuando el grid de números está activo */}
+        {!isConfigPanelOpen && !isMulticolumnMode && !isQuickPickMode && (
           <button
             onClick={() => setIsConfigPanelOpen(true)}
             className="group w-full text-left rounded-[1.2rem] border border-slate-200/60 bg-white px-3.5 py-3 shadow-sm hover:border-manises-blue/20 hover:shadow-md transition-all active:scale-[0.99]"
@@ -585,8 +706,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
           </button>
         )}
 
-        {/* Config panel — expandido */}
-        {isConfigPanelOpen && (
+        {/* Config panel — expandido (también oculto cuando el grid está activo) */}
+        {isConfigPanelOpen && !isMulticolumnMode && !isQuickPickMode && (
           <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
             <div className="space-y-3 rounded-[1.2rem] border border-manises-blue/10 bg-white p-3 shadow-sm">
               <div className="flex items-center justify-between">
@@ -629,17 +750,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
 
               {mode === 'simple' && (
                 <div>
-                  <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">Método</p>
+                  <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">¿Cómo quieres jugar?</p>
                   <div className="flex p-1 bg-slate-100/70 rounded-xl border border-slate-200/50">
-                    <button
-                      onClick={() => setBetMethod('manual')}
-                      className={cn(
-                        'flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all',
-                        betMethod === 'manual' ? 'bg-white text-manises-blue shadow-sm' : 'text-slate-400'
-                      )}
-                    >
-                      Manual
-                    </button>
                     <button
                       onClick={() => { setBetMethod('random'); setIsConfigPanelOpen(false); }}
                       className={cn(
@@ -648,6 +760,15 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                       )}
                     >
                       Aleatorio
+                    </button>
+                    <button
+                      onClick={() => setBetMethod('manual')}
+                      className={cn(
+                        'flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all',
+                        betMethod === 'manual' ? 'bg-white text-manises-blue shadow-sm' : 'text-slate-400'
+                      )}
+                    >
+                      Manual
                     </button>
                   </div>
                 </div>
@@ -751,6 +872,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
         )}
 
         {/* Flujo secuencial — fechas, tipo, método, cantidad */}
+        {shouldShowInlineSetup && (
         <div className="space-y-2.5">
 
           {supportsTimeSelection && game.type !== 'gordo' && (
@@ -912,42 +1034,51 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
             </div>
           )}
 
-          {mode === 'simple' && (
+          {mode === 'simple' && betMethod === null && (
             <div
-              className="rounded-[1.2rem] border-2 bg-white px-3.5 py-2.5 shadow-sm transition-colors"
-              style={{ borderColor: betMethod ? `${game.color}28` : '#e2e8f0' }}
+              className="rounded-[1.2rem] border-2 border-slate-200 bg-white px-3.5 py-2.5 shadow-sm"
             >
               <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">¿Cómo quieres jugar?</p>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setBetMethod('random')}
-                  className={cn(
-                    'flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all active:scale-[0.97]',
-                    betMethod === 'random' ? 'text-white shadow-lg' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'
-                  )}
-                  style={betMethod === 'random' ? { backgroundColor: game.color, borderColor: game.color } : undefined}
+                  className="flex items-center gap-2.5 rounded-xl border-2 border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-500 transition-all active:scale-[0.97] hover:border-slate-300"
                 >
-                  <Spark className={cn('w-3.5 h-3.5 shrink-0', betMethod === 'random' ? 'text-white/90' : 'text-manises-gold')} />
+                  <Spark className="w-3.5 h-3.5 shrink-0 text-manises-gold" />
                   <div className="text-left">
                     <p className="text-[10px] font-black uppercase tracking-widest leading-none">Aleatorio</p>
-                    <p className={cn('text-[8px] font-semibold mt-0.5 leading-none', betMethod === 'random' ? 'text-white/70' : 'text-slate-400')}>Rápido</p>
+                    <p className="text-[8px] font-semibold mt-0.5 leading-none text-slate-400">Rápido</p>
                   </div>
                 </button>
                 <button
                   onClick={() => setBetMethod('manual')}
-                  className={cn(
-                    'flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all active:scale-[0.97]',
-                    betMethod === 'manual' ? 'bg-white shadow-sm' : 'bg-slate-50 border-slate-200 text-slate-400 hover:border-slate-300'
-                  )}
-                  style={betMethod === 'manual' ? { borderColor: game.color, color: game.color } : undefined}
+                  className="flex items-center gap-2.5 rounded-xl border-2 border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-400 transition-all active:scale-[0.97] hover:border-slate-300"
                 >
                   <ControlSlider className="w-3.5 h-3.5 shrink-0" />
                   <div className="text-left">
                     <p className="text-[10px] font-black uppercase tracking-widest leading-none">Manual</p>
-                    <p className={cn('text-[8px] font-semibold mt-0.5 leading-none', betMethod === 'manual' ? 'opacity-60' : 'text-slate-400')}>Tus números</p>
+                    <p className="text-[8px] font-semibold mt-0.5 leading-none text-slate-400">Tus números</p>
                   </div>
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Toggle compacto tras elegir ALEATORIO — sin ocupar espacio extra */}
+          {mode === 'simple' && betMethod === 'random' && (
+            <div className="flex overflow-hidden rounded-xl border border-slate-200/60 bg-slate-100/70 p-1">
+              <button
+                onClick={() => setBetMethod('random')}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-[0.5rem] py-2 text-[9px] font-black uppercase tracking-widest bg-white text-manises-blue shadow-sm"
+              >
+                <Spark className="w-3 h-3 text-manises-gold" /> Aleatorio
+              </button>
+              <button
+                onClick={() => setBetMethod('manual')}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-[0.5rem] py-2 text-[9px] font-black uppercase tracking-widest text-slate-400"
+              >
+                <ControlSlider className="w-3 h-3" /> Manual
+              </button>
             </div>
           )}
 
@@ -966,11 +1097,11 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                   >−</button>
                   <span className="text-base font-black text-manises-blue w-6 text-center tabular-nums">{manualBetCount}</span>
                   <button
-                    onClick={() => setManualBetCount((c) => Math.min(10, c + 1))}
-                    disabled={manualBetCount >= 10}
+                    onClick={() => setManualBetCount((c) => Math.min(15, c + 1))}
+                    disabled={manualBetCount >= 15}
                     className={cn(
                       'w-8 h-8 rounded-lg border flex items-center justify-center text-base font-bold transition-all active:scale-95',
-                      manualBetCount >= 10 ? 'border-slate-100 text-slate-200' : 'border-slate-200 text-slate-500 hover:border-slate-300'
+                      manualBetCount >= 15 ? 'border-slate-100 text-slate-200' : 'border-slate-200 text-slate-500 hover:border-slate-300'
                     )}
                   >+</button>
                 </div>
@@ -978,6 +1109,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
             </div>
           )}
         </div>
+        )}
 
         {/* Aviso saldo insuficiente */}
         {isOverBalance && (
@@ -1012,6 +1144,9 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                 drawsCount={effectiveSelectedDrawDates.length || 1}
                 activeColor={game.color}
                 onAdd={handlePersistQuickPick}
+                isSubscription={isSubscription}
+                onSubscriptionChange={setIsSubscription}
+                menuItems={gameBottomMenuItems}
               />
             ) : isMulticolumnMode ? (
               <motion.div key={manualBetCount} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -1023,6 +1158,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                   isSubscription={isSubscription}
                   onSubscriptionChange={setIsSubscription}
                   onReviewColumns={handleMulticolumnPersist}
+                  menuItems={gameBottomMenuItems}
                 />
               </motion.div>
             ) : (supportsQuickPick && mode === 'simple' && betMethod === null) ? null : (
@@ -1116,61 +1252,25 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                 )}
 
                 {mode === 'reduced' && (
-                  <motion.div variants={sectionFadeUp} initial="hidden" animate="visible" className="space-y-6">
-                    <ReducedModeSummary
-                      hasSelection={selectedNumbers.length > 0}
-                      minNumbers={minNums}
-                      maxNumbers={maxNums}
-                      currentNumbers={selectedNumbers.length}
-                      supportedNumbers={supportedReducedNumbers}
-                    />
-                    <ReducedSystemPicker
-                      systems={compatibleReducedSystems}
-                      selectedId={selectedReductionSystemId}
-                      onSelect={(id) => setSelectedReductionSystemId(id)}
-                    />
-                    {selectedReductionSystemId && currentReductionSystem && (
-                      <div className="rounded-2xl border border-manises-blue/10 bg-white px-4 py-4 shadow-sm">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Selección actual</p>
-                            <h3 className="mt-1 text-sm font-black text-manises-blue">{currentReductionSystem.label}</h3>
-                            <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-500">{currentReductionSystem.guaranteeCondition}</p>
-                          </div>
-                          <div className="rounded-xl bg-slate-50 px-3 py-2 text-right">
-                            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Números</p>
-                            <p className="mt-0.5 text-lg font-black text-manises-blue">{selectedNumbers.length}</p>
-                          </div>
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          <span className="inline-flex items-center rounded-full border border-manises-blue/10 bg-manises-blue/[0.05] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-manises-blue/75">
-                            Rango válido: {supportedReducedNumbers[0]}-{supportedReducedNumbers[supportedReducedNumbers.length - 1]}
-                          </span>
-                          {game.type === 'euromillones' && (
-                            <span className="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-amber-900">
-                              2 estrellas fijas
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {selectedNumbers.map((number) => (
-                            <span key={number} className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-manises-blue/12 bg-manises-blue/[0.06] px-3 text-sm font-black text-manises-blue">
-                              {number}
-                            </span>
-                          ))}
-                        </div>
-                        <p className="mt-3 text-[11px] font-semibold text-slate-500">Basado en tablas demo de Lotería Manises.</p>
+                  <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
+                    {compatibleReducedSystems.length > 0 ? (
+                      <ReducedSystemList
+                        systems={compatibleReducedSystems}
+                        game={game}
+                        drawsCount={drawsCount}
+                        selectedNumbers={selectedNumbers}
+                        selectedStars={selectedStars}
+                        onPlayWithSystem={handlePlayReduced}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          {selectedNumbers.length === 0
+                            ? 'Selecciona entre 10 y 30 números para ver las reducciones disponibles.'
+                            : 'No hay reducciones compatibles con tu selección actual.'}
+                        </p>
                       </div>
                     )}
-                  </motion.div>
-                )}
-
-                {mode === 'reduced' && selectedNumbers.length > 0 && isSupportedReducedSelection && betsCount > 0 && (
-                  <motion.div variants={sectionFadeUp} initial="hidden" animate="visible" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-                    <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-900">Selección lista para cotizar</p>
-                    <p className="mt-1 text-[12px] font-medium leading-relaxed text-emerald-800">
-                      Tu selección encaja en la tabla de {currentReductionSystem?.label?.toLowerCase() ?? 'reducida'} y genera {betsCount} columnas para esta variante.
-                    </p>
                   </motion.div>
                 )}
               </>
@@ -1178,8 +1278,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Abono semanal */}
-        {(!supportsQuickPick || betMethod !== null) && !isMulticolumnMode && (
+        {/* Abono semanal — solo en modo manual clásico (no quick pick ni multicolumn que tienen su propio toggle) */}
+        {(!supportsQuickPick || betMethod !== null) && !isMulticolumnMode && !isQuickPickMode && (
           <div className="mt-2 space-y-3">
             <motion.div
               variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
@@ -1202,8 +1302,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-black text-manises-blue">Abono semanal</h3>
-                      <span className="rounded-full border border-manises-gold/30 bg-amber-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.14em] text-amber-900">Recomendado</span>
+                      <h3 className="text-sm font-black text-manises-blue">Jugar todas las semanas</h3>
                     </div>
                     <p className="mt-1 text-[12px] font-medium leading-relaxed text-slate-600">
                       Repite esta jugada automáticamente en próximos sorteos para no quedarte fuera si sube el bote.
@@ -1238,6 +1337,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
           activeColor={game.color}
           drawsCount={drawsCount}
           validationText={ctaValidationText}
+          menuItems={gameBottomMenuItems}
         />
       )}
     </div>

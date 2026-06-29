@@ -3,13 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Spark, ControlSlider } from 'iconoir-react/regular';
 import { Truck, X } from 'lucide-react';
 import { cn, formatDate } from '@/shared/lib/utils';
-import { NationalTicketVisual, type NationalDrawType } from '@/features/play/components/NationalTicketVisual';
 import { NationalSearchBar } from './NationalSearchBar';
 import { NationalNumberShowcase } from './NationalNumberShowcase';
 import { NationalCartSummary } from './NationalCartSummary';
 import { NationalCheckoutReview } from './NationalCheckoutReview';
 import { NationalDeliverySelector, type DeliveryMode } from './NationalDeliverySelector';
 import { NationalDrawSelector } from './NationalDrawSelector';
+import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
 
 import type {
   NationalShowcaseItem,
@@ -83,12 +83,8 @@ export function NationalAdvancedFlow({
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
   const [selectionMode, setSelectionMode] = useState<'random' | 'manual'>('manual');
   const [step, setStep] = useState<'selection' | 'checkout'>('selection');
-  const [previewNumberOverride, setPreviewNumberOverride] = useState<string | null>(null);
   const [showShippingModal, setShowShippingModal] = useState(false);
   const hasMounted = useRef(false);
-
-  const previewLine = nationalCart.lines[0] ?? null;
-  const previewNumber = previewNumberOverride ?? previewLine?.number ?? null;
 
   const handleDecrement = (number: string, drawId: NationalCartLine['drawId']) => {
     const line = nationalCart.lines.find(l => l.number === number && l.drawId === drawId);
@@ -125,12 +121,8 @@ export function NationalAdvancedFlow({
   useEffect(() => {
     if (nationalCart.lines.length === 0) {
       setStep('selection');
-      setPreviewNumberOverride(null);
     }
   }, [nationalCart.lines.length]);
-
-  const drawType: NationalDrawType = game.id === 'loteria-navidad' ? 'navidad' :
-                                     game.id === 'loteria-nino' ? 'nino' : 'ordinary';
 
   const statusColor = drawStatus.state === 'open'
     ? { dot: 'bg-emerald-400', text: 'text-emerald-600' }
@@ -142,6 +134,12 @@ export function NationalAdvancedFlow({
     : drawStatus.state === 'closingSoon' ? 'Cierra pronto'
     : 'Cerrado';
 
+  const goToCheckout = () => {
+    if (nationalCart.lines.length === 0) return;
+    setStep('checkout');
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  };
+
   if (step === 'checkout') {
     return (
       <NationalCheckoutReview
@@ -150,8 +148,7 @@ export function NationalAdvancedFlow({
         breakdown={nationalCart.breakdown}
         availableBalance={availableBalance}
         onBack={() => setStep('selection')}
-        onViewTicket={(line) => {
-          setPreviewNumberOverride(line.number);
+        onViewTicket={() => {
           setStep('selection');
           window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
         }}
@@ -161,7 +158,7 @@ export function NationalAdvancedFlow({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-20">
       {/* 1. Sorteo */}
       <section className="stagger-item">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2">
@@ -206,7 +203,7 @@ export function NationalAdvancedFlow({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+              className="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm"
               onClick={() => setShowShippingModal(false)}
             />
             <motion.div
@@ -214,7 +211,7 @@ export function NationalAdvancedFlow({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 80 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-screen-sm rounded-t-[2rem] bg-white px-5 pb-10 pt-5 shadow-2xl"
+              className="fixed bottom-0 left-0 right-0 z-[100] mx-auto max-w-screen-sm rounded-t-[2rem] bg-white px-5 pb-10 pt-5 shadow-2xl"
             >
               <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-slate-200" />
               <div className="mb-6 flex items-start gap-3">
@@ -293,27 +290,11 @@ export function NationalAdvancedFlow({
         </div>
       </div>
 
-      {/* 4. Décimo visual — protagonista */}
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="stagger-item"
-      >
-        <NationalTicketVisual
-          number={previewNumber}
-          drawLabel={selectedNationalDraw.label}
-          drawDate={selectedNationalDraw.nextDraw}
-          price={selectedNationalDraw.decimoPrice}
-          gameId={game.id}
-          drawType={drawType}
-        />
-      </motion.div>
-
-      {/* 4b. Cantidad (solo en modo aleatorio con número asignado) */}
-      {selectionMode === 'random' && nationalCart.lines.length > 0 && (() => {
-        const primaryLine = nationalCart.lines[0];
-        const sameQty = primaryLine.quantity;
-        const diffCount = nationalCart.lines.length - 1;
+      {/* 4. Cantidad (modo aleatorio) */}
+      {selectionMode === 'random' && (() => {
+        const primaryLine = nationalCart.lines[0] ?? null;
+        const sameQty = primaryLine?.quantity ?? 0;
+        const diffCount = nationalCart.lines.length > 0 ? nationalCart.lines.length - 1 : 0;
         return (
           <motion.section
             initial={{ opacity: 0, y: 6 }}
@@ -333,21 +314,29 @@ export function NationalAdvancedFlow({
                   <button
                     type="button"
                     onClick={() => {
+                      if (!primaryLine) return;
                       if (sameQty <= 1) {
                         nationalCart.removeLine(primaryLine.number, primaryLine.drawId);
                       } else {
                         nationalCart.updateQuantity(primaryLine.number, primaryLine.drawId, -1);
                       }
                     }}
-                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-manises-blue text-sm font-black shadow-sm transition-all active:scale-95"
+                    disabled={sameQty === 0}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-manises-blue text-sm font-black shadow-sm transition-all active:scale-95 disabled:opacity-30"
                   >
                     −
                   </button>
                   <span className="w-6 text-center text-lg font-black text-manises-blue">{sameQty}</span>
                   <button
                     type="button"
-                    onClick={() => nationalCart.updateQuantity(primaryLine.number, primaryLine.drawId, 1)}
-                    disabled={sameQty >= primaryLine.maxQuantity}
+                    onClick={() => {
+                      if (!primaryLine) {
+                        onRandomNationalNumber(deliveryMode);
+                      } else {
+                        nationalCart.updateQuantity(primaryLine.number, primaryLine.drawId, 1);
+                      }
+                    }}
+                    disabled={!!primaryLine && sameQty >= primaryLine.maxQuantity}
                     className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-manises-blue text-sm font-black shadow-sm transition-all active:scale-95 disabled:opacity-30"
                   >
                     +
@@ -425,12 +414,19 @@ export function NationalAdvancedFlow({
         onRemove={nationalCart.removeLine}
         onUpdateQuantity={nationalCart.updateQuantity}
         onClear={nationalCart.clearCart}
-        onContinue={nationalCart.onPersistToSession ? () => {
-          setStep('checkout');
-          window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
-        } : undefined}
         availableBalance={availableBalance}
         activeColor={game.color}
+      />
+
+      <PurchaseBottomBar
+        availableBalance={availableBalance}
+        totalPrice={nationalCart.breakdown.total}
+        canContinue={nationalCart.lines.length > 0}
+        ctaLabel={nationalCart.lines.length > 0 ? 'Revisar' : 'Elegir décimo'}
+        onContinue={goToCheckout}
+        activeColor={game.color}
+        drawsCount={effectiveSelectedDrawDates.length || 1}
+        validationText="Elige al menos un décimo"
       />
     </div>
   );

@@ -78,6 +78,24 @@ export function useMulticolumn(
     updateActiveColumn(numbers, stars);
   }, [game, updateActiveColumn]);
 
+  const randomizeColumn = useCallback((index: number) => {
+    const range = game.selectionRange;
+    if (!range) return;
+
+    setState((prev) => {
+      if (!prev.columns[index]) return prev;
+      const { numbers, stars } = generateRandomPlay(
+        range.numbers?.total ?? 49,
+        range.numbers?.min ?? 6,
+        range.stars?.total ?? 0,
+        range.stars?.min ?? 0
+      );
+      const nextColumns = [...prev.columns];
+      nextColumns[index] = updateMulticolumnColumn(nextColumns[index], game, numbers, stars);
+      return { ...prev, columns: nextColumns };
+    });
+  }, [game]);
+
   /** Rellena todas las columnas visibles con jugadas aleatorias */
   const randomizeAllColumns = useCallback(() => {
     const range = game.selectionRange;
@@ -129,6 +147,7 @@ export function useMulticolumn(
     clearActiveColumn,
     clearAllColumns,
     randomizeActiveColumn,
+    randomizeColumn,
     randomizeAllColumns,
     addColumn,
     removeColumn,

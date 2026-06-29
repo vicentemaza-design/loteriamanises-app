@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { NavArrowLeft, NavArrowRight } from 'iconoir-react/regular';
+import { NavArrowLeft, NavArrowRight, RefreshCircle } from 'iconoir-react/regular';
 import { cn } from '@/shared/lib/utils';
 import type { LotteryGame } from '@/shared/types/domain';
 import type { MulticolumnDraftIntent } from '../contracts/multicolumn-play.contract';
@@ -10,6 +10,7 @@ import { getGameTheme } from '@/shared/lib/game-theme';
 import { NumbersGrid } from '@/features/play/components/NumbersGrid';
 import { StarsGrid } from '@/features/play/components/StarsGrid';
 import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
+import type { GamePlayBottomMenuItem } from '@/features/play/components/GamePlayBottomMenu';
 import { MulticolumnColumnSlider } from './MulticolumnColumnSlider';
 import { MulticolumnActions } from './MulticolumnActions';
 
@@ -21,6 +22,7 @@ interface MulticolumnTicketFlowProps {
   isSubscription?: boolean;
   onSubscriptionChange?: (val: boolean) => void;
   onReviewColumns?: (intent: MulticolumnDraftIntent) => void;
+  menuItems?: GamePlayBottomMenuItem[];
 }
 
 function formatConfirmDate(iso: string): string {
@@ -37,6 +39,7 @@ export function MulticolumnTicketFlow({
   isSubscription = false,
   onSubscriptionChange,
   onReviewColumns,
+  menuItems,
 }: MulticolumnTicketFlowProps) {
   const {
     state,
@@ -46,6 +49,7 @@ export function MulticolumnTicketFlow({
     clearActiveColumn,
     clearAllColumns,
     randomizeActiveColumn,
+    randomizeColumn,
     randomizeAllColumns,
     addColumn,
     removeColumn,
@@ -87,10 +91,15 @@ export function MulticolumnTicketFlow({
   const goToPreviousColumn = () => setActiveColumn(Math.max(0, state.activeColumnIndex - 1));
   const goToNextColumn = () => setActiveColumn(Math.min(blockCount - 1, state.activeColumnIndex + 1));
 
-  const completeCols = useMemo(() => state.columns.filter(c => c.isComplete), [state.columns]);
+  const completeColumnEntries = useMemo(
+    () => state.columns
+      .map((column, originalIndex) => ({ column, originalIndex }))
+      .filter(({ column }) => column.isComplete && column.isValid),
+    [state.columns]
+  );
   const CONFIRM_VISIBLE = 3;
-  const visibleConfirmCols = confirmExpanded ? completeCols : completeCols.slice(0, CONFIRM_VISIBLE);
-  const hiddenConfirmCount = completeCols.length - CONFIRM_VISIBLE;
+  const visibleConfirmCols = confirmExpanded ? completeColumnEntries : completeColumnEntries.slice(0, CONFIRM_VISIBLE);
+  const hiddenConfirmCount = completeColumnEntries.length - CONFIRM_VISIBLE;
 
   const handleGoToConfirm = () => {
     setShowConfirm(true);
@@ -112,7 +121,7 @@ export function MulticolumnTicketFlow({
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -32 }}
         transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="space-y-4 pb-28"
+        className="space-y-4 pb-40"
       >
         {/* Resumen de sorteos */}
         <div className="rounded-[1.6rem] border border-manises-blue/10 bg-white px-4 py-3.5 shadow-sm">
@@ -129,22 +138,30 @@ export function MulticolumnTicketFlow({
         <div className="rounded-[1.6rem] border border-slate-100 bg-white overflow-hidden shadow-sm">
           <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-slate-50">
             <p className="text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">Tus apuestas</p>
-            <span className="text-[10px] font-medium text-slate-400">{completeCols.length} {completeCols.length === 1 ? 'completa' : 'completas'}</span>
+            <button
+              type="button"
+              onClick={randomizeAllColumns}
+              className="flex items-center gap-1.5 rounded-xl px-2 py-1 text-[9px] font-black uppercase tracking-widest text-manises-blue transition-all hover:bg-manises-blue/[0.06] active:scale-95"
+              aria-label="Regenerar todas las apuestas"
+            >
+              <RefreshCircle className="h-3.5 w-3.5" />
+              Regenerar todas
+            </button>
           </div>
           <div className="space-y-1.5 p-3">
-            {visibleConfirmCols.map((col, idx) => (
+            {visibleConfirmCols.map(({ column, originalIndex }, idx) => (
               <motion.div
-                key={idx}
+                key={column.id}
                 initial={{ opacity: 0, y: 3 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.14, delay: idx * 0.04 }}
                 className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/60 px-2.5 py-2"
               >
                 <span className="w-8 shrink-0 text-[9px] font-black uppercase text-slate-400">
-                  Ap.{idx + 1}
+                  AP {originalIndex + 1}
                 </span>
                 <div className="flex flex-1 flex-wrap gap-1 items-center">
-                  {col.numbers.map(n => (
+                  {column.numbers.map(n => (
                     <span
                       key={n}
                       className="flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black text-white"
@@ -153,10 +170,10 @@ export function MulticolumnTicketFlow({
                       {n}
                     </span>
                   ))}
-                  {col.stars.length > 0 && (
+                  {column.stars.length > 0 && (
                     <span className="mx-0.5 text-[8px] text-slate-300">·</span>
                   )}
-                  {col.stars.map(s => (
+                  {column.stars.map(s => (
                     <span
                       key={s}
                       className="flex h-5 w-5 items-center justify-center rounded-full bg-manises-gold text-[9px] font-black text-white"
@@ -165,10 +182,19 @@ export function MulticolumnTicketFlow({
                     </span>
                   ))}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => randomizeColumn(originalIndex)}
+                  className="shrink-0 rounded-lg p-1.5 text-manises-blue/50 transition-all hover:bg-manises-blue/[0.06] hover:text-manises-blue active:scale-90"
+                  aria-label={`Regenerar AP ${originalIndex + 1}`}
+                  title="Regenerar apuesta"
+                >
+                  <RefreshCircle className="h-3.5 w-3.5" />
+                </button>
               </motion.div>
             ))}
           </div>
-          {completeCols.length > CONFIRM_VISIBLE && (
+          {completeColumnEntries.length > CONFIRM_VISIBLE && (
             <button
               onClick={() => setConfirmExpanded(e => !e)}
               className="flex w-full items-center justify-between border-t border-slate-100 px-4 py-2.5 text-[10px] font-medium text-slate-400 hover:bg-slate-50 transition-colors"
@@ -223,66 +249,69 @@ export function MulticolumnTicketFlow({
           availableBalance={availableBalance}
           totalPrice={summary.totalPrice}
           canContinue={summary.isValid}
-          ctaLabel="Jugar"
+          ctaLabel="JUGAR"
           onContinue={handleConfirm}
           activeColor={game.color}
           drawsCount={drawDates.length}
           validationText="Completa al menos una apuesta"
+          menuItems={menuItems}
         />
       </motion.div>
     ) : (
-    <div className="space-y-4 pb-28 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Selector de apuestas */}
-      <section className="space-y-2">
-        <div className="flex items-center justify-between px-1">
-          <div>
-            <h2 className="font-black text-sm text-manises-blue">Boleto {game.name}</h2>
-            <p className="text-[10px] font-medium text-slate-400 mt-0.5">Rellena una o varias apuestas manuales</p>
-          </div>
-          <span className="text-[10px] font-medium text-slate-400 shrink-0 ml-2">{counterLabel}</span>
+    <div className="flex flex-col gap-2 pb-40">
+      {/* Navegación: APUESTA X DE Y + flechas + dots */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={goToPreviousColumn}
+          disabled={state.activeColumnIndex === 0}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-all active:scale-95 disabled:text-slate-200"
+          aria-label="Apuesta anterior"
+        >
+          <NavArrowLeft className="h-4 w-4" />
+        </button>
+        <div className="min-w-0 flex-1 text-center">
+          <p className="text-[11px] font-black uppercase tracking-[0.14em] text-manises-blue">
+            Apuesta {state.activeColumnIndex + 1} de {blockCount}
+          </p>
+          <MulticolumnColumnSlider
+            columnsCount={blockCount}
+            activeIndex={state.activeColumnIndex}
+            onSelect={setActiveColumn}
+            activeColor={game.color}
+            columnStatus={columnStatus}
+            onAddColumn={addColumn}
+          />
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={goToPreviousColumn}
-            disabled={state.activeColumnIndex === 0}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-all active:scale-95 disabled:text-slate-200"
-            aria-label="Apuesta anterior"
-            title="Apuesta anterior"
-          >
-            <NavArrowLeft className="h-4 w-4" />
-          </button>
-          <div className="min-w-0 flex-1">
-            <MulticolumnColumnSlider
-              columnsCount={blockCount}
-              activeIndex={state.activeColumnIndex}
-              onSelect={setActiveColumn}
-              activeColor={game.color}
-              columnStatus={columnStatus}
-              onAddColumn={addColumn}
-            />
-          </div>
-          <button
-            onClick={goToNextColumn}
-            disabled={state.activeColumnIndex >= blockCount - 1}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-all active:scale-95 disabled:text-slate-200"
-            aria-label="Apuesta siguiente"
-            title="Apuesta siguiente"
-          >
-            <NavArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-      </section>
+        <button
+          onClick={goToNextColumn}
+          disabled={state.activeColumnIndex >= blockCount - 1}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-all active:scale-95 disabled:text-slate-200"
+          aria-label="Apuesta siguiente"
+        >
+          <NavArrowRight className="h-4 w-4" />
+        </button>
+      </div>
 
-      {/* Editor de la apuesta activa */}
-      <motion.section
+      {/* Acciones compactas encima del grid */}
+      <MulticolumnActions
+        onClearColumn={clearActiveColumn}
+        onClearAll={clearAllColumns}
+        onRandomColumn={randomizeActiveColumn}
+        onRandomAll={randomizeAllColumns}
+        onRemoveColumn={() => removeColumn(state.activeColumnIndex)}
+        canRemoveColumn={blockCount > 1}
+        activeColor={game.color}
+      />
+
+      {/* Grid de números — sin envoltorio con padding extra */}
+      <motion.div
         key={state.activeColumnIndex}
         initial={{ opacity: 0, x: 10 }}
         animate={{ opacity: 1, x: 0 }}
-        className="space-y-3"
+        transition={{ duration: 0.15 }}
       >
-        <div className="rounded-2xl p-3" style={theme.surface}>
+        <div className="rounded-2xl p-2" style={theme.surface}>
           {totalStars > 0 ? (
-            // Números + estrellas en la misma vista sin scroll entre ambos bloques
             <div className="flex gap-2 items-start">
               <div className="flex-1 min-w-0">
                 <NumbersGrid
@@ -299,7 +328,7 @@ export function MulticolumnTicketFlow({
                     updateActiveColumn(nextNumbers, activeColumn.stars);
                   }}
                   theme={theme}
-                  title="Números"
+                  title="Elige 5 números"
                 />
               </div>
               <div className="w-px self-stretch bg-gray-100 shrink-0 mt-5" />
@@ -327,7 +356,6 @@ export function MulticolumnTicketFlow({
               </div>
             </div>
           ) : (
-            // Sin estrellas (Bonoloto, Primitiva…): grid full-width
             <NumbersGrid
               totalNums={totalNums}
               selectedNumbers={activeColumn.numbers}
@@ -340,25 +368,10 @@ export function MulticolumnTicketFlow({
                 updateActiveColumn(nextNumbers, activeColumn.stars);
               }}
               theme={theme}
-              title={`Apuesta ${state.activeColumnIndex + 1} de ${blockCount}`}
-              subtitle={blockSubtitle}
             />
           )}
         </div>
-      </motion.section>
-
-      {/* Acciones */}
-      <section className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
-        <MulticolumnActions
-          onClearColumn={clearActiveColumn}
-          onClearAll={clearAllColumns}
-          onRandomColumn={randomizeActiveColumn}
-          onRandomAll={randomizeAllColumns}
-          onRemoveColumn={() => removeColumn(state.activeColumnIndex)}
-          canRemoveColumn={blockCount > 1}
-          activeColor={game.color}
-        />
-      </section>
+      </motion.div>
 
       <PurchaseBottomBar
         availableBalance={availableBalance}
@@ -369,6 +382,7 @@ export function MulticolumnTicketFlow({
         activeColor={game.color}
         drawsCount={drawDates.length}
         validationText="Completa al menos una apuesta"
+        menuItems={menuItems}
       />
     </div>
     )}

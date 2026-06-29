@@ -210,6 +210,9 @@
   .pb-nav-safe {
     padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
   }
+  .pb-sheet-action-safe {
+    padding-bottom: calc(var(--nav-height) + 1rem);
+  }
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
   }

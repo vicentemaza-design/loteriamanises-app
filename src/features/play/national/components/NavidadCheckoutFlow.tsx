@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { NavArrowLeft, Spark, QrCode } from 'iconoir-react/regular';
 import { Repeat2 } from 'lucide-react';
 import {
-  Smartphone, Truck, Check, Loader2, CreditCard, ShoppingCart,
+  Smartphone, Truck, Check, Loader2, CreditCard,
   Wallet, AlertTriangle, CheckCircle2, Gift, ArrowRight, Eye,
 } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
+import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import type { LotteryGame } from '@/shared/types/domain';
 import type { NationalShowcaseItem } from '../contracts/national-play.contract';
@@ -513,7 +514,7 @@ export function NavidadCheckoutFlow({
   // ── Cart (Mi Cesta) ────────────────────────────────────────────────────────
   if (step === 'cart') {
     return (
-      <div className="space-y-4 pb-8">
+      <div className="space-y-4 pb-20">
         {/* Header */}
         <div className="flex items-center gap-3">
           <button
@@ -678,14 +679,15 @@ export function NavidadCheckoutFlow({
           )}
         </div>
 
-        {/* CTA */}
-        <Button
-          onClick={handleFinalizarCompra}
-          disabled={cart.length === 0}
-          className="w-full rounded-2xl py-4 font-black text-sm uppercase tracking-widest bg-[#991b1b] text-white shadow-lg"
-        >
-          Finalizar compra · {formatCurrency(totalPrice)}
-        </Button>
+        <PurchaseBottomBar
+          availableBalance={currentBalance}
+          totalPrice={totalPrice}
+          canContinue={cart.length > 0}
+          ctaLabel={hasSufficientBalance ? 'Finalizar' : 'Recargar'}
+          onContinue={hasSufficientBalance ? handleFinalizarCompra : () => setStep('recharge')}
+          activeColor={game.color}
+          validationText="Añade al menos un décimo"
+        />
 
         {/* Falta saldo modal overlay */}
         <AnimatePresence>
@@ -695,7 +697,7 @@ export function NavidadCheckoutFlow({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+                className="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm"
                 onClick={() => setShowFaltaSaldo(false)}
               />
               <motion.div
@@ -703,7 +705,7 @@ export function NavidadCheckoutFlow({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 80 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-screen-sm rounded-t-[2rem] bg-white px-5 pb-8 pt-5 shadow-2xl"
+                className="fixed bottom-0 left-0 right-0 z-[100] mx-auto max-w-screen-sm rounded-t-[2rem] bg-white px-5 pb-8 pt-5 shadow-2xl"
               >
                 <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-slate-200" />
                 <div className="mb-5 flex items-start gap-3">
@@ -744,7 +746,7 @@ export function NavidadCheckoutFlow({
 
   // ── Selection ──────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-20">
       {/* Navidad décimo visual */}
       <NationalTicketVisual
         number={cart[0]?.number ?? null}
@@ -963,29 +965,15 @@ export function NavidadCheckoutFlow({
         )}
       </div>
 
-      {/* Sticky CTA */}
-      {cart.length > 0 && (
-        <div className="sticky bottom-4 z-20">
-          <button
-            onClick={handleContinueToCart}
-            className="flex w-full items-center justify-between gap-2 rounded-2xl bg-[#991b1b] px-5 py-4 shadow-xl transition-all active:scale-[0.98]"
-          >
-            <div className="flex items-center gap-2 text-white">
-              <ShoppingCart className="h-4 w-4" />
-              <span className="text-[11px] font-black uppercase tracking-widest">Mi cesta</span>
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-[9px] font-black">
-                {totalDecimos}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-base font-black text-white">{formatCurrency(totalPrice)}</span>
-              <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-white/20">
-                <ArrowRight className="h-3.5 w-3.5 text-white" />
-              </div>
-            </div>
-          </button>
-        </div>
-      )}
+      <PurchaseBottomBar
+        availableBalance={currentBalance}
+        totalPrice={totalPrice}
+        canContinue={cart.length > 0}
+        ctaLabel={cart.length > 0 ? 'Mi cesta' : 'Elegir décimo'}
+        onContinue={handleContinueToCart}
+        activeColor={game.color}
+        validationText="Elige al menos un décimo"
+      />
     </div>
   );
 }
