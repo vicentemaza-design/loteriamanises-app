@@ -511,13 +511,13 @@ export function PaymentsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDeleteConfirm(null)}
-              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]"
+              className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-[2px]"
             />
             <motion.div
               initial={{ scale: 0.92, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 20 }}
-              className="fixed inset-x-4 bottom-1/2 translate-y-1/2 z-50 bg-white rounded-3xl shadow-2xl p-6 max-w-sm mx-auto"
+              className="fixed inset-x-4 bottom-1/2 translate-y-1/2 z-[100] bg-white rounded-3xl shadow-2xl p-6 max-w-sm mx-auto"
             >
               <div className="flex flex-col items-center gap-4 text-center">
                 <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center">

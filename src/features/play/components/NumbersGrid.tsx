@@ -53,7 +53,7 @@ export function NumbersGrid({
       </div>
 
       <div
-        className={compact ? 'grid gap-0.5' : 'grid grid-cols-7 gap-2'}
+        className={compact ? 'grid gap-1' : 'grid grid-cols-7 gap-2'}
         style={compact ? { gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` } : undefined}
       >
         {Array.from({ length: totalNums }, (_, i) => i + 1).map(n => {
@@ -66,7 +66,7 @@ export function NumbersGrid({
               className={cn(
                 'flex items-center justify-center border font-bold transition-all active:scale-90',
                 compact
-                  ? 'h-[30px] rounded-lg text-xs'
+                  ? 'h-[38px] rounded-lg text-sm'
                   : 'aspect-square rounded-xl text-sm',
                 isSelected
                   ? 'scale-95 border-transparent shadow-[0_10px_20px_rgba(10,71,146,0.14)]'

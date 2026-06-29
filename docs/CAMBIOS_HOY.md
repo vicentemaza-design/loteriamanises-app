@@ -259,3 +259,99 @@ Fase 6 de Resultados todavía queda pendiente en esta sesión:
 - detalle con escrutinio completo;
 - comprobador de número para Lotería Nacional.
 
+---
+
+## Fase 7: Mejoras UI según diseño cliente (junio 2026)
+
+Alcance:
+- Navidad — selección de décimos y MI CESTA.
+- Lotería Nacional — modal de envío y stepper de cantidad.
+- NationalShippingForm — vista resumen editable.
+- NationalCheckoutReview — etiqueta de envío.
+
+No se tocó: flujo de compra de juegos de combinación, Quiniela, Perfil, Mis jugadas, resultados, backend real.
+
+### Navidad — NavidadCheckoutFlow
+
+Cambios en paso de selección:
+- Barra de búsqueda con botón QR a la derecha (icono `QrCode` de iconoir-react/regular).
+- Chips horizontales de disponibilidad: `TODOS` / `+10` / `+20` / `+30` / `+50` (estado `minAvailability`, filtra `filteredItems`).
+- Card "Décimo de la Suerte" destacada en oro al inicio de la lista (elige un décimo aleatorio disponible).
+- Texto de disponibilidad: `"N disponibles · X €"`.
+- Se eliminó el botón "Décimo de la Suerte" flotante del final de la lista.
+
+Cambios en paso MI CESTA:
+- Chip de modo de entrega en el header: "Décimos digitales" (emerald) / "Mensajería" (amber).
+- Cabecera de grupo de sorteo con fecha completa y conteo de décimos.
+- Cada décimo muestra botones de acción: "Ver décimo" (icono Eye) y "Abonarme" (icono Repeat2, solo en modo digital).
+- Envío mostrado como "Envío MRW" en vez de "Envío".
+
+### Lotería Nacional — NationalAdvancedFlow
+
+- Modal bottom-sheet "Envíos no disponibles":
+  - reemplaza el banner inline de `WarningTriangle`;
+  - se abre al hacer clic en el botón "Mensajería" bloqueado;
+  - backdrop con blur, animación spring, icono Truck, texto explicativo y botón "Entendido".
+- Stepper "¿Cuántos décimos?" en modo aleatorio (solo cuando hay líneas en carrito):
+  - grid 2 columnas: "Del mismo número" y "Distintos números";
+  - "Del mismo número" controla la cantidad de la línea principal;
+  - "Distintos números" añade/elimina números aleatorios adicionales.
+- Header del escaparate muestra "Cambiar número" en modo aleatorio; buscador oculto en modo aleatorio.
+
+### NationalDeliverySelector
+
+- Botón "Mensajería" clickable aunque no esté disponible (antes desabilitado).
+- Icono `Lock` superpuesto cuando no disponible.
+- Nueva prop `onShippingUnavailableClick?: () => void`.
+- Etiquetas actualizadas: "Custodia / Digital" → "Digital", "Custodia sin envío", "Envío a tu casa".
+
+### NationalShippingForm (reescrito)
+
+- Vista compacta por defecto: nombre, dirección, CP+ciudad, teléfono.
+- Badge "Guardada" + botón "Modificar" alterna formulario completo / resumen.
+- Formulario completo solo visible cuando `editing === true`.
+- Dirección demo precargada (`DEMO_ADDRESS`).
+
+### NationalCheckoutReview
+
+- "Gastos de envío" renombrado a "Envío MRW".
+
+### Archivos modificados
+
+- `src/features/play/national/components/NavidadCheckoutFlow.tsx`
+- `src/features/play/national/components/NationalAdvancedFlow.tsx`
+- `src/features/play/national/components/NationalDeliverySelector.tsx`
+- `src/features/play/national/components/NationalShippingForm.tsx`
+- `src/features/play/national/components/NationalCheckoutReview.tsx`
+
+### Validaciones ejecutadas
+
+```bash
+npx tsc --noEmit   # OK — sin errores
+```
+
+Commit en rama `feature/euromillones-boleto-layout`, mergeado a `main` y desplegado en Vercel.
+
+---
+
+## Deuda técnica detectada
+
+### GamePlayPage monolito
+
+`src/features/play/pages/GamePlayPage.tsx` tiene 1883 líneas y maneja 4 familias de juego completamente distintas mediante flags booleanos (`isNationalLottery`, `isQuiniela`, `supportsQuickPick`).
+
+Propuesta de división:
+```
+src/features/play/pages/
+  GamePlayPage.tsx          → dispatcher ~50 líneas
+  NumericGamePlayPage.tsx   → euromillones, primitiva, bonoloto, gordo, eurodreams
+  QuinielaPlayPage.tsx      → quiniela
+  NationalPlayPage.tsx      → wrapper NationalAdvancedFlow
+  NavidadPlayPage.tsx       → wrapper NavidadCheckoutFlow
+
+src/features/play/components/
+  GamePlayHeader.tsx        → header colorido compartido
+```
+
+El router (`AppRouter.tsx`) no cambia — sigue con `/play/:gameId`.
+

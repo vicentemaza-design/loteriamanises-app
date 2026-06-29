@@ -1,15 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Spark, ControlSlider } from 'iconoir-react/regular';
-import { Truck, X } from 'lucide-react';
-import { cn, formatDate } from '@/shared/lib/utils';
+import { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { Spark, NavArrowUp, NavArrowDown } from 'iconoir-react/regular';
+import { Truck, X, ShoppingCart } from 'lucide-react';
+import { cn, formatCurrency, formatDate } from '@/shared/lib/utils';
 import { NationalSearchBar } from './NationalSearchBar';
 import { NationalNumberShowcase } from './NationalNumberShowcase';
-import { NationalCartSummary } from './NationalCartSummary';
-import { NationalCheckoutReview } from './NationalCheckoutReview';
 import { NationalDeliverySelector, type DeliveryMode } from './NationalDeliverySelector';
 import { NationalDrawSelector } from './NationalDrawSelector';
-import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
 
 import type {
   NationalShowcaseItem,
@@ -65,8 +62,15 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
+function splitCurrency(amount: number) {
+  const [euros = '0', cents = '00'] = amount
+    .toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    .split(',');
+  return { euros, cents };
+}
+
 export function NationalAdvancedFlow({
-  game,
+  game: _game,
   selectedNationalDraw,
   drawStatus,
   supportsTimeSelection,
@@ -81,10 +85,8 @@ export function NationalAdvancedFlow({
   onClear,
 }: NationalAdvancedFlowProps) {
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
-  const [selectionMode, setSelectionMode] = useState<'random' | 'manual'>('manual');
-  const [step, setStep] = useState<'selection' | 'checkout'>('selection');
   const [showShippingModal, setShowShippingModal] = useState(false);
-  const hasMounted = useRef(false);
+  const [cartExpanded, setCartExpanded] = useState(false);
 
   const handleDecrement = (number: string, drawId: NationalCartLine['drawId']) => {
     const line = nationalCart.lines.find(l => l.number === number && l.drawId === drawId);
@@ -99,18 +101,6 @@ export function NationalAdvancedFlow({
   const hoursUntilClose = (new Date(drawStatus.salesCloseAt).getTime() - Date.now()) / 36e5;
   const isShippingAvailable = drawStatus.state === 'open' && hoursUntilClose >= 48;
 
-  // Auto-assign only when user explicitly switches to random mode (skip mount)
-  useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      return;
-    }
-    if (selectionMode === 'random' && nationalCart.lines.length === 0 && nationalShowcase.items.length > 0) {
-      onRandomNationalNumber(deliveryMode);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectionMode]);
-
   useEffect(() => {
     if (deliveryMode === 'shipping' && !isShippingAvailable) {
       setDeliveryMode('custody');
@@ -120,7 +110,7 @@ export function NationalAdvancedFlow({
 
   useEffect(() => {
     if (nationalCart.lines.length === 0) {
-      setStep('selection');
+      setCartExpanded(false);
     }
   }, [nationalCart.lines.length]);
 
@@ -134,31 +124,13 @@ export function NationalAdvancedFlow({
     : drawStatus.state === 'closingSoon' ? 'Cierra pronto'
     : 'Cerrado';
 
-  const goToCheckout = () => {
-    if (nationalCart.lines.length === 0) return;
-    setStep('checkout');
-    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  };
-
-  if (step === 'checkout') {
-    return (
-      <NationalCheckoutReview
-        game={game}
-        lines={nationalCart.lines}
-        breakdown={nationalCart.breakdown}
-        availableBalance={availableBalance}
-        onBack={() => setStep('selection')}
-        onViewTicket={() => {
-          setStep('selection');
-          window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
-        }}
-        onContinueToPayment={() => nationalCart.onPersistToSession?.()}
-      />
-    );
-  }
+  const hasLines = nationalCart.lines.length > 0;
+  const isOverBalance = availableBalance < nationalCart.breakdown.total;
+  const balanceParts = splitCurrency(availableBalance);
+  const totalParts = splitCurrency(nationalCart.breakdown.total);
 
   return (
-    <div className="space-y-5 pb-20">
+    <div className="space-y-5 pb-[180px]">
       {/* 1. Sorteo */}
       <section className="stagger-item">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2">
@@ -238,150 +210,33 @@ export function NationalAdvancedFlow({
         )}
       </AnimatePresence>
 
-      {/* 3. Forma de obtener números */}
-      <div
-        className="rounded-[1.2rem] border-2 bg-white px-3.5 py-2.5 shadow-sm transition-colors"
-        style={{ borderColor: `${game.color}30` }}
-      >
-        <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">
-          ¿Cómo quieres elegir tu número?
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => setSelectionMode('manual')}
-            className={cn(
-              'flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 transition-all active:scale-[0.97]',
-              selectionMode === 'manual'
-                ? 'text-white shadow-lg'
-                : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'
-            )}
-            style={selectionMode === 'manual' ? { backgroundColor: game.color, borderColor: game.color } : undefined}
-          >
-            <ControlSlider className="w-3.5 h-3.5 shrink-0" />
-            <div className="text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest leading-none">Elegir número</p>
-              <p className={cn('text-[8px] font-semibold mt-0.5 leading-none', selectionMode === 'manual' ? 'text-white/70' : 'text-slate-400')}>
-                Buscar o filtrar
-              </p>
-            </div>
-          </button>
-          <button
-            onClick={() => {
-              setSelectionMode('random');
-              if (nationalCart.lines.length === 0) {
-                onRandomNationalNumber(deliveryMode);
-              }
-            }}
-            className={cn(
-              'flex items-center gap-2.5 rounded-xl border px-3 py-2.5 transition-all active:scale-[0.97]',
-              selectionMode === 'random'
-                ? 'border-manises-gold bg-amber-50 text-manises-blue shadow-sm'
-                : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300'
-            )}
-          >
-            <Spark className="w-3.5 h-3.5 shrink-0 text-manises-gold" />
-            <div className="text-left">
-              <p className="text-[10px] font-black uppercase tracking-widest leading-none">Décimo de la Suerte</p>
-              <p className="mt-0.5 text-[8px] font-semibold leading-none text-slate-400">
-                Aleatorio
-              </p>
-            </div>
-          </button>
+      {/* 3. Décimo de la Suerte */}
+      <div className="flex items-center justify-between gap-3 rounded-[1.2rem] border border-amber-200/60 bg-amber-50/50 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <Spark className="h-4 w-4 shrink-0 text-manises-gold" />
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-widest leading-none text-manises-blue">
+              Décimo de la Suerte
+            </p>
+            <p className="mt-0.5 text-[9px] font-medium leading-none text-slate-400">
+              Elegido por Lotería Manises
+            </p>
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={() => onRandomNationalNumber(deliveryMode)}
+          className="flex shrink-0 items-center gap-1 rounded-xl bg-manises-gold px-3 py-1.5 text-[9px] font-black text-manises-blue transition-all active:scale-95"
+        >
+          Añadir {formatCurrency(selectedNationalDraw.decimoPrice)}&nbsp;<span className="text-[13px] leading-none">+</span>
+        </button>
       </div>
 
-      {/* 4. Cantidad (modo aleatorio) */}
-      {selectionMode === 'random' && (() => {
-        const primaryLine = nationalCart.lines[0] ?? null;
-        const sameQty = primaryLine?.quantity ?? 0;
-        const diffCount = nationalCart.lines.length > 0 ? nationalCart.lines.length - 1 : 0;
-        return (
-          <motion.section
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-[1.2rem] border border-slate-100 bg-white p-4 shadow-sm space-y-3"
-          >
-            <p className="text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">
-              ¿Cuántos décimos?
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {/* Del mismo número */}
-              <div className="flex flex-col items-center gap-2 rounded-2xl border border-slate-100 bg-slate-50/60 px-3 py-3">
-                <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 text-center leading-tight">
-                  Del mismo número
-                </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!primaryLine) return;
-                      if (sameQty <= 1) {
-                        nationalCart.removeLine(primaryLine.number, primaryLine.drawId);
-                      } else {
-                        nationalCart.updateQuantity(primaryLine.number, primaryLine.drawId, -1);
-                      }
-                    }}
-                    disabled={sameQty === 0}
-                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-manises-blue text-sm font-black shadow-sm transition-all active:scale-95 disabled:opacity-30"
-                  >
-                    −
-                  </button>
-                  <span className="w-6 text-center text-lg font-black text-manises-blue">{sameQty}</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!primaryLine) {
-                        onRandomNationalNumber(deliveryMode);
-                      } else {
-                        nationalCart.updateQuantity(primaryLine.number, primaryLine.drawId, 1);
-                      }
-                    }}
-                    disabled={!!primaryLine && sameQty >= primaryLine.maxQuantity}
-                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-manises-blue text-sm font-black shadow-sm transition-all active:scale-95 disabled:opacity-30"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              {/* De distintos números */}
-              <div className="flex flex-col items-center gap-2 rounded-2xl border border-slate-100 bg-slate-50/60 px-3 py-3">
-                <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 text-center leading-tight">
-                  Distintos números
-                </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (diffCount > 0) {
-                        const lastLine = nationalCart.lines[nationalCart.lines.length - 1];
-                        nationalCart.removeLine(lastLine.number, lastLine.drawId);
-                      }
-                    }}
-                    disabled={diffCount === 0}
-                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-manises-blue text-sm font-black shadow-sm transition-all active:scale-95 disabled:opacity-30"
-                  >
-                    −
-                  </button>
-                  <span className="w-6 text-center text-lg font-black text-manises-blue">{diffCount}</span>
-                  <button
-                    type="button"
-                    onClick={() => onRandomNationalNumber(deliveryMode)}
-                    className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white text-manises-blue text-sm font-black shadow-sm transition-all active:scale-95"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.section>
-        );
-      })()}
-
-      {/* 5. Selección de décimos */}
+      {/* 4. Selección de décimos */}
       <section className="space-y-3">
         <div className="flex items-center justify-between px-0.5">
           <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
-            {selectionMode === 'random' ? 'Cambiar número' : 'Números disponibles'}
+            Números disponibles
           </p>
           <button
             onClick={onClear}
@@ -391,12 +246,10 @@ export function NationalAdvancedFlow({
           </button>
         </div>
 
-        {selectionMode === 'manual' && (
-          <NationalSearchBar
-            searchState={nationalShowcase.searchState}
-            onChange={nationalShowcase.setSearchState}
-          />
-        )}
+        <NationalSearchBar
+          searchState={nationalShowcase.searchState}
+          onChange={nationalShowcase.setSearchState}
+        />
 
         <NationalNumberShowcase
           items={nationalShowcase.items}
@@ -407,27 +260,177 @@ export function NationalAdvancedFlow({
         />
       </section>
 
-      {/* 6. Cesta */}
-      <NationalCartSummary
-        lines={nationalCart.lines}
-        breakdown={nationalCart.breakdown}
-        onRemove={nationalCart.removeLine}
-        onUpdateQuantity={nationalCart.updateQuantity}
-        onClear={nationalCart.clearCart}
-        availableBalance={availableBalance}
-        activeColor={game.color}
-      />
+      {/* Panel fijo inferior — números seleccionados */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 overflow-hidden border-t border-slate-100 bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.10)]"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        {/* Contenido expandible — lista de décimos seleccionados */}
+        <AnimatePresence>
+          {cartExpanded && hasLines && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.22 }}
+              className="overflow-hidden"
+            >
+              <div className="max-h-[50vh] overflow-y-auto">
+                {/* Cabecera */}
+                <div className="flex items-center justify-between border-b border-slate-50 px-4 py-2.5">
+                  <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+                    Números seleccionados
+                  </p>
+                  <button
+                    type="button"
+                    onClick={nationalCart.clearCart}
+                    className="text-[9px] font-black uppercase tracking-wider text-rose-400 transition-colors hover:text-rose-600"
+                  >
+                    Limpiar todo
+                  </button>
+                </div>
 
-      <PurchaseBottomBar
-        availableBalance={availableBalance}
-        totalPrice={nationalCart.breakdown.total}
-        canContinue={nationalCart.lines.length > 0}
-        ctaLabel={nationalCart.lines.length > 0 ? 'Revisar' : 'Elegir décimo'}
-        onContinue={goToCheckout}
-        activeColor={game.color}
-        drawsCount={effectiveSelectedDrawDates.length || 1}
-        validationText="Elige al menos un décimo"
-      />
+                {/* Filas por número */}
+                <div className="divide-y divide-slate-50 px-4">
+                  {nationalCart.lines.map((line) => (
+                    <div
+                      key={`${line.drawId}-${line.number}`}
+                      className="flex items-center justify-between gap-3 py-2.5"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-mono text-[1.1rem] font-black tracking-[0.16em] text-manises-blue">
+                          {line.number}
+                        </p>
+                        <span className={cn(
+                          'mt-0.5 inline-block rounded-md px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider',
+                          line.deliveryMode === 'custody'
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'border border-amber-200 bg-amber-50 text-amber-700'
+                        )}>
+                          {line.deliveryMode === 'custody' ? 'Digital' : 'Mensajería'}
+                        </span>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <div className="flex items-center overflow-hidden rounded-xl border border-slate-200 bg-white">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (line.quantity <= 1) nationalCart.removeLine(line.number, line.drawId);
+                              else nationalCart.updateQuantity(line.number, line.drawId, -1);
+                            }}
+                            className="flex h-7 w-7 items-center justify-center text-[12px] font-black text-manises-blue transition-colors hover:bg-slate-50"
+                          >
+                            −
+                          </button>
+                          <span className="w-5 text-center text-[12px] font-black tabular-nums text-manises-blue">
+                            {line.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => nationalCart.updateQuantity(line.number, line.drawId, 1)}
+                            disabled={line.quantity >= line.maxQuantity}
+                            className="flex h-7 w-7 items-center justify-center text-[12px] font-black text-manises-blue transition-colors hover:bg-slate-50 disabled:text-slate-200"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <p className="min-w-[3rem] text-right text-[11px] font-black text-manises-blue">
+                          {formatCurrency(line.totalPrice)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Envío si aplica */}
+                {nationalCart.breakdown.hasShipping && (
+                  <div className="flex items-center justify-between border-t border-slate-50 px-4 py-2">
+                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+                      Envío MRW
+                    </span>
+                    <span className="text-[11px] font-black text-manises-blue">
+                      {formatCurrency(nationalCart.breakdown.shippingCost)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Fila toggle */}
+        <button
+          type="button"
+          onClick={() => hasLines && setCartExpanded((prev) => !prev)}
+          className="flex w-full items-center justify-between border-b border-slate-50 px-4 py-2.5"
+        >
+          <div className="flex items-center gap-2">
+            <ShoppingCart className="h-3.5 w-3.5 text-manises-blue/60" />
+            {!hasLines ? (
+              <span className="text-[10px] text-slate-400">Elige al menos un décimo</span>
+            ) : (
+              <span className="text-[10px] font-black text-manises-blue">
+                {nationalCart.lines.length}{' '}
+                {nationalCart.lines.length === 1 ? 'número' : 'números'}
+                {' · '}
+                {nationalCart.breakdown.totalDecimos}{' '}
+                {nationalCart.breakdown.totalDecimos === 1 ? 'décimo' : 'décimos'} seleccionados
+              </span>
+            )}
+          </div>
+          {hasLines && (
+            cartExpanded
+              ? <NavArrowDown className="h-3.5 w-3.5 text-slate-400" />
+              : <NavArrowUp className="h-3.5 w-3.5 text-slate-400" />
+          )}
+        </button>
+
+        {/* Barra de acción */}
+        <div className="mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] bg-[#0a4792]/88 text-white">
+          {/* Saldo */}
+          <div className="relative flex min-w-0 flex-col items-center justify-center border-r border-white/12 px-1">
+            <div className="absolute inset-x-1.5 inset-y-1.5 rounded-xl bg-white/[0.035]" />
+            <p className={cn('relative text-[1.05rem] font-black leading-none', isOverBalance ? 'text-red-300' : 'text-manises-gold')}>
+              {balanceParts.euros}
+              <sup className="ml-0.5 align-super text-[0.5rem] font-black">,{balanceParts.cents}</sup>
+            </p>
+            <p className="relative mt-1 text-[0.5rem] font-bold uppercase tracking-[0.08em] leading-none text-white/58">
+              Saldo €
+            </p>
+          </div>
+
+          {/* Importe */}
+          <div className="relative flex min-w-0 flex-col items-center justify-center border-r border-white/12 px-1">
+            <div className="absolute inset-x-1.5 inset-y-1.5 rounded-xl bg-white/[0.035]" />
+            <p className="relative text-[1.05rem] font-black leading-none text-white">
+              {totalParts.euros}
+              <sup className="ml-0.5 align-super text-[0.5rem] font-black">,{totalParts.cents}</sup>
+            </p>
+            <p className="relative mt-1 text-[0.5rem] font-bold uppercase tracking-[0.08em] leading-none text-white/58">
+              Importe €
+            </p>
+          </div>
+
+          {/* CTA */}
+          <button
+            type="button"
+            onClick={() => nationalCart.onPersistToSession?.()}
+            disabled={!hasLines}
+            className={cn(
+              'relative m-1.5 flex h-auto min-w-0 items-center justify-center overflow-hidden rounded-xl px-4 text-[1rem] font-black leading-none transition-all active:scale-[0.985]',
+              'shadow-[inset_0_1px_0_rgba(255,255,255,0.42),0_6px_14px_rgba(0,0,0,0.14),0_0_14px_rgba(245,197,24,0.14)]',
+              !hasLines
+                ? 'cursor-not-allowed bg-white/10 text-white/45 shadow-none'
+                : 'bg-manises-gold text-manises-blue'
+            )}
+          >
+            <span className="absolute inset-x-4 top-0 h-px bg-white/45" />
+            <span className="relative">
+              {hasLines ? 'Añadir a cesta' : 'Elige décimo'}
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

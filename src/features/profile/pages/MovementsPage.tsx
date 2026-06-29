@@ -210,7 +210,7 @@ export function MovementsPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedMovement(null)}
-              className="fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-[2px] w-full h-full cursor-default"
+              className="fixed inset-0 z-[90] bg-slate-950/45 backdrop-blur-[2px] w-full h-full cursor-default"
               aria-label="Cerrar detalle"
             />
             <motion.div
@@ -218,9 +218,9 @@ export function MovementsPage() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-              className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-h-[85vh] w-full max-w-screen-sm flex-col rounded-t-[2.5rem] bg-slate-50 border-t border-slate-200/80 shadow-[0_-28px_60px_rgba(15,23,42,0.22)] pb-safe"
+              className="fixed inset-x-0 bottom-0 z-[100] mx-auto flex max-h-[calc(100dvh-1rem)] w-full max-w-screen-sm flex-col rounded-t-[2.5rem] bg-slate-50 border-t border-slate-200/80 shadow-[0_-28px_60px_rgba(15,23,42,0.22)] pb-safe"
             >
-              <div className="px-5 py-4 flex-1 overflow-y-auto">
+              <div className="px-5 py-4 flex-1 overflow-y-auto overscroll-contain">
                 <div className="mx-auto h-1.5 w-14 rounded-full bg-slate-200" />
                 
                 {/* Header del detalle */}

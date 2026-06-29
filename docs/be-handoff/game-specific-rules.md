@@ -28,3 +28,8 @@ Es un producto radicalmente distinto:
 - **Selección**: No hay array de números aleatorios, sino un string `number` de 5 cifras (ej: "69844").
 - **Stock**: BE debe gestionar el inventario de décimos disponibles por cada número y sorteo.
 - **Validación**: No mezclar lógica de "apuestas" con Nacional. No existe el concepto de "apuesta múltiple" en Nacional.
+- **Modo de entrega** (`deliveryMode: 'custody' | 'shipping'`): el FE envía este campo por línea de carrito.
+  - `custody` = décimo digital en custodia, sin envío físico.
+  - `shipping` = envío físico MRW; BE debe sumar el coste de envío y gestionar la dirección postal.
+- **Coste de envío**: cuando `deliveryMode === 'shipping'`, BE aplica tarifa MRW fija por pedido (no por décimo). El FE lo espera en `breakdown.shippingCost`.
+- **Dirección de envío**: el FE recoge nombre, apellidos, teléfono, dirección, CP, municipio y provincia. BE debe validar que estos campos están presentes cuando `deliveryMode === 'shipping'`.

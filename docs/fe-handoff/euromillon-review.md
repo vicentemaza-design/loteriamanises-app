@@ -32,7 +32,7 @@ El proyecto cuenta con una capa de aplicación desacoplada que FE puede usar en 
 - Lógica matemática en `src/features/play/lib/bet-calculator.ts`.
 
 ### Partes Acopladas (Requieren Refactor)
-- **GamePlayPage.tsx**: Es un archivo gigante (>1300 líneas) que mezcla UI, gestión de estado de todos los tipos de juego (Nacional, Quiniela, Euromillones) y efectos.
+- **GamePlayPage.tsx**: Archivo de 1883 líneas (junio 2026) que mezcla UI, gestión de estado de todos los tipos de juego (Nacional, Navidad, Quiniela, Euromillones) y efectos. Los componentes complejos ya están extraídos (`NationalAdvancedFlow`, `NavidadCheckoutFlow`, `MulticolumnTicketFlow`) pero el pegamento de routing sigue en este archivo. Ver propuesta de división en `docs/CAMBIOS_HOY.md → Deuda técnica`.
 - **useEffect de Mapeo**: El proceso de cargar un draft existente para edición está muy acoplado al estado local de la página.
 
 ## Checklist de Pruebas para FE

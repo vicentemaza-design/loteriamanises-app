@@ -312,7 +312,7 @@ export function MulticolumnTicketFlow({
       >
         <div className="rounded-2xl p-2" style={theme.surface}>
           {totalStars > 0 ? (
-            <div className="flex gap-2 items-start">
+            <div className="flex gap-2 items-stretch">
               <div className="flex-1 min-w-0">
                 <NumbersGrid
                   compact
@@ -332,7 +332,7 @@ export function MulticolumnTicketFlow({
                 />
               </div>
               <div className="w-px self-stretch bg-gray-100 shrink-0 mt-5" />
-              <div className="w-[76px] shrink-0">
+              <div className="w-[80px] shrink-0">
                 <StarsGrid
                   compact
                   gridCols={2}

@@ -273,8 +273,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     if (isMulticolumnMode) return false;
     return selectedNumbers.length > 0;
   })();
-  // MANUAL → ocultar setup (grid a pantalla completa). ALEATORIO o sin elegir → mostrar setup.
-  const shouldShowInlineSetup = !supportsQuickPick || mode !== 'simple' || betMethod !== 'manual';
+  // Simple: mostrar setup (fechas, tipo, método). Múltiple/Reducida: solo el grid, config accesible por el chip.
+  const shouldShowInlineSetup = mode === 'simple' && (!supportsQuickPick || betMethod !== 'manual');
 
   const drawTimeSummary = useMemo(() => {
     const d = new Date(drawStatus.drawDate);
@@ -1163,93 +1163,99 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
               </motion.div>
             ) : (supportsQuickPick && mode === 'simple' && betMethod === null) ? null : (
               <>
-                {/* Selección visual */}
-                <div className="surface-neo-soft flex flex-col items-center gap-2 rounded-[1.2rem] border border-white/70 p-2 shadow-sm" style={theme.surface}>
-                  <div className="flex flex-wrap justify-center gap-1.5">
-                    {(mode === 'reduced'
-                      ? Array.from({ length: Math.max(minNums, selectedNumbers.length || minNums) })
-                      : Array.from({ length: maxNums })
-                    ).map((_, i) => (
-                      <motion.div
-                        key={`slot-${i}`}
-                        animate={{ scale: selectedNumbers[i] ? 1 : 0.95 }}
-                        className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedNumbers[i] ? 'shadow-sm' : 'bg-white border-dashed border-gray-200 text-gray-200'}`}
-                        style={selectedNumbers[i] ? theme.selectedNumber : undefined}
-                      >
-                        {selectedNumbers[i] ?? ''}
-                      </motion.div>
-                    ))}
-                    {maxStars > 0 && (
-                      <div className="ml-0.5 flex gap-1.5 border-l-2 border-gray-200 pl-2">
-                        {Array.from({ length: mode === 'reduced' ? minStars : maxStars }).map((_, i) => (
-                          <motion.div
-                            key={`star-slot-${i}`}
-                            animate={{ scale: selectedStars[i] ? 1 : 0.95 }}
-                            className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-black transition-colors ${selectedStars[i] ? 'bg-manises-gold border-manises-gold text-manises-blue shadow-gold' : 'bg-white border-dashed border-yellow-200 text-yellow-200'}`}
-                          >
-                            {selectedStars[i] ?? ''}
-                          </motion.div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex gap-1.5">
-                    <Button
-                      variant="outline" size="sm"
-                      className="h-7 rounded-lg border-manises-gold/50 px-3 text-[9px] font-bold uppercase tracking-wider text-manises-gold hover:bg-manises-gold/5"
+                {/* Selección compacta — fila única con burbujas + acciones */}
+                <div className="flex items-center justify-between gap-2 rounded-2xl border border-white/70 px-3 py-2 shadow-sm" style={theme.surface}>
+                  {mode === 'reduced' ? (
+                    <span className="text-[11px] font-black leading-none" style={theme.title}>
+                      {selectedNumbers.length}/{maxNums} núm.{maxStars > 0 ? ` · ${selectedStars.length}/${maxStars} ★` : ''}
+                    </span>
+                  ) : (
+                    <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
+                      {Array.from({ length: maxNums }).map((_, i) => (
+                        <motion.div
+                          key={`slot-${i}`}
+                          animate={{ scale: selectedNumbers[i] ? 1 : 0.9 }}
+                          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[10px] font-black transition-colors ${selectedNumbers[i] ? 'shadow-sm' : 'border-dashed border-gray-200 bg-white/60 text-gray-200'}`}
+                          style={selectedNumbers[i] ? theme.selectedNumber : undefined}
+                        >
+                          {selectedNumbers[i] ?? ''}
+                        </motion.div>
+                      ))}
+                      {maxStars > 0 && (
+                        <div className="ml-1 flex gap-1 border-l border-gray-200/80 pl-1.5">
+                          {Array.from({ length: maxStars }).map((_, i) => (
+                            <motion.div
+                              key={`star-slot-${i}`}
+                              animate={{ scale: selectedStars[i] ? 1 : 0.9 }}
+                              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[10px] font-black transition-colors ${selectedStars[i] ? 'bg-manises-gold border-manises-gold text-manises-blue' : 'border-dashed border-yellow-200 bg-white text-yellow-200'}`}
+                            >
+                              {selectedStars[i] ?? ''}
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="flex shrink-0 gap-1">
+                    <button
+                      type="button"
                       onClick={handleRandom}
+                      className="flex h-7 items-center gap-1 rounded-lg border border-manises-gold/50 px-2.5 text-[9px] font-bold uppercase tracking-wider text-manises-gold transition-colors hover:bg-manises-gold/5"
                     >
-                      <Spark className="w-3 h-3 mr-1" /> Aleatorio
-                    </Button>
-                    <Button
-                      variant="outline" size="sm"
-                      className="h-7 rounded-lg border-gray-200 px-3 text-[9px] font-bold uppercase tracking-wider text-gray-500 hover:bg-gray-50"
+                      <Spark className="h-2.5 w-2.5" /> Aleat.
+                    </button>
+                    <button
+                      type="button"
                       onClick={handleClear}
+                      className="flex h-7 items-center gap-1 rounded-lg border border-gray-200 px-2.5 text-[9px] font-bold uppercase tracking-wider text-gray-500 transition-colors hover:bg-gray-50"
                     >
-                      <RefreshCircle className="w-3 h-3 mr-1" /> Limpiar
-                    </Button>
+                      <RefreshCircle className="h-2.5 w-2.5" /> Limpiar
+                    </button>
                   </div>
                 </div>
 
                 {/* Boleto */}
-                {totalStars > 0 ? (
-                  <div className="flex gap-2 items-start">
-                    <div className="flex-1 min-w-0">
+                <div className="overflow-hidden rounded-2xl" style={theme.surface}>
+                  <div className="p-2">
+                    {totalStars > 0 ? (
+                      <div className="flex gap-2 items-stretch">
+                        <div className="flex-1 min-w-0">
+                          <NumbersGrid
+                            compact
+                            columns={5}
+                            totalNums={totalNums}
+                            selectedNumbers={selectedNumbers}
+                            maxNumbersLimit={mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
+                            onToggle={toggleNumber}
+                            theme={theme}
+                          />
+                        </div>
+                        <div className="w-px self-stretch bg-gray-100/80 shrink-0 mt-5" />
+                        <div className="w-[80px] shrink-0">
+                          <StarsGrid
+                            compact
+                            gridCols={2}
+                            starValues={starValues}
+                            selectedStars={selectedStars}
+                            maxStarsLimit={maxStars}
+                            onToggle={toggleStar}
+                            theme={theme}
+                            title={game.type === 'gordo' ? 'Clave' : 'Estrellas'}
+                            labelPrefix={game.type === 'gordo' ? 'Clave' : 'Estrella'}
+                          />
+                        </div>
+                      </div>
+                    ) : (
                       <NumbersGrid
-                        compact
-                        columns={5}
                         totalNums={totalNums}
                         selectedNumbers={selectedNumbers}
                         maxNumbersLimit={mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
                         onToggle={toggleNumber}
                         theme={theme}
                       />
-                    </div>
-                    <div className="w-px self-stretch bg-gray-100 shrink-0 mt-5" />
-                    <div className="w-[76px] shrink-0">
-                      <StarsGrid
-                        compact
-                        gridCols={2}
-                        starValues={starValues}
-                        selectedStars={selectedStars}
-                        maxStarsLimit={maxStars}
-                        onToggle={toggleStar}
-                        theme={theme}
-                        title={game.type === 'gordo' ? 'Clave' : 'Estrellas'}
-                        labelPrefix={game.type === 'gordo' ? 'Clave' : 'Estrella'}
-                      />
-                    </div>
+                    )}
                   </div>
-                ) : (
-                  <NumbersGrid
-                    totalNums={totalNums}
-                    selectedNumbers={selectedNumbers}
-                    maxNumbersLimit={mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
-                    onToggle={toggleNumber}
-                    theme={theme}
-                  />
-                )}
+                </div>
 
                 {mode === 'reduced' && (
                   <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">

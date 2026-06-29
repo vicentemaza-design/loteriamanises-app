@@ -35,7 +35,7 @@ export function StarsGrid({
   const isSideColumn = compact && finalGridCols <= 2;
 
   return (
-    <div className={compact ? 'space-y-1.5' : 'space-y-2'}>
+    <div className={compact ? (isSideColumn ? 'flex flex-col h-full gap-1.5' : 'space-y-1.5') : 'space-y-2'}>
       {isSideColumn ? (
         // Título apilado para columna estrecha
         <div className="flex flex-col items-center gap-0.5 px-0.5">
@@ -73,11 +73,14 @@ export function StarsGrid({
           'grid',
           compact
             ? isSideColumn
-              ? 'gap-0.5'
+              ? 'gap-1 flex-1'
               : 'gap-1.5 justify-items-center'
             : 'gap-2'
         )}
-        style={{ gridTemplateColumns: `repeat(${finalGridCols}, minmax(0, 1fr))` }}
+        style={{
+          gridTemplateColumns: `repeat(${finalGridCols}, minmax(0, 1fr))`,
+          ...(isSideColumn ? { alignContent: 'space-between' } : {}),
+        }}
       >
         {starValues.map(n => {
           const isSelected = selectedStars.includes(n);
@@ -91,7 +94,7 @@ export function StarsGrid({
                 compact
                   ? isSideColumn
                     // Columna lateral: rellena la celda, altura fija
-                    ? 'w-full h-9 rounded-lg text-xs font-semibold'
+                    ? 'w-full h-[38px] rounded-lg text-sm font-semibold'
                     // Modo compacto estándar (multicolumna, etc.): tamaño fijo cuadrado
                     : 'w-10 h-10 rounded-lg text-xs font-semibold'
                   : 'aspect-square rounded-xl text-sm',

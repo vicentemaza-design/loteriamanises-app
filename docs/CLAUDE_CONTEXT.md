@@ -206,7 +206,23 @@ Una vez hecha esa limpieza mínima, entrar al diseño con este criterio:
 ## Estado de compilación al cerrar este contexto
 - `npm run lint`: OK
 - `npm run build`: OK
+- `npx tsc --noEmit`: OK (sin errores, junio 2026)
 - login Firebase local: OK tras autorizar `localhost` en Firebase Auth
+
+## Componentes nuevos incorporados (junio 2026)
+- `src/features/play/national/components/NationalCheckoutReview.tsx` — revisión previa a pago de Nacional
+- `src/features/play/national/components/NavidadCheckoutFlow.tsx` — flujo completo selección→cesta→checkout Navidad
+- `src/features/play/components/PurchaseBottomBar.tsx` — barra inferior compartida de importe y CTA
+- `src/features/tickets/pages/TicketDetailPage.tsx` — detalle de jugada con certificado
+- `src/features/tickets/components/NationalDetailContent.tsx` — detalle específico Nacional
+- `src/features/results/components/ResultDetailModal.tsx` — modal de escrutinio completo
+- `src/features/profile/pages/SubscriptionsPage.tsx` — reescrita como bandeja de abonos
+- Múltiples páginas de perfil nuevas: BiometricsPage, FavoritesPage, GameSubscriptionsPage, etc.
+
+## Deuda técnica prioritaria (junio 2026)
+1. **GamePlayPage.tsx** (1883 líneas) — dividir en páginas por familia de juego. Ver propuesta en `docs/CAMBIOS_HOY.md`.
+2. La lógica de negocio de `play` sigue en la página en lugar de en servicios puros.
+3. `tickets` y `results` usan datos mock; pendiente conectar con HttpAdapter real.
 
 ## Mensaje para Claude
 Si retomas este proyecto:

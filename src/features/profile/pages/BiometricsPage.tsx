@@ -115,13 +115,13 @@ export function BiometricsPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ scale: 0.92, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.92, opacity: 0, y: 20 }}
-              className="fixed inset-x-4 bottom-1/2 translate-y-1/2 z-50 bg-slate-900 text-white rounded-3xl shadow-[0_30px_70px_rgba(0,0,0,0.5)] p-6 max-w-sm mx-auto border border-white/10"
+              className="fixed inset-x-4 bottom-1/2 translate-y-1/2 z-[100] bg-slate-900 text-white rounded-3xl shadow-[0_30px_70px_rgba(0,0,0,0.5)] p-6 max-w-sm mx-auto border border-white/10"
             >
               <div className="flex flex-col items-center gap-5 text-center">
                 {!isVerifying ? (

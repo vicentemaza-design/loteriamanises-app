@@ -1,5 +1,4 @@
-import { Lock } from 'lucide-react';
-import { Smartphone, Truck } from 'lucide-react';
+import { Lock, Smartphone, Truck } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 
 export type DeliveryMode = 'custody' | 'shipping';
@@ -18,69 +17,61 @@ export function NationalDeliverySelector({
   onShippingUnavailableClick,
 }: NationalDeliverySelectorProps) {
   return (
-    <div className="space-y-2.5">
-      <div className="px-1">
-        <h3 className="text-[10px] font-black text-manises-blue uppercase tracking-widest">Tipo de décimo / Entrega</h3>
-      </div>
+    <div className="flex items-center gap-1 rounded-2xl border border-slate-100 bg-slate-50 p-1">
+      <button
+        type="button"
+        onClick={() => onChange('custody')}
+        className={cn(
+          'flex flex-1 items-center justify-center gap-2 rounded-xl py-2 transition-all active:scale-[0.98]',
+          selectedMode === 'custody' ? 'bg-manises-blue shadow-sm' : 'hover:bg-white/60'
+        )}
+      >
+        <Smartphone
+          className={cn('h-3.5 w-3.5 shrink-0', selectedMode === 'custody' ? 'text-white' : 'text-manises-blue/60')}
+        />
+        <div className="text-left">
+          <p className={cn('text-[10px] font-black uppercase tracking-wider leading-none', selectedMode === 'custody' ? 'text-white' : 'text-slate-500')}>
+            Digital
+          </p>
+          <p className={cn('mt-0.5 text-[8px] font-medium leading-none', selectedMode === 'custody' ? 'text-white/60' : 'text-slate-400')}>
+            Custodia sin envío
+          </p>
+        </div>
+      </button>
 
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          onClick={() => onChange('custody')}
-          className={cn(
-            'flex items-center gap-2 rounded-2xl border-2 p-3 text-left transition-all',
-            selectedMode === 'custody'
-              ? 'border-manises-blue bg-manises-blue text-white shadow-manises'
-              : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
-          )}
-        >
-          <Smartphone className={cn('h-5 w-5', selectedMode === 'custody' ? 'text-white' : 'text-manises-blue')} />
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-wider">Digital</p>
-            <p className={cn('text-[9px] font-medium opacity-70', selectedMode === 'custody' ? 'text-white' : 'text-slate-400')}>
-              Custodia sin envío
-            </p>
-          </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            if (!shippingAvailable) {
-              onShippingUnavailableClick?.();
-            } else {
-              onChange('shipping');
-            }
-          }}
-          className={cn(
-            'relative flex items-center gap-2 rounded-2xl border-2 p-3 text-left transition-all',
-            !shippingAvailable
-              ? 'border-slate-100 bg-slate-50 text-slate-400'
-              : selectedMode === 'shipping'
-              ? 'border-manises-blue bg-manises-blue text-white shadow-manises'
-              : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
-          )}
-        >
-          {!shippingAvailable && (
-            <Lock className="absolute right-2.5 top-2.5 h-3 w-3 text-slate-300" />
-          )}
-          <Truck className={cn(
-            'h-5 w-5',
-            !shippingAvailable ? 'text-slate-300' : selectedMode === 'shipping' ? 'text-white' : 'text-manises-blue'
-          )} />
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-wider">Mensajería</p>
-            <p className={cn(
-              'text-[9px] font-medium opacity-70',
-              !shippingAvailable ? 'text-slate-400' : selectedMode === 'shipping' ? 'text-white' : 'text-slate-400'
-            )}>
-              {shippingAvailable ? 'Envío a tu casa' : 'No disponible'}
-            </p>
-          </div>
-        </button>
-      </div>
-
-      <p className="px-1 text-[9px] font-medium text-slate-400">Servicio simulado en esta demo.</p>
+      <button
+        type="button"
+        onClick={() => {
+          if (!shippingAvailable) {
+            onShippingUnavailableClick?.();
+          } else {
+            onChange('shipping');
+          }
+        }}
+        className={cn(
+          'relative flex flex-1 items-center justify-center gap-2 rounded-xl py-2 transition-all active:scale-[0.98]',
+          !shippingAvailable
+            ? 'opacity-40'
+            : selectedMode === 'shipping'
+            ? 'bg-manises-blue shadow-sm'
+            : 'hover:bg-white/60'
+        )}
+      >
+        {!shippingAvailable && (
+          <Lock className="absolute right-2 top-1.5 h-2.5 w-2.5 text-slate-400" />
+        )}
+        <Truck
+          className={cn('h-3.5 w-3.5 shrink-0', selectedMode === 'shipping' ? 'text-white' : 'text-manises-blue/60')}
+        />
+        <div className="text-left">
+          <p className={cn('text-[10px] font-black uppercase tracking-wider leading-none', selectedMode === 'shipping' ? 'text-white' : 'text-slate-500')}>
+            Mensajería
+          </p>
+          <p className={cn('mt-0.5 text-[8px] font-medium leading-none', selectedMode === 'shipping' ? 'text-white/60' : 'text-slate-400')}>
+            {shippingAvailable ? 'Envío a tu casa' : 'No disponible'}
+          </p>
+        </div>
+      </button>
     </div>
   );
 }
