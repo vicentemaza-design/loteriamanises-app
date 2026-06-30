@@ -4,6 +4,7 @@ import { createApiClient } from '@/services/api/factory/createApiClient';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePlaySession } from './usePlaySession';
 import { usePlaySessionSummary } from './usePlaySessionSummary';
+import { notifyPurchaseConfirmed } from '../lib/cart-toast';
 import type { PlayDraft } from '../types/session.types';
 
 function mapDraftToDto(draft: PlayDraft) {
@@ -121,7 +122,7 @@ export function usePlaySessionConfirm() {
 
       resolveConfirmSuccess(response.confirmedDraftIds ?? validDrafts.map((draft) => draft.id));
       closeReview();
-      toast.success(`Jugadas confirmadas: ${validDrafts.length}`);
+      notifyPurchaseConfirmed(validDrafts.length);
       return { ok: true, needsAuth: false };
     } catch (error) {
       console.error('[usePlaySessionConfirm] Unexpected error:', error);

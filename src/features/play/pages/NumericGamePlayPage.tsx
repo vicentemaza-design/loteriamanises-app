@@ -12,6 +12,7 @@ import {
   DiceFive,
 } from 'iconoir-react/regular';
 import { toast } from 'sonner';
+import { notifyAddedToCart } from '@/features/session/lib/cart-toast';
 import { generateRandomPlay } from '@/features/play/services/play.service';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { cn } from '@/shared/lib/utils';
@@ -69,7 +70,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useAuth();
-  const { drafts, addDrafts, updateDraft } = usePlaySession();
+  const { drafts, addDrafts, updateDraft, openReview } = usePlaySession();
 
   const editingDraftId = (location.state as GamePlayLocationState | null)?.playDraftId;
   const editingDraft = useMemo(
@@ -439,10 +440,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       isSubscription,
     });
     const result = addDrafts(quickDrafts);
-    if (result.addedCount > 0 && result.duplicateCount === 0) {
-      toast.success(result.addedCount === 1 ? 'Jugada añadida.' : `${result.addedCount} jugadas añadidas.`);
-    } else if (result.addedCount > 0 && result.duplicateCount > 0) {
-      toast.success(`${result.addedCount} añadidas (${result.duplicateCount} duplicadas).`);
+    if (result.addedCount > 0) {
+      notifyAddedToCart(result, openReview);
     } else {
       toast.error(result.duplicateCount === 1 ? 'Esta jugada ya estaba añadida.' : 'Todas las jugadas ya estaban añadidas.');
     }
@@ -508,10 +507,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       }
 
       const result = addDrafts(allDrafts);
-      if (result.addedCount > 0 && result.duplicateCount === 0) {
-        toast.success(result.addedCount === 1 ? 'Jugada añadida.' : `${result.addedCount} jugadas añadidas.`);
-      } else if (result.addedCount > 0 && result.duplicateCount > 0) {
-        toast.success(`${result.addedCount} añadidas (${result.duplicateCount} duplicadas).`);
+      if (result.addedCount > 0) {
+        notifyAddedToCart(result, openReview);
       } else {
         toast.error(result.duplicateCount === 1 ? 'Esta jugada ya estaba añadida.' : 'Todas las jugadas ya estaban añadidas.');
       }
@@ -583,7 +580,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
 
     const result = addDrafts(nextDrafts);
     if (result.addedCount > 0) {
-      toast.success(result.addedCount === 1 ? 'Jugada reducida añadida.' : `${result.addedCount} jugadas añadidas.`);
+      notifyAddedToCart(result, openReview, 'Jugada reducida');
       setSelectedNumbers([]);
       setSelectedStars([]);
     }
@@ -665,11 +662,11 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
 
     const result = addDrafts(nextDrafts);
     if (result.addedCount > 0) {
-      toast.success(result.addedCount === 1 ? 'Jugada añadida.' : `${result.addedCount} jugadas añadidas.`);
+      notifyAddedToCart(result, openReview);
       setSelectedNumbers([]);
       setSelectedStars([]);
     }
-    if (result.duplicateCount > 0) {
+    if (result.duplicateCount > 0 && result.addedCount === 0) {
       toast.error(result.duplicateCount === 1 ? 'Ya tenías esa jugada en la sesión.' : `${result.duplicateCount} jugadas duplicadas no se añadieron.`);
     }
   };

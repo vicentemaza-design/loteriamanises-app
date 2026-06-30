@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getBusinessDate } from '@/shared/lib/timezone';
 import { toast } from 'sonner';
+import { notifyAddedToCart } from '@/features/session/lib/cart-toast';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 import { GameInfoSheet } from '../components/GameInfoSheet';
@@ -257,11 +258,7 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
     const result = addDrafts(allDrafts);
 
     if (result.addedCount > 0) {
-      toast.success(
-        result.addedCount === 1
-          ? 'Borrador añadido a tu sesión de prueba.'
-          : `${result.addedCount} borradores añadidos a tu sesión de prueba.`
-      );
+      notifyAddedToCart(result, undefined, 'Décimo');
       clearNationalCart();
       openReview();
     }

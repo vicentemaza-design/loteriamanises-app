@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { WarningTriangle, ControlSlider } from 'iconoir-react/regular';
 import { RefreshCircle } from 'iconoir-react/regular';
 import { toast } from 'sonner';
+import { notifyAddedToCart } from '@/features/session/lib/cart-toast';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 import { cn, formatCurrency } from '@/shared/lib/utils';
@@ -47,7 +48,7 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useAuth();
-  const { drafts, addDrafts, updateDraft } = usePlaySession();
+  const { drafts, addDrafts, updateDraft, openReview } = usePlaySession();
 
   const editingDraftId = (location.state as GamePlayLocationState | null)?.playDraftId;
   const editingDraft = useMemo(
@@ -206,10 +207,10 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
 
     const result = addDrafts(nextDrafts);
     if (result.addedCount > 0) {
-      toast.success('Jugada añadida.');
+      notifyAddedToCart(result, openReview);
       setQuinielaMatches((prev) => prev.map((m) => ({ ...m, result: null })));
     }
-    if (result.duplicateCount > 0) {
+    if (result.duplicateCount > 0 && result.addedCount === 0) {
       toast.error('Ya tenías esa jugada en la sesión.');
     }
   };
