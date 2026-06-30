@@ -329,7 +329,7 @@ export function MulticolumnTicketFlow({
               <div className="w-[80px] shrink-0">
                 <StarsGrid
                   compact
-                  gridCols={2}
+                  gridCols={game.type === 'primitiva' ? 1 : 2}
                   starValues={Array.from(
                     { length: totalStars },
                     (_, i) => startsAtZero ? i : i + 1
