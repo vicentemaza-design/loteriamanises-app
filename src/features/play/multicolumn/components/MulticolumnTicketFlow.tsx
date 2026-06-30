@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { NavArrowLeft, NavArrowRight, RefreshCircle } from 'iconoir-react/regular';
+import { NavArrowLeft, NavArrowRight, Plus, RefreshCircle } from 'iconoir-react/regular';
 import { cn } from '@/shared/lib/utils';
 import type { LotteryGame } from '@/shared/types/domain';
 import type { MulticolumnDraftIntent } from '../contracts/multicolumn-play.contract';
@@ -11,7 +11,6 @@ import { NumbersGrid } from '@/features/play/components/NumbersGrid';
 import { StarsGrid } from '@/features/play/components/StarsGrid';
 import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
 import type { GamePlayBottomMenuItem } from '@/features/play/components/GamePlayBottomMenu';
-import { MulticolumnColumnSlider } from './MulticolumnColumnSlider';
 import { MulticolumnActions } from './MulticolumnActions';
 
 interface MulticolumnTicketFlowProps {
@@ -31,6 +30,45 @@ function formatConfirmDate(iso: string): string {
   return `${weekday} ${d.getDate()}`;
 }
 
+interface SubscriptionToggleProps {
+  isSubscription: boolean;
+  onChange?: (val: boolean) => void;
+}
+
+function SubscriptionToggle({ isSubscription, onChange }: SubscriptionToggleProps) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange?.(!isSubscription)}
+      className={cn(
+        'w-full text-left rounded-[1.6rem] border px-4 py-4 shadow-sm transition-all',
+        isSubscription
+          ? 'border-manises-blue/20 bg-manises-blue/[0.05]'
+          : 'border-slate-100 bg-white hover:border-slate-200'
+      )}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue">Jugar todas las semanas</p>
+          <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate-400">
+            Tus apuestas se jugarán automáticamente en los sorteos seleccionados.
+          </p>
+        </div>
+        <div className={cn(
+          'relative flex h-6 w-10 shrink-0 rounded-full transition-colors',
+          isSubscription ? 'bg-manises-blue' : 'bg-slate-200'
+        )}>
+          <motion.div
+            animate={{ x: isSubscription ? 18 : 2 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+            className="absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm"
+          />
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export function MulticolumnTicketFlow({
   game,
   drawDates,
@@ -47,12 +85,10 @@ export function MulticolumnTicketFlow({
     setActiveColumn,
     updateActiveColumn,
     clearActiveColumn,
-    clearAllColumns,
     randomizeActiveColumn,
     randomizeColumn,
     randomizeAllColumns,
     addColumn,
-    removeColumn,
   } = useMulticolumn(game, initialColumnsCount, drawDates.length);
 
   const [showConfirm, setShowConfirm] = useState(false);
@@ -65,17 +101,6 @@ export function MulticolumnTicketFlow({
   const maxNums = game.selectionRange?.numbers?.max ?? game.selectionRange?.numbers?.min ?? 6;
   const totalStars = game.selectionRange?.stars?.total ?? 0;
   const maxStars = game.selectionRange?.stars?.max ?? game.selectionRange?.stars?.min ?? 0;
-
-  const columnStatus = useMemo(() => {
-    const status: Record<number, { isComplete: boolean; hasData: boolean }> = {};
-    state.columns.forEach((col, i) => {
-      status[i] = {
-        isComplete: col.isComplete,
-        hasData: col.numbers.length > 0 || col.stars.length > 0,
-      };
-    });
-    return status;
-  }, [state.columns]);
 
   const blockCount = state.columns.length;
   const completeCount = summary.completeColumns;
@@ -90,6 +115,11 @@ export function MulticolumnTicketFlow({
       : 'Apuesta vacía';
   const goToPreviousColumn = () => setActiveColumn(Math.max(0, state.activeColumnIndex - 1));
   const goToNextColumn = () => setActiveColumn(Math.min(blockCount - 1, state.activeColumnIndex + 1));
+  const isLastColumn = state.activeColumnIndex === blockCount - 1;
+  const handleAddAndGoToColumn = () => {
+    addColumn();
+    setActiveColumn(blockCount);
+  };
 
   const completeColumnEntries = useMemo(
     () => state.columns
@@ -206,35 +236,7 @@ export function MulticolumnTicketFlow({
         </div>
 
         {/* Toggle suscripción */}
-        <button
-          type="button"
-          onClick={() => onSubscriptionChange?.(!isSubscription)}
-          className={cn(
-            'w-full text-left rounded-[1.6rem] border px-4 py-4 shadow-sm transition-all',
-            isSubscription
-              ? 'border-manises-blue/20 bg-manises-blue/[0.05]'
-              : 'border-slate-100 bg-white hover:border-slate-200'
-          )}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue">Jugar todas las semanas</p>
-              <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate-400">
-                Tus apuestas se jugarán automáticamente en los sorteos seleccionados.
-              </p>
-            </div>
-            <div className={cn(
-              'relative flex h-6 w-10 shrink-0 rounded-full transition-colors',
-              isSubscription ? 'bg-manises-blue' : 'bg-slate-200'
-            )}>
-              <motion.div
-                animate={{ x: isSubscription ? 18 : 2 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                className="absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm"
-              />
-            </div>
-          </div>
-        </button>
+        <SubscriptionToggle isSubscription={isSubscription} onChange={onSubscriptionChange} />
 
         {/* Volver a editar */}
         <button
@@ -259,7 +261,7 @@ export function MulticolumnTicketFlow({
       </motion.div>
     ) : (
     <div className="flex flex-col gap-2 pb-40">
-      {/* Navegación: APUESTA X DE Y + flechas + dots */}
+      {/* Navegación: flechas + "Apuesta X de Y" — el botón derecho crea la siguiente al llegar a la última */}
       <div className="flex items-center gap-2">
         <button
           onClick={goToPreviousColumn}
@@ -273,33 +275,20 @@ export function MulticolumnTicketFlow({
           <p className="text-[11px] font-black uppercase tracking-[0.14em] text-manises-blue">
             Apuesta {state.activeColumnIndex + 1} de {blockCount}
           </p>
-          <MulticolumnColumnSlider
-            columnsCount={blockCount}
-            activeIndex={state.activeColumnIndex}
-            onSelect={setActiveColumn}
-            activeColor={game.color}
-            columnStatus={columnStatus}
-            onAddColumn={addColumn}
-          />
         </div>
         <button
-          onClick={goToNextColumn}
-          disabled={state.activeColumnIndex >= blockCount - 1}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-all active:scale-95 disabled:text-slate-200"
-          aria-label="Apuesta siguiente"
+          onClick={isLastColumn ? handleAddAndGoToColumn : goToNextColumn}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition-all active:scale-95"
+          aria-label={isLastColumn ? 'Crear nueva apuesta' : 'Apuesta siguiente'}
         >
-          <NavArrowRight className="h-4 w-4" />
+          {isLastColumn ? <Plus className="h-4 w-4" /> : <NavArrowRight className="h-4 w-4" />}
         </button>
       </div>
 
-      {/* Acciones compactas encima del grid */}
+      {/* Acciones compactas encima del grid — solo Limpiar y Aleatorio */}
       <MulticolumnActions
         onClearColumn={clearActiveColumn}
-        onClearAll={clearAllColumns}
         onRandomColumn={randomizeActiveColumn}
-        onRandomAll={randomizeAllColumns}
-        onRemoveColumn={() => removeColumn(state.activeColumnIndex)}
-        canRemoveColumn={blockCount > 1}
         activeColor={game.color}
       />
 
@@ -373,11 +362,14 @@ export function MulticolumnTicketFlow({
         </div>
       </motion.div>
 
+      {/* Abono — visible justo debajo del boleto, sin necesidad de scroll */}
+      <SubscriptionToggle isSubscription={isSubscription} onChange={onSubscriptionChange} />
+
       <PurchaseBottomBar
         availableBalance={availableBalance}
         totalPrice={summary.totalPrice}
         canContinue={summary.isValid}
-        ctaLabel={`Revisar ${summary.completeColumns || 1} ${summary.completeColumns === 1 ? 'apuesta' : 'apuestas'}`}
+        ctaLabel="Jugar"
         onContinue={handleGoToConfirm}
         activeColor={game.color}
         drawsCount={drawDates.length}
