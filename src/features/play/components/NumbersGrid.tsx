@@ -16,6 +16,8 @@ interface NumbersGridProps {
   compact?: boolean;
   /** Número de columnas del grid (default: 7 normal, 8 compact) */
   columns?: number;
+  /** Sobrescribe el texto de contador (por defecto "seleccionados/máximo") */
+  countLabel?: string;
 }
 
 export function NumbersGrid({
@@ -28,6 +30,7 @@ export function NumbersGrid({
   subtitle,
   compact = false,
   columns,
+  countLabel,
 }: NumbersGridProps) {
   const gridCols = columns ?? (compact ? 8 : 7);
 
@@ -48,7 +51,7 @@ export function NumbersGrid({
           )}
         </div>
         <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-          {selectedNumbers.length}/{maxNumbersLimit}
+          {countLabel ?? `${selectedNumbers.length}/${maxNumbersLimit}`}
         </span>
       </div>
 

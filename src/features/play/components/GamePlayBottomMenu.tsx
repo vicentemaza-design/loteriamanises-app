@@ -1,5 +1,5 @@
 import type { ElementType } from 'react';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatCurrency } from '@/shared/lib/utils';
 
 export interface GamePlayBottomMenuItem {
   id: string;
@@ -35,7 +35,8 @@ export function GamePlayBottomMenu({
   className,
 }: GamePlayBottomMenuProps) {
   const isOverBalance = availableBalance < totalPrice;
-  const canSubmit = canContinue && !isOverBalance;
+  // El saldo insuficiente ya no bloquea el botón: se muestra el importe que falta junto al precio.
+  const canSubmit = canContinue;
 
   const splitCurrency = (amount: number) => {
     const [euros = '0', cents = '00'] = amount.toLocaleString('es-ES', {
@@ -73,7 +74,9 @@ export function GamePlayBottomMenu({
             {total.euros}
             <sup className="ml-0.5 align-super text-[0.5rem] font-black">,{total.cents}</sup>
           </p>
-          <p className="relative mt-1 text-[0.5rem] font-bold uppercase tracking-[0.08em] leading-none text-white/58">Importe €</p>
+          <p className={cn('relative mt-1 text-[0.5rem] font-bold uppercase tracking-[0.08em] leading-none', isOverBalance ? 'text-red-300' : 'text-white/58')}>
+            {isOverBalance ? `Faltan ${formatCurrency(totalPrice - availableBalance)}` : 'Importe €'}
+          </p>
         </div>
 
         <button

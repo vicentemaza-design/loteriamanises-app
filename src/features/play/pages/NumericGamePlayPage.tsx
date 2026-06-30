@@ -6,7 +6,6 @@ import { Button } from '@/shared/ui/Button';
 import {
   RefreshCircle,
   Spark,
-  WarningTriangle,
   ControlSlider,
   Calendar,
   EditPencil,
@@ -15,7 +14,7 @@ import {
 import { toast } from 'sonner';
 import { generateRandomPlay } from '@/features/play/services/play.service';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { cn, formatCurrency } from '@/shared/lib/utils';
+import { cn } from '@/shared/lib/utils';
 import { getGameTheme } from '@/shared/lib/game-theme';
 import { MOTION_EASE_OUT, panelSwap, sectionFadeUp } from '@/shared/lib/motion';
 import { getAvailableModesForGame, getModeDefinition, getReductionSystem, getReductionSystemsForMode, type PlayMode } from '../lib/play-matrix';
@@ -112,6 +111,11 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
 
     setMode((editingDraft.mode as PlayMode) ?? availableModes[0]);
     setIsSubscription(editingDraft.isSubscription);
+    setMultipleCount(
+      editingDraft.mode === 'multiple' && 'numbers' in editingDraft.selection
+        ? editingDraft.selection.numbers.length
+        : null
+    );
 
     const draftDates = Array.isArray(editingDraft.metadata?.orderDrawDates)
       ? editingDraft.metadata.orderDrawDates.filter((d): d is string => typeof d === 'string')
@@ -149,9 +153,22 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   const reductionSystems = getReductionSystemsForMode(game.id, mode);
   const currentReductionSystem = mode === 'reduced' ? getReductionSystem(game.id, selectedReductionSystemId) : null;
   const range = currentSelection || { numbers: { min: 1, max: 1, total: 1 } };
-  const minNums = range.numbers?.min ?? 1;
-  const maxNums = range.numbers?.max ?? 1;
+  const baseMinNums = range.numbers?.min ?? 1;
+  const baseMaxNums = range.numbers?.max ?? 1;
   const totalNums = range.numbers?.total ?? 1;
+  // Modo Múltiple: el usuario elige cuántos números quiere jugar (rango baseMinNums+1..baseMaxNums,
+  // ya que jugar exactamente baseMinNums no aporta combinatoria sobre una jugada simple).
+  const multiplePillOptions = useMemo(
+    () => Array.from({ length: Math.max(baseMaxNums - baseMinNums, 0) }, (_, i) => baseMinNums + 1 + i),
+    [baseMinNums, baseMaxNums]
+  );
+  const defaultMultipleCount = multiplePillOptions.length > 0
+    ? Math.round((multiplePillOptions[0] + multiplePillOptions[multiplePillOptions.length - 1]) / 2)
+    : baseMaxNums;
+  const [multipleCount, setMultipleCount] = useState<number | null>(null);
+  const effectiveMultipleCount = multipleCount ?? defaultMultipleCount;
+  const minNums = mode === 'multiple' ? effectiveMultipleCount : baseMinNums;
+  const maxNums = mode === 'multiple' ? effectiveMultipleCount : baseMaxNums;
   const minStars = range.stars?.min ?? 0;
   const maxStars = range.stars?.max ?? minStars;
   const totalStars = range.stars?.total ?? 0;
@@ -219,7 +236,6 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   });
 
   const availableBalance = profile?.balance ?? 0;
-  const isOverBalance = profile ? profile.balance < totalPrice : false;
 
   const helpContent = getGameHelpContent({
     game,
@@ -397,6 +413,22 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   const handleClear = () => {
     setSelectedNumbers([]);
     setSelectedStars([]);
+  };
+
+  // Selector -/+ del modo Reducida: ajusta la cantidad de números añadiendo/quitando uno al azar,
+  // ya que en reducidas lo relevante es la cantidad, no qué números concretos elige el sistema.
+  const handleIncrementReduced = () => {
+    if (selectedNumbers.length >= maxNums) return;
+    const available = Array.from({ length: totalNums }, (_, i) => i + 1).filter((n) => !selectedNumbers.includes(n));
+    if (available.length === 0) return;
+    const pick = available[Math.floor(Math.random() * available.length)];
+    setSelectedNumbers((prev) => [...prev, pick].sort((a, b) => a - b));
+  };
+
+  const handleDecrementReduced = () => {
+    if (selectedNumbers.length === 0) return;
+    const idx = Math.floor(Math.random() * selectedNumbers.length);
+    setSelectedNumbers((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handlePersistQuickPick = () => {
@@ -878,6 +910,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                           const nextSystems = getReductionSystemsForMode(game.id, m as typeof mode);
                           if (m === 'reduced' && nextSystems.length > 0) setSelectedReductionSystemId(nextSystems[0].id);
                           handleClear();
+                          setMultipleCount(null);
                           if (m !== 'simple') setBetMethod('manual');
                         }}
                         className={cn(
@@ -927,16 +960,6 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
         </div>
         )}
 
-        {/* Aviso saldo insuficiente */}
-        {isOverBalance && (
-          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible" className="flex items-center gap-3 rounded-2xl border border-red-200/80 bg-[linear-gradient(180deg,#fff5f5_0%,#fff1f2_100%)] p-3.5 shadow-sm">
-            <WarningTriangle className="w-5 h-5 text-red-500 shrink-0" />
-            <p className="text-[10px] font-bold text-red-700 uppercase tracking-tight leading-normal">
-              Saldo insuficiente ({formatCurrency(profile?.balance ?? 0)}). <br />
-              Necesitas {formatCurrency(totalPrice)} para jugar esta variante.
-            </p>
-          </motion.div>
-        )}
 
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
@@ -979,13 +1002,82 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
               </motion.div>
             ) : (supportsQuickPick && betMethod === null) ? null : (
               <>
-                {/* Selección compacta — fila única con burbujas + acciones */}
-                <div className="flex items-center justify-between gap-2 rounded-2xl border border-white/70 px-3 py-2 shadow-sm" style={theme.surface}>
-                  {mode === 'reduced' ? (
-                    <span className="text-[11px] font-black leading-none" style={theme.title}>
-                      {selectedNumbers.length}/{maxNums} núm.{maxStars > 0 ? ` · ${selectedStars.length}/${maxStars} ★` : ''}
-                    </span>
-                  ) : (
+                {mode === 'multiple' ? (
+                  /* Selector de cantidad de números — el usuario elige cuántos números quiere jugar en el bloque */
+                  <div className="space-y-3 rounded-2xl border border-white/70 p-3.5 shadow-sm" style={theme.surface}>
+                    <p className="text-center text-[10px] font-black uppercase tracking-[0.08em]" style={theme.title}>
+                      ¿Cuántos números quieres jugar?
+                    </p>
+                    <div className="flex items-center justify-center gap-1.5">
+                      {multiplePillOptions.map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => { setMultipleCount(n); handleClear(); }}
+                          className={cn(
+                            'flex h-9 w-9 items-center justify-center rounded-full text-[12px] font-black transition-all active:scale-95',
+                            n === effectiveMultipleCount
+                              ? 'text-white shadow-md'
+                              : 'border border-gray-200 bg-white text-manises-blue/70 hover:border-manises-blue/30'
+                          )}
+                          style={n === effectiveMultipleCount ? theme.selectedNumber : undefined}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-center text-[10px] font-medium text-slate-400">
+                      Se juegan {effectiveMultipleCount} números en un solo bloque.
+                    </p>
+                    <div className="flex gap-2 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={handleRandom}
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border-2 border-manises-gold/60 py-2.5 text-[10px] font-black uppercase tracking-wider text-manises-gold transition-colors active:scale-[0.97] hover:bg-manises-gold/5"
+                      >
+                        <Spark className="h-3.5 w-3.5" /> Aleatorio
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleClear}
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border-2 border-gray-200 py-2.5 text-[10px] font-black uppercase tracking-wider text-gray-500 transition-colors active:scale-[0.97] hover:bg-gray-50"
+                      >
+                        <RefreshCircle className="h-3.5 w-3.5" /> Limpiar
+                      </button>
+                    </div>
+                  </div>
+                ) : mode === 'reduced' ? (
+                  /* Selector de cantidad -/+ — en reducidas no hay botón Aleatorio, solo importa cuántos números hay */
+                  <div className="space-y-1 rounded-2xl border border-white/70 px-3.5 py-3 text-center shadow-sm" style={theme.surface}>
+                    <p className="text-[10px] font-black uppercase tracking-[0.08em] text-slate-400">Números seleccionados</p>
+                    <div className="flex items-center justify-center gap-5">
+                      <button
+                        type="button"
+                        onClick={handleDecrementReduced}
+                        disabled={selectedNumbers.length === 0}
+                        className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-gray-200 text-base font-black text-gray-400 transition-all active:scale-90 disabled:opacity-40"
+                        aria-label="Quitar un número"
+                      >
+                        −
+                      </button>
+                      <span className="min-w-[2.5ch] text-[28px] font-black leading-none" style={theme.title}>
+                        {selectedNumbers.length}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleIncrementReduced}
+                        disabled={selectedNumbers.length >= maxNums}
+                        className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-manises-gold/60 text-base font-black text-manises-gold transition-all active:scale-90 disabled:opacity-40"
+                        aria-label="Añadir un número"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <p className="text-[10px] font-medium text-slate-400">Máx. {maxNums} números</p>
+                  </div>
+                ) : (
+                  /* Selección compacta — fila única con burbujas + acciones */
+                  <div className="flex items-center justify-between gap-2 rounded-2xl border border-white/70 px-3 py-2 shadow-sm" style={theme.surface}>
                     <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
                       {Array.from({ length: maxNums }).map((_, i) => (
                         <motion.div
@@ -1011,24 +1103,24 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                         </div>
                       )}
                     </div>
-                  )}
-                  <div className="flex shrink-0 gap-1">
-                    <button
-                      type="button"
-                      onClick={handleRandom}
-                      className="flex h-7 items-center gap-1 rounded-lg border border-manises-gold/50 px-2.5 text-[9px] font-bold uppercase tracking-wider text-manises-gold transition-colors hover:bg-manises-gold/5"
-                    >
-                      <Spark className="h-2.5 w-2.5" /> Aleat.
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleClear}
-                      className="flex h-7 items-center gap-1 rounded-lg border border-gray-200 px-2.5 text-[9px] font-bold uppercase tracking-wider text-gray-500 transition-colors hover:bg-gray-50"
-                    >
-                      <RefreshCircle className="h-2.5 w-2.5" /> Limpiar
-                    </button>
+                    <div className="flex shrink-0 gap-1">
+                      <button
+                        type="button"
+                        onClick={handleRandom}
+                        className="flex h-7 items-center gap-1 rounded-lg border border-manises-gold/50 px-2.5 text-[9px] font-bold uppercase tracking-wider text-manises-gold transition-colors hover:bg-manises-gold/5"
+                      >
+                        <Spark className="h-2.5 w-2.5" /> Aleat.
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleClear}
+                        className="flex h-7 items-center gap-1 rounded-lg border border-gray-200 px-2.5 text-[9px] font-bold uppercase tracking-wider text-gray-500 transition-colors hover:bg-gray-50"
+                      >
+                        <RefreshCircle className="h-2.5 w-2.5" /> Limpiar
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Boleto */}
                 <div className="overflow-hidden rounded-2xl" style={theme.surface}>
@@ -1041,9 +1133,11 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                             columns={5}
                             totalNums={totalNums}
                             selectedNumbers={selectedNumbers}
-                            maxNumbersLimit={mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
+                            maxNumbersLimit={maxNums}
                             onToggle={toggleNumber}
                             theme={theme}
+                            title={mode === 'multiple' ? `Elige ${maxNums} números` : undefined}
+                            countLabel={mode === 'multiple' ? `${selectedNumbers.length} / ${maxNums} seleccionados` : undefined}
                           />
                         </div>
                         <div className="w-px self-stretch bg-gray-100/80 shrink-0 mt-5" />
@@ -1065,9 +1159,11 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                       <NumbersGrid
                         totalNums={totalNums}
                         selectedNumbers={selectedNumbers}
-                        maxNumbersLimit={mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[supportedReducedNumbers.length - 1] : maxNums}
+                        maxNumbersLimit={maxNums}
                         onToggle={toggleNumber}
                         theme={theme}
+                        title={mode === 'multiple' ? `Elige ${maxNums} números` : undefined}
+                        countLabel={mode === 'multiple' ? `${selectedNumbers.length} / ${maxNums} seleccionados` : undefined}
                       />
                     )}
                   </div>
@@ -1100,8 +1196,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Abono semanal — solo en modo manual clásico (no quick pick ni multicolumn que tienen su propio toggle) */}
-        {(!supportsQuickPick || betMethod !== null) && !isMulticolumnMode && !isQuickPickMode && (
+        {/* Abono semanal — solo en modo manual clásico (no quick pick ni multicolumn que tienen su propio toggle, ni reducida donde casi nadie se abona) */}
+        {(!supportsQuickPick || betMethod !== null) && !isMulticolumnMode && !isQuickPickMode && mode !== 'reduced' && (
           <div className="mt-2 space-y-3">
             <motion.div
               variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
