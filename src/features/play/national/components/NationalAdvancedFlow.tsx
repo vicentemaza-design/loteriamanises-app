@@ -263,7 +263,6 @@ export function NationalAdvancedFlow({
       {/* Panel fijo inferior — números seleccionados */}
       <div
         className="fixed bottom-0 left-0 right-0 z-50 overflow-hidden border-t border-slate-100 bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.10)]"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {/* Contenido expandible — lista de décimos seleccionados */}
         <AnimatePresence>
@@ -386,7 +385,11 @@ export function NationalAdvancedFlow({
         </button>
 
         {/* Barra de acción */}
-        <div className="mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] bg-[#0a4792]/88 text-white">
+        <div
+          className="bg-[#0a4792]/88"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
+        <div className="mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white">
           {/* Saldo */}
           <div className="relative flex min-w-0 flex-col items-center justify-center border-r border-white/12 px-1">
             <div className="absolute inset-x-1.5 inset-y-1.5 rounded-xl bg-white/[0.035]" />
@@ -429,6 +432,7 @@ export function NationalAdvancedFlow({
               {hasLines ? 'Añadir a cesta' : 'Elige décimo'}
             </span>
           </button>
+        </div>
         </div>
       </div>
     </div>

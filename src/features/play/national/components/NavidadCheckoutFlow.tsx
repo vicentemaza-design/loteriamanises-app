@@ -12,6 +12,7 @@ import type { LotteryGame } from '@/shared/types/domain';
 import type { NationalShowcaseItem } from '../contracts/national-play.contract';
 import { NationalTicketVisual } from '@/features/play/components/NationalTicketVisual';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
+import { DecimoQrScanner } from './DecimoQrScanner';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -398,6 +399,7 @@ export function NavidadCheckoutFlow({
   const [currentBalance, setCurrentBalance] = useState(availableBalance);
   const [cartExpanded, setCartExpanded] = useState(false);
   const [orderRef] = useState(() => `NAV-${Date.now().toString(36).toUpperCase().slice(-6)}`);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   // Sync balance updates from parent
   useEffect(() => {
@@ -794,12 +796,22 @@ export function NavidadCheckoutFlow({
         </div>
         <button
           type="button"
+          onClick={() => setIsScannerOpen(true)}
           className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:border-[#991b1b]/30 hover:text-[#991b1b] transition-colors"
           aria-label="Escanear QR"
         >
           <QrCode className="h-5 w-5" />
         </button>
       </div>
+
+      <DecimoQrScanner
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScan={(digits) => {
+          setSearchQuery(digits);
+          setIsScannerOpen(false);
+        }}
+      />
 
       {/* Décimo de la Suerte */}
       <div
@@ -947,7 +959,6 @@ export function NavidadCheckoutFlow({
       {/* Panel inferior: carrusel colapsable + barra de acción */}
       <div
         className="fixed bottom-0 left-0 right-0 z-50 overflow-hidden border-t border-slate-100 bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.10)]"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {/* Carrusel de thumbnails (expandible) */}
         <AnimatePresence>
@@ -1014,8 +1025,11 @@ export function NavidadCheckoutFlow({
         </button>
 
         {/* Barra de acción: total + CONTINUAR */}
-        <div className="mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] bg-[#0a4792]/88 text-white"
-          style={{ backdropFilter: 'blur(24px)' }}>
+        <div
+          className="bg-[#0a4792]/88"
+          style={{ backdropFilter: 'blur(24px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
+        <div className="mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white">
           <div className="relative flex min-w-0 flex-col items-center justify-center border-r border-white/12 px-1">
             <div className="absolute inset-x-1.5 inset-y-1.5 rounded-xl bg-white/[0.035]" />
             <p className="relative text-[1.05rem] font-black leading-none text-white tabular-nums">
@@ -1053,6 +1067,7 @@ export function NavidadCheckoutFlow({
               Revisar y confirmar
             </span>
           </button>
+        </div>
         </div>
       </div>
     </div>
