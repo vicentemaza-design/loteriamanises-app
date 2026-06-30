@@ -60,6 +60,11 @@ function mapDraftToDto(draft: PlayDraft) {
         stars: [draft.selection.dream],
       };
     case 'primitiva':
+      return {
+        ...base,
+        numbers: draft.selection.numbers,
+        stars: [draft.selection.reintegro],
+      };
     case 'bonoloto':
       return {
         ...base,

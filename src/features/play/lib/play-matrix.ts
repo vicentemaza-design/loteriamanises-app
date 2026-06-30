@@ -145,7 +145,10 @@ export const PLAY_MATRIX: Record<string, GamePlayDefinition> = {
         status: 'implemented',
         systemFamily: 'direct',
         guaranteeType: 'none',
-        selection: buildNumberSelection({ min: 6, max: 6, total: 49 }),
+        selection: buildNumberSelection(
+          { min: 6, max: 6, total: 49 },
+          { min: 1, max: 1, total: 10, label: 'reintegro' }
+        ),
       },
       {
         mode: 'multiple',
@@ -155,7 +158,10 @@ export const PLAY_MATRIX: Record<string, GamePlayDefinition> = {
         guaranteeType: 'direct_full_coverage',
         guaranteeCondition: 'El sistema desarrolla todas las columnas posibles a partir del bloque de números seleccionado.',
         productLimit: '462 ap.',
-        selection: buildNumberSelection({ min: 6, max: 11, total: 49 }),
+        selection: buildNumberSelection(
+          { min: 6, max: 11, total: 49 },
+          { min: 1, max: 1, total: 10, label: 'reintegro' }
+        ),
       },
       {
         mode: 'reduced',
@@ -164,7 +170,10 @@ export const PLAY_MATRIX: Record<string, GamePlayDefinition> = {
         systemFamily: 'manises',
         guaranteeType: 'conditional_minimum',
         guaranteeCondition: 'La garantía dependerá de la tabla reducida elegida y de que el resultado esté contenido en la selección general.',
-        selection: buildNumberSelection({ min: 10, max: 49, total: 49 }),
+        selection: buildNumberSelection(
+          { min: 10, max: 49, total: 49 },
+          { min: 1, max: 1, total: 10, label: 'reintegro' }
+        ),
         reductionSystems: [
           {
             id: 'reducida_5',

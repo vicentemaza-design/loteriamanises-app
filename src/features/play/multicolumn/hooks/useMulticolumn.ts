@@ -6,6 +6,11 @@ import { updateMulticolumnColumn } from '../application/update-multicolumn-colum
 import { buildMulticolumnSummary } from '../application/build-multicolumn-summary';
 import { generateRandomPlay } from '@/features/play/services/play.service';
 
+/** El reintegro de Primitiva va del 0 al 9, pero generateRandomPlay devuelve valores 1-indexados */
+function normalizeStars(game: LotteryGame, stars: number[]): number[] {
+  return game.type === 'primitiva' ? stars.map((v) => v - 1) : stars;
+}
+
 /**
  * Hook para gestionar el estado de un boleto multi-columna.
  * Centraliza la lógica de navegación entre columnas, validación y generación aleatoria.
@@ -75,7 +80,7 @@ export function useMulticolumn(
       range.stars?.min ?? 0
     );
 
-    updateActiveColumn(numbers, stars);
+    updateActiveColumn(numbers, normalizeStars(game, stars));
   }, [game, updateActiveColumn]);
 
   const randomizeColumn = useCallback((index: number) => {
@@ -91,7 +96,7 @@ export function useMulticolumn(
         range.stars?.min ?? 0
       );
       const nextColumns = [...prev.columns];
-      nextColumns[index] = updateMulticolumnColumn(nextColumns[index], game, numbers, stars);
+      nextColumns[index] = updateMulticolumnColumn(nextColumns[index], game, numbers, normalizeStars(game, stars));
       return { ...prev, columns: nextColumns };
     });
   }, [game]);
@@ -110,7 +115,7 @@ export function useMulticolumn(
           range.stars?.total ?? 0,
           range.stars?.min ?? 0
         );
-        return updateMulticolumnColumn(col, game, numbers, stars);
+        return updateMulticolumnColumn(col, game, numbers, normalizeStars(game, stars));
       }),
     }));
   }, [game]);

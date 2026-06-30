@@ -20,7 +20,7 @@ function renderSelectionLabel(draft: PlayDraft) {
     case 'eurodreams':
       return `${draft.selection.numbers.join(', ')} · Sueño ${draft.selection.dream}`;
     case 'primitiva':
-      return `6+2 · ${draft.selection.numbers.join(', ')}`;
+      return `${draft.selection.numbers.join(', ')} · Reintegro ${draft.selection.reintegro}`;
     case 'bonoloto':
       return `6 · ${draft.selection.numbers.join(', ')}`;
     default:

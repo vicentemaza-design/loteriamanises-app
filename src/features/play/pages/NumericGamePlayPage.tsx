@@ -10,6 +10,7 @@ import {
   ControlSlider,
   Calendar,
   EditPencil,
+  DiceFive,
 } from 'iconoir-react/regular';
 import { toast } from 'sonner';
 import { generateRandomPlay } from '@/features/play/services/play.service';
@@ -46,17 +47,11 @@ import type { PlayDraft } from '@/features/session/types/session.types';
 import { DrawStatusPill } from '../draw-status/components/DrawStatusPill';
 import { resolveDrawStatus } from '../draw-status/application/resolve-draw-status';
 import { getGameHelpContent } from '../lib/game-help';
-import { GameModeSelector } from '../components/GameModeSelector';
 import type { LotteryGame } from '@/shared/types/domain';
 
 interface GamePlayLocationState { playDraftId?: string; }
 
 const DEFAULT_CUSTOM_WEEKS = 2;
-
-function formatChipContext(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
-}
 
 function formatDrawChip(iso: string): { weekday: string; day: string; month: string } {
   const d = new Date(iso);
@@ -95,8 +90,10 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   const [selectedDrawDates, setSelectedDrawDates] = useState<string[]>([]);
   const [isSubscription, setIsSubscription] = useState(false);
   const [betMethod, setBetMethod] = useState<'random' | 'manual' | null>(null);
-  const [manualBetCount, setManualBetCount] = useState(1);
-  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
+  const manualBetCount = 1;
+  // Paso 1→2 del flujo progresivo (sin método/tipo resuelto): fecha confirmada antes de mostrar tipo/método.
+  // "Cambiar" en cualquier pantalla final pone betMethod a null y esto a false, reabriendo el mismo flujo desde el paso 1.
+  const [dateStepConfirmed, setDateStepConfirmed] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   const quickPick = useQuickPick(game, supportsQuickPick);
@@ -144,7 +141,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   }, [game.id, maxWeeksSelectable]);
 
   useEffect(() => {
-    setIsConfigPanelOpen(false);
+    setDateStepConfirmed(false);
   }, [game.id, editingDraftId]);
 
   const currentModeDefinition = getModeDefinition(game.id, mode);
@@ -158,9 +155,13 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   const minStars = range.stars?.min ?? 0;
   const maxStars = range.stars?.max ?? minStars;
   const totalStars = range.stars?.total ?? 0;
-  const starValues = game.type === 'gordo'
+  // Reintegro (Primitiva) y Clave (Gordo) son selección única que empieza en 0, no en 1
+  const startsAtZero = game.type === 'gordo' || game.type === 'primitiva';
+  const starValues = startsAtZero
     ? Array.from({ length: totalStars }, (_, i) => i)
     : Array.from({ length: totalStars }, (_, i) => i + 1);
+  const secondarySelectionLabel = game.type === 'gordo' ? 'Clave' : game.type === 'primitiva' ? 'Reintegro' : 'Estrellas';
+  const secondarySelectionPrefix = game.type === 'gordo' ? 'Clave' : game.type === 'primitiva' ? 'Reintegro' : 'Estrella';
   const supportedReducedNumbers = currentReductionSystem?.supportedNumbers ?? [];
   const isSupportedReducedSelection = mode !== 'reduced' || supportedReducedNumbers.length === 0 || supportedReducedNumbers.includes(selectedNumbers.length);
 
@@ -269,12 +270,16 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
 
   const shouldShowStickyCta = (() => {
     if (isQuickPickMode) return false;
-    if (supportsQuickPick && mode === 'simple' && betMethod === null) return false;
+    if (supportsQuickPick && betMethod === null) return false;
     if (isMulticolumnMode) return false;
     return selectedNumbers.length > 0;
   })();
-  // Simple sin método elegido: mostrar setup. En cuanto se elige Aleatorio o Manual, solo pantalla final (config accesible por chip/lápiz).
-  const shouldShowInlineSetup = mode === 'simple' && (!supportsQuickPick || betMethod === null);
+  // Sin método elegido (cualquier modo): mostrar setup. En cuanto hay tipo+método resueltos, solo pantalla final (editable con "Cambiar", que reabre este mismo flujo).
+  const shouldShowInlineSetup = !supportsQuickPick || betMethod === null;
+  // Dentro del setup: ¿hay selector de fecha con varios sorteos entre los que elegir?
+  const hasDateSelector = supportsTimeSelection && game.type !== 'gordo';
+  // Paso 1 (elegir fecha) vs paso 2 (tipo de jugada + cómo jugar), según mockup del cliente
+  const onDateStep = shouldShowInlineSetup && hasDateSelector && !dateStepConfirmed;
 
   const drawTimeSummary = useMemo(() => {
     const d = new Date(drawStatus.drawDate);
@@ -291,25 +296,29 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       parts.push(labels[mode]);
     }
     if (mode === 'simple') {
-      if (isQuickPickMode) parts.push('Rápida');
-      else if (isMulticolumnMode) parts.push('Varias apuestas');
+      if (isQuickPickMode) parts.push('Aleatorio');
       else parts.push('Manual');
     }
     return parts.length > 0 ? parts.join(' · ') : 'Jugada';
-  }, [availableModes.length, isMulticolumnMode, isQuickPickMode, mode]);
+  }, [availableModes.length, isQuickPickMode, mode]);
 
-  // Resumen superior editable de la pantalla Aleatorio: "Jue 30 Jun · 21:30 · Simple · Aleatorio"
-  const quickPickSummaryLine = useMemo(() => {
+  // "Jue 30 Jun · 21:30" — momento del sorteo, usado en las líneas-resumen colapsadas (pasos 2 y 3)
+  const collapsedDrawMoment = useMemo(() => {
     const d = new Date(drawStatus.drawDate);
     const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
     const weekday = cap(d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', ''));
     const month = cap(d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''));
     const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return `${weekday} ${d.getDate()} ${month} · ${time}`;
+  }, [drawStatus]);
+
+  // Resumen superior editable de la pantalla Aleatorio: "Jue 30 Jun · 21:30 · Simple · Aleatorio"
+  const quickPickSummaryLine = useMemo(() => {
     const modeLabel = availableModes.length > 1
       ? ({ simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' } as Record<PlayMode, string>)[mode]
       : 'Simple';
-    return `${weekday} ${d.getDate()} ${month} · ${time} · ${modeLabel} · Aleatorio`;
-  }, [drawStatus, mode, availableModes.length]);
+    return `${collapsedDrawMoment} · ${modeLabel} · Aleatorio`;
+  }, [collapsedDrawMoment, mode, availableModes.length]);
 
   const gameBottomMenuItems = useMemo<GamePlayBottomMenuItem[]>(() => {
     const modeLabels: Record<PlayMode, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
@@ -327,8 +336,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
         label: 'Sorteos',
         value: drawsCount === 1 ? '1 sorteo' : `${drawsCount} sorteos`,
         icon: RefreshCircle,
-        active: isConfigPanelOpen,
-        onClick: () => setIsConfigPanelOpen((open) => !open),
+        active: false,
+        onClick: () => { setBetMethod(null); setDateStepConfirmed(false); },
       },
       {
         id: 'type',
@@ -336,7 +345,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
         value: modeLabels[mode],
         icon: ControlSlider,
         active: mode !== 'simple',
-        onClick: () => setIsConfigPanelOpen((open) => !open),
+        onClick: () => { setBetMethod(null); setDateStepConfirmed(false); },
       },
       {
         id: 'method',
@@ -348,11 +357,10 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
         onClick: () => {
           if (mode !== 'simple' || !supportsQuickPick) return;
           setBetMethod((current) => current === 'random' ? 'manual' : 'random');
-          setIsConfigPanelOpen(false);
         },
       },
     ];
-  }, [betMethod, drawsCount, isConfigPanelOpen, mode, supportsQuickPick]);
+  }, [betMethod, drawsCount, mode, supportsQuickPick]);
 
   const toggleNumber = (n: number) => {
     setSelectedNumbers((prev) =>
@@ -378,11 +386,11 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     const { numbers, stars } = generateRandomPlay(
       totalNums,
       mode === 'reduced' && supportedReducedNumbers.length > 0 ? supportedReducedNumbers[0] : maxNums,
-      game.type === 'gordo' ? 10 : totalStars,
+      startsAtZero ? 10 : totalStars,
       mode === 'reduced' ? minStars : maxStars
     );
     setSelectedNumbers(numbers);
-    setSelectedStars(game.type === 'gordo' ? stars.map((v) => v - 1) : stars);
+    setSelectedStars(startsAtZero ? stars.map((v) => v - 1) : stars);
     toast.success('¡Combinación aleatoria generada!');
   };
 
@@ -639,7 +647,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       if (drawsCount > 1) return `Añadir ${drawsCount} jugadas`;
       return editingDraft ? 'Actualizar' : 'Añadir jugada';
     }
-    if (supportsQuickPick && mode === 'simple' && betMethod === null) return 'Elige cómo quieres jugar';
+    if (supportsQuickPick && betMethod === null) return 'Elige cómo quieres jugar';
     if (isMulticolumnMode) return 'Añadir boleto';
     if (mode === 'reduced' && !isSupportedReducedSelection) return 'Completa la reducida';
     const numsLeft = minNums - selectedNumbers.length;
@@ -650,7 +658,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     return 'Completa la jugada';
   })();
 
-  const ctaValidationText = supportsQuickPick && mode === 'simple' && betMethod === null
+  const ctaValidationText = supportsQuickPick && betMethod === null
     ? 'Elige cómo quieres jugar arriba'
     : isMulticolumnMode
       ? 'Completa al menos una apuesta'
@@ -680,227 +688,31 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
 
       <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-2.5 p-4 pt-2">
 
-        {/* Config bar — oculta cuando el grid de números está activo */}
-        {!isConfigPanelOpen && !isMulticolumnMode && !isQuickPickMode && (
+        {/* Resumen editable — pantallas finales (Múltiple/Reducida, Manual, Aleatorio). "Cambiar" siempre reabre el mismo flujo de configuración (paso 1: fecha) en vez de una pantalla distinta. */}
+        {!shouldShowInlineSetup && (
           <button
-            onClick={() => setIsConfigPanelOpen(true)}
-            className="group w-full text-left rounded-[1.2rem] border border-slate-200/60 bg-white px-3.5 py-3 shadow-sm hover:border-manises-blue/20 hover:shadow-md transition-all active:scale-[0.99]"
-            aria-expanded={false}
-            aria-label="Abrir configuración de jugada"
-          >
-            <div className="flex items-center gap-3">
-              <div className={cn(
-                'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors',
-                drawStatus.state === 'open' ? 'bg-emerald-50 text-emerald-600' :
-                drawStatus.state === 'closingSoon' ? 'bg-amber-50 text-amber-600' :
-                'bg-slate-100 text-slate-400',
-              )}>
-                <ControlSlider className="w-4 h-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className={cn(
-                    'h-1.5 w-1.5 shrink-0 rounded-full',
-                    drawStatus.state === 'open' ? 'bg-emerald-400' :
-                    drawStatus.state === 'closingSoon' ? 'bg-amber-400' :
-                    'bg-slate-300',
-                  )} />
-                  <span className="text-[12px] font-black text-manises-blue leading-tight">{configMainLine}</span>
-                </div>
-                <p className="text-[10px] font-medium text-slate-400 truncate pl-3">{drawTimeSummary}</p>
-              </div>
-              <span className="shrink-0 rounded-xl bg-manises-blue/[0.06] px-3 py-2 text-[9px] font-black uppercase tracking-widest text-manises-blue/60 group-hover:bg-manises-blue/10 group-hover:text-manises-blue transition-colors">
-                Cambiar
-              </span>
-            </div>
-          </button>
-        )}
-
-        {/* Resumen superior editable — pantalla Aleatorio (fecha · hora · tipo · Aleatorio + lápiz) */}
-        {isQuickPickMode && !isConfigPanelOpen && (
-          <button
-            onClick={() => setIsConfigPanelOpen(true)}
+            onClick={() => { setBetMethod(null); setDateStepConfirmed(false); }}
             className="group flex w-full items-center gap-2 rounded-xl border border-slate-200/60 bg-white px-3 py-2.5 shadow-sm transition-all hover:border-manises-blue/20 hover:shadow-md active:scale-[0.99]"
             aria-label="Editar fecha, tipo de jugada o modo"
           >
             <Calendar className="h-3.5 w-3.5 shrink-0 text-manises-blue/50" />
             <span className="min-w-0 flex-1 truncate text-left text-[11px] font-bold text-manises-blue">
-              {quickPickSummaryLine}
+              {isQuickPickMode ? quickPickSummaryLine : `${collapsedDrawMoment} · ${configMainLine}`}
+            </span>
+            <span className="shrink-0 text-[9px] font-black uppercase tracking-widest text-manises-blue/50 transition-colors group-hover:text-manises-blue">
+              Cambiar
             </span>
             <EditPencil className="h-3.5 w-3.5 shrink-0 text-manises-blue/40 transition-colors group-hover:text-manises-blue" />
           </button>
         )}
 
-        {/* Config panel — expandido (también oculto cuando el grid está activo) */}
-        {isConfigPanelOpen && !isMulticolumnMode && (
-          <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
-            <div className="space-y-3 rounded-[1.2rem] border border-manises-blue/10 bg-white p-3 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-manises-blue/[0.06]">
-                    <ControlSlider className="w-3.5 h-3.5 text-manises-blue/60" />
-                  </div>
-                  <span className="text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue">Configurar jugada</span>
-                </div>
-                <button
-                  onClick={() => setIsConfigPanelOpen(false)}
-                  className="flex h-9 items-center justify-center rounded-xl px-3 text-[10px] font-bold uppercase tracking-widest text-manises-blue/60 hover:bg-manises-blue/[0.06] hover:text-manises-blue transition-colors"
-                >
-                  Cerrar
-                </button>
-              </div>
-
-              <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={drawsCount} />
-
-              {availableModes.length > 1 && (
-                <div>
-                  <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">Tipo de jugada</p>
-                  <GameModeSelector
-                    gameType={game.type}
-                    availableModes={availableModes}
-                    currentMode={mode}
-                    onModeChange={(m) => {
-                      setMode(m);
-                      const nextSystems = getReductionSystemsForMode(game.id, m);
-                      if (m === 'reduced' && nextSystems.length > 0) {
-                        setSelectedReductionSystemId(nextSystems[0].id);
-                      }
-                      handleClear();
-                      if (m !== 'simple') setBetMethod('manual');
-                      setIsConfigPanelOpen(false);
-                    }}
-                  />
-                </div>
-              )}
-
-              {mode === 'simple' && (
-                <div>
-                  <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">¿Cómo quieres jugar?</p>
-                  <div className="flex p-1 bg-slate-100/70 rounded-xl border border-slate-200/50">
-                    <button
-                      onClick={() => { setBetMethod('random'); setIsConfigPanelOpen(false); }}
-                      className={cn(
-                        'flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all',
-                        betMethod === 'random' ? 'bg-white text-manises-blue shadow-sm' : 'text-slate-400'
-                      )}
-                    >
-                      Aleatorio
-                    </button>
-                    <button
-                      onClick={() => { setBetMethod('manual'); setIsConfigPanelOpen(false); }}
-                      className={cn(
-                        'flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all',
-                        betMethod === 'manual' ? 'bg-white text-manises-blue shadow-sm' : 'text-slate-400'
-                      )}
-                    >
-                      Manual
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {supportsTimeSelection && (
-                <div>
-                  <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">Sorteo</p>
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap gap-1.5 px-0.5">
-                      {[
-                        { id: 'next_draw', label: 'Próximo' },
-                        { id: 'full_week', label: 'Esta semana' },
-                        { id: 'next_week', label: 'Próxima semana' },
-                        { id: 'two_weeks', label: '2 semanas' },
-                      ].map((opt) => {
-                        let isActive = false;
-                        if (opt.id === 'next_draw') isActive = timeMode === 'next_draw';
-                        else if (opt.id === 'full_week') isActive = timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates);
-                        else if (opt.id === 'next_week') isActive = areDatesEqual(effectiveSelectedDrawDates, nextWeekDates);
-                        else if (opt.id === 'two_weeks') isActive = timeMode === 'two_weeks' || areDatesEqual(effectiveSelectedDrawDates, twoWeeksDates);
-                        return (
-                          <button
-                            key={opt.id}
-                            onClick={() => {
-                              if (opt.id === 'next_week') { setTimeMode('specific_days'); setSelectedDrawDates(nextWeekDates); }
-                              else if (opt.id === 'two_weeks') { setTimeMode('specific_days'); setSelectedDrawDates(twoWeeksDates); }
-                              else { setTimeMode(opt.id as ScheduleMode); setSelectedDrawDates([]); }
-                            }}
-                            className={cn(
-                              'px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border',
-                              isActive ? 'bg-manises-blue text-white border-manises-blue shadow-sm' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
-                            )}
-                          >
-                            {opt.label}
-                          </button>
-                        );
-                      })}
-                      <button
-                        onClick={() => { setTimeMode('specific_days'); setSelectedDrawDates([]); }}
-                        className="ml-auto px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200 hover:border-slate-300"
-                      >
-                        Limpiar
-                      </button>
-                    </div>
-
-                    <div className="custom-scrollbar max-h-[220px] space-y-3 overflow-y-auto pr-1">
-                      {(Object.entries(groupedAllDraws) as [string, ScheduledDraw[]][]).map(([weekLabel, draws], index) => {
-                        const displayLabel = index === 0 ? 'Esta semana' : index === 1 ? 'Próxima semana' : weekLabel;
-                        return (
-                          <div key={weekLabel} className="space-y-2">
-                            <p className="pl-1 text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">{displayLabel}</p>
-                            <div className="flex flex-wrap gap-2">
-                              {draws.map((draw) => {
-                                const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
-                                return (
-                                  <button
-                                    key={draw.drawDate}
-                                    onClick={() => {
-                                      setTimeMode('specific_days');
-                                      setSelectedDrawDates((prev) =>
-                                        prev.includes(draw.drawDate)
-                                          ? prev.filter((d) => d !== draw.drawDate)
-                                          : [...prev, draw.drawDate].sort()
-                                      );
-                                    }}
-                                    className={cn(
-                                      'relative flex min-w-[60px] flex-col items-center justify-center rounded-xl border px-2.5 py-2 transition-all',
-                                      isSelected ? 'bg-manises-blue/10 border-manises-blue shadow-[0_4px_12px_rgba(10,71,146,0.14)]' : 'bg-white border-slate-100 hover:border-slate-200'
-                                    )}
-                                  >
-                                    {isSelected && (
-                                      <motion.div
-                                        layoutId="selected-draw-indicator"
-                                        className="absolute inset-0 rounded-xl border-2 border-manises-blue z-0"
-                                        transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                                      />
-                                    )}
-                                    <span className={cn('relative z-10 text-[9px] font-semibold leading-tight', isSelected ? 'text-manises-blue/80' : 'text-slate-400')}>
-                                      {formatChipContext(draw.drawDate)}
-                                    </span>
-                                    <span className={cn('relative z-10 text-[12px] font-black leading-tight mt-0.5', isSelected ? 'text-manises-blue' : 'text-slate-700')}>
-                                      {new Date(draw.drawDate).getDate()} {new Date(draw.drawDate).toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}
-                                    </span>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <p className="px-1 text-[10px] font-medium italic text-slate-400">
-                      * Puedes combinar días sueltos de distintas semanas
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Flujo secuencial — fechas, tipo, método, cantidad */}
+        {/* Flujo progresivo: paso 1 (elegir fecha) → paso 2 (tipo de jugada + cómo jugar) */}
         {shouldShowInlineSetup && (
         <div className="space-y-2.5">
 
-          {supportsTimeSelection && game.type !== 'gordo' && (
+          {onDateStep ? (
+          <>
+            {/* PASO 1 — SELECCIONAR FECHA */}
             <div className="rounded-[1.2rem] border border-slate-100 bg-white overflow-hidden shadow-sm">
               <div className="flex items-start justify-between gap-2 px-3.5 pt-2.5 pb-2">
                 <div className="min-w-0">
@@ -926,7 +738,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
 
               <div className="flex items-center gap-1.5 px-3.5 pb-2">
                 <button
-                  onClick={() => { setTimeMode('full_week'); setSelectedDrawDates([]); }}
+                  onClick={() => { setTimeMode('full_week'); setSelectedDrawDates([]); setDateStepConfirmed(true); }}
                   className={cn(
                     'px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border',
                     (timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates))
@@ -964,6 +776,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                             ? prev.filter((d: string) => !weekDates.includes(d))
                             : Array.from(new Set([...prev, ...weekDates])).sort()
                         );
+                        setDateStepConfirmed(true);
                       }}
                       className={cn(
                         'flex shrink-0 items-center self-center rounded-lg border px-2 py-1.5 text-[8px] font-black uppercase tracking-wider transition-all',
@@ -990,6 +803,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                               ? prev.filter((d: string) => d !== draw.drawDate)
                               : [...prev, draw.drawDate].sort()
                           );
+                          setDateStepConfirmed(true);
                         }}
                         className={cn(
                           'relative flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border min-w-[52px] px-1.5 py-2 transition-all',
@@ -1016,120 +830,99 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                 })}
               </div>
             </div>
-          )}
 
-          {(!supportsTimeSelection || game.type === 'gordo') && (
-            <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Sorteo</p>
-                <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={1} />
-              </div>
+            {/* Estado vacío — invita a elegir fecha para continuar, como en el mockup */}
+            <div className="flex flex-col items-center justify-center gap-2.5 rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50/40 px-6 py-10 text-center">
+              <Calendar className="h-6 w-6 text-slate-300" />
+              <p className="text-[11px] font-bold text-slate-400">Selecciona la fecha del sorteo para continuar</p>
             </div>
-          )}
-
-          {availableModes.length > 1 && (
-            <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
-              <p className="mb-1.5 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Tipo de jugada</p>
-              <div className={cn('grid gap-1.5', availableModes.length >= 3 ? 'grid-cols-3' : 'grid-cols-2')}>
-                {availableModes.map((m) => {
-                  const labels: Record<string, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
-                  return (
-                    <button
-                      key={m}
-                      onClick={() => {
-                        setMode(m as typeof mode);
-                        const nextSystems = getReductionSystemsForMode(game.id, m as typeof mode);
-                        if (m === 'reduced' && nextSystems.length > 0) setSelectedReductionSystemId(nextSystems[0].id);
-                        handleClear();
-                        if (m !== 'simple') setBetMethod('manual');
-                      }}
-                      className={cn(
-                        'py-2 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all text-center',
-                        mode === m ? 'text-white border-transparent shadow-sm' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
-                      )}
-                      style={mode === m ? { backgroundColor: game.color } : undefined}
-                    >
-                      {labels[m] ?? m}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {mode === 'simple' && betMethod === null && (
-            <div
-              className="rounded-[1.2rem] border-2 border-slate-200 bg-white px-3.5 py-2.5 shadow-sm"
-            >
-              <p className="mb-2 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">¿Cómo quieres jugar?</p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setBetMethod('random')}
-                  className="flex items-center gap-2.5 rounded-xl border-2 border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-500 transition-all active:scale-[0.97] hover:border-slate-300"
-                >
-                  <Spark className="w-3.5 h-3.5 shrink-0 text-manises-gold" />
-                  <div className="text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest leading-none">Aleatorio</p>
-                    <p className="text-[8px] font-semibold mt-0.5 leading-none text-slate-400">Rápido</p>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setBetMethod('manual')}
-                  className="flex items-center gap-2.5 rounded-xl border-2 border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-400 transition-all active:scale-[0.97] hover:border-slate-300"
-                >
-                  <ControlSlider className="w-3.5 h-3.5 shrink-0" />
-                  <div className="text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest leading-none">Manual</p>
-                    <p className="text-[8px] font-semibold mt-0.5 leading-none text-slate-400">Tus números</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Toggle compacto tras elegir ALEATORIO — sin ocupar espacio extra */}
-          {mode === 'simple' && betMethod === 'random' && (
-            <div className="flex overflow-hidden rounded-xl border border-slate-200/60 bg-slate-100/70 p-1">
+          </>
+          ) : (
+          <>
+            {/* PASO 2 — ELEGIR CÓMO JUGAR (la fecha ya queda colapsada arriba) */}
+            {hasDateSelector ? (
               <button
-                onClick={() => setBetMethod('random')}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-[0.5rem] py-2 text-[9px] font-black uppercase tracking-widest bg-white text-manises-blue shadow-sm"
+                onClick={() => setDateStepConfirmed(false)}
+                className="group flex w-full items-center gap-2 rounded-xl border border-slate-200/60 bg-white px-3 py-2.5 shadow-sm transition-all hover:border-manises-blue/20 hover:shadow-md active:scale-[0.99]"
+                aria-label="Editar fecha del sorteo"
               >
-                <Spark className="w-3 h-3 text-manises-gold" /> Aleatorio
+                <Calendar className="h-3.5 w-3.5 shrink-0 text-manises-blue/50" />
+                <span className="min-w-0 flex-1 truncate text-left text-[11px] font-bold text-manises-blue">
+                  {collapsedDrawMoment}
+                </span>
+                <span className="shrink-0 text-[9px] font-black uppercase tracking-widest text-manises-blue/50 transition-colors group-hover:text-manises-blue">
+                  Cambiar
+                </span>
+                <EditPencil className="h-3.5 w-3.5 shrink-0 text-manises-blue/40 transition-colors group-hover:text-manises-blue" />
               </button>
-              <button
-                onClick={() => setBetMethod('manual')}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-[0.5rem] py-2 text-[9px] font-black uppercase tracking-widest text-slate-400"
-              >
-                <ControlSlider className="w-3 h-3" /> Manual
-              </button>
-            </div>
-          )}
-
-          {mode === 'simple' && betMethod === 'manual' && (
-            <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm">
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Número de apuestas</p>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setManualBetCount((c) => Math.max(1, c - 1))}
-                    disabled={manualBetCount <= 1}
-                    className={cn(
-                      'w-8 h-8 rounded-lg border flex items-center justify-center text-base font-bold transition-all active:scale-95',
-                      manualBetCount <= 1 ? 'border-slate-100 text-slate-200' : 'border-slate-200 text-slate-500 hover:border-slate-300'
-                    )}
-                  >−</button>
-                  <span className="text-base font-black text-manises-blue w-6 text-center tabular-nums">{manualBetCount}</span>
-                  <button
-                    onClick={() => setManualBetCount((c) => Math.min(15, c + 1))}
-                    disabled={manualBetCount >= 15}
-                    className={cn(
-                      'w-8 h-8 rounded-lg border flex items-center justify-center text-base font-bold transition-all active:scale-95',
-                      manualBetCount >= 15 ? 'border-slate-100 text-slate-200' : 'border-slate-200 text-slate-500 hover:border-slate-300'
-                    )}
-                  >+</button>
+            ) : (
+              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Sorteo</p>
+                  <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={1} />
                 </div>
               </div>
-            </div>
+            )}
+
+            {availableModes.length > 1 && (
+              <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
+                <p className="mb-1.5 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Tipo de jugada</p>
+                <div className={cn('grid gap-1.5', availableModes.length >= 3 ? 'grid-cols-3' : 'grid-cols-2')}>
+                  {availableModes.map((m) => {
+                    const labels: Record<string, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
+                    return (
+                      <button
+                        key={m}
+                        onClick={() => {
+                          setMode(m as typeof mode);
+                          const nextSystems = getReductionSystemsForMode(game.id, m as typeof mode);
+                          if (m === 'reduced' && nextSystems.length > 0) setSelectedReductionSystemId(nextSystems[0].id);
+                          handleClear();
+                          if (m !== 'simple') setBetMethod('manual');
+                        }}
+                        className={cn(
+                          'py-2 rounded-lg text-[9px] font-black uppercase tracking-wider border transition-all text-center',
+                          mode === m ? 'text-white border-transparent shadow-sm' : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
+                        )}
+                        style={mode === m ? { backgroundColor: game.color } : undefined}
+                      >
+                        {labels[m] ?? m}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {mode === 'simple' && betMethod === null && (
+              <div className="rounded-[1.2rem] border-2 border-slate-200 bg-white px-3.5 py-4 shadow-sm">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setBetMethod('random')}
+                    className="flex items-center justify-center gap-2 rounded-xl border-2 border-slate-200 bg-slate-50 py-3.5 text-[11px] font-black uppercase tracking-widest text-slate-500 transition-all active:scale-[0.97] hover:border-slate-300"
+                  >
+                    <Spark className="h-4 w-4 shrink-0 text-manises-gold" />
+                    Aleatorio
+                  </button>
+                  <button
+                    onClick={() => setBetMethod('manual')}
+                    className="flex items-center justify-center gap-2 rounded-xl border-2 border-slate-200 bg-slate-50 py-3.5 text-[11px] font-black uppercase tracking-widest text-slate-500 transition-all active:scale-[0.97] hover:border-slate-300"
+                  >
+                    <ControlSlider className="h-4 w-4 shrink-0" />
+                    Manual
+                  </button>
+                </div>
+
+                <div className="flex flex-col items-center gap-1.5 pb-1 pt-6 text-center">
+                  <DiceFive className="h-8 w-8 text-slate-300" />
+                  <p className="text-[11px] font-black uppercase tracking-[0.08em] text-manises-blue">¿Cómo quieres jugar?</p>
+                  <p className="max-w-[230px] text-[10px] font-medium leading-relaxed text-slate-400">
+                    Elige si prefieres que generemos las apuestas automáticamente o seleccionar tú los números.
+                  </p>
+                </div>
+              </div>
+            )}
+          </>
           )}
         </div>
         )}
@@ -1155,7 +948,6 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
             className="space-y-6"
           >
             {isQuickPickMode ? (
-              isConfigPanelOpen ? null :
               <QuickPickPanel
                 count={quickPick.count}
                 setCount={quickPick.setCount}
@@ -1185,7 +977,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                   menuItems={gameBottomMenuItems}
                 />
               </motion.div>
-            ) : (supportsQuickPick && mode === 'simple' && betMethod === null) ? null : (
+            ) : (supportsQuickPick && betMethod === null) ? null : (
               <>
                 {/* Selección compacta — fila única con burbujas + acciones */}
                 <div className="flex items-center justify-between gap-2 rounded-2xl border border-white/70 px-3 py-2 shadow-sm" style={theme.surface}>
@@ -1264,8 +1056,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                             maxStarsLimit={maxStars}
                             onToggle={toggleStar}
                             theme={theme}
-                            title={game.type === 'gordo' ? 'Clave' : 'Estrellas'}
-                            labelPrefix={game.type === 'gordo' ? 'Clave' : 'Estrella'}
+                            title={secondarySelectionLabel}
+                            labelPrefix={secondarySelectionPrefix}
                           />
                         </div>
                       </div>

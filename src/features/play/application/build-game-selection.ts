@@ -72,5 +72,5 @@ export function buildGameSelection({
     return { type: 'bonoloto', numbers: selectedNumbers };
   }
 
-  return { type: 'primitiva', numbers: selectedNumbers };
+  return { type: 'primitiva', numbers: selectedNumbers, reintegro: selectedStars[0] ?? 0 };
 }

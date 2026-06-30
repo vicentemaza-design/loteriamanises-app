@@ -98,9 +98,14 @@ export function MulticolumnTicketFlow({
   const activeColumn = state.columns[state.activeColumnIndex];
 
   const totalNums = game.selectionRange?.numbers?.total ?? 49;
-  const maxNums = game.selectionRange?.numbers?.max ?? game.selectionRange?.numbers?.min ?? 6;
+  const minNums = game.selectionRange?.numbers?.min ?? 6;
+  const maxNums = game.selectionRange?.numbers?.max ?? minNums;
   const totalStars = game.selectionRange?.stars?.total ?? 0;
   const maxStars = game.selectionRange?.stars?.max ?? game.selectionRange?.stars?.min ?? 0;
+  // Reintegro (Primitiva) y Clave (Gordo) son selección única que empieza en 0, no en 1
+  const startsAtZero = game.type === 'gordo' || game.type === 'primitiva';
+  const secondarySelectionLabel = game.type === 'gordo' ? 'Clave' : game.type === 'primitiva' ? 'Reintegro' : 'Estrellas';
+  const secondarySelectionPrefix = game.type === 'gordo' ? 'Clave' : game.type === 'primitiva' ? 'Reintegro' : 'Estrella';
 
   const blockCount = state.columns.length;
   const completeCount = summary.completeColumns;
@@ -317,7 +322,7 @@ export function MulticolumnTicketFlow({
                     updateActiveColumn(nextNumbers, activeColumn.stars);
                   }}
                   theme={theme}
-                  title="Elige 5 números"
+                  title={`Elige ${minNums} números`}
                 />
               </div>
               <div className="w-px self-stretch bg-gray-100 shrink-0 mt-5" />
@@ -327,7 +332,7 @@ export function MulticolumnTicketFlow({
                   gridCols={2}
                   starValues={Array.from(
                     { length: totalStars },
-                    (_, i) => game.type === 'gordo' ? i : i + 1
+                    (_, i) => startsAtZero ? i : i + 1
                   )}
                   selectedStars={activeColumn.stars}
                   maxStarsLimit={maxStars}
@@ -339,8 +344,8 @@ export function MulticolumnTicketFlow({
                     updateActiveColumn(activeColumn.numbers, nextStars);
                   }}
                   theme={theme}
-                  title={game.type === 'gordo' ? 'Clave' : 'Estrellas'}
-                  labelPrefix={game.type === 'gordo' ? 'Clave' : 'Estrella'}
+                  title={secondarySelectionLabel}
+                  labelPrefix={secondarySelectionPrefix}
                 />
               </div>
             </div>

@@ -9,6 +9,7 @@ export interface NationalSelection {
 export interface PrimitivaSelection {
   type: 'primitiva';
   numbers: number[];
+  reintegro: number;
 }
 
 export interface EuromillonesSelection {

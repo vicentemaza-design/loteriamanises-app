@@ -56,7 +56,7 @@ export const LOTTERY_GAMES: LotteryGame[] = [
     technicalMode: 'multiple_direct',
     systemFamily: 'direct',
     guaranteeType: 'direct_full_coverage',
-    selectionRange: { numbers: { min: 6, max: 11, total: 49 } },
+    selectionRange: { numbers: { min: 6, max: 11, total: 49 }, stars: { min: 1, max: 1, total: 10 } },
     productLimit: '462 ap.',
     productionPhase1: true,
   },

@@ -38,6 +38,10 @@ function formatSelection(game: LotteryGame): string {
     return `${base} + 1 clave del 0 al 9`;
   }
 
+  if (game.type === 'primitiva') {
+    return `${base} + 1 reintegro del 0 al 9`;
+  }
+
   return `${base} + ${range.stars.min} ${range.stars.min === 1 ? 'estrella' : 'estrellas'}`;
 }
 
@@ -46,9 +50,11 @@ function getMultipleSummary(game: LotteryGame, betsCount: number, totalPrice: nu
   const starRange = range?.stars;
   const starLabel = game.type === 'gordo'
     ? 'La clave se mantiene y el sistema desarrolla todas las combinaciones posibles del bloque principal.'
-    : starRange
-      ? `Puedes ampliar también ${starRange.min === starRange.max ? 'las estrellas' : 'números y estrellas'} dentro del rango permitido.`
-      : 'Amplías tu bloque de números y el sistema desarrolla todas las columnas posibles.';
+    : game.type === 'primitiva'
+      ? 'El reintegro se mantiene y el sistema desarrolla todas las columnas posibles del bloque principal.'
+      : starRange
+        ? `Puedes ampliar también ${starRange.min === starRange.max ? 'las estrellas' : 'números y estrellas'} dentro del rango permitido.`
+        : 'Amplías tu bloque de números y el sistema desarrolla todas las columnas posibles.';
 
   return {
     modeLabel: 'Múltiple',
@@ -91,9 +97,11 @@ function getSimpleSummary(game: LotteryGame, totalPrice: number): GameHelpConten
   const hasStars = Boolean(range?.stars);
   const extrasLabel = game.type === 'gordo'
     ? '1 clave'
-    : hasStars
-      ? `${range?.stars?.min} estrellas`
-      : 'sin extras';
+    : game.type === 'primitiva'
+      ? '1 reintegro'
+      : hasStars
+        ? `${range?.stars?.min} estrellas`
+        : 'sin extras';
 
   return {
     modeLabel: 'Simple',

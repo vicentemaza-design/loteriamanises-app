@@ -4,6 +4,11 @@ import { generateRandomPlay } from '@/features/play/services/play.service';
 import { buildGameSelection } from '@/features/play/application/build-game-selection';
 import type { QuickPickCombination } from '../contracts/quick-pick.contract';
 
+/** El reintegro de Primitiva va del 0 al 9, pero generateRandomPlay devuelve valores 1-indexados */
+function normalizeStars(game: LotteryGame, stars: number[]): number[] {
+  return game.type === 'primitiva' ? stars.map((v) => v - 1) : stars;
+}
+
 export function useQuickPick(game: LotteryGame, enabled: boolean = true) {
   const [count, setCount] = useState<number>(12);
   const [combinations, setCombinations] = useState<QuickPickCombination[]>([]);
@@ -17,13 +22,14 @@ export function useQuickPick(game: LotteryGame, enabled: boolean = true) {
       game.selectionRange.stars?.total ?? 0,
       game.selectionRange.stars?.min ?? 0
     );
+    const stars = normalizeStars(game, raw.stars);
     const selection = buildGameSelection({
       game,
       isNationalLottery: false,
       isQuiniela: false,
       mode: 'simple',
       selectedNumbers: raw.numbers,
-      selectedStars: raw.stars,
+      selectedStars: stars,
       quinielaMatches: [],
       selectedReductionSystemId: '',
       selectedNationalNumber: null,
@@ -33,7 +39,7 @@ export function useQuickPick(game: LotteryGame, enabled: boolean = true) {
     return {
       id: Math.random().toString(36).substring(2, 9),
       numbers: raw.numbers,
-      stars: raw.stars,
+      stars,
       selection,
     };
   }, [game, enabled]);
