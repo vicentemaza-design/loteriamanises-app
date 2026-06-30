@@ -101,7 +101,7 @@ export function QuickPickPanel({
           </div>
         </div>
         <p className="mt-3 text-[10px] font-medium text-slate-400">
-          Se generarán {count} {count === 1 ? 'apuesta aleatoria' : 'apuestas aleatorias'}
+          Máximo 15 apuestas por jugada
         </p>
       </section>
 
@@ -133,11 +133,11 @@ export function QuickPickPanel({
               <span className="w-8 shrink-0 text-[9px] font-black uppercase text-slate-400">
                 AP {idx + 1}
               </span>
-              <div className="flex flex-1 flex-wrap gap-1 items-center">
+              <div className="flex flex-1 flex-wrap gap-1.5 items-center">
                 {combo.numbers.map((n) => (
                   <span
                     key={n}
-                    className="flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black text-white"
+                    className="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-black text-white"
                     style={{ backgroundColor: activeColor }}
                   >
                     {n}
@@ -149,7 +149,7 @@ export function QuickPickPanel({
                 {combo.stars?.map((s) => (
                   <span
                     key={s}
-                    className="flex h-5 w-5 items-center justify-center rounded-full bg-manises-gold text-[9px] font-black text-white"
+                    className="flex h-7 w-7 items-center justify-center rounded-full bg-manises-gold text-[11px] font-black text-white"
                   >
                     {s}
                   </span>

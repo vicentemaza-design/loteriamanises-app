@@ -8,6 +8,8 @@ import {
   Spark,
   WarningTriangle,
   ControlSlider,
+  Calendar,
+  EditPencil,
 } from 'iconoir-react/regular';
 import { toast } from 'sonner';
 import { generateRandomPlay } from '@/features/play/services/play.service';
@@ -53,17 +55,15 @@ const DEFAULT_CUSTOM_WEEKS = 2;
 
 function formatChipContext(iso: string): string {
   const d = new Date(iso);
-  const weekday = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
-  const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
-  return `${weekday} · ${time}`;
+  return d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
 }
 
-function formatDrawChip(iso: string): { weekday: string; day: string; time: string } {
+function formatDrawChip(iso: string): { weekday: string; day: string; month: string } {
   const d = new Date(iso);
   return {
     weekday: d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', ''),
     day: String(d.getDate()),
-    time: d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false }),
+    month: d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''),
   };
 }
 
@@ -273,18 +273,15 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     if (isMulticolumnMode) return false;
     return selectedNumbers.length > 0;
   })();
-  // Simple: mostrar setup (fechas, tipo, método). Múltiple/Reducida: solo el grid, config accesible por el chip.
-  const shouldShowInlineSetup = mode === 'simple' && (!supportsQuickPick || betMethod !== 'manual');
+  // Simple sin método elegido: mostrar setup. En cuanto se elige Aleatorio o Manual, solo pantalla final (config accesible por chip/lápiz).
+  const shouldShowInlineSetup = mode === 'simple' && (!supportsQuickPick || betMethod === null);
 
   const drawTimeSummary = useMemo(() => {
     const d = new Date(drawStatus.drawDate);
-    const cutoff = new Date(drawStatus.salesCloseAt);
     const weekday = d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
-    const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-    const cutoffTime = cutoff.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const month = d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '');
     const countLabel = drawsCount === 1 ? 'Próximo sorteo' : `${drawsCount} sorteos`;
-    const cutoffKey = drawStatus.isDemoCutoff ? 'Límite demo' : 'Límite';
-    return `${countLabel} · ${weekday} ${time} · ${cutoffKey} ${cutoffTime}`;
+    return `${countLabel} · ${weekday} ${d.getDate()} ${month}`;
   }, [drawStatus, drawsCount]);
 
   const configMainLine = useMemo(() => {
@@ -300,6 +297,19 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     }
     return parts.length > 0 ? parts.join(' · ') : 'Jugada';
   }, [availableModes.length, isMulticolumnMode, isQuickPickMode, mode]);
+
+  // Resumen superior editable de la pantalla Aleatorio: "Jue 30 Jun · 21:30 · Simple · Aleatorio"
+  const quickPickSummaryLine = useMemo(() => {
+    const d = new Date(drawStatus.drawDate);
+    const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+    const weekday = cap(d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', ''));
+    const month = cap(d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''));
+    const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const modeLabel = availableModes.length > 1
+      ? ({ simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' } as Record<PlayMode, string>)[mode]
+      : 'Simple';
+    return `${weekday} ${d.getDate()} ${month} · ${time} · ${modeLabel} · Aleatorio`;
+  }, [drawStatus, mode, availableModes.length]);
 
   const gameBottomMenuItems = useMemo<GamePlayBottomMenuItem[]>(() => {
     const modeLabels: Record<PlayMode, string> = { simple: 'Simple', multiple: 'Múltiple', reduced: 'Reducida' };
@@ -706,8 +716,23 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
           </button>
         )}
 
+        {/* Resumen superior editable — pantalla Aleatorio (fecha · hora · tipo · Aleatorio + lápiz) */}
+        {isQuickPickMode && !isConfigPanelOpen && (
+          <button
+            onClick={() => setIsConfigPanelOpen(true)}
+            className="group flex w-full items-center gap-2 rounded-xl border border-slate-200/60 bg-white px-3 py-2.5 shadow-sm transition-all hover:border-manises-blue/20 hover:shadow-md active:scale-[0.99]"
+            aria-label="Editar fecha, tipo de jugada o modo"
+          >
+            <Calendar className="h-3.5 w-3.5 shrink-0 text-manises-blue/50" />
+            <span className="min-w-0 flex-1 truncate text-left text-[11px] font-bold text-manises-blue">
+              {quickPickSummaryLine}
+            </span>
+            <EditPencil className="h-3.5 w-3.5 shrink-0 text-manises-blue/40 transition-colors group-hover:text-manises-blue" />
+          </button>
+        )}
+
         {/* Config panel — expandido (también oculto cuando el grid está activo) */}
-        {isConfigPanelOpen && !isMulticolumnMode && !isQuickPickMode && (
+        {isConfigPanelOpen && !isMulticolumnMode && (
           <motion.div variants={sectionFadeUp} initial="hidden" animate="visible">
             <div className="space-y-3 rounded-[1.2rem] border border-manises-blue/10 bg-white p-3 shadow-sm">
               <div className="flex items-center justify-between">
@@ -762,7 +787,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                       Aleatorio
                     </button>
                     <button
-                      onClick={() => setBetMethod('manual')}
+                      onClick={() => { setBetMethod('manual'); setIsConfigPanelOpen(false); }}
                       className={cn(
                         'flex-1 py-2.5 px-3 rounded-[0.55rem] text-[9px] font-black uppercase tracking-widest transition-all',
                         betMethod === 'manual' ? 'bg-white text-manises-blue shadow-sm' : 'text-slate-400'
@@ -884,11 +909,9 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                     {'Próximo: '}
                     {new Date(drawStatus.drawDate).toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '')}
                     {' '}
-                    {new Date(drawStatus.drawDate).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                    {' · '}
-                    {drawStatus.isDemoCutoff ? 'Límite demo' : 'Límite'}
+                    {new Date(drawStatus.drawDate).getDate()}
                     {' '}
-                    {new Date(drawStatus.salesCloseAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                    {new Date(drawStatus.drawDate).toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')}
                   </p>
                 </div>
                 <span className={cn(
@@ -984,7 +1007,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                         )}
                         <span className={cn('relative z-10 text-[8px] font-semibold leading-none', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>{chip.weekday}</span>
                         <span className={cn('relative z-10 text-[13px] font-black leading-none', isSelected ? 'text-manises-blue' : 'text-slate-700')}>{chip.day}</span>
-                        <span className={cn('relative z-10 text-[7px] font-semibold leading-none tabular-nums', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>{chip.time}</span>
+                        <span className={cn('relative z-10 text-[7px] font-semibold leading-none', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>{chip.month}</span>
                       </button>
                     );
                   });
@@ -1132,6 +1155,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
             className="space-y-6"
           >
             {isQuickPickMode ? (
+              isConfigPanelOpen ? null :
               <QuickPickPanel
                 count={quickPick.count}
                 setCount={quickPick.setCount}
