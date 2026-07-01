@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Home, ViewGrid, Trophy, JournalPage, User, NavArrowRight, Gift } from 'iconoir-react/regular';
+import { Home, ViewGrid, Trophy, JournalPage, User, NavArrowRight, DiceSix, PageStar } from 'iconoir-react/regular';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -64,7 +64,7 @@ export function BottomNav() {
                   className="flex items-center gap-3 rounded-2xl border border-[#1d7a47]/15 bg-emerald-50 px-3 py-2.5 transition-all active:scale-[0.98]"
                 >
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1d7a47]">
-                    <ViewGrid className="h-4 w-4 text-white" />
+                    <DiceSix className="h-4 w-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0 text-left">
                     <p className="text-[11px] font-black text-[#1d7a47] leading-tight">
@@ -85,7 +85,7 @@ export function BottomNav() {
                   className="flex items-center gap-3 rounded-2xl border border-manises-blue/15 bg-blue-50 px-3 py-2.5 transition-all active:scale-[0.98]"
                 >
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-manises-blue">
-                    <Gift className="h-4 w-4 text-white" />
+                    <PageStar className="h-4 w-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0 text-left">
                     <p className="text-[11px] font-black text-manises-blue leading-tight">
