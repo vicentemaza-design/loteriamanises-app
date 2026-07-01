@@ -66,6 +66,7 @@ export function createEmptySession(): PlaySession {
     drafts: [],
     status: 'idle',
     createdAt: now,
+    reviewTarget: null,
   };
 }
 
@@ -87,6 +88,7 @@ export function readStoredSession(): PlaySession {
       createdAt: parsed.createdAt || new Date().toISOString(),
       drafts,
       status: deriveSessionStatus('building', drafts.length),
+      reviewTarget: null,
     };
   } catch {
     return createEmptySession();

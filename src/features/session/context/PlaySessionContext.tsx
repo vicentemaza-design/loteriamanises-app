@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { PlayDraft, PlaySession, PlaySessionStatus } from '../types/session.types';
+import type { CartTarget, PlayDraft, PlaySession, PlaySessionStatus } from '../types/session.types';
 
 export interface AddDraftResult {
   addedCount: number;
@@ -9,7 +9,12 @@ export interface AddDraftResult {
 export interface PlaySessionContextValue {
   session: PlaySession;
   drafts: PlayDraft[];
+  /** Jugadas de juegos numéricos / quiniela (todo excepto 'national') */
+  gameDrafts: PlayDraft[];
+  /** Jugadas de lotería nacional (type === 'national') */
+  lotteryDrafts: PlayDraft[];
   status: PlaySessionStatus;
+  reviewTarget: CartTarget | null;
   errorMessage: string | null;
   addDraft: (draft: PlayDraft) => AddDraftResult;
   addDrafts: (drafts: PlayDraft[]) => AddDraftResult;
@@ -17,6 +22,8 @@ export interface PlaySessionContextValue {
   removeDraft: (draftId: string) => void;
   clearSession: () => void;
   openReview: () => void;
+  openGameReview: () => void;
+  openLotteryReview: () => void;
   closeReview: () => void;
   markConfirming: () => void;
   resolveConfirmSuccess: (confirmedDraftIds: string[]) => void;

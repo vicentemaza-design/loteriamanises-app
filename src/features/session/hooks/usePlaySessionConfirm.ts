@@ -76,7 +76,12 @@ function mapDraftToDto(draft: PlayDraft) {
   }
 }
 
-export function usePlaySessionConfirm() {
+interface UsePlaySessionConfirmOptions {
+  /** Limita la confirmación a un subconjunto de la sesión */
+  draftFilter?: 'games' | 'lottery';
+}
+
+export function usePlaySessionConfirm({ draftFilter }: UsePlaySessionConfirmOptions = {}) {
   const { user, isDemo } = useAuth();
   const { session, drafts, closeReview, markConfirming, resolveConfirmFailure, resolveConfirmPartial, resolveConfirmSuccess } = usePlaySession();
   const summary = usePlaySessionSummary();
@@ -87,7 +92,13 @@ export function usePlaySessionConfirm() {
       return { ok: false, needsAuth: true };
     }
 
-    const validDrafts = drafts.filter((draft) => draft.status === 'valid' || draft.status === 'editing');
+    const scopedDrafts = draftFilter === 'games'
+      ? drafts.filter((d) => d.selection.type !== 'national')
+      : draftFilter === 'lottery'
+        ? drafts.filter((d) => d.selection.type === 'national')
+        : drafts;
+
+    const validDrafts = scopedDrafts.filter((draft) => draft.status === 'valid' || draft.status === 'editing');
     if (validDrafts.length === 0) {
       resolveConfirmFailure('No hay jugadas válidas para confirmar.');
       return { ok: false, needsAuth: false };

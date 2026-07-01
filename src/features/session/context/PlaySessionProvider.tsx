@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { PlaySessionContext, type AddDraftResult } from './PlaySessionContext';
 import { createEmptySession, deriveSessionStatus, getDraftSignature, normalizeDrafts, persistSession, readStoredSession } from '../lib/session.utils';
-import type { PlayDraft, PlaySession, PlaySessionStatus } from '../types/session.types';
+import type { CartTarget, PlayDraft, PlaySession, PlaySessionStatus } from '../types/session.types';
 
 type State = {
   session: PlaySession;
@@ -11,7 +11,7 @@ type State = {
 type Action =
   | { type: 'hydrate'; session: PlaySession }
   | { type: 'replaceDrafts'; drafts: PlayDraft[]; status?: PlaySessionStatus; errorMessage?: string | null }
-  | { type: 'openReview' }
+  | { type: 'openReview'; target: CartTarget }
   | { type: 'closeReview' }
   | { type: 'markConfirming' }
   | { type: 'markFailed'; message: string }
@@ -41,6 +41,7 @@ function reducer(state: State, action: Action): State {
         session: {
           ...state.session,
           status: state.session.drafts.length > 0 ? 'reviewing' : 'idle',
+          reviewTarget: state.session.drafts.length > 0 ? action.target : null,
         },
       };
     case 'closeReview':
@@ -49,6 +50,7 @@ function reducer(state: State, action: Action): State {
         session: {
           ...state.session,
           status: deriveSessionStatus('building', state.session.drafts.length),
+          reviewTarget: null,
         },
       };
     case 'markConfirming':
@@ -169,9 +171,19 @@ export function PlaySessionProvider({ children }: { children: React.ReactNode })
     dispatch({ type: 'clearSession' });
   }, []);
 
-  const openReview = React.useCallback(() => {
-    dispatch({ type: 'openReview' });
+  const openGameReview = React.useCallback(() => {
+    dispatch({ type: 'openReview', target: 'games' });
   }, []);
+
+  const openLotteryReview = React.useCallback(() => {
+    dispatch({ type: 'openReview', target: 'lottery' });
+  }, []);
+
+  // Backward-compat: opens whichever cart has items (games first)
+  const openReview = React.useCallback(() => {
+    const hasGames = state.session.drafts.some((d) => d.selection.type !== 'national');
+    dispatch({ type: 'openReview', target: hasGames ? 'games' : 'lottery' });
+  }, [state.session.drafts]);
 
   const closeReview = React.useCallback(() => {
     dispatch({ type: 'closeReview' });
@@ -214,10 +226,23 @@ export function PlaySessionProvider({ children }: { children: React.ReactNode })
     });
   }, [state.errorMessage, state.session.drafts, state.session.status]);
 
+  const gameDrafts = React.useMemo(
+    () => state.session.drafts.filter((d) => d.selection.type !== 'national'),
+    [state.session.drafts]
+  );
+
+  const lotteryDrafts = React.useMemo(
+    () => state.session.drafts.filter((d) => d.selection.type === 'national'),
+    [state.session.drafts]
+  );
+
   const contextValue = React.useMemo(() => ({
     session: state.session,
     drafts: state.session.drafts,
+    gameDrafts,
+    lotteryDrafts,
     status: state.session.status,
+    reviewTarget: state.session.reviewTarget,
     errorMessage: state.errorMessage,
     addDraft,
     addDrafts,
@@ -225,6 +250,8 @@ export function PlaySessionProvider({ children }: { children: React.ReactNode })
     removeDraft,
     clearSession,
     openReview,
+    openGameReview,
+    openLotteryReview,
     closeReview,
     markConfirming,
     resolveConfirmSuccess,
@@ -236,7 +263,11 @@ export function PlaySessionProvider({ children }: { children: React.ReactNode })
     addDrafts,
     clearSession,
     closeReview,
+    gameDrafts,
+    lotteryDrafts,
     markConfirming,
+    openGameReview,
+    openLotteryReview,
     openReview,
     refreshDraftStatuses,
     removeDraft,

@@ -4,7 +4,6 @@ import { motion, animate } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { formatCurrency } from '@/shared/lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
 
 function AnimatedBalance({ value }: { value: number }) {
   const [display, setDisplay] = useState(value);
@@ -58,7 +57,6 @@ export function Header() {
         {/* Balance Section - Integrated look */}
         {profile && (
           <div className="flex max-w-[62%] items-center justify-end gap-1.5 sm:max-w-none sm:gap-2">
-            <PlaySessionIndicator variant="header" />
             <motion.button
               whileTap={{ scale: 0.96 }}
               onClick={() => navigate('/profile')}

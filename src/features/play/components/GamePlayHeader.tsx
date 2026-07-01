@@ -1,7 +1,6 @@
 import { Button } from '@/shared/ui/Button';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { NavArrowLeft, InfoCircle } from 'iconoir-react/regular';
-import { PlaySessionIndicator } from '@/features/session/components/PlaySessionIndicator';
 import { formatDrawTime } from '@/shared/lib/utils';
 import type { LotteryGame } from '@/shared/types/domain';
 
@@ -40,7 +39,6 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo }: GamePlayHeade
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <PlaySessionIndicator variant="header" />
           <Button
             variant="ghost"
             size="icon"

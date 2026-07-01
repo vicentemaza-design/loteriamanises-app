@@ -70,7 +70,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useAuth();
-  const { drafts, addDrafts, updateDraft, openReview } = usePlaySession();
+  const { drafts, addDrafts, updateDraft, openGameReview: openReview } = usePlaySession();
 
   const editingDraftId = (location.state as GamePlayLocationState | null)?.playDraftId;
   const editingDraft = useMemo(

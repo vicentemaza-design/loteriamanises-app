@@ -84,11 +84,15 @@ export interface PlayDraft {
   metadata?: Record<string, unknown>;
 }
 
+export type CartTarget = 'games' | 'lottery';
+
 export interface PlaySession {
   id: string;
   drafts: PlayDraft[];
   status: PlaySessionStatus;
   createdAt: string;
+  /** Qué panel de cesta está abierto, o null si ninguno. */
+  reviewTarget: CartTarget | null;
 }
 
 export interface PlaySessionSummary {

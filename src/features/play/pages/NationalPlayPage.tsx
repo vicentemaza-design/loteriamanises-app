@@ -41,7 +41,7 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useAuth();
-  const { drafts, addDrafts, openReview } = usePlaySession();
+  const { drafts, addDrafts, openLotteryReview: openReview } = usePlaySession();
 
   const editingDraftId = (location.state as GamePlayLocationState | null)?.playDraftId;
   const editingDraft = useMemo(
