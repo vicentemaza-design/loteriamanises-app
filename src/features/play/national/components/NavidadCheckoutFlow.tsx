@@ -36,6 +36,7 @@ interface NavidadCheckoutFlowProps {
   showcaseItems: NationalShowcaseItem[];
   availableBalance: number;
   drawDate: string;
+  initialDeliveryMode?: DeliveryMode;
   onTopUp: (amount: number) => Promise<void>;
   onGoToTickets: () => void;
 }
@@ -387,12 +388,13 @@ export function NavidadCheckoutFlow({
   showcaseItems,
   availableBalance,
   drawDate,
+  initialDeliveryMode = 'custody',
   onTopUp,
   onGoToTickets,
 }: NavidadCheckoutFlowProps) {
   const [step, setStep] = useState<Step>('selection');
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
+  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>(initialDeliveryMode);
   const [searchQuery, setSearchQuery] = useState('');
   const [minAvailability, setMinAvailability] = useState<0 | 10 | 20 | 30 | 50>(0);
   const [showFaltaSaldo, setShowFaltaSaldo] = useState(false);

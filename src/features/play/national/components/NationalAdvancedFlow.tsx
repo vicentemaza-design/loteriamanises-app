@@ -53,6 +53,12 @@ interface NationalAdvancedFlowProps {
   };
 
   availableBalance: number;
+  /** Modo de entrega pre-seleccionado desde el pre-flujo */
+  initialDeliveryMode?: DeliveryMode;
+  /** Ocultar la sección de fecha/sorteo (ya elegida en pantalla anterior) */
+  hideSorteoSection?: boolean;
+  /** Ocultar el selector de tipo de entrega (ya elegido en pantalla anterior) */
+  hideDeliverySelector?: boolean;
   onSelectNationalNumber: (ticket: NationalShowcaseItem, deliveryMode: DeliveryMode) => void;
   onRandomNationalNumber: (deliveryMode: DeliveryMode) => void;
   onClear: () => void;
@@ -80,11 +86,14 @@ export function NationalAdvancedFlow({
   nationalShowcase,
   nationalCart,
   availableBalance,
+  initialDeliveryMode = 'custody',
+  hideSorteoSection = false,
+  hideDeliverySelector = false,
   onSelectNationalNumber,
   onRandomNationalNumber,
   onClear,
 }: NationalAdvancedFlowProps) {
-  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
+  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>(initialDeliveryMode);
   const [showShippingModal, setShowShippingModal] = useState(false);
   const [cartExpanded, setCartExpanded] = useState(false);
 
@@ -132,40 +141,44 @@ export function NationalAdvancedFlow({
   return (
     <div className="space-y-5 pb-[180px]">
       {/* 1. Sorteo */}
-      <section className="stagger-item">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2">
-          <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', statusColor.dot)} />
-          <span className="text-[11px] font-black text-manises-blue">
-            {formatDate(selectedNationalDraw.nextDraw)}
-          </span>
-          <span className="text-slate-300">·</span>
-          <span className={cn('text-[10px] font-semibold', statusColor.text)}>{statusLabel}</span>
-          <span className="text-slate-300">·</span>
-          <span className="text-[10px] font-semibold text-slate-400">
-            {drawStatus.isDemoCutoff ? 'Límite demo' : 'Límite'} {formatTime(drawStatus.salesCloseAt)}
-          </span>
-        </div>
-        {supportsTimeSelection && availableNationalDates.length > 0 && (
-          <div className="mt-2">
-            <NationalDrawSelector
-              availableNationalDates={availableNationalDates}
-              effectiveSelectedDrawDates={effectiveSelectedDrawDates}
-              onSelectDate={onSelectDate}
-            />
+      {!hideSorteoSection && (
+        <section className="stagger-item">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2">
+            <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', statusColor.dot)} />
+            <span className="text-[11px] font-black text-manises-blue">
+              {formatDate(selectedNationalDraw.nextDraw)}
+            </span>
+            <span className="text-slate-300">·</span>
+            <span className={cn('text-[10px] font-semibold', statusColor.text)}>{statusLabel}</span>
+            <span className="text-slate-300">·</span>
+            <span className="text-[10px] font-semibold text-slate-400">
+              {drawStatus.isDemoCutoff ? 'Límite demo' : 'Límite'} {formatTime(drawStatus.salesCloseAt)}
+            </span>
           </div>
-        )}
-      </section>
+          {supportsTimeSelection && availableNationalDates.length > 0 && (
+            <div className="mt-2">
+              <NationalDrawSelector
+                availableNationalDates={availableNationalDates}
+                effectiveSelectedDrawDates={effectiveSelectedDrawDates}
+                onSelectDate={onSelectDate}
+              />
+            </div>
+          )}
+        </section>
+      )}
 
       {/* 2. Tipo de entrega */}
-      <NationalDeliverySelector
-        selectedMode={deliveryMode}
-        shippingAvailable={isShippingAvailable}
-        onChange={(nextMode) => {
-          setDeliveryMode(nextMode);
-          nationalCart.updateDeliveryMode(nextMode);
-        }}
-        onShippingUnavailableClick={() => setShowShippingModal(true)}
-      />
+      {!hideDeliverySelector && (
+        <NationalDeliverySelector
+          selectedMode={deliveryMode}
+          shippingAvailable={isShippingAvailable}
+          onChange={(nextMode) => {
+            setDeliveryMode(nextMode);
+            nationalCart.updateDeliveryMode(nextMode);
+          }}
+          onShippingUnavailableClick={() => setShowShippingModal(true)}
+        />
+      )}
 
       {/* Modal Envíos no disponibles */}
       <AnimatePresence>

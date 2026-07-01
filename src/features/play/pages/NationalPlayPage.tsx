@@ -8,6 +8,10 @@ import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 import { GameInfoSheet } from '../components/GameInfoSheet';
 import { GamePlayHeader } from '../components/GamePlayHeader';
 import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
+import { NationalPreFlow, type NationalMethod } from '../national/components/NationalPreFlow';
+import { NationalAleatorioFlow } from '../national/components/NationalAleatorioFlow';
+import { NationalContextBar } from '../national/components/NationalContextBar';
+import { NationalDrawSelector } from '../national/components/NationalDrawSelector';
 import type { DeliveryMode } from '../national/components/NationalDeliverySelector';
 import {
   NATIONAL_DRAW_CONFIG,
@@ -29,13 +33,13 @@ import { getGameHelpContent } from '../lib/game-help';
 import type { LotteryGame } from '@/shared/types/domain';
 import type { PlayDraft } from '@/features/session/types/session.types';
 
+type FlowScreen = 'config' | 'aleatorio' | 'manual';
+
 interface GamePlayLocationState { playDraftId?: string; }
 
 const DEFAULT_CUSTOM_WEEKS = 2;
 
-interface NationalPlayPageProps {
-  game: LotteryGame;
-}
+interface NationalPlayPageProps { game: LotteryGame }
 
 export function NationalPlayPage({ game }: NationalPlayPageProps) {
   const navigate = useNavigate();
@@ -57,6 +61,11 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
   );
   const [selectedDrawDates, setSelectedDrawDates] = useState<string[]>([]);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+
+  // Flujo de 3 pantallas
+  const [flowScreen, setFlowScreen] = useState<FlowScreen>('config');
+  const [selectedDelivery, setSelectedDelivery] = useState<DeliveryMode>('custody');
+  const [selectedMethod, setSelectedMethod] = useState<NationalMethod>('aleatorio');
 
   const availableNationalDates = useMemo(
     () => getAvailableNationalDrawDates(game.id, true, isExplicitNationalProduct),
@@ -140,14 +149,7 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
         selectedNationalDrawNextDraw: selectedNationalDraw.nextDraw,
         availableNationalDates,
       }),
-    [
-      availableNationalDates,
-      game.nextDraw,
-      game.type,
-      isExplicitNationalProduct,
-      selectedDrawDates,
-      selectedNationalDraw.nextDraw,
-    ]
+    [availableNationalDates, game.nextDraw, game.type, isExplicitNationalProduct, selectedDrawDates, selectedNationalDraw.nextDraw]
   );
 
   const effectiveSelectedDrawDates = drawDateResolution.drawDates;
@@ -215,63 +217,121 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
       }
 
       const draftSelection = buildGameSelection({
-        game,
-        isNationalLottery: true,
-        isQuiniela: false,
-        mode: 'simple',
-        selectedNumbers: [],
-        selectedStars: [],
-        quinielaMatches: [],
-        selectedReductionSystemId: '',
-        selectedNationalNumber: line.number,
+        game, isNationalLottery: true, isQuiniela: false, mode: 'simple',
+        selectedNumbers: [], selectedStars: [], quinielaMatches: [],
+        selectedReductionSystemId: '', selectedNationalNumber: line.number,
         selectedNationalDraw: { label: line.drawLabel },
       });
-
       if (!draftSelection) return;
 
       const lineDrafts = buildPlayDrafts({
-        game,
-        selection: draftSelection,
-        drawDates: line.drawDates,
+        game, selection: draftSelection, drawDates: line.drawDates,
         totalPrice: line.quantity * unitPrice * line.drawDates.length,
-        unitPrice,
-        quantity: line.quantity,
-        mode: 'simple',
-        betsCount: 1,
-        isSubscription: false,
-        supportsTimeSelection: true,
-        timeMode: 'specific_days',
-        weeksCount: 1,
-        selectedNationalNumber: line.number,
+        unitPrice, quantity: line.quantity, mode: 'simple', betsCount: 1,
+        isSubscription: false, supportsTimeSelection: true, timeMode: 'specific_days',
+        weeksCount: 1, selectedNationalNumber: line.number,
         selectedNationalQuantity: line.quantity,
         selectedNationalDraw: { label: line.drawLabel },
       });
-
       allDrafts.push(...lineDrafts);
     });
 
     if (allDrafts.length === 0) {
-      if (hasError) toast.error('No se han podido añadir borradores debido a errores técnicos.');
+      if (hasError) toast.error('No se han podido añadir borradores.');
       return;
     }
 
     const result = addDrafts(allDrafts);
-
     if (result.addedCount > 0) {
       notifyAddedToCart(result, openLotteryReview, 'Décimo');
       clearNationalCart();
     }
-
     if (result.duplicateCount > 0) {
-      toast.error(
-        result.duplicateCount === 1
-          ? '1 décimo ya estaba en tu sesión (omitido).'
-          : `${result.duplicateCount} décimos ya estaban en tu sesión (omitidos).`
-      );
+      toast.error(result.duplicateCount === 1 ? '1 décimo ya estaba en tu sesión (omitido).' : `${result.duplicateCount} décimos ya estaban en tu sesión (omitidos).`);
+    }
+  };
+
+  // Aleatorio: genera décimos directamente desde el showcase sin pasar por el carrito local
+  const handleAleatorioConfirm = (sameCount: number, distinctCount: number) => {
+    if (nationalShowcase.length === 0) {
+      toast.error('No hay décimos disponibles en el escaparate demo.');
+      return;
+    }
+
+    const allDrafts: PlayDraft[] = [];
+    const usedNumbers = new Set<string>();
+
+    const buildDraftFor = (number: string, quantity: number) => {
+      const sel = buildGameSelection({
+        game, isNationalLottery: true, isQuiniela: false, mode: 'simple',
+        selectedNumbers: [], selectedStars: [], quinielaMatches: [],
+        selectedReductionSystemId: '', selectedNationalNumber: number,
+        selectedNationalDraw: { label: selectedNationalDraw.label },
+      });
+      if (!sel) return;
+      const ds = buildPlayDrafts({
+        game, selection: sel, drawDates: effectiveSelectedDrawDates,
+        totalPrice: quantity * selectedNationalDraw.decimoPrice * drawsCount,
+        unitPrice: selectedNationalDraw.decimoPrice, quantity,
+        mode: 'simple', betsCount: 1, isSubscription: false,
+        supportsTimeSelection: true, timeMode: 'specific_days', weeksCount: 1,
+        selectedNationalNumber: number, selectedNationalQuantity: quantity,
+        selectedNationalDraw: { label: selectedNationalDraw.label },
+      });
+      allDrafts.push(...ds);
+    };
+
+    // Décimo de la Suerte (mismo número, N copias)
+    if (sameCount > 0) {
+      const lucky = nationalShowcase[0]; // primer ticket = Décimo de la Suerte
+      if (lucky) { usedNumbers.add(lucky.number); buildDraftFor(lucky.number, sameCount); }
+    }
+    // Distintos números
+    for (let i = 0; i < distinctCount; i++) {
+      const available = nationalShowcase.filter((t) => !usedNumbers.has(t.number));
+      if (available.length === 0) break;
+      const ticket = available[Math.floor(Math.random() * available.length)];
+      usedNumbers.add(ticket.number);
+      buildDraftFor(ticket.number, 1);
+    }
+
+    if (allDrafts.length === 0) return;
+    const result = addDrafts(allDrafts);
+    if (result.addedCount > 0) {
+      notifyAddedToCart(result, openLotteryReview, 'Décimo');
+      setFlowScreen('config'); // volver a configuración para seguir comprando
+    }
+    if (result.duplicateCount > 0) {
+      toast.error(result.duplicateCount === 1 ? '1 décimo ya estaba en tu sesión (omitido).' : `${result.duplicateCount} décimos ya estaban en tu sesión (omitidos).`);
+    }
+  };
+
+  const handlePreFlowConfirm = (delivery: DeliveryMode, method: NationalMethod) => {
+    setSelectedDelivery(delivery);
+    setSelectedMethod(method);
+    updateNationalCartDeliveryMode(delivery);
+    setFlowScreen(method === 'aleatorio' ? 'aleatorio' : 'manual');
+  };
+
+  const handleBack = () => {
+    if (flowScreen !== 'config') {
+      setFlowScreen('config');
+      clearNationalCart();
+    } else {
+      navigate(-1);
     }
   };
 
   const drawId = isExplicitNationalProduct ? selectedNationalDrawId : 'especial';
+
+  // Chips de sorteo para la pantalla de configuración (solo Nacional Jue/Sáb)
+  const sorteoContent = isExplicitNationalProduct && availableNationalDates.length > 0 ? (
+    <NationalDrawSelector
+      availableNationalDates={availableNationalDates}
+      effectiveSelectedDrawDates={effectiveSelectedDrawDates}
+      onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
+    />
+  ) : undefined;
 
   return (
     <div
@@ -281,68 +341,92 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
       <GamePlayHeader
         game={game}
         drawTime={selectedNationalDraw.nextDraw}
-        onBack={() => navigate(-1)}
+        onBack={handleBack}
         onInfo={() => setIsInfoOpen(true)}
       />
 
-      <GameInfoSheet
-        game={game}
-        isOpen={isInfoOpen}
-        onClose={() => setIsInfoOpen(false)}
-        content={helpContent}
-      />
+      <GameInfoSheet game={game} isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} content={helpContent} />
 
       <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-2.5 p-4 pt-2">
-        <NationalAdvancedFlow
-          game={game}
-          selectedNationalDraw={selectedNationalDraw}
-          drawsCount={drawsCount}
-          drawStatus={drawStatus}
-          supportsTimeSelection={isExplicitNationalProduct}
-          availableNationalDates={availableNationalDates}
-          effectiveSelectedDrawDates={effectiveSelectedDrawDates}
-          onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
-          nationalShowcase={{
-            items: nationalShowcase,
-            count: nationalShowcaseCount,
-            searchState: nationalSearchState,
-            setSearchState: setNationalSearchState,
-          }}
-          nationalCart={{
-            lines: nationalCartLines,
-            breakdown: nationalCartBreakdown,
-            removeLine: removeNationalCartLine,
-            updateQuantity: updateNationalCartQuantity,
-            updateDeliveryMode: updateNationalCartDeliveryMode,
-            clearCart: clearNationalCart,
-            onPersistToSession: handlePersistNationalCart,
-          }}
-          availableBalance={availableBalance}
-          onSelectNationalNumber={(ticket, deliveryMode) => {
-            const existing = nationalCartLines.find(
-              (l) => l.number === ticket.number && l.drawId === drawId
-            );
-            if (existing) {
-              removeNationalCartLine(ticket.number, drawId);
-            } else {
-              addOrUpdateNationalCartLine({
-                number: ticket.number,
-                serie: ticket.serie,
-                fraccion: ticket.fraccion,
-                drawId,
-                drawLabel: selectedNationalDraw.label,
-                drawDates: effectiveSelectedDrawDates,
-                quantity: 1,
-                unitPrice: selectedNationalDraw.decimoPrice,
-                totalPrice: selectedNationalDraw.decimoPrice * drawsCount,
-                deliveryMode,
-                maxQuantity: ticket.available,
-              });
-            }
-          }}
-          onRandomNationalNumber={handleRandom}
-          onClear={handleClear}
-        />
+        {/* PANTALLA 1: Configuración */}
+        {flowScreen === 'config' && (
+          <NationalPreFlow
+            sorteoContent={sorteoContent}
+            availableBalance={availableBalance}
+            onConfirm={handlePreFlowConfirm}
+          />
+        )}
+
+        {/* PANTALLA 2: Aleatorio — ¿Cuántos décimos quieres? */}
+        {flowScreen === 'aleatorio' && (
+          <NationalAleatorioFlow
+            drawDate={selectedNationalDraw.nextDraw}
+            drawLabel={selectedNationalDraw.label}
+            delivery={selectedDelivery}
+            method={selectedMethod}
+            unitPrice={selectedNationalDraw.decimoPrice}
+            availableBalance={availableBalance}
+            showcase={nationalShowcase}
+            onEdit={() => setFlowScreen('config')}
+            onConfirm={handleAleatorioConfirm}
+          />
+        )}
+
+        {/* PANTALLA 3: Manual — buscador de números */}
+        {flowScreen === 'manual' && (
+          <>
+            {/* Barra de contexto sticky */}
+            <div className="sticky top-14 z-10 -mx-4 px-4 pb-2 pt-0">
+              <NationalContextBar
+                drawDate={selectedNationalDraw.nextDraw}
+                delivery={selectedDelivery}
+                method={selectedMethod}
+                onEdit={() => { setFlowScreen('config'); clearNationalCart(); }}
+              />
+            </div>
+
+            <NationalAdvancedFlow
+              game={game}
+              selectedNationalDraw={selectedNationalDraw}
+              drawsCount={drawsCount}
+              drawStatus={drawStatus}
+              supportsTimeSelection={false}
+              availableNationalDates={availableNationalDates}
+              effectiveSelectedDrawDates={effectiveSelectedDrawDates}
+              onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
+              nationalShowcase={{ items: nationalShowcase, count: nationalShowcaseCount, searchState: nationalSearchState, setSearchState: setNationalSearchState }}
+              nationalCart={{
+                lines: nationalCartLines,
+                breakdown: nationalCartBreakdown,
+                removeLine: removeNationalCartLine,
+                updateQuantity: updateNationalCartQuantity,
+                updateDeliveryMode: updateNationalCartDeliveryMode,
+                clearCart: clearNationalCart,
+                onPersistToSession: handlePersistNationalCart,
+              }}
+              availableBalance={availableBalance}
+              initialDeliveryMode={selectedDelivery}
+              hideSorteoSection
+              hideDeliverySelector
+              onSelectNationalNumber={(ticket, deliveryMode) => {
+                const existing = nationalCartLines.find((l) => l.number === ticket.number && l.drawId === drawId);
+                if (existing) {
+                  removeNationalCartLine(ticket.number, drawId);
+                } else {
+                  addOrUpdateNationalCartLine({
+                    number: ticket.number, serie: ticket.serie, fraccion: ticket.fraccion,
+                    drawId, drawLabel: selectedNationalDraw.label, drawDates: effectiveSelectedDrawDates,
+                    quantity: 1, unitPrice: selectedNationalDraw.decimoPrice,
+                    totalPrice: selectedNationalDraw.decimoPrice * drawsCount,
+                    deliveryMode, maxQuantity: ticket.available,
+                  });
+                }
+              }}
+              onRandomNationalNumber={handleRandom}
+              onClear={handleClear}
+            />
+          </>
+        )}
       </div>
     </div>
   );
