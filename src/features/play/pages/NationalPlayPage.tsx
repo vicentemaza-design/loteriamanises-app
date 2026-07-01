@@ -9,6 +9,8 @@ import { GameInfoSheet } from '../components/GameInfoSheet';
 import { GamePlayHeader } from '../components/GamePlayHeader';
 import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
 import { NationalPreFlow, type NationalMethod } from '../national/components/NationalPreFlow';
+import { NationalAleatorioFlow } from '../national/components/NationalAleatorioFlow';
+import { NationalDrawSelector } from '../national/components/NationalDrawSelector';
 import type { DeliveryMode } from '../national/components/NationalDeliverySelector';
 import {
   NATIONAL_DRAW_CONFIG,
@@ -56,8 +58,11 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
   );
   const [selectedDrawDates, setSelectedDrawDates] = useState<string[]>([]);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+
+  // Pre-flow state
   const [preFlowDone, setPreFlowDone] = useState(false);
   const [selectedDelivery, setSelectedDelivery] = useState<DeliveryMode>('custody');
+  const [selectedMethod, setSelectedMethod] = useState<NationalMethod>('elegir');
 
   const availableNationalDates = useMemo(
     () => getAvailableNationalDrawDates(game.id, true, isExplicitNationalProduct),
@@ -243,13 +248,93 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
     }
   };
 
+  // Aleatorio: build drafts directly from showcase without going through local cart
+  const handleAleatorioConfirm = (sameCount: number, distinctCount: number) => {
+    if (nationalShowcase.length === 0) {
+      toast.error('No hay décimos disponibles en el escaparate demo.');
+      return;
+    }
+
+    const drawId = isExplicitNationalProduct ? selectedNationalDrawId : 'especial';
+    const allDrafts: PlayDraft[] = [];
+    const usedNumbers = new Set<string>();
+
+    const buildDraftFor = (number: string, quantity: number) => {
+      const sel = buildGameSelection({
+        game, isNationalLottery: true, isQuiniela: false, mode: 'simple',
+        selectedNumbers: [], selectedStars: [], quinielaMatches: [],
+        selectedReductionSystemId: '', selectedNationalNumber: number,
+        selectedNationalDraw: { label: selectedNationalDraw.label },
+      });
+      if (!sel) return;
+      const drafts = buildPlayDrafts({
+        game, selection: sel, drawDates: effectiveSelectedDrawDates,
+        totalPrice: quantity * selectedNationalDraw.decimoPrice * drawsCount,
+        unitPrice: selectedNationalDraw.decimoPrice, quantity,
+        mode: 'simple', betsCount: 1, isSubscription: false,
+        supportsTimeSelection: true, timeMode: 'specific_days', weeksCount: 1,
+        selectedNationalNumber: number, selectedNationalQuantity: quantity,
+        selectedNationalDraw: { label: selectedNationalDraw.label },
+      });
+      allDrafts.push(...drafts);
+    };
+
+    // Mismos: un número al azar con `sameCount` copias
+    if (sameCount > 0) {
+      const ticket = nationalShowcase[Math.floor(Math.random() * nationalShowcase.length)];
+      if (ticket) {
+        usedNumbers.add(ticket.number);
+        buildDraftFor(ticket.number, sameCount);
+      }
+    }
+
+    // Distintos: `distinctCount` números diferentes
+    for (let i = 0; i < distinctCount; i++) {
+      const available = nationalShowcase.filter((t) => !usedNumbers.has(t.number));
+      if (available.length === 0) break;
+      const ticket = available[Math.floor(Math.random() * available.length)];
+      usedNumbers.add(ticket.number);
+      buildDraftFor(ticket.number, 1);
+    }
+
+    if (allDrafts.length === 0) return;
+    const result = addDrafts(allDrafts);
+    if (result.addedCount > 0) {
+      notifyAddedToCart(result, openLotteryReview, 'Décimo');
+      // Volver al pre-flujo para que el usuario pueda seguir comprando
+      setPreFlowDone(false);
+    }
+    if (result.duplicateCount > 0) {
+      toast.error(result.duplicateCount === 1 ? '1 décimo ya estaba en tu sesión (omitido).' : `${result.duplicateCount} décimos ya estaban en tu sesión (omitidos).`);
+    }
+  };
+
   const drawId = isExplicitNationalProduct ? selectedNationalDrawId : 'especial';
 
-  const handlePreFlowConfirm = (delivery: DeliveryMode, _method: NationalMethod) => {
+  const handlePreFlowConfirm = (delivery: DeliveryMode, method: NationalMethod) => {
     setSelectedDelivery(delivery);
+    setSelectedMethod(method);
     updateNationalCartDeliveryMode(delivery);
     setPreFlowDone(true);
   };
+
+  const handleBack = () => {
+    if (preFlowDone) {
+      setPreFlowDone(false);
+      clearNationalCart();
+    } else {
+      navigate(-1);
+    }
+  };
+
+  // Contenido del selector de sorteo para Nacional Jue/Sáb (paso 1 del pre-flujo)
+  const sorteoContent = isExplicitNationalProduct && availableNationalDates.length > 0 ? (
+    <NationalDrawSelector
+      availableNationalDates={availableNationalDates}
+      effectiveSelectedDrawDates={effectiveSelectedDrawDates}
+      onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
+    />
+  ) : undefined;
 
   return (
     <div
@@ -259,16 +344,30 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
       <GamePlayHeader
         game={game}
         drawTime={selectedNationalDraw.nextDraw}
-        onBack={preFlowDone ? () => { setPreFlowDone(false); clearNationalCart(); } : () => navigate(-1)}
+        onBack={handleBack}
         onInfo={() => setIsInfoOpen(true)}
       />
 
       <GameInfoSheet game={game} isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} content={helpContent} />
 
       <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-2.5 p-4 pt-2">
-        {!preFlowDone ? (
-          <NationalPreFlow onConfirm={handlePreFlowConfirm} />
-        ) : (
+        {!preFlowDone && (
+          <NationalPreFlow
+            sorteoContent={sorteoContent}
+            onConfirm={handlePreFlowConfirm}
+          />
+        )}
+
+        {preFlowDone && selectedMethod === 'aleatorio' && (
+          <NationalAleatorioFlow
+            unitPrice={selectedNationalDraw.decimoPrice}
+            drawLabel={selectedNationalDraw.label}
+            onConfirm={handleAleatorioConfirm}
+            onBack={() => setPreFlowDone(false)}
+          />
+        )}
+
+        {preFlowDone && selectedMethod === 'elegir' && (
           <NationalAdvancedFlow
             game={game}
             selectedNationalDraw={selectedNationalDraw}
