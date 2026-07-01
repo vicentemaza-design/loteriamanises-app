@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Xmark, Trash, Lock, Plus, EditPencil, Truck, Star } from 'iconoir-react/regular';
+import { Xmark, Trash, Lock, Plus, EditPencil, Truck, Star, ShieldCheck } from 'iconoir-react/regular';
 import { formatCurrency } from '@/shared/lib/utils';
 import { usePlaySession } from '../hooks/usePlaySession';
 import { usePlaySessionConfirm } from '../hooks/usePlaySessionConfirm';
@@ -153,10 +153,12 @@ export function LotteryCartPanel() {
           <div className="mx-5 mb-3 flex rounded-xl border border-slate-200 bg-white p-1">
             {(['custodia', 'mensajeria'] as const).map((mode) => (
               <button key={mode} type="button" onClick={() => setDeliveryMode(mode)}
-                className={`flex-1 rounded-lg py-2 text-[11px] font-black uppercase tracking-wider transition-all ${
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-black uppercase tracking-wider transition-all ${
                   deliveryMode === mode ? 'bg-manises-blue text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'
                 }`}>
-                {mode === 'custodia' ? '🔒 Custodia digital' : '📦 Mensajería'}
+                {mode === 'custodia'
+                  ? <><ShieldCheck className="h-3.5 w-3.5" /> Custodia digital</>
+                  : <><Truck className="h-3.5 w-3.5" /> Mensajería</>}
               </button>
             ))}
           </div>
