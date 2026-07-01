@@ -321,13 +321,42 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
 
   // "Jue 30 Jun · 21:30" — momento del sorteo, usado en las líneas-resumen colapsadas (pasos 2 y 3)
   const collapsedDrawMoment = useMemo(() => {
-    const d = new Date(drawStatus.drawDate);
     const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-    const weekday = cap(d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', ''));
-    const month = cap(d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''));
-    const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
-    return `${weekday} ${d.getDate()} ${month} · ${time}`;
-  }, [drawStatus]);
+    const dates = effectiveSelectedDrawDates;
+
+    if (dates.length <= 1) {
+      const d = new Date(dates[0] ?? drawStatus.drawDate);
+      const weekday = cap(d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', ''));
+      const month = cap(d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''));
+      const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+      return `${weekday} ${d.getDate()} ${month} · ${time}`;
+    }
+
+    const parsed = dates.map((s) => new Date(s));
+
+    if (dates.length <= 3) {
+      const firstMo = cap(parsed[0].toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''));
+      const allSameMonth = parsed.every(
+        (d) => d.toLocaleDateString('es-ES', { month: 'short' }) === parsed[0].toLocaleDateString('es-ES', { month: 'short' })
+      );
+      const parts = parsed.map((d) => {
+        const wd = cap(d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', ''));
+        const mo = cap(d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''));
+        return allSameMonth ? `${wd} ${d.getDate()}` : `${wd} ${d.getDate()} ${mo}`;
+      });
+      return `${parts.join(', ')}${allSameMonth ? ` ${firstMo}` : ''}`;
+    }
+
+    // 4+ fechas: rango compacto
+    const first = parsed[0];
+    const last = parsed[parsed.length - 1];
+    const fWd = cap(first.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', ''));
+    const fMo = cap(first.toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''));
+    const lWd = cap(last.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', ''));
+    const lMo = cap(last.toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''));
+    const sameMonth = fMo === lMo;
+    return `${dates.length} sorteos · ${fWd} ${first.getDate()}${sameMonth ? '' : ` ${fMo}`} – ${lWd} ${last.getDate()} ${lMo}`;
+  }, [drawStatus, effectiveSelectedDrawDates]);
 
   // Resumen superior editable de la pantalla Aleatorio: "Jue 30 Jun · 21:30 · Simple · Aleatorio"
   const quickPickSummaryLine = useMemo(() => {
@@ -808,7 +837,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                         setDateStepConfirmed(true);
                       }}
                       className={cn(
-                        'flex shrink-0 items-center self-center rounded-lg border px-2 py-1.5 text-[8px] font-black uppercase tracking-wider transition-all',
+                        'flex shrink-0 items-center self-center rounded-lg border px-2 py-2.5 text-[9px] font-black uppercase tracking-wider transition-all',
                         allSelected ? 'text-white border-transparent shadow-sm' :
                         someSelected ? 'bg-slate-50 border-slate-200 text-slate-500' :
                         'bg-slate-50 border-dashed border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'
@@ -860,7 +889,6 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
               </div>
             </div>
 
-            {/* Estado vacío — invita a elegir fecha para continuar, como en el mockup */}
             <div className="flex flex-col items-center justify-center gap-3 rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50/40 px-6 pb-2 pt-8 text-center">
               <Calendar className="h-10 w-10 text-slate-300" />
               <p className="text-[11px] font-black uppercase tracking-[0.08em] text-manises-blue">Elige la fecha del sorteo</p>
