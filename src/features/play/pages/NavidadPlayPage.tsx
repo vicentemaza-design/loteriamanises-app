@@ -1,92 +1,71 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { notifyAddedToCart } from '@/features/session/lib/cart-toast';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { usePlaySession } from '@/features/session/hooks/usePlaySession';
+import { useWallet } from '@/features/wallet/hooks/useWallet';
 import { GameInfoSheet } from '../components/GameInfoSheet';
-import { NationalBuyFlow } from '../national/components/NationalBuyFlow';
-import { NATIONAL_DRAW_CONFIG } from '../national/mocks/national-showcase.mock';
-import type { NationalCartLine } from '../national/contracts/national-play.contract';
-import { buildNationalCartDraftIntent } from '../national/application/build-national-cart-intent';
-import { buildGameSelection } from '../application/build-game-selection';
-import { buildPlayDrafts } from '../application/build-play-drafts';
+import { GamePlayHeader } from '../components/GamePlayHeader';
+import { NavidadCheckoutFlow } from '../national/components/NavidadCheckoutFlow';
+import { NationalPreFlow, type NationalMethod } from '../national/components/NationalPreFlow';
+import { useNationalShowcase } from '../national/hooks/useNationalShowcase';
 import { getGameHelpContent } from '../lib/game-help';
+import type { DeliveryMode } from '../national/components/NationalDeliverySelector';
 import type { LotteryGame } from '@/shared/types/domain';
-import type { PlayDraft } from '@/features/session/types/session.types';
 
 interface NavidadPlayPageProps { game: LotteryGame }
 
 export function NavidadPlayPage({ game }: NavidadPlayPageProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { addDrafts, openLotteryReview } = usePlaySession();
+  const { topUp } = useWallet();
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [preFlowDone, setPreFlowDone] = useState(false);
+  const [selectedDelivery, setSelectedDelivery] = useState<DeliveryMode>('custody');
+  const [selectedMethod, setSelectedMethod] = useState<NationalMethod>('elegir');
 
+  const { items: showcaseItems } = useNationalShowcase('especial');
   const availableBalance = profile?.balance ?? 0;
+
   const helpContent = getGameHelpContent({ game, mode: 'simple', betsCount: 1, totalPrice: game.price });
 
-  const handlePersistLines = (lines: NationalCartLine[]) => {
-    if (lines.length === 0) return;
-    const intent = buildNationalCartDraftIntent(game, lines);
-    const allDrafts: PlayDraft[] = [];
-    let hasError = false;
-
-    intent.lines.forEach((line) => {
-      const drawCfg = NATIONAL_DRAW_CONFIG.find((d) => d.id === line.drawId);
-      const unitPrice = drawCfg?.decimoPrice ?? line.unitPrice;
-
-      if (!drawCfg && line.drawId !== 'especial') {
-        toast.error(`Error de configuración: sorteo ${line.drawId} no encontrado.`);
-        hasError = true;
-        return;
-      }
-
-      const draftSelection = buildGameSelection({
-        game, isNationalLottery: true, isQuiniela: false, mode: 'simple',
-        selectedNumbers: [], selectedStars: [], quinielaMatches: [],
-        selectedReductionSystemId: '', selectedNationalNumber: line.number,
-        selectedNationalDraw: { label: line.drawLabel },
-      });
-      if (!draftSelection) return;
-
-      const lineDrafts = buildPlayDrafts({
-        game, selection: draftSelection, drawDates: line.drawDates,
-        totalPrice: line.quantity * unitPrice * line.drawDates.length,
-        unitPrice, quantity: line.quantity, mode: 'simple', betsCount: 1,
-        isSubscription: false, supportsTimeSelection: false, timeMode: 'specific_days',
-        weeksCount: 1, selectedNationalNumber: line.number,
-        selectedNationalQuantity: line.quantity,
-        selectedNationalDraw: { label: line.drawLabel },
-      });
-
-      allDrafts.push(...lineDrafts);
-    });
-
-    if (allDrafts.length === 0) {
-      if (hasError) toast.error('No se han podido añadir los décimos.');
-      return;
-    }
-
-    const result = addDrafts(allDrafts);
-    if (result.addedCount > 0) notifyAddedToCart(result, openLotteryReview, 'Décimo');
-    if (result.duplicateCount > 0) toast.error('Algún décimo ya estaba en tu sesión (omitido).');
+  const handlePreFlowConfirm = (delivery: DeliveryMode, method: NationalMethod) => {
+    setSelectedDelivery(delivery);
+    setSelectedMethod(method);
+    setPreFlowDone(true);
   };
 
   return (
-    <div className="flex min-h-full flex-col">
-      <GameInfoSheet game={game} isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} content={helpContent} />
-      <NationalBuyFlow
+    <div
+      className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-6"
+      style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 56px)' }}
+    >
+      <GamePlayHeader
         game={game}
-        drawId="especial"
-        drawLabel={game.name}
-        drawDates={[]}
-        effectiveDrawDate={game.nextDraw}
-        decimoPrice={game.price}
-        availableBalance={availableBalance}
-        onBack={() => navigate(-1)}
-        onPersistLines={handlePersistLines}
+        drawTime={game.nextDraw}
+        onBack={preFlowDone ? () => setPreFlowDone(false) : () => navigate(-1)}
+        onInfo={() => setIsInfoOpen(true)}
       />
+
+      <GameInfoSheet game={game} isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} content={helpContent} />
+
+      <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-2.5 p-4 pt-2">
+        {!preFlowDone ? (
+          <NationalPreFlow onConfirm={handlePreFlowConfirm} />
+        ) : (
+          <NavidadCheckoutFlow
+            game={game}
+            showcaseItems={showcaseItems}
+            availableBalance={availableBalance}
+            drawDate={game.nextDraw}
+            initialDeliveryMode={selectedDelivery}
+            initialMethod={selectedMethod}
+            onTopUp={async (amount) => {
+              const result = await topUp(amount);
+              if (!result?.success) throw new Error('Top-up failed');
+            }}
+            onGoToTickets={() => navigate('/tickets')}
+          />
+        )}
+      </div>
     </div>
   );
 }
