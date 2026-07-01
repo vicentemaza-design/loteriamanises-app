@@ -310,7 +310,12 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
     setSelectedDelivery(delivery);
     setSelectedMethod(method);
     updateNationalCartDeliveryMode(delivery);
-    setFlowScreen(method === 'aleatorio' ? 'aleatorio' : 'manual');
+
+    if (method === 'aleatorio') {
+      // Auto-selecciona el Décimo de la Suerte y muestra la pantalla de números
+      handleRandom(delivery);
+    }
+    setFlowScreen('manual');
   };
 
   const handleBack = () => {

@@ -42,7 +42,12 @@ export function NavidadPlayPage({ game }: NavidadPlayPageProps) {
   const handlePreFlowConfirm = (delivery: DeliveryMode, method: NationalMethod) => {
     setSelectedDelivery(delivery);
     setSelectedMethod(method);
-    setFlowScreen(method === 'aleatorio' ? 'aleatorio' : 'manual');
+    if (method === 'aleatorio') {
+      // Navidad: añade 1 décimo aleatorio directo a la sesión y muestra toast
+      handleAleatorioConfirm(1, 0);
+    } else {
+      setFlowScreen('manual');
+    }
   };
 
   const handleBack = () => {

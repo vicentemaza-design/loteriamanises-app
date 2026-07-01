@@ -75,7 +75,7 @@ export function NationalPreFlow({
 
       {/* Barra inferior fija */}
       <div
-        className="fixed bottom-[var(--nav-height)] left-0 right-0 z-10 overflow-hidden border-t border-slate-100 bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.08)]"
+        className="fixed bottom-0 left-0 right-0 z-10 overflow-hidden border-t border-slate-100 bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.08)]"
       >
         <div
           className="bg-[#0a4792]/88 mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white"
