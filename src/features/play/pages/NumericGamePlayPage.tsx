@@ -835,7 +835,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                           setDateStepConfirmed(true);
                         }}
                         className={cn(
-                          'relative flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border min-w-[52px] px-1.5 py-2 transition-all',
+                          'relative flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border min-w-[62px] px-2 py-2.5 transition-all',
                           isSelected ? 'border-transparent shadow-[0_4px_12px_rgba(10,71,146,0.10)]' : 'bg-white border-slate-100 hover:border-slate-200'
                         )}
                         style={isSelected ? { backgroundColor: `${game.color}12`, borderColor: game.color } : undefined}
@@ -848,9 +848,9 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                             transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                           />
                         )}
-                        <span className={cn('relative z-10 text-[8px] font-semibold leading-none', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>{chip.weekday}</span>
-                        <span className={cn('relative z-10 text-[13px] font-black leading-none', isSelected ? 'text-manises-blue' : 'text-slate-700')}>{chip.day}</span>
-                        <span className={cn('relative z-10 text-[7px] font-semibold leading-none', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>{chip.month}</span>
+                        <span className={cn('relative z-10 text-[12px] font-semibold leading-none uppercase', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>{chip.weekday}</span>
+                        <span className={cn('relative z-10 text-[20px] font-bold leading-none', isSelected ? 'text-manises-blue' : 'text-slate-700')}>{chip.day}</span>
+                        <span className={cn('relative z-10 text-[12px] font-semibold leading-none uppercase', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>{chip.month}</span>
                       </button>
                     );
                   });
@@ -861,9 +861,12 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
             </div>
 
             {/* Estado vacío — invita a elegir fecha para continuar, como en el mockup */}
-            <div className="flex flex-col items-center justify-center gap-2.5 rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50/40 px-6 py-10 text-center">
-              <Calendar className="h-6 w-6 text-slate-300" />
-              <p className="text-[11px] font-bold text-slate-400">Selecciona la fecha del sorteo para continuar</p>
+            <div className="flex flex-col items-center justify-center gap-3 rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50/40 px-6 pb-2 pt-8 text-center">
+              <Calendar className="h-10 w-10 text-slate-300" />
+              <p className="text-[11px] font-black uppercase tracking-[0.08em] text-manises-blue">Elige la fecha del sorteo</p>
+              <p className="max-w-[230px] pb-6 text-[13px] font-medium leading-relaxed text-slate-400">
+                Selecciona uno o varios días arriba para ver las opciones de juego disponibles.
+              </p>
             </div>
           </>
           ) : (
@@ -889,6 +892,22 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Sorteo</p>
                   <DrawStatusPill drawStatus={drawStatus} selectedDrawsCount={1} />
+                </div>
+                {/* Chip de fecha del próximo sorteo — visual idéntico al selector de otros juegos */}
+                <div className="mt-2 flex justify-center">
+                  {(() => {
+                    const chip = formatDrawChip(highlightedDrawDate);
+                    return (
+                      <div
+                        className="flex flex-col items-center justify-center gap-0.5 rounded-xl border px-3 py-2"
+                        style={{ backgroundColor: `${game.color}12`, borderColor: game.color }}
+                      >
+                        <span className="text-[12px] font-semibold leading-none uppercase" style={{ color: game.color, opacity: 0.7 }}>{chip.weekday}</span>
+                        <span className="text-[20px] font-bold leading-none" style={{ color: game.color }}>{chip.day}</span>
+                        <span className="text-[12px] font-semibold leading-none uppercase" style={{ color: game.color, opacity: 0.7 }}>{chip.month}</span>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             )}
@@ -946,7 +965,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                 <div className="flex flex-col items-center gap-1.5 pb-1 pt-6 text-center">
                   <DiceFive className="h-8 w-8 text-slate-300" />
                   <p className="text-[11px] font-black uppercase tracking-[0.08em] text-manises-blue">¿Cómo quieres jugar?</p>
-                  <p className="max-w-[230px] text-[10px] font-medium leading-relaxed text-slate-400">
+                  <p className="max-w-[230px] text-[13px] font-medium leading-relaxed text-slate-400">
                     Elige si prefieres que generemos las apuestas automáticamente o seleccionar tú los números.
                   </p>
                 </div>
