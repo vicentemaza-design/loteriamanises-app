@@ -148,10 +148,10 @@ export function NationalAleatorioFlow({
       />
 
       {/* Info */}
-      <div className="flex items-center gap-2.5 rounded-xl border border-manises-blue/10 bg-manises-blue/5 px-3.5 py-2.5">
-        <Spark className="h-4 w-4 shrink-0 text-manises-gold" />
-        <p className="text-[10px] font-semibold leading-snug text-manises-blue">
-          Asignaremos los números aleatoriamente usando el Décimo de la Suerte recomendado.
+      <div className="flex items-center gap-3 rounded-2xl border border-manises-blue/15 bg-manises-blue/8 px-4 py-3.5">
+        <Spark className="h-5 w-5 shrink-0 text-manises-gold" />
+        <p className="text-[13px] font-black leading-snug text-manises-blue">
+          Asignaremos los números aleatoriamente
         </p>
       </div>
 
