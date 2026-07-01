@@ -27,7 +27,20 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <AppRouter />
-        <Toaster position="top-center" richColors />
+        <Toaster
+          position="top-center"
+          richColors
+          toastOptions={{
+            actionButtonStyle: {
+              backgroundColor: '#0a4792',
+              color: '#ffffff',
+              fontWeight: 700,
+              fontSize: '11px',
+              borderRadius: '8px',
+              padding: '6px 12px',
+            },
+          }}
+        />
       </BrowserRouter>
     </AuthProvider>
   );
