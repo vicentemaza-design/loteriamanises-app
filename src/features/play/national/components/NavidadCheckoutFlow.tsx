@@ -38,8 +38,6 @@ interface NavidadCheckoutFlowProps {
   drawDate: string;
   onTopUp: (amount: number) => Promise<void>;
   onGoToTickets: () => void;
-  initialDeliveryMode?: DeliveryMode;
-  initialMethod?: 'aleatorio' | 'elegir';
 }
 
 // ─── Navidad décimo mini-card ─────────────────────────────────────────────────
@@ -391,11 +389,10 @@ export function NavidadCheckoutFlow({
   drawDate,
   onTopUp,
   onGoToTickets,
-  initialDeliveryMode = 'custody',
 }: NavidadCheckoutFlowProps) {
   const [step, setStep] = useState<Step>('selection');
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>(initialDeliveryMode);
+  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
   const [searchQuery, setSearchQuery] = useState('');
   const [minAvailability, setMinAvailability] = useState<0 | 10 | 20 | 30 | 50>(0);
   const [showFaltaSaldo, setShowFaltaSaldo] = useState(false);

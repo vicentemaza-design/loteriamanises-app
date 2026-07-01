@@ -53,7 +53,6 @@ interface NationalAdvancedFlowProps {
   };
 
   availableBalance: number;
-  initialDeliveryMode?: DeliveryMode;
   onSelectNationalNumber: (ticket: NationalShowcaseItem, deliveryMode: DeliveryMode) => void;
   onRandomNationalNumber: (deliveryMode: DeliveryMode) => void;
   onClear: () => void;
@@ -81,12 +80,11 @@ export function NationalAdvancedFlow({
   nationalShowcase,
   nationalCart,
   availableBalance,
-  initialDeliveryMode = 'custody',
   onSelectNationalNumber,
   onRandomNationalNumber,
   onClear,
 }: NationalAdvancedFlowProps) {
-  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>(initialDeliveryMode);
+  const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('custody');
   const [showShippingModal, setShowShippingModal] = useState(false);
   const [cartExpanded, setCartExpanded] = useState(false);
 
