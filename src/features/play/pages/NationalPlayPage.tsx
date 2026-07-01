@@ -251,71 +251,54 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
     }
   };
 
-  // Aleatorio: genera décimos directamente desde el showcase sin pasar por el carrito local
+  // Aleatorio: añade los décimos al carrito local y va a la pantalla de números
   const handleAleatorioConfirm = (sameCount: number, distinctCount: number) => {
     if (nationalShowcase.length === 0) {
       toast.error('No hay décimos disponibles en el escaparate demo.');
       return;
     }
 
-    const allDrafts: PlayDraft[] = [];
+    const drawId = isExplicitNationalProduct ? selectedNationalDrawId : 'especial';
     const usedNumbers = new Set<string>();
 
-    const buildDraftFor = (number: string, quantity: number) => {
-      const sel = buildGameSelection({
-        game, isNationalLottery: true, isQuiniela: false, mode: 'simple',
-        selectedNumbers: [], selectedStars: [], quinielaMatches: [],
-        selectedReductionSystemId: '', selectedNationalNumber: number,
-        selectedNationalDraw: { label: selectedNationalDraw.label },
-      });
-      if (!sel) return;
-      const ds = buildPlayDrafts({
-        game, selection: sel, drawDates: effectiveSelectedDrawDates,
-        totalPrice: quantity * selectedNationalDraw.decimoPrice * drawsCount,
-        unitPrice: selectedNationalDraw.decimoPrice, quantity,
-        mode: 'simple', betsCount: 1, isSubscription: false,
-        supportsTimeSelection: true, timeMode: 'specific_days', weeksCount: 1,
-        selectedNationalNumber: number, selectedNationalQuantity: quantity,
-        selectedNationalDraw: { label: selectedNationalDraw.label },
-      });
-      allDrafts.push(...ds);
-    };
-
-    // Décimo de la Suerte (mismo número, N copias)
     if (sameCount > 0) {
-      const lucky = nationalShowcase[0]; // primer ticket = Décimo de la Suerte
-      if (lucky) { usedNumbers.add(lucky.number); buildDraftFor(lucky.number, sameCount); }
+      const lucky = nationalShowcase[0];
+      if (lucky) {
+        usedNumbers.add(lucky.number);
+        addOrUpdateNationalCartLine({
+          number: lucky.number, serie: lucky.serie, fraccion: lucky.fraccion,
+          drawId, drawLabel: selectedNationalDraw.label,
+          drawDates: effectiveSelectedDrawDates, quantity: sameCount,
+          unitPrice: selectedNationalDraw.decimoPrice,
+          totalPrice: selectedNationalDraw.decimoPrice * sameCount * drawsCount,
+          deliveryMode: selectedDelivery, maxQuantity: lucky.available,
+        });
+      }
     }
-    // Distintos números
+
     for (let i = 0; i < distinctCount; i++) {
       const available = nationalShowcase.filter((t) => !usedNumbers.has(t.number));
       if (available.length === 0) break;
       const ticket = available[Math.floor(Math.random() * available.length)];
       usedNumbers.add(ticket.number);
-      buildDraftFor(ticket.number, 1);
+      addOrUpdateNationalCartLine({
+        number: ticket.number, serie: ticket.serie, fraccion: ticket.fraccion,
+        drawId, drawLabel: selectedNationalDraw.label,
+        drawDates: effectiveSelectedDrawDates, quantity: 1,
+        unitPrice: selectedNationalDraw.decimoPrice,
+        totalPrice: selectedNationalDraw.decimoPrice * drawsCount,
+        deliveryMode: selectedDelivery, maxQuantity: ticket.available,
+      });
     }
 
-    if (allDrafts.length === 0) return;
-    const result = addDrafts(allDrafts);
-    if (result.addedCount > 0) {
-      notifyAddedToCart(result, openLotteryReview, 'Décimo');
-      setFlowScreen('config'); // volver a configuración para seguir comprando
-    }
-    if (result.duplicateCount > 0) {
-      toast.error(result.duplicateCount === 1 ? '1 décimo ya estaba en tu sesión (omitido).' : `${result.duplicateCount} décimos ya estaban en tu sesión (omitidos).`);
-    }
+    setFlowScreen('manual');
   };
 
   const handlePreFlowConfirm = (delivery: DeliveryMode, method: NationalMethod) => {
     setSelectedDelivery(delivery);
     setSelectedMethod(method);
     updateNationalCartDeliveryMode(delivery);
-
-    if (method === 'aleatorio') {
-      // Auto-selecciona el Décimo de la Suerte y muestra la pantalla de números
-      handleRandom(delivery);
-    }
-    setFlowScreen('manual');
+    setFlowScreen(method === 'aleatorio' ? 'aleatorio' : 'manual');
   };
 
   const handleBack = () => {
