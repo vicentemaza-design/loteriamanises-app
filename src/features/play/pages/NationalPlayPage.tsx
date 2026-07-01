@@ -1,21 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getBusinessDate } from '@/shared/lib/timezone';
 import { toast } from 'sonner';
 import { notifyAddedToCart } from '@/features/session/lib/cart-toast';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 import { GameInfoSheet } from '../components/GameInfoSheet';
-import { GamePlayHeader } from '../components/GamePlayHeader';
-import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
-import type { DeliveryMode } from '../national/components/NationalDeliverySelector';
-import {
-  NATIONAL_DRAW_CONFIG,
-  DEFAULT_NATIONAL_SEARCH_STATE,
-} from '../national/mocks/national-showcase.mock';
-import type { NationalDrawId } from '../national/contracts/national-play.contract';
-import { useNationalShowcase } from '../national/hooks/useNationalShowcase';
-import { useNationalCart } from '../national/hooks/useNationalCart';
+import { NationalBuyFlow } from '../national/components/NationalBuyFlow';
+import { NATIONAL_DRAW_CONFIG } from '../national/mocks/national-showcase.mock';
+import type { NationalCartLine, NationalDrawId } from '../national/contracts/national-play.contract';
 import { buildNationalCartDraftIntent } from '../national/application/build-national-cart-intent';
 import { buildGameSelection } from '../application/build-game-selection';
 import { buildPlayDrafts } from '../application/build-play-drafts';
@@ -24,36 +16,23 @@ import {
   getNextWeekdayIso,
   resolveDrawDates,
 } from '../application/resolve-draw-dates';
-import { resolveDrawStatus } from '../draw-status/application/resolve-draw-status';
 import { getGameHelpContent } from '../lib/game-help';
 import type { LotteryGame } from '@/shared/types/domain';
 import type { PlayDraft } from '@/features/session/types/session.types';
 
-interface GamePlayLocationState { playDraftId?: string; }
-
-const DEFAULT_CUSTOM_WEEKS = 2;
-
-interface NationalPlayPageProps {
-  game: LotteryGame;
-}
+interface NationalPlayPageProps { game: LotteryGame }
 
 export function NationalPlayPage({ game }: NationalPlayPageProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useAuth();
-  const { drafts, addDrafts, openLotteryReview } = usePlaySession();
-
-  const editingDraftId = (location.state as GamePlayLocationState | null)?.playDraftId;
-  const editingDraft = useMemo(
-    () => drafts.find((d) => d.id === editingDraftId),
-    [drafts, editingDraftId]
-  );
+  const { addDrafts, openLotteryReview } = usePlaySession();
 
   const isExplicitNationalProduct =
     game.id === 'loteria-nacional-jueves' || game.id === 'loteria-nacional-sabado';
 
   const [selectedNationalDrawId, setSelectedNationalDrawId] = useState<NationalDrawId>(
-    game.id === 'loteria-nacional-jueves' ? 'jueves' : 'sabado'
+    game.id === 'loteria-nacional-sabado' ? 'sabado' : 'jueves'
   );
   const [selectedDrawDates, setSelectedDrawDates] = useState<string[]>([]);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
@@ -63,44 +42,13 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
     [game.id, isExplicitNationalProduct]
   );
 
-  const showcaseDrawId = game.id === 'loteria-nacional-sabado' ? 'sabado' : 'jueves';
-  const {
-    setDrawId: setNationalShowcaseDrawId,
-    searchState: nationalSearchState,
-    setSearchState: setNationalSearchState,
-    items: nationalShowcase,
-    totalItems: nationalShowcaseCount,
-  } = useNationalShowcase(showcaseDrawId);
-
-  const {
-    lines: nationalCartLines,
-    addOrUpdateLine: addOrUpdateNationalCartLine,
-    removeLine: removeNationalCartLine,
-    updateQuantity: updateNationalCartQuantity,
-    updateDeliveryMode: updateNationalCartDeliveryMode,
-    clearCart: clearNationalCart,
-    breakdown: nationalCartBreakdown,
-  } = useNationalCart();
-
   useEffect(() => {
     if (availableNationalDates.length > 0) {
       setSelectedDrawDates([availableNationalDates[0]]);
     }
   }, [availableNationalDates]);
 
-  useEffect(() => {
-    setNationalShowcaseDrawId(isExplicitNationalProduct ? selectedNationalDrawId : 'especial');
-  }, [isExplicitNationalProduct, selectedNationalDrawId, setNationalShowcaseDrawId]);
-
-  useEffect(() => {
-    if (!editingDraft || editingDraft.gameId !== game.id) return;
-    if (editingDraft.selection.type !== 'national') return;
-    const draftDates = Array.isArray(editingDraft.metadata?.orderDrawDates)
-      ? editingDraft.metadata.orderDrawDates.filter((d): d is string => typeof d === 'string')
-      : [editingDraft.drawDate];
-    setSelectedDrawDates(draftDates);
-  }, [editingDraft, game.id]);
-
+  // Determine draws config
   const nationalDraws = isExplicitNationalProduct
     ? NATIONAL_DRAW_CONFIG.filter((d) => {
         if (game.id === 'loteria-nacional-jueves') return d.id === 'jueves';
@@ -134,9 +82,9 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
         isNationalLottery: true,
         isExplicitNationalProduct,
         supportsTimeSelection: isExplicitNationalProduct,
-        scheduleMode: 'next_draw',
+        scheduleMode: 'specific_days',
         selectedDrawDates,
-        selectedWeeksCount: DEFAULT_CUSTOM_WEEKS,
+        selectedWeeksCount: 1,
         selectedNationalDrawNextDraw: selectedNationalDraw.nextDraw,
         availableNationalDates,
       }),
@@ -151,56 +99,19 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
   );
 
   const effectiveSelectedDrawDates = drawDateResolution.drawDates;
-  const drawsCount = Math.max(effectiveSelectedDrawDates.length, 1);
-
   const highlightedDrawDate = useMemo(() => {
     const sorted = [...effectiveSelectedDrawDates].sort((a, b) => a.localeCompare(b));
-    return sorted[0] ?? getBusinessDate(selectedNationalDraw.nextDraw);
+    return sorted[0] ?? selectedNationalDraw.nextDraw;
   }, [effectiveSelectedDrawDates, selectedNationalDraw.nextDraw]);
 
-  const drawStatus = useMemo(
-    () => resolveDrawStatus({ drawDate: highlightedDrawDate }),
-    [highlightedDrawDate]
-  );
-
   const availableBalance = profile?.balance ?? 0;
+  const drawId = isExplicitNationalProduct ? selectedNationalDrawId : 'especial';
 
-  const helpContent = getGameHelpContent({
-    game,
-    mode: 'simple',
-    betsCount: nationalCartBreakdown.totalDecimos,
-    totalPrice: nationalCartBreakdown.total,
-  });
+  const helpContent = getGameHelpContent({ game, mode: 'simple', betsCount: 1, totalPrice: 0 });
 
-  const handleRandom = (deliveryMode: DeliveryMode = 'custody') => {
-    const randomTicket = nationalShowcase[Math.floor(Math.random() * nationalShowcase.length)];
-    if (!randomTicket) {
-      toast.error('No hay décimos disponibles en el escaparate demo.');
-      return;
-    }
-    addOrUpdateNationalCartLine({
-      number: randomTicket.number,
-      serie: randomTicket.serie,
-      fraccion: randomTicket.fraccion,
-      drawId: isExplicitNationalProduct ? selectedNationalDrawId : 'especial',
-      drawLabel: selectedNationalDraw.label,
-      drawDates: effectiveSelectedDrawDates,
-      quantity: 1,
-      unitPrice: selectedNationalDraw.decimoPrice,
-      totalPrice: selectedNationalDraw.decimoPrice * drawsCount,
-      deliveryMode,
-      maxQuantity: randomTicket.available,
-    });
-  };
-
-  const handleClear = () => {
-    clearNationalCart();
-    setNationalSearchState(DEFAULT_NATIONAL_SEARCH_STATE);
-  };
-
-  const handlePersistNationalCart = () => {
-    if (nationalCartLines.length === 0) return;
-    const intent = buildNationalCartDraftIntent(game, nationalCartLines);
+  const handlePersistLines = (lines: NationalCartLine[]) => {
+    if (lines.length === 0) return;
+    const intent = buildNationalCartDraftIntent(game, lines);
     const allDrafts: PlayDraft[] = [];
     let hasError = false;
 
@@ -251,17 +162,14 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
     });
 
     if (allDrafts.length === 0) {
-      if (hasError) toast.error('No se han podido añadir borradores debido a errores técnicos.');
+      if (hasError) toast.error('No se han podido añadir los décimos.');
       return;
     }
 
     const result = addDrafts(allDrafts);
-
     if (result.addedCount > 0) {
       notifyAddedToCart(result, openLotteryReview, 'Décimo');
-      clearNationalCart();
     }
-
     if (result.duplicateCount > 0) {
       toast.error(
         result.duplicateCount === 1
@@ -271,79 +179,34 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
     }
   };
 
-  const drawId = isExplicitNationalProduct ? selectedNationalDrawId : 'especial';
+  // Ignore unused location import (kept for future editing-draft support)
+  void location;
 
   return (
-    <div
-      className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-6"
-      style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 56px)' }}
-    >
-      <GamePlayHeader
-        game={game}
-        drawTime={selectedNationalDraw.nextDraw}
-        onBack={() => navigate(-1)}
-        onInfo={() => setIsInfoOpen(true)}
-      />
-
+    <div className="flex min-h-full flex-col">
       <GameInfoSheet
         game={game}
         isOpen={isInfoOpen}
         onClose={() => setIsInfoOpen(false)}
         content={helpContent}
       />
-
-      <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-2.5 p-4 pt-2">
-        <NationalAdvancedFlow
-          game={game}
-          selectedNationalDraw={selectedNationalDraw}
-          drawsCount={drawsCount}
-          drawStatus={drawStatus}
-          supportsTimeSelection={isExplicitNationalProduct}
-          availableNationalDates={availableNationalDates}
-          effectiveSelectedDrawDates={effectiveSelectedDrawDates}
-          onSelectDate={(dateIso) => setSelectedDrawDates([dateIso])}
-          nationalShowcase={{
-            items: nationalShowcase,
-            count: nationalShowcaseCount,
-            searchState: nationalSearchState,
-            setSearchState: setNationalSearchState,
-          }}
-          nationalCart={{
-            lines: nationalCartLines,
-            breakdown: nationalCartBreakdown,
-            removeLine: removeNationalCartLine,
-            updateQuantity: updateNationalCartQuantity,
-            updateDeliveryMode: updateNationalCartDeliveryMode,
-            clearCart: clearNationalCart,
-            onPersistToSession: handlePersistNationalCart,
-          }}
-          availableBalance={availableBalance}
-          onSelectNationalNumber={(ticket, deliveryMode) => {
-            const existing = nationalCartLines.find(
-              (l) => l.number === ticket.number && l.drawId === drawId
-            );
-            if (existing) {
-              removeNationalCartLine(ticket.number, drawId);
-            } else {
-              addOrUpdateNationalCartLine({
-                number: ticket.number,
-                serie: ticket.serie,
-                fraccion: ticket.fraccion,
-                drawId,
-                drawLabel: selectedNationalDraw.label,
-                drawDates: effectiveSelectedDrawDates,
-                quantity: 1,
-                unitPrice: selectedNationalDraw.decimoPrice,
-                totalPrice: selectedNationalDraw.decimoPrice * drawsCount,
-                deliveryMode,
-                maxQuantity: ticket.available,
-              });
-            }
-          }}
-          onRandomNationalNumber={handleRandom}
-          onClear={handleClear}
-        />
-      </div>
+      <NationalBuyFlow
+        game={game}
+        drawId={drawId}
+        drawLabel={selectedNationalDraw.label}
+        drawDates={isExplicitNationalProduct ? availableNationalDates : []}
+        effectiveDrawDate={highlightedDrawDate}
+        decimoPrice={selectedNationalDraw.decimoPrice}
+        availableBalance={availableBalance}
+        onSelectDate={isExplicitNationalProduct ? (iso) => {
+          setSelectedDrawDates([iso]);
+          setSelectedNationalDrawId(
+            iso.includes('jue') ? 'jueves' : iso.includes('sab') ? 'sabado' : selectedNationalDrawId
+          );
+        } : undefined}
+        onBack={() => navigate(-1)}
+        onPersistLines={handlePersistLines}
+      />
     </div>
   );
 }

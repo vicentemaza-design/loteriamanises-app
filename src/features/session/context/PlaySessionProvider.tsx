@@ -167,6 +167,17 @@ export function PlaySessionProvider({ children }: { children: React.ReactNode })
     });
   }, [state.session.drafts, state.session.status]);
 
+  const removeDrafts = React.useCallback((draftIds: string[]) => {
+    const idSet = new Set(draftIds);
+    const remaining = state.session.drafts.filter((draft) => !idSet.has(draft.id));
+    dispatch({
+      type: 'replaceDrafts',
+      drafts: remaining,
+      status: deriveSessionStatus(state.session.status, remaining.length),
+      errorMessage: null,
+    });
+  }, [state.session.drafts, state.session.status]);
+
   const clearSession = React.useCallback(() => {
     dispatch({ type: 'clearSession' });
   }, []);
@@ -248,6 +259,7 @@ export function PlaySessionProvider({ children }: { children: React.ReactNode })
     addDrafts,
     updateDraft,
     removeDraft,
+    removeDrafts,
     clearSession,
     openReview,
     openGameReview,
@@ -271,6 +283,7 @@ export function PlaySessionProvider({ children }: { children: React.ReactNode })
     openReview,
     refreshDraftStatuses,
     removeDraft,
+    removeDrafts,
     resolveConfirmPartial,
     resolveConfirmFailure,
     resolveConfirmSuccess,

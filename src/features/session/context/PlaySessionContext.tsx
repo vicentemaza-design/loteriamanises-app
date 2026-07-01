@@ -20,6 +20,7 @@ export interface PlaySessionContextValue {
   addDrafts: (drafts: PlayDraft[]) => AddDraftResult;
   updateDraft: (draftId: string, nextDraft: PlayDraft) => { updated: boolean; duplicate: boolean };
   removeDraft: (draftId: string) => void;
+  removeDrafts: (draftIds: string[]) => void;
   clearSession: () => void;
   openReview: () => void;
   openGameReview: () => void;

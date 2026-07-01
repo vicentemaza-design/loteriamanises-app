@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Home, ViewGrid, Trophy, JournalPage, User, NavArrowRight } from 'iconoir-react/regular';
+import { Home, ViewGrid, Trophy, JournalPage, User, NavArrowRight, Gift } from 'iconoir-react/regular';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -38,7 +38,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-60 bg-[#0a4792]/80 backdrop-blur-3xl border-t border-white/5 shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
+      className="fixed bottom-0 left-0 right-0 z-60 bg-[#0a4792]/80 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
       aria-label="Navegación principal"
@@ -54,20 +54,27 @@ export function BottomNav() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-            className="overflow-hidden border-b border-white/8"
+            className="overflow-hidden bg-white/96 border-b border-slate-200/60"
           >
-            <div className={`grid gap-2 px-2 pt-2 pb-1.5 ${hasGames && hasLottery ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            <div className={`grid gap-2 px-2 pt-2 pb-2 ${hasGames && hasLottery ? 'grid-cols-2' : 'grid-cols-1'}`}>
               {hasGames && (
                 <button
                   type="button"
                   onClick={openGameReview}
-                  className="flex items-center justify-between gap-2 rounded-xl bg-[#d5e3f2] px-3.5 py-2 transition-all active:scale-[0.98]"
+                  className="flex items-center gap-3 rounded-2xl border border-[#1d7a47]/15 bg-emerald-50 px-3 py-2.5 transition-all active:scale-[0.98]"
                 >
-                  <span className="text-[9px] font-black uppercase tracking-widest text-manises-blue/60">Juegos</span>
-                  <span className="flex-1 text-center text-[14px] font-black leading-none text-manises-blue">{formatCurrency(gamesTotal)}</span>
-                  <div className="flex shrink-0 items-center gap-0.5 text-manises-blue/70">
-                    <span className="text-[9px] font-black uppercase tracking-widest">Pagar</span>
-                    <NavArrowRight className="h-3 w-3" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1d7a47]">
+                    <ViewGrid className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-[11px] font-black text-[#1d7a47] leading-tight">
+                      Juegos ({gameDrafts.length})
+                    </p>
+                    <p className="text-[14px] font-black text-slate-800 leading-tight">{formatCurrency(gamesTotal)}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-0.5 text-[#1d7a47]">
+                    {!hasLottery && <span className="text-[10px] font-black">Ir a pagar</span>}
+                    <NavArrowRight className="h-4 w-4" />
                   </div>
                 </button>
               )}
@@ -75,13 +82,20 @@ export function BottomNav() {
                 <button
                   type="button"
                   onClick={openLotteryReview}
-                  className="flex items-center justify-between gap-2 rounded-xl border border-white/15 bg-white/10 px-3.5 py-2 text-white transition-all active:scale-[0.98]"
+                  className="flex items-center gap-3 rounded-2xl border border-manises-blue/15 bg-blue-50 px-3 py-2.5 transition-all active:scale-[0.98]"
                 >
-                  <span className="text-[9px] font-black uppercase tracking-widest text-white/70">Lotería</span>
-                  <span className="flex-1 text-center text-[14px] font-black leading-none">{formatCurrency(lotteryTotal)}</span>
-                  <div className="flex shrink-0 items-center gap-0.5 text-white/80">
-                    <span className="text-[9px] font-black uppercase tracking-widest">Pagar</span>
-                    <NavArrowRight className="h-3 w-3" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-manises-blue">
+                    <Gift className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-[11px] font-black text-manises-blue leading-tight">
+                      Lotería ({lotteryDrafts.length})
+                    </p>
+                    <p className="text-[14px] font-black text-slate-800 leading-tight">{formatCurrency(lotteryTotal)}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-0.5 text-manises-blue">
+                    {!hasGames && <span className="text-[10px] font-black">Ir a pagar</span>}
+                    <NavArrowRight className="h-4 w-4" />
                   </div>
                 </button>
               )}
