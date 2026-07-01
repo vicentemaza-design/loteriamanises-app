@@ -66,13 +66,18 @@ function CounterRow({
             'flex h-10 w-10 items-center justify-center rounded-xl border-2 transition-all active:scale-95',
             value <= 0
               ? 'border-slate-100 text-slate-200'
-              : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+              : 'border-manises-blue/30 bg-manises-blue/6 text-manises-blue hover:border-manises-blue/50 hover:bg-manises-blue/10'
           )}
         >
           <Minus className="h-4 w-4" />
         </button>
 
-        <span className="min-w-[3rem] text-center text-[2rem] font-black text-manises-blue tabular-nums">
+        <span className={cn(
+          'min-w-[3rem] rounded-xl px-3 py-1 text-center text-[1.75rem] font-black tabular-nums transition-colors',
+          value > 0
+            ? 'bg-manises-blue/6 text-manises-blue'
+            : 'bg-slate-50 text-slate-300'
+        )}>
           {value}
         </span>
 
