@@ -204,7 +204,7 @@ export function GamesCartPanel() {
             <p className="mb-2 text-center text-[10px] font-semibold text-red-400">Faltan {formatCurrency(total - balance)} para completar el pago</p>
           )}
           <button type="button" onClick={() => confirm()} disabled={isSubmitting || gameDrafts.length === 0}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1d7a47] py-4 text-[14px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-50">
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-manises-blue py-4 text-[14px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-50">
             <Lock className="h-4 w-4" />
             {isSubmitting ? 'Procesando...' : 'Pagar'}
           </button>

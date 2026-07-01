@@ -1,8 +1,9 @@
 import { Button } from '@/shared/ui/Button';
 import { GameBadge } from '@/shared/ui/GameBadge';
-import { NavArrowLeft, InfoCircle } from 'iconoir-react/regular';
+import { NavArrowLeft, InfoCircle, ShoppingBag } from 'iconoir-react/regular';
 import { formatDrawTime } from '@/shared/lib/utils';
 import type { LotteryGame } from '@/shared/types/domain';
+import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 
 interface GamePlayHeaderProps {
   game: LotteryGame;
@@ -12,6 +13,9 @@ interface GamePlayHeaderProps {
 }
 
 export function GamePlayHeader({ game, drawTime, onBack, onInfo }: GamePlayHeaderProps) {
+  const { gameDrafts, openGameReview } = usePlaySession();
+  const count = gameDrafts.length;
+
   return (
     <div
       className="fixed top-0 left-0 right-0 z-40 text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+56px)] flex flex-col justify-end"
@@ -39,6 +43,19 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo }: GamePlayHeade
           </div>
         </div>
         <div className="flex items-center gap-1">
+          {count > 0 && (
+            <button
+              type="button"
+              onClick={openGameReview}
+              aria-label={`Ver cesta — ${count} jugadas`}
+              className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white transition-all hover:bg-white/25 active:scale-95"
+            >
+              <ShoppingBag className="h-4.5 w-4.5" />
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-manises-gold text-[9px] font-black text-manises-blue shadow">
+                {count > 9 ? '9+' : count}
+              </span>
+            </button>
+          )}
           <Button
             variant="ghost"
             size="icon"

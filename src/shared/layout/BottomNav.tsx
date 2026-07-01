@@ -14,7 +14,7 @@ const navItems = [
   { icon: User,        label: 'Perfil',      path: '/profile' },
 ];
 
-const CART_SECTION_REM = 3.75; // approx height of the cart buttons row
+const CART_SECTION_REM = 3; // approx height of the compact cart buttons row
 const NAV_BASE_REM = 5;
 
 export function BottomNav() {
@@ -61,18 +61,13 @@ export function BottomNav() {
                 <button
                   type="button"
                   onClick={openGameReview}
-                  className="flex items-center justify-between gap-2 rounded-xl bg-[#1d7a47] px-3.5 py-2.5 text-white transition-all active:scale-[0.98]"
+                  className="flex items-center justify-between gap-2 rounded-xl bg-[#d5e3f2] px-3.5 py-2 transition-all active:scale-[0.98]"
                 >
-                  <div className="min-w-0 text-left">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-white/70">Juegos</p>
-                    <p className="text-[15px] font-black leading-tight">{formatCurrency(gamesTotal)}</p>
-                    <p className="text-[9px] font-semibold text-white/60">
-                      {gameDrafts.length} {gameDrafts.length === 1 ? 'jugada' : 'jugadas'}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-0.5 text-white/80">
-                    <span className="text-[10px] font-black uppercase tracking-widest">Pagar</span>
-                    <NavArrowRight className="h-3.5 w-3.5" />
+                  <span className="text-[9px] font-black uppercase tracking-widest text-manises-blue/60">Juegos</span>
+                  <span className="flex-1 text-center text-[14px] font-black leading-none text-manises-blue">{formatCurrency(gamesTotal)}</span>
+                  <div className="flex shrink-0 items-center gap-0.5 text-manises-blue/70">
+                    <span className="text-[9px] font-black uppercase tracking-widest">Pagar</span>
+                    <NavArrowRight className="h-3 w-3" />
                   </div>
                 </button>
               )}
@@ -80,18 +75,13 @@ export function BottomNav() {
                 <button
                   type="button"
                   onClick={openLotteryReview}
-                  className="flex items-center justify-between gap-2 rounded-xl border border-white/15 bg-white/10 px-3.5 py-2.5 text-white transition-all active:scale-[0.98]"
+                  className="flex items-center justify-between gap-2 rounded-xl border border-white/15 bg-white/10 px-3.5 py-2 text-white transition-all active:scale-[0.98]"
                 >
-                  <div className="min-w-0 text-left">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-white/70">Lotería</p>
-                    <p className="text-[15px] font-black leading-tight">{formatCurrency(lotteryTotal)}</p>
-                    <p className="text-[9px] font-semibold text-white/60">
-                      {lotteryDrafts.length} {lotteryDrafts.length === 1 ? 'décimo' : 'décimos'}
-                    </p>
-                  </div>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-white/70">Lotería</span>
+                  <span className="flex-1 text-center text-[14px] font-black leading-none">{formatCurrency(lotteryTotal)}</span>
                   <div className="flex shrink-0 items-center gap-0.5 text-white/80">
-                    <span className="text-[10px] font-black uppercase tracking-widest">Pagar</span>
-                    <NavArrowRight className="h-3.5 w-3.5" />
+                    <span className="text-[9px] font-black uppercase tracking-widest">Pagar</span>
+                    <NavArrowRight className="h-3 w-3" />
                   </div>
                 </button>
               )}
