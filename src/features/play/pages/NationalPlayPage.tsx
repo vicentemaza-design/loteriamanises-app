@@ -41,7 +41,7 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile } = useAuth();
-  const { drafts, addDrafts, openLotteryReview: openReview } = usePlaySession();
+  const { drafts, addDrafts, openLotteryReview } = usePlaySession();
 
   const editingDraftId = (location.state as GamePlayLocationState | null)?.playDraftId;
   const editingDraft = useMemo(
@@ -258,9 +258,8 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
     const result = addDrafts(allDrafts);
 
     if (result.addedCount > 0) {
-      notifyAddedToCart(result, undefined, 'Décimo');
+      notifyAddedToCart(result, openLotteryReview, 'Décimo');
       clearNationalCart();
-      openReview();
     }
 
     if (result.duplicateCount > 0) {
