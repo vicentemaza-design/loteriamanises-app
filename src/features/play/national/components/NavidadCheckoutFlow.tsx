@@ -146,6 +146,7 @@ function RechargeView({ currentBalance, neededAmount, onBack, onSuccess }: Recha
     try {
       await onSuccess(selected);
       setIsSuccess(true);
+      setTimeout(() => onBack(), 1400);
     } finally {
       setIsProcessing(false);
     }
@@ -164,15 +165,11 @@ function RechargeView({ currentBalance, neededAmount, onBack, onSuccess }: Recha
         <div>
           <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Saldo añadido</p>
           <p className="mt-1 text-2xl font-black text-manises-blue">+{formatCurrency(selected)}</p>
-          <p className="mt-1 text-[11px] font-medium text-slate-500">Tu saldo ha sido actualizado</p>
         </div>
-        <Button
-          onClick={onBack}
-          className="mt-2 w-full rounded-2xl py-3 font-black text-xs uppercase tracking-widest bg-manises-blue text-white"
-        >
-          Finalizar compra
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2 rounded-xl bg-manises-blue/5 px-4 py-2.5">
+          <Loader2 className="h-4 w-4 animate-spin text-manises-blue" />
+          <p className="text-[12px] font-black text-manises-blue">Volviendo a tu cesta…</p>
+        </div>
       </motion.div>
     );
   }
@@ -400,6 +397,7 @@ export function NavidadCheckoutFlow({
   const [abonarseNumber, setAbonarseNumber] = useState<string | null>(null);
   const [ticketMockupNumber, setTicketMockupNumber] = useState<string | null>(null);
   const [showRechargeWarning, setShowRechargeWarning] = useState(false);
+  const [justRecharged, setJustRecharged] = useState(false);
   const [currentBalance, setCurrentBalance] = useState(availableBalance);
   const [cartExpanded, setCartExpanded] = useState(false);
   const [activeCartNumber, setActiveCartNumber] = useState<string | null>(null);
@@ -488,6 +486,7 @@ export function NavidadCheckoutFlow({
   const handleTopUpSuccess = async (amount: number) => {
     await onTopUp(amount);
     setCurrentBalance(prev => prev + amount);
+    setJustRecharged(true);
   };
 
   // ── Processing ─────────────────────────────────────────────────────────────
@@ -660,11 +659,26 @@ export function NavidadCheckoutFlow({
                 Faltan {formatCurrency(total - currentBalance)} para completar el pago
               </p>
             )}
+            {justRecharged && !isOverBalance && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-2 flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2"
+              >
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                <p className="text-[11px] font-black text-emerald-700">Saldo listo · Pulsa Comprar para confirmar</p>
+              </motion.div>
+            )}
             <button
               type="button"
-              onClick={isOverBalance ? () => setShowRechargeWarning(true) : handleFinalizarCompra}
+              onClick={isOverBalance ? () => setShowRechargeWarning(true) : () => { setJustRecharged(false); handleFinalizarCompra(); }}
               disabled={cart.length === 0}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-manises-blue py-4 text-[14px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-50"
+              className={cn(
+                'mt-2 flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-[14px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-50',
+                justRecharged && !isOverBalance
+                  ? 'bg-emerald-600 shadow-[0_0_0_4px_rgba(16,185,129,0.22)]'
+                  : 'bg-manises-blue'
+              )}
             >
               <Lock className="h-4 w-4" />
               {isOverBalance ? 'Recargar saldo' : 'Comprar'}
