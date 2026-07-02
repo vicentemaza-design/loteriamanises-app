@@ -75,11 +75,11 @@ export function NationalPreFlow({
 
       {/* Barra inferior fija */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-10 overflow-hidden border-t border-slate-100 bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.08)]"
+        className="fixed bottom-0 left-0 right-0 z-10 overflow-hidden border-t border-slate-100 bg-[#0a4792] shadow-[0_-4px_24px_rgba(0,0,0,0.08)]"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div
-          className="bg-[#0a4792]/88 mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+          className="mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white"
         >
           {/* Saldo */}
           <div className="relative flex min-w-0 flex-col items-center justify-center border-r border-white/12 px-1">

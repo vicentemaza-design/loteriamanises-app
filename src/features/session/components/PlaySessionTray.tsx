@@ -5,17 +5,21 @@ import { ChevronDown, ChevronUp, Trash2, Eye, Lock, Ticket, Edit3, ShieldCheck }
 import { Button } from '@/shared/ui/Button';
 import { cn, formatCurrency, formatDate } from '@/shared/lib/utils';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useWallet } from '@/features/wallet/hooks/useWallet';
 import { usePlaySession } from '../hooks/usePlaySession';
 import { usePlaySessionSummary } from '../hooks/usePlaySessionSummary';
 import { usePlaySessionConfirm } from '../hooks/usePlaySessionConfirm';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { NationalTicketVisual } from '@/features/play/components/NationalTicketVisual';
+import { InsufficientBalanceModal } from '@/features/play/components/InsufficientBalanceModal';
+import { TopUpModal } from '@/features/profile/components/TopUpModal';
 import type { PlayDraft } from '../types/session.types';
 
 export function PlaySessionTray() {
   const navigate = useNavigate();
   const { user, isDemo, profile } = useAuth();
+  const { topUp } = useWallet();
   const { drafts, status, errorMessage, openReview, closeReview, removeDraft, updateDraft } = usePlaySession();
   const summary = usePlaySessionSummary();
   const { confirm, isSubmitting } = usePlaySessionConfirm();
@@ -23,6 +27,8 @@ export function PlaySessionTray() {
   const [previewDraft, setPreviewDraft] = useState<PlayDraft | null>(null);
   const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({});
   const [expandedLists, setExpandedLists] = useState<Record<string, boolean>>({});
+  const [showInsufficientBalance, setShowInsufficientBalance] = useState(false);
+  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
 
   const isOpen = status === 'reviewing' || status === 'confirming' || status === 'failed';
   const canAttemptCheckout = Boolean(user || isDemo);
@@ -393,8 +399,12 @@ export function PlaySessionTray() {
                   <div className="flex shrink-0 flex-col items-end gap-1.5">
                     <Button
                       className="h-12 rounded-2xl bg-manises-blue px-8 text-sm font-black uppercase tracking-widest text-white shadow-manises transition-transform active:scale-[0.98]"
-                      disabled={!summary.canConfirm || (canAttemptCheckout && isOverBalance) || isSubmitting}
+                      disabled={!summary.canConfirm || isSubmitting}
                       onClick={async () => {
+                        if (canAttemptCheckout && isOverBalance) {
+                          setShowInsufficientBalance(true);
+                          return;
+                        }
                         if (status !== 'reviewing' && status !== 'failed') {
                           openReview();
                           return;
@@ -478,6 +488,28 @@ export function PlaySessionTray() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Modal saldo insuficiente */}
+      <InsufficientBalanceModal
+        isOpen={showInsufficientBalance}
+        missingAmount={summary.totalAmount - availableBalance}
+        onClose={() => setShowInsufficientBalance(false)}
+        onAddBalance={() => {
+          setShowInsufficientBalance(false);
+          setIsTopUpOpen(true);
+        }}
+      />
+
+      {/* Modal añadir saldo */}
+      <TopUpModal
+        isOpen={isTopUpOpen}
+        onClose={() => setIsTopUpOpen(false)}
+        currentBalance={availableBalance}
+        onSuccess={async (amount) => {
+          const result = await topUp(amount);
+          if (!result?.success) throw new Error('Top-up failed');
+        }}
+      />
     </AnimatePresence>
   );
 }
