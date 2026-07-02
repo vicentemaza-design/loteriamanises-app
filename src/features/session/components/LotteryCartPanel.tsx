@@ -69,9 +69,8 @@ function TicketMockupModal({ number, gameType, label, onClose }: {
           {/* Imagen mockup */}
           <div className="relative overflow-hidden rounded-2xl">
             <NationalTicketThumbnail drawId={drawId} className="w-full" />
-            {/* Número superpuesto sobre el mockup */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="font-mono text-[28px] font-black tracking-[0.2em] text-manises-blue drop-shadow-lg">
+            <div className="absolute top-[10%] left-1/2 -translate-x-1/2 text-center">
+              <span className="font-mono text-[22px] font-black tracking-[0.2em] text-gray-900">
                 {number}
               </span>
             </div>

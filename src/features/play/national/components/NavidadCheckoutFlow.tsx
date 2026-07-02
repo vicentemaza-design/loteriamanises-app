@@ -51,8 +51,8 @@ function TicketMockupModal({ number, onClose }: { number: string; onClose: () =>
           </div>
           <div className="relative overflow-hidden rounded-2xl">
             <NationalTicketThumbnail drawId="navidad" className="w-full" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="font-mono text-[28px] font-black tracking-[0.2em] text-manises-blue drop-shadow-lg">{number}</span>
+            <div className="absolute top-[10%] left-1/2 -translate-x-1/2 text-center">
+              <span className="font-mono text-[22px] font-black tracking-[0.2em] text-gray-900">{number}</span>
             </div>
           </div>
         </motion.div>
