@@ -979,7 +979,7 @@ export function NavidadCheckoutFlow({
 
                       {/* Número flotante */}
                       {!isActive && (
-                        <span className="pointer-events-none absolute inset-x-0 bottom-[42%] text-center font-mono text-[15px] font-black tracking-widest text-black">
+                        <span className="pointer-events-none absolute inset-x-0 bottom-[57%] translate-x-2 text-center font-mono text-[15px] font-black tracking-tight text-black">
                           {item.number}
                         </span>
                       )}
