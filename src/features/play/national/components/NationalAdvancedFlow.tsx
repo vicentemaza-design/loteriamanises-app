@@ -320,7 +320,7 @@ export function NationalAdvancedFlow({
                       >
                         <NationalTicketThumbnail
                           drawId={line.drawId}
-                          className="w-[100px] rounded-xl shadow-md"
+                          className="w-[100px] rounded-sm shadow-md"
                         />
 
                         {/* Número flotante */}

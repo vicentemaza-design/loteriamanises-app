@@ -960,7 +960,7 @@ export function NavidadCheckoutFlow({
                     >
                       <NationalTicketThumbnail
                         drawId="navidad"
-                        className="w-[100px] rounded-xl shadow-md"
+                        className="w-[100px] rounded-sm shadow-md"
                       />
 
                       {/* Número flotante */}
