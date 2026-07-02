@@ -156,7 +156,7 @@ export function NationalAdvancedFlow({
   return (
     <div
       className="space-y-5 pb-[180px]"
-      onClick={() => { if (cartExpanded) setCartExpanded(false); }}
+      onClick={() => { if (cartExpanded) { setCartExpanded(false); setActiveCartKey(null); } }}
     >
       {/* 1. Sorteo */}
       {!hideSorteoSection && (
@@ -294,6 +294,7 @@ export function NationalAdvancedFlow({
       {/* Panel fijo inferior — números seleccionados */}
       <div
         className="fixed bottom-0 left-0 right-0 z-50 overflow-hidden border-t border-slate-100 bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.10)]"
+        onClick={e => e.stopPropagation()}
       >
 
         {/* Contenido expandible — lista de décimos seleccionados */}

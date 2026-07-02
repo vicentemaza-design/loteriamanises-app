@@ -769,7 +769,7 @@ export function NavidadCheckoutFlow({
   return (
     <div
       className="space-y-3 pb-[200px]"
-      onClick={() => { if (cartExpanded) setCartExpanded(false); }}
+      onClick={() => { if (cartExpanded) { setCartExpanded(false); setActiveCartNumber(null); } }}
     >
       {/* Buscador + lupa */}
       <div className="flex gap-2">
@@ -949,6 +949,7 @@ export function NavidadCheckoutFlow({
       {/* Panel inferior: carrusel colapsable + barra de acción */}
       <div
         className="fixed bottom-0 left-0 right-0 z-50 overflow-hidden border-t border-slate-100 bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.10)]"
+        onClick={e => e.stopPropagation()}
       >
         {/* Carrusel de thumbnails (expandible) */}
         <AnimatePresence>
