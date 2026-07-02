@@ -877,7 +877,7 @@ export function NavidadCheckoutFlow({
                 <NavidadDecimoCard number={item.number} active={isInCart} compact />
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-[1.1rem] font-black leading-none tracking-widest text-manises-blue">
+                  <p className="text-[1.1rem] font-black leading-none tracking-widest text-manises-blue tabular-nums">
                     {item.number}
                   </p>
                   <p className={cn(
@@ -890,10 +890,10 @@ export function NavidadCheckoutFlow({
                   </p>
                 </div>
 
-                {/* Controles siempre visibles */}
+                {/* Controles — ancho fijo para alinear todas las filas */}
                 <div
                   className={cn(
-                    'flex items-center rounded-xl border p-0.5 shadow-sm',
+                    'shrink-0 flex items-center rounded-xl border p-0.5 shadow-sm',
                     isInCart ? 'border-[#991b1b]/30 bg-white' : 'border-slate-200 bg-slate-50'
                   )}
                   onClick={e => e.stopPropagation()}

@@ -61,7 +61,7 @@ export function NationalNumberShowcase({
                   {/* Number + meta */}
                   <div className="flex flex-1 items-center justify-between gap-2 min-w-0">
                     <div>
-                      <p className="text-[1.2rem] font-black tracking-widest leading-none text-manises-blue">
+                      <p className="text-[1.2rem] font-black tracking-widest leading-none text-manises-blue tabular-nums">
                         {item.number}
                       </p>
                       <p className={cn(
@@ -78,8 +78,8 @@ export function NationalNumberShowcase({
                       </p>
                     </div>
 
-                    {/* Stepper (selected) or badge (not selected) */}
-                    <div className="shrink-0">
+                    {/* Stepper (selected) or badge (not selected) — ancho fijo para alinear todas las filas */}
+                    <div className="w-[76px] shrink-0 flex items-center justify-end">
                       {active ? (
                         <div
                           className="flex items-center gap-0.5 rounded-lg border border-manises-blue/20 bg-white p-0.5 shadow-sm"
