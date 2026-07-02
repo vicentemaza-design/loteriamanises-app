@@ -30,8 +30,8 @@ export function NationalNumberShowcase({
           {items.map((item) => {
             const activeLine = cartLines.find(l => l.number === item.number && l.drawId === item.drawId);
             const active = activeLine !== undefined;
-            const qty = activeLine?.quantity ?? 1;
-            const availabilityText = item.available <= 1 ? 'Último' : `${item.available} décimos`;
+            const qty = activeLine?.quantity ?? 0;
+            const availabilityText = item.available <= 1 ? 'Último décimo' : `${item.available} disponibles`;
 
             return (
               <motion.div
@@ -39,30 +39,19 @@ export function NationalNumberShowcase({
                 layout
                 whileTap={{ scale: 0.97 }}
                 transition={{ layout: { type: 'spring', stiffness: 400, damping: 30 } }}
-                onClick={() => onToggle(item)}
                 className={cn(
-                  'group w-full relative overflow-hidden rounded-xl border-2 px-3 py-1.5 text-left transition-all cursor-pointer select-none',
+                  'w-full relative overflow-hidden rounded-xl border-2 px-3 py-1.5 transition-all',
                   active
                     ? 'border-manises-blue bg-manises-blue/[0.04] shadow-sm'
-                    : 'border-slate-100 bg-white hover:border-manises-blue/20'
+                    : 'border-slate-100 bg-white'
                 )}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onToggle(item);
-                  }
-                }}
               >
                 <div className="flex items-center gap-2.5">
-                  {/* Mini ticket thumbnail */}
                   <NationalTicketThumbnail
                     drawId={item.drawId}
                     className="w-14 shadow-sm"
                   />
 
-                  {/* Number + meta */}
                   <div className="flex flex-1 items-center justify-between gap-2 min-w-0">
                     <div>
                       <p className="text-[1.2rem] font-black tracking-widest leading-none text-manises-blue tabular-nums">
@@ -82,39 +71,34 @@ export function NationalNumberShowcase({
                       </p>
                     </div>
 
-                    {/* Stepper (selected) or badge (not selected) — ancho fijo para alinear todas las filas */}
-                    <div className="w-[76px] shrink-0 flex items-center justify-end">
-                      {active ? (
-                        <div
-                          className="flex items-center gap-0.5 rounded-lg border border-manises-blue/20 bg-white p-0.5 shadow-sm"
-                          onClick={e => e.stopPropagation()}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => onDecrement(item.number, item.drawId)}
-                            className="flex h-6 w-6 items-center justify-center rounded-md text-sm font-black text-manises-blue transition-colors hover:bg-manises-blue/10"
-                            aria-label="Restar décimo"
-                          >
-                            −
-                          </button>
-                          <span className="w-5 text-center text-[13px] font-black leading-none text-manises-blue">
-                            {qty}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => onIncrement(item.number, item.drawId)}
-                            disabled={qty >= item.available}
-                            className="flex h-6 w-6 items-center justify-center rounded-md text-sm font-black text-manises-blue transition-colors hover:bg-manises-blue/10 disabled:opacity-30"
-                            aria-label="Sumar décimo"
-                          >
-                            +
-                          </button>
-                        </div>
-                      ) : item.badge === 'destacado' ? (
-                        <span className="rounded-full border border-manises-blue/10 bg-manises-blue/[0.05] px-1.5 py-0.5 text-[8px] font-black uppercase tracking-[0.14em] text-manises-blue">
-                          Top
-                        </span>
-                      ) : null}
+                    <div
+                      className={cn(
+                        'flex items-center gap-0.5 rounded-lg border p-0.5 shadow-sm',
+                        active ? 'border-manises-blue/20 bg-white' : 'border-slate-200 bg-slate-50'
+                      )}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => active && onDecrement(item.number, item.drawId)}
+                        disabled={!active}
+                        className="flex h-6 w-6 items-center justify-center rounded-md text-sm font-black text-manises-blue transition-colors hover:bg-manises-blue/10 disabled:opacity-30"
+                        aria-label="Restar décimo"
+                      >
+                        −
+                      </button>
+                      <span className="w-5 text-center text-[13px] font-black leading-none text-manises-blue">
+                        {qty}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => active ? onIncrement(item.number, item.drawId) : onToggle(item)}
+                        disabled={active && qty >= item.available}
+                        className="flex h-6 w-6 items-center justify-center rounded-md text-sm font-black text-manises-blue transition-colors hover:bg-manises-blue/10 disabled:opacity-30"
+                        aria-label="Sumar décimo"
+                      >
+                        +
+                      </button>
                     </div>
                   </div>
                 </div>

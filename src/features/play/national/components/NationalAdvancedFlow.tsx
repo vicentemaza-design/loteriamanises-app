@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Spark, NavArrowUp, NavArrowDown } from 'iconoir-react/regular';
-import { Truck, X, ShoppingCart } from 'lucide-react';
+import { Truck, X, ShoppingCart, Search } from 'lucide-react';
 import { cn, formatCurrency, formatDate } from '@/shared/lib/utils';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
-import { NationalSearchBar } from './NationalSearchBar';
 import { NationalNumberShowcase } from './NationalNumberShowcase';
 import { NationalDeliverySelector, type DeliveryMode } from './NationalDeliverySelector';
 import { NationalDrawSelector } from './NationalDrawSelector';
@@ -241,55 +240,97 @@ export function NationalAdvancedFlow({
         )}
       </AnimatePresence>
 
-      {/* 3. Décimo de la Suerte */}
-      <div className="flex items-center justify-between gap-3 rounded-[1.2rem] border border-amber-200/60 bg-amber-50/50 px-4 py-3">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <Spark className="h-4 w-4 shrink-0 text-manises-gold" />
-          <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-widest leading-none text-manises-blue">
-              Décimo de la Suerte
-            </p>
-            <p className="mt-0.5 text-[9px] font-medium leading-none text-slate-400">
-              Elegido por Lotería Manises
-            </p>
-          </div>
+      {/* 3. Buscador */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <input
+            type="text"
+            inputMode="numeric"
+            maxLength={5}
+            placeholder="Ej.: 12345 · 123 · 45"
+            value={nationalShowcase.searchState.query}
+            onChange={e => nationalShowcase.setSearchState({
+              ...nationalShowcase.searchState,
+              query: e.target.value.replace(/\D/g, ''),
+            })}
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-[12px] font-semibold text-manises-blue placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-manises-blue/20 focus:border-manises-blue/40"
+          />
+          {nationalShowcase.searchState.query && (
+            <button
+              type="button"
+              onClick={() => nationalShowcase.setSearchState({ ...nationalShowcase.searchState, query: '' })}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+            >
+              ×
+            </button>
+          )}
         </div>
         <button
           type="button"
-          onClick={() => onRandomNationalNumber(deliveryMode)}
-          className="flex shrink-0 items-center gap-1 rounded-xl bg-manises-gold px-3 py-1.5 text-[9px] font-black text-manises-blue transition-all active:scale-95"
+          onClick={() => (document.activeElement as HTMLElement)?.blur()}
+          className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:border-manises-blue/30 hover:text-manises-blue transition-colors"
+          aria-label="Buscar número"
         >
-          Añadir {formatCurrency(selectedNationalDraw.decimoPrice)}&nbsp;<span className="text-[13px] leading-none">+</span>
+          <Search className="h-4 w-4" />
         </button>
       </div>
 
-      {/* 4. Selección de décimos */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between px-0.5">
-          <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
-            Números disponibles
-          </p>
-          <button
-            onClick={onClear}
-            className="text-[9px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            Limpiar
-          </button>
+      {/* 4. Décimo de la Suerte */}
+      <div
+        className="flex items-center gap-2.5 rounded-2xl border-2 border-manises-gold/40 bg-amber-50/60 p-2.5 cursor-pointer select-none transition-all hover:border-manises-gold/60 active:scale-[0.98]"
+        onClick={() => onRandomNationalNumber(deliveryMode)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRandomNationalNumber(deliveryMode); } }}
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-manises-gold/30 bg-manises-gold/10">
+          <Spark className="h-4 w-4 text-manises-gold" />
         </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-black text-manises-blue">Décimo de la Suerte</p>
+          <p className="text-[8px] font-medium text-slate-400">Elegido por Lotería Manises</p>
+        </div>
+        <div
+          className="flex shrink-0 items-center gap-1 rounded-xl border border-manises-gold/30 bg-white px-2.5 py-1 text-[9px] font-black text-manises-gold shadow-sm"
+          onClick={e => { e.stopPropagation(); onRandomNationalNumber(deliveryMode); }}
+        >
+          Añadir {formatCurrency(selectedNationalDraw.decimoPrice)}
+          <span className="text-sm leading-none">+</span>
+        </div>
+      </div>
 
-        <NationalSearchBar
-          searchState={nationalShowcase.searchState}
-          onChange={nationalShowcase.setSearchState}
-        />
+      {/* 5. Filtros de disponibilidad */}
+      <div>
+        <p className="mb-1.5 text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
+          Mostrar números con disponibilidad mínima
+        </p>
+        <div className="grid grid-cols-5 gap-1.5">
+          {([1, 10, 20, 30, 50] as const).map(val => (
+            <button
+              key={val}
+              type="button"
+              onClick={() => nationalShowcase.setSearchState({ ...nationalShowcase.searchState, minQuantity: val })}
+              className={cn(
+                'rounded-full border py-1 text-[9px] font-black uppercase tracking-wider transition-all',
+                nationalShowcase.searchState.minQuantity === val
+                  ? 'border-manises-blue bg-manises-blue text-white'
+                  : 'border-slate-200 bg-white text-slate-500 hover:border-manises-blue/30'
+              )}
+            >
+              {val === 1 ? 'Todos' : `+${val}`}
+            </button>
+          ))}
+        </div>
+      </div>
 
-        <NationalNumberShowcase
-          items={nationalShowcase.items}
-          cartLines={nationalCart.lines}
-          onToggle={(item) => onSelectNationalNumber(item, deliveryMode)}
-          onIncrement={(number, drawId) => nationalCart.updateQuantity(number, drawId, 1)}
-          onDecrement={handleDecrement}
-        />
-      </section>
+      {/* 6. Lista de números */}
+      <NationalNumberShowcase
+        items={nationalShowcase.items}
+        cartLines={nationalCart.lines}
+        onToggle={(item) => onSelectNationalNumber(item, deliveryMode)}
+        onIncrement={(number, drawId) => nationalCart.updateQuantity(number, drawId, 1)}
+        onDecrement={handleDecrement}
+      />
 
       {/* Panel fijo inferior — números seleccionados */}
       <div

@@ -1,21 +1,69 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { NavArrowLeft, Spark, NavArrowUp, NavArrowDown } from 'iconoir-react/regular';
+import { NavArrowLeft, Spark, NavArrowUp, NavArrowDown, Trash, Star, ShieldCheck, Truck, Lock, Xmark } from 'iconoir-react/regular';
 import {
   Check, Loader2, CreditCard, Search,
-  Wallet, AlertTriangle, CheckCircle2, Gift, ArrowRight, Eye, ShoppingCart, Repeat2,
+  CheckCircle2, ArrowRight, Eye, ShoppingCart,
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { AbonarseModal } from '@/features/session/components/lottery/AbonarseModal';
 import { Button } from '@/shared/ui/Button';
-import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import type { LotteryGame } from '@/shared/types/domain';
 import type { NationalShowcaseItem } from '../contracts/national-play.contract';
-import { NationalTicketVisual } from '@/features/play/components/NationalTicketVisual';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const SHIPPING_COST = 12;
+
+function isAbonable(number: string): boolean {
+  return ['0', '2', '5'].includes(number.slice(-1));
+}
+
+function formatDrawDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function TicketMockupModal({ number, onClose }: { number: string; onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[400] flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm px-6"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+          className="relative w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl"
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">DÉCIMO</p>
+              <p className="font-mono text-[22px] font-black tracking-[0.18em] text-manises-blue">{number}</p>
+            </div>
+            <button type="button" onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200">
+              <Xmark className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="relative overflow-hidden rounded-2xl">
+            <NationalTicketThumbnail drawId="navidad" className="w-full" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="font-mono text-[28px] font-black tracking-[0.2em] text-manises-blue drop-shadow-lg">{number}</span>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type Step = 'selection' | 'cart' | 'recharge' | 'processing' | 'confirmed';
+type Step = 'selection' | 'cart' | 'recharge' | 'processing';
 type DeliveryMode = 'custody' | 'shipping';
 
 interface CartItem {
@@ -279,111 +327,6 @@ function ProcessingView() {
   );
 }
 
-// ─── Confirmed step ───────────────────────────────────────────────────────────
-
-interface ConfirmedViewProps {
-  items: CartItem[];
-  totalPrice: number;
-  orderRef: string;
-  onViewTickets: () => void;
-  onBuyMore: () => void;
-}
-
-function ConfirmedView({ items, totalPrice, orderRef, onViewTickets, onBuyMore }: ConfirmedViewProps) {
-  const totalDecimos = items.reduce((s, i) => s + i.quantity, 0);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-5"
-    >
-      {/* Success header */}
-      <div className="flex flex-col items-center gap-3 py-6 text-center">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.1 }}
-          className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100"
-        >
-          <CheckCircle2 className="h-10 w-10 text-emerald-600" />
-        </motion.div>
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-600">Pedido confirmado</p>
-          <h2 className="mt-1 text-2xl font-black text-manises-blue">
-            🎄 ¡Buena suerte!
-          </h2>
-          <p className="mt-1 text-[11px] font-medium text-slate-500">
-            {totalDecimos} {totalDecimos === 1 ? 'décimo reservado' : 'décimos reservados'}
-          </p>
-        </div>
-      </div>
-
-      {/* Order ref */}
-      <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-center">
-        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Nº de pedido</p>
-        <p className="mt-0.5 font-mono text-base font-black tracking-widest text-manises-blue">{orderRef}</p>
-      </div>
-
-      {/* Tickets list */}
-      <div className="space-y-2.5">
-        {items.map((item, idx) => (
-          <div
-            key={idx}
-            className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3"
-          >
-            <NavidadDecimoCard number={item.number} active />
-            <div className="min-w-0 flex-1">
-              <p className="font-mono text-lg font-black tracking-[0.12em] text-manises-blue">{item.number}</p>
-              <p className="mt-0.5 text-[9px] font-semibold text-slate-400">
-                {item.quantity} {item.quantity === 1 ? 'décimo' : 'décimos'} ·{' '}
-                {item.deliveryMode === 'custody' ? 'Custodia digital' : 'Mensajería'} ·{' '}
-                {formatCurrency(item.quantity * item.unitPrice)}
-              </p>
-            </div>
-            <div className={cn(
-              'shrink-0 rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-wider',
-              item.deliveryMode === 'custody'
-                ? 'bg-emerald-100 text-emerald-700'
-                : 'bg-amber-100 text-amber-700'
-            )}>
-              {item.deliveryMode === 'custody' ? 'Digital' : 'Envío'}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Total */}
-      <div className="flex items-center justify-between rounded-2xl border border-manises-blue/10 bg-manises-blue/[0.03] px-4 py-3">
-        <span className="text-[11px] font-black uppercase tracking-widest text-manises-blue/60">Total pagado</span>
-        <span className="text-lg font-black text-manises-blue">{formatCurrency(totalPrice)}</span>
-      </div>
-
-      {/* Actions */}
-      <div className="space-y-2">
-        <Button
-          onClick={onViewTickets}
-          className="w-full rounded-2xl py-3.5 font-black text-xs uppercase tracking-widest bg-manises-blue text-white"
-        >
-          <Gift className="mr-2 h-4 w-4" />
-          Ver mis jugadas
-        </Button>
-        <Button
-          variant="outline"
-          onClick={onBuyMore}
-          className="w-full rounded-2xl py-3 font-black text-xs uppercase tracking-widest border-slate-200 text-slate-500"
-        >
-          Comprar más décimos
-        </Button>
-      </div>
-
-      <p className="text-center text-[9px] font-medium text-slate-400 pb-4">
-        Recibirás confirmación por email · Servicio demo
-      </p>
-    </motion.div>
-  );
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function NavidadCheckoutFlow({
@@ -400,11 +343,11 @@ export function NavidadCheckoutFlow({
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>(initialDeliveryMode);
   const [searchQuery, setSearchQuery] = useState('');
   const [minAvailability, setMinAvailability] = useState<0 | 10 | 20 | 30 | 50>(0);
-  const [showFaltaSaldo, setShowFaltaSaldo] = useState(false);
+  const [abonarseNumber, setAbonarseNumber] = useState<string | null>(null);
+  const [ticketMockupNumber, setTicketMockupNumber] = useState<string | null>(null);
   const [currentBalance, setCurrentBalance] = useState(availableBalance);
   const [cartExpanded, setCartExpanded] = useState(false);
   const [activeCartNumber, setActiveCartNumber] = useState<string | null>(null);
-  const [orderRef] = useState(() => `NAV-${Date.now().toString(36).toUpperCase().slice(-6)}`);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const stepperTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -433,7 +376,6 @@ export function NavidadCheckoutFlow({
 
   const totalDecimos = cart.reduce((s, i) => s + i.quantity, 0);
   const totalPrice = cart.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
-  const hasSufficientBalance = currentBalance >= totalPrice;
 
   const getCartItem = (number: string) => cart.find(i => i.number === number);
 
@@ -477,43 +419,21 @@ export function NavidadCheckoutFlow({
   };
 
   const handleFinalizarCompra = () => {
-    if (!hasSufficientBalance) {
-      setShowFaltaSaldo(true);
-      return;
-    }
     setStep('processing');
     window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
     setTimeout(() => {
-      setStep('confirmed');
-      window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+      toast.success(
+        `${totalDecimos} décimo${totalDecimos !== 1 ? 's' : ''} reservado${totalDecimos !== 1 ? 's' : ''} · Lotería de Navidad`,
+        { duration: 4000 }
+      );
+      onGoToTickets();
     }, PROCESS_STEPS.length * 700 + 900);
   };
 
   const handleTopUpSuccess = async (amount: number) => {
     await onTopUp(amount);
     setCurrentBalance(prev => prev + amount);
-    setShowFaltaSaldo(false);
   };
-
-  const handleBuyMore = () => {
-    setCart([]);
-    setStep('selection');
-    setSearchQuery('');
-    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
-  };
-
-  // ── Confirmed ─────────────────────────────────────────────────────────────
-  if (step === 'confirmed') {
-    return (
-      <ConfirmedView
-        items={cart}
-        totalPrice={totalPrice}
-        orderRef={orderRef}
-        onViewTickets={onGoToTickets}
-        onBuyMore={handleBuyMore}
-      />
-    );
-  }
 
   // ── Processing ─────────────────────────────────────────────────────────────
   if (step === 'processing') {
@@ -534,234 +454,176 @@ export function NavidadCheckoutFlow({
 
   // ── Cart (Mi Cesta) ────────────────────────────────────────────────────────
   if (step === 'cart') {
-    return (
-      <div className="space-y-4 pb-20">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setStep('selection')}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500"
-          >
-            <NavArrowLeft className="h-4 w-4" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mi cesta</p>
-              <span className={cn(
-                'rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-wider',
-                deliveryMode === 'custody'
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : 'bg-amber-100 text-amber-700 border border-amber-200'
-              )}>
-                {deliveryMode === 'custody' ? 'Décimos digitales' : 'Mensajería'}
-              </span>
-            </div>
-            <h2 className="text-base font-black text-manises-blue">
-              {totalDecimos} {totalDecimos === 1 ? 'décimo' : 'décimos'}
-            </h2>
-          </div>
-        </div>
+    const shipping = deliveryMode === 'shipping' ? SHIPPING_COST : 0;
+    const total = totalPrice + shipping;
+    const isOverBalance = currentBalance < total;
 
-        {/* Horizontal thumbnail carousel */}
-        {cart.length > 0 && (
-          <div className="flex gap-3 overflow-x-auto pb-1 pt-0.5">
-            {cart.map(item => (
-              <div key={item.number} className="relative shrink-0">
-                <NavidadDecimoCard number={item.number} active />
-                {item.quantity > 1 && (
-                  <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#991b1b] text-[8px] font-black text-white">
-                    ×{item.quantity}
-                  </span>
-                )}
-              </div>
+    return (
+      <>
+        <div className="space-y-3 pb-[140px]">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setStep('selection')}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
+            >
+              <NavArrowLeft className="h-4 w-4" />
+            </button>
+            <div className="text-center">
+              <p className="text-[15px] font-black text-manises-blue">Mi cesta</p>
+              <p className="text-[11px] font-medium text-slate-400">Lotería de Navidad</p>
+            </div>
+            <div className="h-8 w-8" />
+          </div>
+
+          {/* Selector Custodia/Mensajería */}
+          <div className="flex rounded-xl border border-slate-200 bg-white p-1">
+            {(['custody', 'shipping'] as const).map(mode => (
+              <button key={mode} type="button" onClick={() => updateCartDeliveryMode(mode)}
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-black uppercase tracking-wider transition-all ${
+                  deliveryMode === mode ? 'bg-manises-blue text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'
+                }`}>
+                {mode === 'custody'
+                  ? <><ShieldCheck className="h-3.5 w-3.5" /> Custodia digital</>
+                  : <><Truck className="h-3.5 w-3.5" /> Mensajería</>}
+              </button>
             ))}
           </div>
-        )}
 
-        {/* Sorteo group header */}
-        <div className="flex items-center justify-between px-0.5">
-          <div>
-            <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Sorteo</p>
-            <p className="text-sm font-black text-manises-blue">
-              {new Date(drawDate).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          {deliveryMode === 'custody' && (
+            <p className="rounded-xl bg-slate-50 px-3 py-2 text-[10px] font-semibold text-slate-400">
+              Los décimos se guardarán de forma segura en tu cuenta.
             </p>
-          </div>
-          <span className="text-[10px] font-medium text-slate-400">
-            {cart.length} {cart.length === 1 ? 'número' : 'números'}
-          </span>
-        </div>
-
-        {/* Cart items */}
-        <div className="space-y-2.5">
-          {cart.map(item => (
-            <div
-              key={item.number}
-              className="rounded-[1.35rem] border border-slate-100 bg-white p-3 shadow-sm space-y-2.5"
-            >
-              <div className="flex items-center gap-3">
-                <NavidadDecimoCard number={item.number} active />
-                <div className="min-w-0 flex-1">
-                  <p className="font-mono text-lg font-black tracking-[0.12em] text-manises-blue">{item.number}</p>
-                  <p className="mt-0.5 text-[9px] font-semibold text-slate-400">
-                    {formatCurrency(item.unitPrice)} / décimo
-                  </p>
-                </div>
-                {/* Quantity stepper */}
-                <div className="flex items-center rounded-xl border border-slate-200 bg-slate-50 p-0.5">
-                  <button
-                    onClick={() => removeFromCart(item.number)}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-sm font-black text-slate-400 hover:bg-white hover:text-manises-blue transition-colors"
-                  >
-                    {item.quantity <= 1 ? '×' : '−'}
-                  </button>
-                  <span className="w-6 text-center text-[13px] font-black text-manises-blue">{item.quantity}</span>
-                  <button
-                    onClick={() => setCart(prev => prev.map(i => i.number === item.number && i.quantity < i.maxQuantity ? { ...i, quantity: i.quantity + 1 } : i))}
-                    disabled={item.quantity >= item.maxQuantity}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-sm font-black text-slate-400 hover:bg-white hover:text-manises-blue transition-colors disabled:opacity-30"
-                  >
-                    +
-                  </button>
-                </div>
-                <span className="min-w-[52px] text-right text-[13px] font-black text-manises-blue">
-                  {formatCurrency(item.quantity * item.unitPrice)}
-                </span>
-              </div>
-
-              {/* Acciones por décimo */}
-              <div className="flex gap-2 border-t border-slate-50 pt-2">
-                <button
-                  type="button"
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 py-1.5 text-[9px] font-black uppercase tracking-wider text-slate-500 hover:border-manises-blue/20 hover:text-manises-blue transition-colors"
-                >
-                  <Eye className="h-3 w-3" />
-                  Ver décimo
-                </button>
-                {deliveryMode === 'custody' && (
-                  <button
-                    type="button"
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-manises-blue/20 bg-manises-blue/[0.04] py-1.5 text-[9px] font-black uppercase tracking-wider text-manises-blue hover:bg-manises-blue/[0.08] transition-colors"
-                  >
-                    <Repeat2 className="h-3 w-3" />
-                    Abonarme
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Totals */}
-        <div className="rounded-[1.35rem] border border-slate-100 bg-white p-4 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="font-semibold text-slate-400">Subtotal ({totalDecimos} décimos)</span>
-            <span className="font-black text-manises-blue">{formatCurrency(totalPrice)}</span>
-          </div>
-          {deliveryMode === 'shipping' && (
-            <div className="flex items-center justify-between text-[11px]">
-              <span className="font-semibold text-slate-400">Envío MRW</span>
-              <span className="font-black text-manises-blue">Gratis demo</span>
-            </div>
           )}
-          <div className="flex items-center justify-between border-t border-slate-100 pt-2">
-            <span className="text-[12px] font-black uppercase tracking-widest text-manises-blue">Total</span>
-            <span className="text-xl font-black text-manises-blue">{formatCurrency(totalPrice)}</span>
+          {deliveryMode === 'shipping' && (
+            <p className="rounded-xl bg-slate-50 px-3 py-2 text-[10px] font-semibold text-slate-400">
+              Los décimos se enviarán a la dirección que indiques.
+            </p>
+          )}
+
+          {/* Sorteo group card */}
+          <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between px-4 pt-4 pb-1">
+              <div>
+                <p className="text-[13px] font-black text-manises-blue">Lotería de Navidad</p>
+                <p className="text-[10px] font-semibold text-slate-400">{formatDrawDate(drawDate)}</p>
+              </div>
+              <span className="rounded-full px-2.5 py-1 text-[10px] font-black text-white" style={{ backgroundColor: '#991b1b' }}>
+                {cart.length} {cart.length === 1 ? 'número' : 'números'}
+              </span>
+            </div>
+            <div className="divide-y divide-slate-50 px-4">
+              {cart.map(item => (
+                <div key={item.number} className="py-2.5">
+                  <div className="flex items-center gap-3">
+                    {deliveryMode === 'shipping' && (
+                      <span className="shrink-0 rounded-md px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-white" style={{ backgroundColor: '#991b1b' }}>
+                        DÉCIMO
+                      </span>
+                    )}
+                    <span className="flex-1 min-w-0 text-[14px] font-black text-manises-blue tabular-nums">{item.number}</span>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <button type="button"
+                        onClick={() => setCart(prev => prev.map(i => i.number === item.number ? { ...i, quantity: Math.max(1, i.quantity - 1) } : i))}
+                        disabled={item.quantity <= 1}
+                        className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 text-[12px] font-black text-slate-400 disabled:opacity-30 hover:border-[#991b1b] hover:text-[#991b1b] transition-colors">−</button>
+                      <span className="w-4 text-center text-[13px] font-black text-manises-blue">{item.quantity}</span>
+                      <button type="button"
+                        onClick={() => setCart(prev => prev.map(i => i.number === item.number && i.quantity < i.maxQuantity ? { ...i, quantity: i.quantity + 1 } : i))}
+                        disabled={item.quantity >= item.maxQuantity}
+                        className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 text-[12px] font-black text-slate-400 hover:border-[#991b1b] hover:text-[#991b1b] transition-colors disabled:opacity-30">+</button>
+                    </div>
+                    <span className="shrink-0 w-16 text-right text-[12px] font-bold text-manises-blue">{formatCurrency(item.quantity * item.unitPrice)}</span>
+                    <button type="button"
+                      onClick={() => removeFromCart(item.number)}
+                      className="shrink-0 rounded-lg p-1.5 text-slate-300 hover:bg-red-50 hover:text-red-400 transition-colors">
+                      <Trash className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  {deliveryMode === 'custody' && isAbonable(item.number) && (
+                    <button type="button"
+                      onClick={() => setAbonarseNumber(item.number)}
+                      className="mt-1.5 flex items-center gap-1.5 rounded-lg border border-manises-gold/30 bg-manises-gold/5 px-2.5 py-1 text-[10px] font-black text-manises-gold transition-colors hover:bg-manises-gold/10">
+                      <Star className="h-3 w-3" /> Abonarme
+                    </button>
+                  )}
+                  {deliveryMode === 'shipping' && (
+                    <button type="button"
+                      onClick={() => setTicketMockupNumber(item.number)}
+                      className="mt-1.5 flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-black text-manises-blue transition-colors hover:bg-slate-100">
+                      <Eye className="h-3 w-3" /> Ver décimo
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between border-t border-slate-50 px-4 py-2.5">
+              <span className="text-[11px] font-semibold text-slate-400">{totalDecimos} décimo{totalDecimos !== 1 ? 's' : ''}</span>
+              <span className="text-[13px] font-black text-manises-blue">{formatCurrency(totalPrice)}</span>
+            </div>
+          </div>
+
+          {/* Resumen económico */}
+          <div className="rounded-2xl border border-slate-100 bg-white shadow-sm px-4 py-4 space-y-2">
+            <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Resumen económico</p>
+            <div className="flex justify-between text-[12px] font-semibold text-slate-600">
+              <span>Total décimos</span><span>{totalDecimos}</span>
+            </div>
+            <div className="flex justify-between text-[12px] font-semibold text-slate-600">
+              <span>Importe décimos</span><span>{formatCurrency(totalPrice)}</span>
+            </div>
+            {deliveryMode === 'shipping' && (
+              <div className="flex justify-between text-[12px] font-semibold text-slate-600">
+                <span>Gastos de mensajería (Península)</span><span>{formatCurrency(SHIPPING_COST)}</span>
+              </div>
+            )}
+            <div className="flex justify-between border-t border-slate-100 pt-2 text-[14px] font-black text-manises-blue">
+              <span>Total del pedido</span><span>{formatCurrency(total)}</span>
+            </div>
           </div>
         </div>
 
-        {/* Balance banner */}
-        <div className={cn(
-          'flex items-center gap-3 rounded-2xl px-4 py-3',
-          hasSufficientBalance
-            ? 'border border-emerald-200 bg-emerald-50'
-            : 'border border-rose-200 bg-rose-50'
-        )}>
-          <Wallet className={cn('h-4 w-4 shrink-0', hasSufficientBalance ? 'text-emerald-600' : 'text-rose-500')} />
-          <div className="flex-1 min-w-0">
-            <p className={cn('text-[10px] font-black', hasSufficientBalance ? 'text-emerald-700' : 'text-rose-700')}>
-              {hasSufficientBalance
-                ? `Saldo disponible: ${formatCurrency(currentBalance)}`
-                : `Saldo insuficiente · disponible: ${formatCurrency(currentBalance)}`
-              }
-            </p>
-            {!hasSufficientBalance && (
-              <p className="mt-0.5 text-[9px] font-semibold text-rose-500">
-                Te faltan {formatCurrency(totalPrice - currentBalance)}
+        {/* Footer fijo */}
+        <div
+          className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200/60 bg-white px-5 pt-4"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
+        >
+          <div className="mx-auto max-w-screen-sm">
+            <div className="grid grid-cols-2 gap-3 mb-1">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Saldo actual</p>
+                <p className="text-[18px] font-black text-manises-blue">{formatCurrency(currentBalance)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total del pedido</p>
+                <p className={`text-[18px] font-black ${isOverBalance ? 'text-red-500' : 'text-manises-blue'}`}>{formatCurrency(total)}</p>
+              </div>
+            </div>
+            {isOverBalance && (
+              <p className="mb-2 text-center text-[10px] font-semibold text-red-400">
+                Faltan {formatCurrency(total - currentBalance)} para completar el pago
               </p>
             )}
-          </div>
-          {!hasSufficientBalance && (
             <button
-              onClick={() => setStep('recharge')}
-              className="shrink-0 rounded-xl border border-rose-300 bg-white px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-rose-600 hover:bg-rose-50 transition-colors"
+              type="button"
+              onClick={isOverBalance ? () => setStep('recharge') : handleFinalizarCompra}
+              disabled={cart.length === 0}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-manises-blue py-4 text-[14px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-50"
             >
-              Recargar
+              <Lock className="h-4 w-4" />
+              {isOverBalance ? 'Recargar saldo' : 'Comprar'}
             </button>
-          )}
+          </div>
         </div>
 
-        <PurchaseBottomBar
-          availableBalance={currentBalance}
-          totalPrice={totalPrice}
-          canContinue={cart.length > 0}
-          ctaLabel={hasSufficientBalance ? 'Finalizar' : 'Recargar'}
-          onContinue={hasSufficientBalance ? handleFinalizarCompra : () => setStep('recharge')}
-          activeColor={game.color}
-          validationText="Añade al menos un décimo"
-        />
-
-        {/* Falta saldo modal overlay */}
-        <AnimatePresence>
-          {showFaltaSaldo && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm"
-                onClick={() => setShowFaltaSaldo(false)}
-              />
-              <motion.div
-                initial={{ opacity: 0, y: 80 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 80 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className="fixed bottom-0 left-0 right-0 z-[100] mx-auto max-w-screen-sm rounded-t-[2rem] bg-white px-5 pb-8 pt-5 shadow-2xl"
-              >
-                <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-slate-200" />
-                <div className="mb-5 flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100">
-                    <AlertTriangle className="h-5 w-5 text-rose-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-manises-blue">Falta saldo</h3>
-                    <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-slate-500">
-                      Necesitas {formatCurrency(totalPrice)} y tienes {formatCurrency(currentBalance)}.
-                      Te faltan <strong>{formatCurrency(totalPrice - currentBalance)}</strong>.
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Button
-                    onClick={() => { setShowFaltaSaldo(false); setStep('recharge'); }}
-                    className="w-full rounded-2xl py-3.5 font-black text-xs uppercase tracking-widest bg-manises-blue text-white"
-                  >
-                    <Wallet className="mr-2 h-4 w-4" />
-                    Recargar saldo
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setShowFaltaSaldo(false)}
-                    className="w-full rounded-2xl py-3 font-black text-xs uppercase tracking-widest text-slate-400"
-                  >
-                    Volver a la cesta
-                  </Button>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-      </div>
+        {abonarseNumber && (
+          <AbonarseModal isOpen={!!abonarseNumber} onClose={() => setAbonarseNumber(null)} decimalNumber={abonarseNumber} />
+        )}
+        {ticketMockupNumber && (
+          <TicketMockupModal number={ticketMockupNumber} onClose={() => setTicketMockupNumber(null)} />
+        )}
+      </>
     );
   }
 
@@ -838,14 +700,14 @@ export function NavidadCheckoutFlow({
         <p className="mb-1.5 text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
           Mostrar números con disponibilidad mínima
         </p>
-        <div className="flex gap-1.5 overflow-x-auto pb-0.5">
+        <div className="grid grid-cols-5 gap-1.5">
           {([0, 10, 20, 30, 50] as const).map(val => (
             <button
               key={val}
               type="button"
               onClick={() => setMinAvailability(val)}
               className={cn(
-                'shrink-0 rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-wider transition-all',
+                'rounded-full border py-1 text-[9px] font-black uppercase tracking-wider transition-all',
                 minAvailability === val
                   ? 'border-[#991b1b] bg-[#991b1b] text-white'
                   : 'border-slate-200 bg-white text-slate-500 hover:border-[#991b1b]/30'
