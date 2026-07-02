@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { notifyAddedToCart } from '@/features/session/lib/cart-toast';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { useWallet } from '@/features/wallet/hooks/useWallet';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 import { GameInfoSheet } from '../components/GameInfoSheet';
 import { GamePlayHeader } from '../components/GamePlayHeader';
@@ -26,7 +25,6 @@ interface NavidadPlayPageProps { game: LotteryGame }
 export function NavidadPlayPage({ game }: NavidadPlayPageProps) {
   const navigate = useNavigate();
   const { profile } = useAuth();
-  const { topUp } = useWallet();
   const { addDrafts, openLotteryReview } = usePlaySession();
 
   const [isInfoOpen, setIsInfoOpen] = useState(false);
@@ -121,6 +119,41 @@ export function NavidadPlayPage({ game }: NavidadPlayPageProps) {
     }
   };
 
+  const handleNavidadManualConfirm = (items: Array<{ number: string; quantity: number }>) => {
+    const drawDates = [game.nextDraw];
+    const allDrafts: import('@/features/session/types/session.types').PlayDraft[] = [];
+
+    for (const item of items) {
+      const sel = buildGameSelection({
+        game, isNationalLottery: true, isQuiniela: false, mode: 'simple',
+        selectedNumbers: [], selectedStars: [], quinielaMatches: [],
+        selectedReductionSystemId: '', selectedNationalNumber: item.number,
+        selectedNationalDraw: { label: game.name },
+      });
+      if (!sel) continue;
+      const ds = buildPlayDrafts({
+        game, selection: sel, drawDates,
+        totalPrice: item.quantity * game.price,
+        unitPrice: game.price, quantity: item.quantity,
+        mode: 'simple', betsCount: 1, isSubscription: false,
+        supportsTimeSelection: false, timeMode: 'specific_days', weeksCount: 1,
+        selectedNationalNumber: item.number, selectedNationalQuantity: item.quantity,
+        selectedNationalDraw: { label: game.name },
+      });
+      allDrafts.push(...ds);
+    }
+
+    if (allDrafts.length === 0) return;
+    const result = addDrafts(allDrafts);
+    if (result.addedCount > 0) {
+      notifyAddedToCart(result, openLotteryReview, 'Décimo');
+      setFlowScreen('config');
+    }
+    if (result.duplicateCount > 0) {
+      toast.error(result.duplicateCount === 1 ? '1 décimo ya estaba en tu sesión (omitido).' : `${result.duplicateCount} décimos ya estaban en tu sesión (omitidos).`);
+    }
+  };
+
   return (
     <div
       className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-6"
@@ -173,16 +206,9 @@ export function NavidadPlayPage({ game }: NavidadPlayPageProps) {
             </div>
 
             <NavidadCheckoutFlow
-              game={game}
               showcaseItems={showcaseItems}
-              availableBalance={availableBalance}
-              drawDate={game.nextDraw}
               initialDeliveryMode={selectedDelivery}
-              onTopUp={async (amount) => {
-                const result = await topUp(amount);
-                if (!result?.success) throw new Error('Top-up failed');
-              }}
-              onGoToTickets={() => navigate('/tickets')}
+              onConfirm={handleNavidadManualConfirm}
             />
           </>
         )}
