@@ -325,7 +325,7 @@ export function NationalAdvancedFlow({
 
                         {/* Número flotante */}
                         {!isActive && (
-                          <span className="pointer-events-none absolute inset-x-0 bottom-[28%] text-center font-mono text-[15px] font-black tracking-widest text-black">
+                          <span className="pointer-events-none absolute inset-x-0 bottom-[42%] text-center font-mono text-[15px] font-black tracking-widest text-black">
                             {line.number}
                           </span>
                         )}
