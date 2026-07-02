@@ -75,6 +75,17 @@ export function formatDrawTime(iso: string): string {
 }
 
 /**
+ * Divide un importe en euros y céntimos como strings para renderizado tipográfico.
+ * Ej: 23.5 → { euros: "23", cents: "50" }
+ */
+export function splitCurrency(amount: number): { euros: string; cents: string } {
+  const [euros = '0', cents = '00'] = amount
+    .toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    .split(',');
+  return { euros, cents };
+}
+
+/**
  * Calcula la cuenta atrás hasta una fecha y retorna un objeto con días, horas, minutos, segundos.
  */
 export function getCountdown(iso: string): {

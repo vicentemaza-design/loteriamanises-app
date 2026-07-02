@@ -6,16 +6,16 @@
 export type ApiProviderType = 'mock' | 'firebase' | 'http';
 
 export const RUNTIME_CONFIG = {
-  // Toggle this to switch between different data sources
-  // 'mock': Use local simulated data (Demo mode)
-  // 'firebase': Use live Firebase database
-  // 'http': Use future REST API integration
-  apiProvider: 'mock' as ApiProviderType,
+  // Controlled via VITE_API_PROVIDER env var (.env / .env.production / .env.local)
+  // 'mock'    → datos locales simulados (demo)
+  // 'firebase'→ Firestore en producción
+  // 'http'    → REST API (pendiente de implementar)
+  apiProvider: ((import.meta.env.VITE_API_PROVIDER as ApiProviderType) || 'mock'),
 
   // Environment detection
   isDev: import.meta.env.DEV,
   isProd: import.meta.env.PROD,
-  
+
   // App Version
   version: '2.5.0-industrial',
 };

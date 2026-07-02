@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Spark, EditPencil, Check } from 'iconoir-react/regular';
-import { cn, formatCurrency } from '@/shared/lib/utils';
+import { cn, formatCurrency, splitCurrency } from '@/shared/lib/utils';
 import { NationalDeliverySelector, type DeliveryMode } from './NationalDeliverySelector';
 
 export type NationalMethod = 'aleatorio' | 'elegir';
@@ -150,9 +150,3 @@ function MethodButton({
   );
 }
 
-function splitCurrency(amount: number) {
-  const [euros = '0', cents = '00'] = amount
-    .toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    .split(',');
-  return { euros, cents };
-}

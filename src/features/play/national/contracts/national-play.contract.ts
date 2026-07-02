@@ -1,3 +1,5 @@
+import type { GameType } from '@/shared/types/domain';
+
 export type NationalDrawId = 'jueves' | 'sabado' | 'especial';
 
 export interface NationalDrawConfig {
@@ -62,6 +64,10 @@ export interface NationalOrderBreakdown {
  */
 export interface NationalCartDraftIntentLine {
   number: string;
+  /** Serie del décimo. Fluye desde NationalShowcaseItem → NationalCartLine → aquí. */
+  serie?: string;
+  /** Fracción del décimo. Fluye desde NationalShowcaseItem → NationalCartLine → aquí. */
+  fraccion?: string;
   drawId: NationalDrawId;
   drawLabel: string;
   drawDates: string[];
@@ -77,7 +83,7 @@ export interface NationalCartDraftIntentLine {
 export interface NationalCartDraftIntent {
   lines: NationalCartDraftIntentLine[];
   gameId: string;
-  gameType: string;
+  gameType: GameType;
 }
 
 /**

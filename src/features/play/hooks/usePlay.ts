@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { createApiClient } from '@/services/api/factory/createApiClient';
-import { playMapper } from '@/services/api/mappers/play.mapper';
+import { playMapper, type BuildBetDtoInput } from '@/services/api/mappers/play.mapper';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
 import type { CreateBetRequestDto } from '@/services/api/contracts/play.contracts';
@@ -20,7 +20,7 @@ export function usePlay() {
    * Places a bet using the modular API architecture.
    * @param selection Raw selection and game data from the view (UI State).
    */
-  const placeBet = useCallback(async (selection: Record<string, any>) => {
+  const placeBet = useCallback(async (selection: BuildBetDtoInput) => {
     if (!user && !FEATURE_FLAGS.enableDemoMode) {
       setError('Debes iniciar sesión para realizar una apuesta.');
       return;

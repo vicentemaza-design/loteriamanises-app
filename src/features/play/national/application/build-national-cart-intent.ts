@@ -15,6 +15,8 @@ export function buildNationalCartDraftIntent(
 ): NationalCartDraftIntent {
   const lines: NationalCartDraftIntentLine[] = cartLines.map((line) => ({
     number: line.number,
+    serie: line.serie,
+    fraccion: line.fraccion,
     drawId: line.drawId,
     drawLabel: line.drawLabel,
     drawDates: [...line.drawDates],

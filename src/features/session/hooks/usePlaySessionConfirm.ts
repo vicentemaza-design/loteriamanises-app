@@ -28,12 +28,17 @@ function mapDraftToDto(draft: PlayDraft) {
     case 'national':
       return {
         ...base,
-        numbers: draft.selection.number.split('').map(Number),
+        numbers: [parseInt(draft.selection.number, 10)],
+        serie: (draft.metadata?.nationalSerie as string | undefined),
+        fraccion: (draft.metadata?.nationalFraccion as string | undefined),
         metadata: {
           ...base.metadata,
           nationalNumber: draft.selection.number,
           nationalDrawLabel: draft.selection.drawLabel,
           nationalQuantity: draft.quantity,
+          nationalSerie: draft.metadata?.nationalSerie,
+          nationalFraccion: draft.metadata?.nationalFraccion,
+          deliveryMode: draft.metadata?.deliveryMode,
         },
       };
     case 'quiniela':

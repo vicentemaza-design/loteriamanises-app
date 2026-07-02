@@ -6,7 +6,7 @@
 export interface ApiErrorDto {
   code: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 export interface PaginatedResponseDto<T> {

@@ -14,6 +14,11 @@ export interface AuthUserDto {
 export interface UserProfileDto extends AuthUserDto {
   balance: number;
   createdAt: string;
+  address?: string;
+  postalCode?: string;
+  municipality?: string;
+  province?: string;
+  phone?: string;
 }
 
 export type GetProfileResponseDto = ApiResponseDto<UserProfileDto>;

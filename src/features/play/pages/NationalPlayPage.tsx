@@ -232,6 +232,8 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
         weeksCount: 1, selectedNationalNumber: line.number,
         selectedNationalQuantity: line.quantity,
         selectedNationalDraw: { label: line.drawLabel },
+        nationalSerie: line.serie,
+        nationalFraccion: line.fraccion,
       });
       allDrafts.push(...lineDrafts);
     });

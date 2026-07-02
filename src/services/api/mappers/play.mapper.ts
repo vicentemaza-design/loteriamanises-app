@@ -1,33 +1,51 @@
+import type { GameType } from '@/shared/types/domain';
+import type { ScheduleMode } from '@/features/play/config/draw-schedule.config';
 import type { CreateBetRequestDto } from '../contracts/play.contracts';
 
 /**
  * Play Mapper
  * Translates UI selection and game state into a standardized Purchase DTO.
  */
+
+export interface BuildBetDtoInput {
+  gameId: string;
+  gameType: GameType;
+  numbers?: number[];
+  stars?: number[];
+  selections?: Array<{ id: number; val: string | null }>;
+  systemId?: string;
+  mode: string;
+  price: number;
+  drawDate: string;
+  drawDates?: string[];
+  scheduleMode?: ScheduleMode;
+  weeksCount?: number;
+  betsCount?: number;
+  hasInsurance?: boolean;
+  isSubscription?: boolean;
+  metadata?: Record<string, unknown>;
+}
+
 export const playMapper = {
-  /**
-   * Maps the raw UI state to a CreateBetRequestDto.
-   * This ensures the adapters receive a consistent structure regardless of the game.
-   */
-  toCreateBetDto(params: any): CreateBetRequestDto {
+  toCreateBetDto(params: BuildBetDtoInput): CreateBetRequestDto {
     return {
       gameId: params.gameId,
       gameType: params.gameType,
       numbers: params.numbers,
       stars: params.stars,
-      selections: params.selections, // For Quiniela
-      systemId: params.systemId,     // For Reduced
-      
+      selections: params.selections,
+      systemId: params.systemId,
+
       mode: params.mode,
       price: params.price,
       drawDate: params.drawDate,
       drawDates: params.drawDates,
       scheduleMode: params.scheduleMode,
       weeksCount: params.weeksCount,
-      betsCount: params.betsCount || 1,
-      hasInsurance: params.hasInsurance || false,
-      isSubscription: params.isSubscription || false,
-      metadata: params.metadata || {},
+      betsCount: params.betsCount ?? 1,
+      hasInsurance: params.hasInsurance ?? false,
+      isSubscription: params.isSubscription ?? false,
+      metadata: params.metadata ?? {},
     };
   }
 };

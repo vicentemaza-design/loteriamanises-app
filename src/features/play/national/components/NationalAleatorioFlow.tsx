@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Minus, Plus, Spark, Cart } from 'iconoir-react/regular';
-import { cn, formatCurrency } from '@/shared/lib/utils';
+import { cn, formatCurrency, splitCurrency } from '@/shared/lib/utils';
 import { NationalContextBar } from './NationalContextBar';
 import type { DeliveryMode } from './NationalDeliverySelector';
 import type { NationalMethod } from './NationalPreFlow';
@@ -16,13 +16,6 @@ interface NationalAleatorioFlowProps {
   showcase: NationalShowcaseItem[];
   onEdit: () => void;
   onConfirm: (sameCount: number, distinctCount: number) => void;
-}
-
-function splitCurrency(amount: number) {
-  const [euros = '0', cents = '00'] = amount
-    .toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    .split(',');
-  return { euros, cents };
 }
 
 function CounterRow({

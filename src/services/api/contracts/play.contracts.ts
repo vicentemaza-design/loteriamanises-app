@@ -24,7 +24,7 @@ export interface CreateBetRequestDto {
   betsCount: number;
   hasInsurance: boolean;
   isSubscription: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CreateBetResponseDto {
@@ -38,6 +38,10 @@ export interface SubmitPlaySessionItemDto extends CreateBetRequestDto {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  /** Serie del décimo (lotería nacional). Necesario para trazabilidad física del décimo. */
+  serie?: string;
+  /** Fracción del décimo (lotería nacional). Necesario para trazabilidad física del décimo. */
+  fraccion?: string;
 }
 
 export interface SubmitPlaySessionRequestDto {
