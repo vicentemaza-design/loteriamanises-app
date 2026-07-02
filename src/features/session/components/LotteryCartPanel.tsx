@@ -374,52 +374,92 @@ export function LotteryCartPanel() {
         </motion.div>
       </div>
 
-      {/* Modal saldo insuficiente */}
+      {/* Modal saldo insuficiente — aviso 2 pasos */}
       <AnimatePresence>
         {showInsufficientBalance && (
           <>
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-sm"
+              className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm"
               onClick={() => setShowInsufficientBalance(false)}
             />
             <motion.div
-              initial={{ opacity: 0, y: 80 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 80 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed bottom-0 left-0 right-0 z-[310] mx-auto max-w-screen-sm rounded-t-[2rem] bg-white px-5 pb-8 pt-5 shadow-2xl"
+              initial={{ y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 28 }}
+              className="fixed bottom-0 left-0 right-0 z-[310] mx-auto max-w-screen-sm rounded-t-[2rem] bg-white px-5 pb-8 pt-4 shadow-2xl"
+              onClick={e => e.stopPropagation()}
             >
               <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-slate-200" />
-              <div className="mb-4 flex items-start justify-between">
-                <div>
-                  <p className="text-[13px] font-black text-manises-blue">Saldo insuficiente</p>
-                  <p className="mt-0.5 text-[11px] font-medium text-slate-500">
-                    No tienes saldo suficiente para completar el pago.<br />Recarga tu saldo para continuar con tu compra.
-                  </p>
+
+              {/* Header */}
+              <div className="mb-5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100">
+                    <WarningTriangle className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-black text-manises-blue">Saldo insuficiente</p>
+                    <p className="text-[11px] font-medium text-slate-500">
+                      Te faltan {formatCurrency(total - balance)} para confirmar
+                    </p>
+                  </div>
                 </div>
                 <button type="button" onClick={() => setShowInsufficientBalance(false)}
                   className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200">
                   <Xmark className="h-3.5 w-3.5" />
                 </button>
               </div>
-              <div className="mb-4 grid grid-cols-2 gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Mi saldo actual</p>
-                  <p className="mt-0.5 text-[18px] font-black text-manises-blue">{formatCurrency(balance)}</p>
+
+              {/* 2-step visual */}
+              <div className="mb-4 overflow-hidden rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-3 border-b border-slate-100 bg-manises-blue/[0.04] p-4">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-manises-blue text-[12px] font-black text-white">1</div>
+                  <div className="flex-1">
+                    <p className="text-[12px] font-black text-manises-blue">Recargar saldo</p>
+                    <p className="text-[10px] font-medium text-slate-500">
+                      Añadir {formatCurrency(total - balance)} o más a tu monedero
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-600">
+                    Siguiente
+                  </span>
                 </div>
-                <div className="text-right">
-                  <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Total del pedido</p>
-                  <p className="mt-0.5 text-[18px] font-black text-red-500">{formatCurrency(total)}</p>
-                  <p className="text-[9px] font-semibold text-red-400">Faltan {formatCurrency(total - balance)}</p>
+                <div className="flex items-center gap-3 p-4 opacity-50">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[12px] font-black text-slate-500">2</div>
+                  <div className="flex-1">
+                    <p className="text-[12px] font-black text-slate-600">Confirmar tu compra</p>
+                    <p className="text-[10px] font-medium text-slate-400">Volver a la cesta y pulsar "Comprar"</p>
+                  </div>
+                  <Lock className="h-4 w-4 text-slate-300" />
                 </div>
               </div>
-              {/* TODO: ruta /profile/wallet — pendiente de conectar flujo de recarga con retorno a cesta */}
-              <button
-                type="button"
-                onClick={() => { setShowInsufficientBalance(false); closeReview(); navigate('/profile/wallet'); }}
-                className="w-full rounded-2xl bg-manises-blue py-4 text-[14px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-[0.98]"
-              >
-                Recargar saldo
-              </button>
+
+              {/* Callout de aviso */}
+              <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3">
+                <WarningTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                <p className="text-[11px] font-semibold leading-relaxed text-amber-800">
+                  Recargar saldo <span className="font-black">no confirma tu compra</span>. Cuando termines de recargar, vuelve a esta cesta y pulsa{' '}
+                  <span className="font-black">"Comprar"</span>.
+                </p>
+              </div>
+
+              {/* Acciones */}
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowInsufficientBalance(false); closeReview(); navigate('/profile/wallet'); }}
+                  className="w-full rounded-2xl bg-manises-blue py-4 text-[13px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-[0.98]"
+                >
+                  Entendido · Recargar saldo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowInsufficientBalance(false)}
+                  className="w-full rounded-xl py-3 text-[12px] font-bold text-slate-400"
+                >
+                  Cancelar
+                </button>
+              </div>
             </motion.div>
           </>
         )}
