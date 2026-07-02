@@ -292,6 +292,21 @@ export function NationalAdvancedFlow({
       <div
         className="fixed bottom-0 left-0 right-0 z-50 overflow-hidden border-t border-slate-100 bg-white shadow-[0_-4px_24px_rgba(0,0,0,0.10)]"
       >
+        {/* Overlay para cerrar el panel al tocar fuera */}
+        <AnimatePresence>
+          {cartExpanded && hasLines && (
+            <motion.div
+              key="cart-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="fixed inset-0 z-40"
+              onClick={() => setCartExpanded(false)}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Contenido expandible — lista de décimos seleccionados */}
         <AnimatePresence>
           {cartExpanded && hasLines && (
