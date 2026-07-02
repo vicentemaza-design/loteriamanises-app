@@ -167,6 +167,13 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
 
   const availableBalance = profile?.balance ?? 0;
 
+  // Envíos cerrados si el sorteo es en menos de 48 horas
+  const isShippingAvailable = useMemo(() => {
+    const drawAt = new Date(selectedNationalDraw.nextDraw);
+    const hoursUntilDraw = (drawAt.getTime() - Date.now()) / (1000 * 60 * 60);
+    return hoursUntilDraw > 48;
+  }, [selectedNationalDraw.nextDraw]);
+
   const helpContent = getGameHelpContent({
     game,
     mode: 'simple',
@@ -343,6 +350,7 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
           <NationalPreFlow
             sorteoContent={sorteoContent}
             availableBalance={availableBalance}
+            shippingAvailable={isShippingAvailable}
             onConfirm={handlePreFlowConfirm}
           />
         )}

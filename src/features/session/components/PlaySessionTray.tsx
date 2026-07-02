@@ -12,6 +12,7 @@ import { usePlaySessionConfirm } from '../hooks/usePlaySessionConfirm';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { NationalTicketVisual } from '@/features/play/components/NationalTicketVisual';
+import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
 import { InsufficientBalanceModal } from '@/features/play/components/InsufficientBalanceModal';
 import { TopUpModal } from '@/features/profile/components/TopUpModal';
 import type { PlayDraft } from '../types/session.types';
@@ -139,10 +140,36 @@ export function PlaySessionTray() {
   // Render a single draft item card/row
   const renderDraftRow = (draft: PlayDraft) => {
     const isNational = draft.gameType === 'loteria-nacional' || draft.gameType === 'navidad' || draft.gameType === 'nino';
-    
+
+    const getNationalDrawId = (gameId: string) => {
+      if (gameId === 'loteria-navidad') return 'navidad';
+      if (gameId === 'loteria-nino') return 'nino';
+      if (gameId === 'loteria-nacional-sabado') return 'sabado';
+      return 'jueves';
+    };
+
     return (
       <div key={draft.id} className="flex items-center justify-between gap-3 py-2.5 border-b border-slate-100 last:border-0 hover:bg-slate-50/50 px-2 rounded-xl transition-all">
-        <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          {/* Thumbnail con número superpuesto (solo lotería nacional) */}
+          {isNational && draft.selection.type === 'national' && (
+            <div className="relative shrink-0">
+              <NationalTicketThumbnail
+                drawId={getNationalDrawId(draft.gameId)}
+                className="w-16 rounded-lg shadow-sm"
+              />
+              <div className="absolute inset-0 flex items-end justify-center pb-1">
+                <span
+                  className="font-mono text-[9px] font-black tracking-widest text-white"
+                  style={{ textShadow: '0 1px 4px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.7)' }}
+                >
+                  {draft.selection.number}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
             <span className="text-[15px] font-black text-manises-blue leading-none">
               {getSelectionDisplay(draft)}
@@ -151,7 +178,7 @@ export function PlaySessionTray() {
               {isNational ? `${draft.quantity} d.` : `${draft.betsCount ?? 1} ap.`} · {formatCurrency(draft.totalPrice)}
             </span>
           </div>
-          
+
           <div className="mt-1.5 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-slate-400">
             {isNational && (
               <>
@@ -175,6 +202,7 @@ export function PlaySessionTray() {
             >
               Ver
             </button>
+          </div>
           </div>
         </div>
 

@@ -25,19 +25,19 @@ export function NationalNumberShowcase({
           <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest mt-1">Prueba con un filtro menor</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1">
           {items.map((item) => {
             const activeLine = cartLines.find(l => l.number === item.number && l.drawId === item.drawId);
             const active = activeLine !== undefined;
             const qty = activeLine?.quantity ?? 1;
-            const availabilityText = item.available <= 1 ? 'Último' : `Quedan ${item.available}`;
+            const availabilityText = item.available <= 1 ? 'Último' : `${item.available} décimos`;
 
             return (
               <div
                 key={`${item.drawId}-${item.number}`}
                 onClick={() => onToggle(item)}
                 className={cn(
-                  'group w-full relative overflow-hidden rounded-2xl border-2 p-2.5 text-left transition-all cursor-pointer select-none',
+                  'group w-full relative overflow-hidden rounded-xl border-2 px-3 py-1.5 text-left transition-all cursor-pointer select-none',
                   active
                     ? 'border-manises-blue bg-manises-blue/[0.04] shadow-sm'
                     : 'border-slate-100 bg-white hover:border-manises-blue/20'
@@ -51,24 +51,21 @@ export function NationalNumberShowcase({
                   }
                 }}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                   {/* Mini ticket thumbnail */}
                   <NationalTicketThumbnail
                     drawId={item.drawId}
-                    className="w-[88px] shadow-sm"
+                    className="w-14 shadow-sm"
                   />
 
                   {/* Number + meta */}
                   <div className="flex flex-1 items-center justify-between gap-2 min-w-0">
                     <div>
-                      <p className={cn(
-                        'text-xl font-black tracking-widest leading-none',
-                        active ? 'text-manises-blue' : 'text-manises-blue'
-                      )}>
+                      <p className="text-[1.2rem] font-black tracking-widest leading-none text-manises-blue">
                         {item.number}
                       </p>
                       <p className={cn(
-                        'mt-1 text-[9px] font-semibold leading-none',
+                        'mt-0.5 text-[8px] font-semibold leading-none',
                         active
                           ? 'text-manises-blue/60'
                           : item.available <= 1

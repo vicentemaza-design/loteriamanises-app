@@ -1,7 +1,7 @@
 import { cn } from '@/shared/lib/utils';
 import juevesTicket from '@/assets/images/loteria_jueves_ticket.jpg';
 import sabadoTicket from '@/assets/images/loteria_sabado_ticket.jpg';
-import navidadTicket from '@/assets/images/img2.rtve.jpg';
+import navidadTicket from '@/assets/images/decimo.jpg';
 
 const THUMB_IMAGES: Record<string, string> = {
   jueves: juevesTicket,

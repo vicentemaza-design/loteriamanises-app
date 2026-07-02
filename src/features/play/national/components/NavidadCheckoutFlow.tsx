@@ -1,8 +1,8 @@
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { NavArrowLeft, Spark, QrCode, NavArrowUp, NavArrowDown } from 'iconoir-react/regular';
+import { NavArrowLeft, Spark, NavArrowUp, NavArrowDown } from 'iconoir-react/regular';
 import {
-  Smartphone, Truck, Check, Loader2, CreditCard,
+  Check, Loader2, CreditCard, Search,
   Wallet, AlertTriangle, CheckCircle2, Gift, ArrowRight, Eye, ShoppingCart, Repeat2,
 } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
@@ -12,7 +12,6 @@ import type { LotteryGame } from '@/shared/types/domain';
 import type { NationalShowcaseItem } from '../contracts/national-play.contract';
 import { NationalTicketVisual } from '@/features/play/components/NationalTicketVisual';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
-import { DecimoQrScanner } from './DecimoQrScanner';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -43,17 +42,21 @@ interface NavidadCheckoutFlowProps {
 
 // ─── Navidad décimo mini-card ─────────────────────────────────────────────────
 
-function NavidadDecimoCard({ number, active }: { number: string; active?: boolean }) {
+function NavidadDecimoCard({ number, compact }: { number: string; active?: boolean; compact?: boolean }) {
   return (
     <div className="relative shrink-0">
       <NationalTicketThumbnail
         drawId="navidad"
         number={number}
-        className="w-[88px] shadow-sm"
+        className={compact ? 'w-14 shadow-sm' : 'w-[88px] shadow-sm'}
       />
-      <span className="pointer-events-none absolute right-1 top-1 text-[6px] font-black uppercase tracking-[0.16em] text-slate-400/60">
-        demo
-      </span>
+      {!compact && (
+        <div className="absolute inset-x-0 bottom-0 rounded-b-md bg-black/55 py-1 text-center">
+          <span className="font-mono text-[10px] font-black tracking-widest text-white leading-none">
+            {number}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -400,8 +403,17 @@ export function NavidadCheckoutFlow({
   const [showFaltaSaldo, setShowFaltaSaldo] = useState(false);
   const [currentBalance, setCurrentBalance] = useState(availableBalance);
   const [cartExpanded, setCartExpanded] = useState(false);
+  const [activeCartNumber, setActiveCartNumber] = useState<string | null>(null);
   const [orderRef] = useState(() => `NAV-${Date.now().toString(36).toUpperCase().slice(-6)}`);
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const stepperTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTicketTap = (number: string) => {
+    if (stepperTimerRef.current) clearTimeout(stepperTimerRef.current);
+    if (activeCartNumber === number) { setActiveCartNumber(null); return; }
+    setActiveCartNumber(number);
+    stepperTimerRef.current = setTimeout(() => setActiveCartNumber(null), 2000);
+  };
 
   // Sync balance updates from parent
   useEffect(() => {
@@ -750,45 +762,19 @@ export function NavidadCheckoutFlow({
 
   // ── Selection ──────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-4 pb-[200px]">
-      {/* Tipo de entrega */}
-      <div className="grid grid-cols-2 gap-2">
-        {([
-          { id: 'custody' as DeliveryMode, label: 'Custodia digital', sub: 'Sin envío · digital', icon: <Smartphone className="h-4 w-4" /> },
-          { id: 'shipping' as DeliveryMode, label: 'Mensajería', sub: 'Décimo físico a tu casa', icon: <Truck className="h-4 w-4" /> },
-        ] as { id: DeliveryMode; label: string; sub: string; icon: ReactNode }[]).map(opt => (
-          <button
-            key={opt.id}
-            onClick={() => updateCartDeliveryMode(opt.id)}
-            className={cn(
-              'flex items-center gap-2.5 rounded-2xl border-2 p-3 text-left transition-all active:scale-[0.97]',
-              deliveryMode === opt.id
-                ? 'border-[#991b1b] bg-[#991b1b] text-white shadow-md'
-                : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
-            )}
-          >
-            {opt.icon}
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-wider leading-none">{opt.label}</p>
-              <p className={cn('mt-0.5 text-[8px] font-medium leading-none', deliveryMode === opt.id ? 'text-white/70' : 'text-slate-400')}>
-                {opt.sub}
-              </p>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Buscador + QR */}
+    <div className="space-y-3 pb-[200px]">
+      {/* Buscador + lupa */}
       <div className="flex gap-2">
         <div className="relative flex-1">
           <input
+            ref={searchInputRef}
             type="text"
             inputMode="numeric"
             maxLength={5}
-            placeholder="Escribe un número o terminación"
+            placeholder="Ej.: 12345 · 123 · 45"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value.replace(/\D/g, ''))}
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[12px] font-semibold text-manises-blue placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#991b1b]/20 focus:border-[#991b1b]/40"
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-[12px] font-semibold text-manises-blue placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#991b1b]/20 focus:border-[#991b1b]/40"
           />
           {searchQuery && (
             <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
@@ -798,26 +784,17 @@ export function NavidadCheckoutFlow({
         </div>
         <button
           type="button"
-          onClick={() => setIsScannerOpen(true)}
-          className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:border-[#991b1b]/30 hover:text-[#991b1b] transition-colors"
-          aria-label="Escanear QR"
+          onClick={() => searchInputRef.current?.focus()}
+          className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:border-[#991b1b]/30 hover:text-[#991b1b] transition-colors"
+          aria-label="Buscar número"
         >
-          <QrCode className="h-5 w-5" />
+          <Search className="h-4 w-4" />
         </button>
       </div>
 
-      <DecimoQrScanner
-        isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
-        onScan={(digits) => {
-          setSearchQuery(digits);
-          setIsScannerOpen(false);
-        }}
-      />
-
       {/* Décimo de la Suerte */}
       <div
-        className="flex items-center gap-3 rounded-2xl border-2 border-manises-gold/40 bg-amber-50/60 p-3 cursor-pointer select-none transition-all hover:border-manises-gold/60 active:scale-[0.98]"
+        className="flex items-center gap-2.5 rounded-2xl border-2 border-manises-gold/40 bg-amber-50/60 p-2.5 cursor-pointer select-none transition-all hover:border-manises-gold/60 active:scale-[0.98]"
         onClick={() => {
           const available = showcaseItems.filter(i => i.available > 0 && !getCartItem(i.number));
           if (available.length > 0) {
@@ -835,22 +812,22 @@ export function NavidadCheckoutFlow({
           }
         }}
       >
-        <div className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-xl border border-manises-gold/30 bg-manises-gold/10">
-          <Spark className="h-5 w-5 text-manises-gold" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-manises-gold/30 bg-manises-gold/10">
+          <Spark className="h-4 w-4 text-manises-gold" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-black text-manises-blue">Décimo de la Suerte</p>
-          <p className="mt-0.5 text-[9px] font-medium text-slate-400">Elegido por Lotería Manises</p>
+          <p className="text-[10px] font-black text-manises-blue">Décimo de la Suerte</p>
+          <p className="text-[8px] font-medium text-slate-400">Elegido por Lotería Manises</p>
         </div>
-        <div className="flex shrink-0 items-center gap-1 rounded-xl border border-manises-gold/30 bg-white px-3 py-1.5 text-[10px] font-black text-manises-gold shadow-sm">
+        <div className="flex shrink-0 items-center gap-1 rounded-xl border border-manises-gold/30 bg-white px-2.5 py-1 text-[9px] font-black text-manises-gold shadow-sm">
           Añadir {formatCurrency(showcaseItems[0]?.decimoPrice ?? 20)}
-          <span className="text-base leading-none">+</span>
+          <span className="text-sm leading-none">+</span>
         </div>
       </div>
 
       {/* Filtro disponibilidad mínima */}
       <div>
-        <p className="mb-2 text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
+        <p className="mb-1.5 text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
           Mostrar números con disponibilidad mínima
         </p>
         <div className="flex gap-1.5 overflow-x-auto pb-0.5">
@@ -860,7 +837,7 @@ export function NavidadCheckoutFlow({
               type="button"
               onClick={() => setMinAvailability(val)}
               className={cn(
-                'shrink-0 rounded-full border px-3.5 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all',
+                'shrink-0 rounded-full border px-3 py-1 text-[9px] font-black uppercase tracking-wider transition-all',
                 minAvailability === val
                   ? 'border-[#991b1b] bg-[#991b1b] text-white'
                   : 'border-slate-200 bg-white text-slate-500 hover:border-[#991b1b]/30'
@@ -873,7 +850,7 @@ export function NavidadCheckoutFlow({
       </div>
 
       {/* Lista de números */}
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         {filteredItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-100 bg-slate-50 py-10 px-6 text-center">
             <p className="text-sm font-bold text-slate-400">Sin resultados</p>
@@ -891,20 +868,20 @@ export function NavidadCheckoutFlow({
               <div
                 key={item.number}
                 className={cn(
-                  'flex items-center gap-2.5 rounded-2xl border-2 p-2.5 transition-all',
+                  'flex items-center gap-2.5 rounded-xl border-2 px-3 py-1.5 transition-all',
                   isInCart
                     ? 'border-[#991b1b]/30 bg-[#991b1b]/[0.04]'
                     : 'border-slate-100 bg-white'
                 )}
               >
-                <NavidadDecimoCard number={item.number} active={isInCart} />
+                <NavidadDecimoCard number={item.number} active={isInCart} compact />
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-xl font-black leading-none tracking-widest text-manises-blue">
+                  <p className="text-[1.1rem] font-black leading-none tracking-widest text-manises-blue">
                     {item.number}
                   </p>
                   <p className={cn(
-                    'mt-1 text-[9px] font-semibold leading-none',
+                    'mt-0.5 text-[8px] font-semibold leading-none',
                     item.available <= 1 ? 'text-amber-600'
                       : item.available <= 4 ? 'text-red-500'
                       : 'text-slate-400'
@@ -926,7 +903,7 @@ export function NavidadCheckoutFlow({
                     onClick={() => updateCart(item, -1)}
                     disabled={qty === 0}
                     className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-lg text-sm font-black transition-colors',
+                      'flex h-7 w-7 items-center justify-center rounded-lg text-sm font-black transition-colors',
                       isInCart
                         ? 'text-[#991b1b] hover:bg-[#991b1b]/10'
                         : 'text-slate-300 cursor-default'
@@ -935,7 +912,7 @@ export function NavidadCheckoutFlow({
                     {isInCart && qty <= 1 ? '×' : '−'}
                   </button>
                   <span className={cn(
-                    'w-6 text-center text-[13px] font-black tabular-nums',
+                    'w-5 text-center text-[12px] font-black tabular-nums',
                     isInCart ? 'text-[#991b1b]' : 'text-slate-300'
                   )}>{qty}</span>
                   <button
@@ -943,7 +920,7 @@ export function NavidadCheckoutFlow({
                     onClick={() => updateCart(item, 1)}
                     disabled={qty >= item.available}
                     className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-lg text-sm font-black transition-colors disabled:opacity-30',
+                      'flex h-7 w-7 items-center justify-center rounded-lg text-sm font-black transition-colors disabled:opacity-30',
                       isInCart
                         ? 'text-[#991b1b] hover:bg-[#991b1b]/10'
                         : 'text-[#991b1b] hover:bg-[#991b1b]/10'
@@ -972,29 +949,84 @@ export function NavidadCheckoutFlow({
               transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="overflow-hidden"
             >
-              <div className="flex gap-3 overflow-x-auto px-4 py-3 pb-2">
-                {cart.map(item => (
-                  <div key={item.number} className="relative shrink-0">
-                    <NationalTicketThumbnail
-                      drawId="navidad"
-                      number={item.number}
-                      className="w-[72px] rounded-xl shadow-sm"
-                    />
-                    {item.quantity > 1 && (
-                      <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#991b1b] text-[8px] font-black text-white">
-                        {item.quantity}
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeFromCart(item.number)}
-                      className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-slate-400 text-[8px] font-black text-white hover:bg-rose-500 transition-colors"
-                      aria-label={`Quitar ${item.number}`}
+              <div className="flex gap-5 overflow-x-auto px-5 pt-3 pb-5">
+                {cart.map(item => {
+                  const isActive = activeCartNumber === item.number;
+                  return (
+                    <div
+                      key={item.number}
+                      className="relative shrink-0 cursor-pointer"
+                      onClick={() => handleTicketTap(item.number)}
                     >
-                      ×
-                    </button>
-                  </div>
-                ))}
+                      <NationalTicketThumbnail
+                        drawId="navidad"
+                        className="w-[100px] rounded-xl shadow-md"
+                      />
+
+                      {/* Número flotante */}
+                      {!isActive && (
+                        <span className="pointer-events-none absolute inset-x-0 bottom-[28%] text-center font-mono text-[15px] font-black tracking-widest text-black">
+                          {item.number}
+                        </span>
+                      )}
+
+                      {/* Stepper al tocar — desaparece a los 2 s */}
+                      <AnimatePresence>
+                        {isActive && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute inset-0 rounded-xl bg-black/75 flex items-center justify-center"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <div className="flex items-center gap-1 rounded-xl bg-white/15 p-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (item.quantity <= 1) { removeFromCart(item.number); setActiveCartNumber(null); }
+                                  else setCart(prev => prev.map(i => i.number === item.number ? { ...i, quantity: i.quantity - 1 } : i));
+                                }}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg text-white font-black text-base hover:bg-white/20 transition-colors"
+                              >
+                                {item.quantity <= 1 ? '×' : '−'}
+                              </button>
+                              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#991b1b] text-white font-black text-sm border-2 border-white/30">
+                                {item.quantity}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setCart(prev => prev.map(i => i.number === item.number && i.quantity < i.maxQuantity ? { ...i, quantity: i.quantity + 1 } : i))}
+                                disabled={item.quantity >= item.maxQuantity}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg text-white font-black text-base hover:bg-white/20 transition-colors disabled:opacity-30"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* X quitar — siempre visible */}
+                      <button
+                        type="button"
+                        onClick={e => { e.stopPropagation(); removeFromCart(item.number); }}
+                        className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-rose-500 text-[11px] font-black text-white shadow-sm hover:bg-rose-600 transition-colors"
+                        aria-label={`Quitar ${item.number}`}
+                      >
+                        ×
+                      </button>
+
+                      {/* Badge cantidad — siempre visible abajo-derecha */}
+                      {!isActive && (
+                        <span className="absolute -bottom-2.5 right-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-[#991b1b] text-[9px] font-black text-white shadow-sm">
+                          {item.quantity}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </motion.div>
           )}

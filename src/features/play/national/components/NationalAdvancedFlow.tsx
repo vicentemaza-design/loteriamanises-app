@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Spark, NavArrowUp, NavArrowDown } from 'iconoir-react/regular';
 import { Truck, X, ShoppingCart } from 'lucide-react';
 import { cn, formatCurrency, formatDate } from '@/shared/lib/utils';
+import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
 import { NationalSearchBar } from './NationalSearchBar';
 import { NationalNumberShowcase } from './NationalNumberShowcase';
 import { NationalDeliverySelector, type DeliveryMode } from './NationalDeliverySelector';
@@ -96,6 +97,15 @@ export function NationalAdvancedFlow({
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>(initialDeliveryMode);
   const [showShippingModal, setShowShippingModal] = useState(false);
   const [cartExpanded, setCartExpanded] = useState(false);
+  const [activeCartKey, setActiveCartKey] = useState<string | null>(null);
+  const stepperTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTicketTap = (key: string) => {
+    if (stepperTimerRef.current) clearTimeout(stepperTimerRef.current);
+    if (activeCartKey === key) { setActiveCartKey(null); return; }
+    setActiveCartKey(key);
+    stepperTimerRef.current = setTimeout(() => setActiveCartKey(null), 2000);
+  };
 
   const handleDecrement = (number: string, drawId: NationalCartLine['drawId']) => {
     const line = nationalCart.lines.find(l => l.number === number && l.drawId === drawId);
@@ -287,71 +297,96 @@ export function NationalAdvancedFlow({
               transition={{ duration: 0.22 }}
               className="overflow-hidden"
             >
-              <div className="max-h-[50vh] overflow-y-auto">
-                {/* Cabecera */}
-                <div className="flex items-center justify-between border-b border-slate-50 px-4 py-2.5">
-                  <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-                    Números seleccionados
-                  </p>
+              <div>
+                {/* Carrusel horizontal de thumbnails */}
+                <div className="flex items-center justify-between border-b border-slate-50 px-4 pt-2.5 pb-0">
                   <button
                     type="button"
                     onClick={nationalCart.clearCart}
-                    className="text-[9px] font-black uppercase tracking-wider text-rose-400 transition-colors hover:text-rose-600"
+                    className="ml-auto text-[9px] font-black uppercase tracking-wider text-rose-400 transition-colors hover:text-rose-600"
                   >
                     Limpiar todo
                   </button>
                 </div>
+                <div className="flex gap-5 overflow-x-auto px-5 pt-3 pb-5">
+                  {nationalCart.lines.map((line) => {
+                    const key = `${line.drawId}-${line.number}`;
+                    const isActive = activeCartKey === key;
+                    return (
+                      <div
+                        key={key}
+                        className="relative shrink-0 cursor-pointer"
+                        onClick={() => handleTicketTap(key)}
+                      >
+                        <NationalTicketThumbnail
+                          drawId={line.drawId}
+                          className="w-[100px] rounded-xl shadow-md"
+                        />
 
-                {/* Filas por número */}
-                <div className="divide-y divide-slate-50 px-4">
-                  {nationalCart.lines.map((line) => (
-                    <div
-                      key={`${line.drawId}-${line.number}`}
-                      className="flex items-center justify-between gap-3 py-2.5"
-                    >
-                      <div className="min-w-0">
-                        <p className="font-mono text-[1.1rem] font-black tracking-[0.16em] text-manises-blue">
-                          {line.number}
-                        </p>
-                        <span className={cn(
-                          'mt-0.5 inline-block rounded-md px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider',
-                          line.deliveryMode === 'custody'
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'border border-amber-200 bg-amber-50 text-amber-700'
-                        )}>
-                          {line.deliveryMode === 'custody' ? 'Digital' : 'Mensajería'}
-                        </span>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        <div className="flex items-center overflow-hidden rounded-xl border border-slate-200 bg-white">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (line.quantity <= 1) nationalCart.removeLine(line.number, line.drawId);
-                              else nationalCart.updateQuantity(line.number, line.drawId, -1);
-                            }}
-                            className="flex h-7 w-7 items-center justify-center text-[12px] font-black text-manises-blue transition-colors hover:bg-slate-50"
-                          >
-                            −
-                          </button>
-                          <span className="w-5 text-center text-[12px] font-black tabular-nums text-manises-blue">
+                        {/* Número flotante */}
+                        {!isActive && (
+                          <span className="pointer-events-none absolute inset-x-0 bottom-[28%] text-center font-mono text-[15px] font-black tracking-widest text-black">
+                            {line.number}
+                          </span>
+                        )}
+
+                        {/* Stepper — desaparece a los 2 s */}
+                        <AnimatePresence>
+                          {isActive && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute inset-0 rounded-xl bg-black/75 flex items-center justify-center"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <div className="flex items-center gap-1 rounded-xl bg-white/15 p-1">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (line.quantity <= 1) { nationalCart.removeLine(line.number, line.drawId); setActiveCartKey(null); }
+                                    else nationalCart.updateQuantity(line.number, line.drawId, -1);
+                                  }}
+                                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white font-black text-base hover:bg-white/20 transition-colors"
+                                >
+                                  {line.quantity <= 1 ? '×' : '−'}
+                                </button>
+                                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-manises-blue text-white font-black text-sm border-2 border-white/30">
+                                  {line.quantity}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => nationalCart.updateQuantity(line.number, line.drawId, 1)}
+                                  disabled={line.quantity >= line.maxQuantity}
+                                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white font-black text-base hover:bg-white/20 transition-colors disabled:opacity-30"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {/* X quitar — siempre visible */}
+                        <button
+                          type="button"
+                          onClick={e => { e.stopPropagation(); nationalCart.removeLine(line.number, line.drawId); }}
+                          className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-rose-500 text-[11px] font-black text-white shadow-sm hover:bg-rose-600 transition-colors"
+                          aria-label={`Quitar ${line.number}`}
+                        >
+                          ×
+                        </button>
+
+                        {/* Badge cantidad — siempre visible abajo-derecha */}
+                        {!isActive && (
+                          <span className="absolute -bottom-2.5 right-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-manises-blue text-[9px] font-black text-white shadow-sm">
                             {line.quantity}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => nationalCart.updateQuantity(line.number, line.drawId, 1)}
-                            disabled={line.quantity >= line.maxQuantity}
-                            className="flex h-7 w-7 items-center justify-center text-[12px] font-black text-manises-blue transition-colors hover:bg-slate-50 disabled:text-slate-200"
-                          >
-                            +
-                          </button>
-                        </div>
-                        <p className="min-w-[3rem] text-right text-[11px] font-black text-manises-blue">
-                          {formatCurrency(line.totalPrice)}
-                        </p>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Envío si aplica */}

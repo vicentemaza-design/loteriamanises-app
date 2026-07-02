@@ -4,7 +4,7 @@ import type { NationalMethod } from './NationalPreFlow';
 
 interface NationalContextBarProps {
   drawDate: string; // ISO con hora
-  delivery: DeliveryMode;
+  delivery?: DeliveryMode;
   method: NationalMethod;
   onEdit: () => void;
 }
@@ -29,19 +29,21 @@ export function NationalContextBar({ drawDate, delivery, method, onEdit }: Natio
         </span>
       </div>
 
-      <span className="text-slate-200">|</span>
-
-      {/* Entrega */}
-      <div className="flex shrink-0 items-center gap-1">
-        {delivery === 'custody' ? (
-          <ShieldCheck className="h-3 w-3 text-emerald-500" />
-        ) : (
-          <Truck className="h-3 w-3 text-blue-500" />
-        )}
-        <span className="text-[9px] font-bold text-slate-500">
-          {delivery === 'custody' ? 'Digital' : 'Envío'}
-        </span>
-      </div>
+      {delivery && (
+        <>
+          <span className="text-slate-200">|</span>
+          <div className="flex shrink-0 items-center gap-1">
+            {delivery === 'custody' ? (
+              <ShieldCheck className="h-3 w-3 text-emerald-500" />
+            ) : (
+              <Truck className="h-3 w-3 text-blue-500" />
+            )}
+            <span className="text-[9px] font-bold text-slate-500">
+              {delivery === 'custody' ? 'Digital' : 'Envío'}
+            </span>
+          </div>
+        </>
+      )}
 
       <span className="text-slate-200">|</span>
 

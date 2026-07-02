@@ -1,10 +1,11 @@
-import { Lock, Smartphone, Truck } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Lock, Smartphone, Truck, Check } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 
 export type DeliveryMode = 'custody' | 'shipping';
 
 interface NationalDeliverySelectorProps {
-  selectedMode: DeliveryMode;
+  selectedMode: DeliveryMode | null;
   shippingAvailable?: boolean;
   onChange: (mode: DeliveryMode) => void;
   onShippingUnavailableClick?: () => void;
@@ -17,61 +18,73 @@ export function NationalDeliverySelector({
   onShippingUnavailableClick,
 }: NationalDeliverySelectorProps) {
   return (
-    <div className="flex items-center gap-1 rounded-2xl border border-slate-100 bg-slate-50 p-1">
-      <button
-        type="button"
-        onClick={() => onChange('custody')}
-        className={cn(
-          'flex flex-1 items-center justify-center gap-2 rounded-xl py-2 transition-all active:scale-[0.98]',
-          selectedMode === 'custody' ? 'bg-manises-blue shadow-sm' : 'hover:bg-white/60'
-        )}
-      >
-        <Smartphone
-          className={cn('h-3.5 w-3.5 shrink-0', selectedMode === 'custody' ? 'text-white' : 'text-manises-blue/60')}
-        />
-        <div className="text-left">
-          <p className={cn('text-[10px] font-black uppercase tracking-wider leading-none', selectedMode === 'custody' ? 'text-white' : 'text-slate-500')}>
-            Digital
-          </p>
-          <p className={cn('mt-0.5 text-[8px] font-medium leading-none', selectedMode === 'custody' ? 'text-white/60' : 'text-slate-400')}>
-            Custodia sin envío
-          </p>
-        </div>
-      </button>
-
-      <button
-        type="button"
-        onClick={() => {
+    <div className="grid grid-cols-2 gap-2">
+      <DeliveryCard
+        icon={<Smartphone className="h-4.5 w-4.5" />}
+        label="Digital"
+        sublabel="Custodia sin envío"
+        selected={selectedMode === 'custody'}
+        onSelect={() => onChange('custody')}
+      />
+      <DeliveryCard
+        icon={<Truck className="h-4.5 w-4.5" />}
+        label="Mensajería"
+        sublabel={shippingAvailable ? 'Envío a tu casa' : 'No disponible'}
+        selected={selectedMode === 'shipping'}
+        disabled={!shippingAvailable}
+        lockIcon={!shippingAvailable}
+        onSelect={() => {
           if (!shippingAvailable) {
             onShippingUnavailableClick?.();
           } else {
             onChange('shipping');
           }
         }}
-        className={cn(
-          'relative flex flex-1 items-center justify-center gap-2 rounded-xl py-2 transition-all active:scale-[0.98]',
-          !shippingAvailable
-            ? 'opacity-40'
-            : selectedMode === 'shipping'
-            ? 'bg-manises-blue shadow-sm'
-            : 'hover:bg-white/60'
-        )}
-      >
-        {!shippingAvailable && (
-          <Lock className="absolute right-2 top-1.5 h-2.5 w-2.5 text-slate-400" />
-        )}
-        <Truck
-          className={cn('h-3.5 w-3.5 shrink-0', selectedMode === 'shipping' ? 'text-white' : 'text-manises-blue/60')}
-        />
-        <div className="text-left">
-          <p className={cn('text-[10px] font-black uppercase tracking-wider leading-none', selectedMode === 'shipping' ? 'text-white' : 'text-slate-500')}>
-            Mensajería
-          </p>
-          <p className={cn('mt-0.5 text-[8px] font-medium leading-none', selectedMode === 'shipping' ? 'text-white/60' : 'text-slate-400')}>
-            {shippingAvailable ? 'Envío a tu casa' : 'No disponible'}
-          </p>
-        </div>
-      </button>
+      />
     </div>
+  );
+}
+
+function DeliveryCard({
+  icon, label, sublabel, selected, disabled, lockIcon, onSelect,
+}: {
+  icon: ReactNode;
+  label: string;
+  sublabel: string;
+  selected: boolean;
+  disabled?: boolean;
+  lockIcon?: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        'relative flex items-center gap-2 rounded-xl border-2 px-3 py-3.5 transition-all active:scale-[0.97]',
+        selected
+          ? 'border-manises-blue bg-manises-blue text-white shadow-sm'
+          : disabled
+          ? 'border-slate-200 bg-slate-50 opacity-50'
+          : 'border-slate-200 bg-slate-50 hover:border-slate-300'
+      )}
+    >
+      <span className={cn('shrink-0', selected ? 'text-white' : 'text-slate-400')}>{icon}</span>
+      <div className="flex-1 min-w-0 text-left">
+        <p className={cn('text-[10px] font-black uppercase tracking-wider leading-none', selected ? 'text-white' : 'text-slate-600')}>
+          {label}
+        </p>
+        <p className={cn('mt-0.5 text-[8px] font-medium leading-none', selected ? 'text-white/60' : 'text-slate-400')}>
+          {sublabel}
+        </p>
+      </div>
+      {lockIcon ? (
+        <Lock className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+      ) : selected ? (
+        <Check className="h-3.5 w-3.5 shrink-0 text-white" />
+      ) : (
+        <span className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-slate-300" />
+      )}
+    </button>
   );
 }
