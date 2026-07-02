@@ -84,13 +84,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
 
   const isDisabled = isProcessing;
 
-  const btnBg = selectedMethod === 'apple'
-    ? 'bg-black hover:bg-gray-900 border-b-4 border-gray-800'
-    : selectedMethod === 'bizum'
-    ? 'bg-[#00c4b3] hover:bg-[#00aba0] border-b-4 border-[#009e93]'
-    : selectedMethod === 'transfer'
-    ? 'bg-emerald-600 hover:bg-emerald-700 border-b-4 border-emerald-800'
-    : 'bg-manises-blue hover:bg-[#083d7d] border-b-4 border-[#052a5a]';
+  const btnBg = 'bg-manises-blue hover:bg-[#083d7d]';
 
   return (
     <AnimatePresence>

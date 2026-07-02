@@ -7,7 +7,7 @@ import type { ApiResponseDto } from './common.contracts';
 export interface WalletMovementDto {
   id: string;
   userId: string;
-  type: 'deposit' | 'bet' | 'prize' | 'withdrawal';
+  type: 'deposit' | 'bet' | 'prize' | 'withdrawal' | 'adjustment' | 'cancellation';
   amount: number;
   description: string;
   createdAt: string; // ISO Date

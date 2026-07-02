@@ -1,12 +1,11 @@
 import { useMemo, useState } from 'react';
 import type { ElementType } from 'react';
-import { ArrowDownLeft, ArrowUpRight, Trophy, Wallet, Plus, Landmark, Clock } from 'lucide-react';
-import { formatCurrency, formatDate, cn } from '@/shared/lib/utils';
+import { ShoppingCart, Trophy, Wallet, Plus, Landmark, Clock, ChevronRight, X, Ticket, Star, RefreshCw, RotateCcw } from 'lucide-react';
+import { formatCurrency, cn } from '@/shared/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { PremiumActionRow } from '../components/PremiumActionRow';
-import { PremiumMetricPill } from '../components/PremiumMetricPill';
 import { useMovements } from '@/features/wallet/hooks/useMovements';
 import { useWallet } from '@/features/wallet/hooks/useWallet';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -20,33 +19,44 @@ type FilterKey = 'all' | 'deposit' | 'bet' | 'prize' | 'withdrawal';
 type MovementWithBalance = WalletMovement & { balanceAfter?: number };
 
 const FILTER_CHIPS: { key: FilterKey; label: string }[] = [
-  { key: 'all',        label: 'Todo' },
+  { key: 'all',        label: 'Todos' },
   { key: 'deposit',    label: 'Recargas' },
   { key: 'prize',      label: 'Premios' },
   { key: 'bet',        label: 'Jugadas' },
   { key: 'withdrawal', label: 'Retiradas' },
 ];
 
-function getIcon(type: WalletMovement['type']): ElementType {
-  if (type === 'deposit') return Plus;
+const NATIONAL_GAME_IDS = ['loteria-nacional', 'navidad', 'nino'];
+
+function getIcon(type: string, gameId?: string): ElementType {
+  if (type === 'deposit') return Wallet;
   if (type === 'prize') return Trophy;
-  if (type === 'withdrawal') return ArrowUpRight;
-  return ArrowDownLeft; // default/bet
+  if (type === 'withdrawal') return Landmark;
+  if (type === 'adjustment') return RefreshCw;
+  if (type === 'cancellation') return RotateCcw;
+  if (NATIONAL_GAME_IDS.includes(gameId || '') || (!gameId && type === 'bet')) return Ticket;
+  if (gameId === 'euromillones') return Star;
+  return ShoppingCart;
 }
 
-function getTone(type: WalletMovement['type']): 'blue' | 'gold' | 'violet' | 'emerald' | 'default' {
-  if (type === 'deposit') return 'blue';
+function getTone(type: string, gameId?: string): 'blue' | 'gold' | 'violet' | 'emerald' | 'rose' | 'default' {
+  if (type === 'deposit') return 'emerald';
   if (type === 'prize') return 'gold';
-  if (type === 'withdrawal') return 'emerald';
-  if (type === 'bet') return 'default';
-  return 'default';
+  if (type === 'withdrawal') return 'blue';
+  if (type === 'adjustment' || type === 'cancellation') return 'default';
+  if (NATIONAL_GAME_IDS.includes(gameId || '')) return 'violet';
+  return 'rose';
 }
 
-function getBadge(type: WalletMovement['type']): string {
-  if (type === 'deposit') return 'Entrada';
-  if (type === 'prize') return 'Premio';
-  if (type === 'withdrawal') return 'Retirada';
-  return 'Apuesta';
+function formatDatetime(iso: string): string {
+  const d = new Date(iso);
+  const date = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+  const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  return `${date} · ${time}`;
+}
+
+function formatDateOnly(iso: string): string {
+  return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export function MovementsPage() {
@@ -57,9 +67,6 @@ export function MovementsPage() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [selectedMovement, setSelectedMovement] = useState<WalletMovement | null>(null);
-
-  const deposits = movements.filter((m) => m.type === 'deposit').reduce((s, m) => s + m.amount, 0);
-  const prizes   = movements.filter((m) => m.type === 'prize').reduce((s, m) => s + m.amount, 0);
 
   // Pre-calculate running balance for "all" view
   const movementsWithBalance = useMemo<MovementWithBalance[]>(() => {
@@ -82,43 +89,32 @@ export function MovementsPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background pb-24">
-      <ProfileSubHeader title="Movimientos" subtitle="Historial financiero" />
-      <div className="flex flex-col gap-5 p-4">
-
-        <section className="px-1 flex items-center justify-between">
-          <div className="space-y-1">
-            <p className="text-[10px] font-black text-manises-blue/40 uppercase tracking-[0.2em]">Balance total</p>
-            <div className="flex items-baseline gap-1">
-              <p className="text-3xl font-black text-manises-blue tracking-tight tabular-nums">
-                {formatCurrency(profile?.balance ?? 0)}
-              </p>
-            </div>
-          </div>
+      <ProfileSubHeader
+        title="Movimientos"
+        subtitle="Historial financiero"
+        rightSlot={
           <div className="flex items-center gap-2">
             <Button
               size="sm"
               variant="outline"
-              className="h-10 rounded-2xl border-manises-blue/20 text-manises-blue font-black text-[10px] gap-2 hover:bg-slate-50 transition-all shadow-sm px-4"
+              className="h-8 rounded-xl border-manises-blue/20 text-manises-blue font-black text-[10px] gap-1.5 hover:bg-slate-50 transition-all shadow-sm px-3"
               onClick={() => navigate('/profile/withdrawals')}
             >
-              <Landmark className="w-3.5 h-3.5" />
+              <Landmark className="w-3 h-3" />
               Retirar
             </Button>
             <Button
               size="sm"
-              className="h-10 rounded-2xl bg-manises-blue text-white font-black text-[10px] gap-2 hover:opacity-90 transition-all border-none shadow-lg px-4"
+              className="h-8 rounded-xl bg-manises-blue text-white font-black text-[10px] gap-1.5 hover:opacity-90 transition-all border-none shadow-md px-3"
               onClick={() => setIsTopUpOpen(true)}
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-3 h-3" />
               Recargar
             </Button>
           </div>
-        </section>
-
-        <div className="grid grid-cols-2 gap-3">
-          <PremiumMetricPill label="Total Ingresado" value={formatCurrency(deposits)} tone="blue" />
-          <PremiumMetricPill label="Total Premios"   value={formatCurrency(prizes)}   tone="gold" />
-        </div>
+        }
+      />
+      <div className="flex flex-col gap-5 p-4">
 
         {/* Filter chips */}
         <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4">
@@ -160,11 +156,12 @@ export function MovementsPage() {
               filtered.map((movement) => (
                 <PremiumActionRow
                   key={movement.id}
-                  icon={getIcon(movement.type)}
+                  icon={getIcon(movement.type, movement.details?.gameId)}
                   title={movement.description}
-                  description={formatDate(movement.createdAt)}
-                  tone={getTone(movement.type)}
-                  badge={getBadge(movement.type)}
+                  noTruncate
+                  description={formatDatetime(movement.createdAt)}
+                  subdescription={movement.orderId ? `Pedido ${movement.orderId}` : undefined}
+                  tone={getTone(movement.type, movement.details?.gameId)}
                   onClick={() => setSelectedMovement(movement)}
                   trailing={
                     <div className="flex flex-col items-end">
@@ -188,9 +185,14 @@ export function MovementsPage() {
           </div>
         </section>
 
-        <p className="text-center text-[9px] text-muted-foreground/50 font-bold uppercase tracking-widest">
-          Demo · Datos orientativos · No se realizará ninguna operación real
-        </p>
+        <div className="flex items-start gap-2.5 rounded-2xl border border-manises-blue/10 bg-manises-blue/4 px-4 py-3">
+          <svg className="mt-0.5 h-3.5 w-3.5 shrink-0 text-manises-blue/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <p className="text-[11px] font-medium leading-snug text-manises-blue/50">
+            Los movimientos pueden tardar unos minutos en mostrarse tras realizarse.
+          </p>
+        </div>
       </div>
 
       <TopUpModal
@@ -218,161 +220,227 @@ export function MovementsPage() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-              className="fixed inset-x-0 bottom-0 z-[100] mx-auto flex max-h-[calc(100dvh-1rem)] w-full max-w-screen-sm flex-col rounded-t-[2.5rem] bg-slate-50 border-t border-slate-200/80 shadow-[0_-28px_60px_rgba(15,23,42,0.22)] pb-safe"
+              className="fixed inset-x-0 bottom-0 z-[100] mx-auto flex max-h-[calc(100dvh-1rem)] w-full max-w-screen-sm flex-col rounded-t-[2.5rem] bg-white border-t border-slate-200/80 shadow-[0_-28px_60px_rgba(15,23,42,0.22)]"
             >
-              <div className="px-5 py-4 flex-1 overflow-y-auto overscroll-contain">
-                <div className="mx-auto h-1.5 w-14 rounded-full bg-slate-200" />
-                
-                {/* Header del detalle */}
-                <div className="mt-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Detalle de Operación</p>
-                    <h2 className="mt-1 text-xl font-black text-manises-blue uppercase tracking-tight">
-                      {selectedMovement.type === 'deposit' && 'Recarga de saldo'}
-                      {selectedMovement.type === 'withdrawal' && 'Retirada de saldo'}
-                      {selectedMovement.type === 'prize' && 'Premio obtenido'}
-                      {selectedMovement.type === 'bet' && 'Compra de jugada'}
-                    </h2>
-                  </div>
-                  <button 
-                    onClick={() => setSelectedMovement(null)}
-                    className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 px-3 py-1 rounded-xl bg-slate-100 transition-colors"
-                  >
-                    Cerrar
-                  </button>
-                </div>
-
-                {/* Importe y Estado */}
-                <div className="mt-5 rounded-3xl border border-slate-200/60 bg-white p-5 shadow-sm text-center">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Importe de la operación</p>
-                  <p className={cn(
-                    "text-3xl font-black mt-1 tabular-nums",
-                    selectedMovement.amount > 0 ? "text-emerald-600" : "text-manises-blue"
-                  )}>
-                    {selectedMovement.amount > 0 ? '+' : ''}{formatCurrency(selectedMovement.amount)}
-                  </p>
-                  <div className="mt-3 flex items-center justify-center gap-1.5">
-                    <span className={cn(
-                      "inline-flex rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-wider",
-                      selectedMovement.type === 'prize' && 'bg-amber-50 text-amber-700 border border-amber-100',
-                      selectedMovement.type === 'deposit' && 'bg-blue-50 text-blue-700 border border-blue-100',
-                      selectedMovement.type === 'withdrawal' && 'bg-purple-50 text-purple-700 border border-purple-100',
-                      selectedMovement.type === 'bet' && 'bg-slate-50 text-slate-600 border border-slate-200'
-                    )}>
-                      {selectedMovement.description}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Desglose de información */}
-                <div className="mt-4 rounded-3xl border border-slate-200/60 bg-white p-4 shadow-sm space-y-3.5">
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fecha contable</span>
-                    <span className="text-xs font-semibold text-manises-blue">{formatDate(selectedMovement.createdAt)}</span>
-                  </div>
-
-                  {selectedMovement.orderId && (
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Nº de Referencia / Pedido</span>
-                      <span className="text-xs font-mono font-black text-manises-blue">{selectedMovement.orderId}</span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Saldo resultante</span>
-                    <span className="text-xs font-black text-manises-blue">{formatCurrency(selectedMovement.balanceAfter ?? 0)}</span>
-                  </div>
-
-                  {/* Detalles específicos por tipo de operación */}
-                  {selectedMovement.details && (
-                    <div className="pt-1.5 space-y-3">
-                      {/* Caso de Lotería Nacional */}
-                      {selectedMovement.details.number && (
-                        <>
-                          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Número jugado</span>
-                            <span className="font-mono text-lg font-black tracking-widest text-manises-blue">{selectedMovement.details.number}</span>
-                          </div>
-                          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Décimos adquiridos</span>
-                            <span className="text-xs font-black text-manises-blue">{selectedMovement.details.quantity} décimos</span>
-                          </div>
-                          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Método de entrega</span>
-                            <span className="text-xs font-bold text-manises-blue">
-                              {selectedMovement.details.deliveryMode === 'custody' ? 'Custodia Digital' : 'Envío a domicilio'}
-                            </span>
-                          </div>
-                          {selectedMovement.details.shippingCost && selectedMovement.details.shippingCost > 0 && (
-                            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gastos de envío</span>
-                              <span className="text-xs font-semibold text-manises-blue">{formatCurrency(selectedMovement.details.shippingCost)}</span>
-                            </div>
-                          )}
-                        </>
-                      )}
-
-                      {/* Caso de Juegos de combinaciones (Bonoloto, Primitiva, Euromillones) */}
-                      {selectedMovement.details.combinations && selectedMovement.details.combinations.length > 0 && (
-                        <div className="space-y-2 border-b border-slate-100 pb-3">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Combinaciones jugadas</span>
-                          <div className="space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                            {selectedMovement.details.combinations.map((comb, index) => (
-                              <p key={index} className="font-mono text-xs font-black text-manises-blue text-center tracking-wider">
-                                {comb}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Caso de Retiradas de saldo */}
-                      {selectedMovement.details.iban && (
-                        <>
-                          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Banco de destino</span>
-                            <span className="text-xs font-semibold text-manises-blue">{selectedMovement.details.bankName}</span>
-                          </div>
-                          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IBAN</span>
-                            <span className="text-xs font-mono font-bold text-manises-blue">{selectedMovement.details.iban}</span>
-                          </div>
-                          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Titular</span>
-                            <span className="text-xs font-semibold text-manises-blue">{selectedMovement.details.recipientName}</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Acciones del detalle */}
-                <div className="mt-5 space-y-2.5">
-                  {selectedMovement.type === 'bet' && (
-                    <Button 
-                      className="w-full h-12 rounded-2xl bg-manises-blue text-white font-black text-xs uppercase tracking-widest hover:opacity-90 shadow-manises border-none transition-all"
-                      onClick={() => {
-                        toast.success('Abriendo resguardo oficial en demo...');
-                      }}
-                    >
-                      Ver resguardo oficial
-                    </Button>
-                  )}
-                  {selectedMovement.type === 'withdrawal' && (
-                    <div className="flex items-start gap-2 p-3 rounded-2xl bg-emerald-50 border border-emerald-100">
-                      <Clock className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <p className="text-[10px] font-medium text-emerald-800 leading-relaxed">
-                        Esta transferencia se encuentra en procesamiento y puede demorar hasta 72 horas hábiles en liquidarse.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <MovementDetail movement={selectedMovement} onClose={() => setSelectedMovement(null)} />
             </motion.div>
           </>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── MovementDetail ────────────────────────────────────────────────────────────
+
+function MovementDetail({ movement: mv, onClose }: { movement: MovementWithBalance; onClose: () => void }) {
+  const isNational = mv.type === 'bet' && (NATIONAL_GAME_IDS.includes(mv.details?.gameId || '') || !!mv.details?.number);
+  const isGamesBet = mv.type === 'bet' && !isNational;
+  const isAdjustment = mv.type === 'adjustment';
+  const isCancellation = mv.type === 'cancellation';
+
+  const DetailIcon = getIcon(mv.type, mv.details?.gameId);
+
+  const iconStyle =
+    mv.type === 'prize' ? 'bg-amber-50 text-amber-500' :
+    mv.type === 'deposit' ? 'bg-emerald-50 text-emerald-600' :
+    mv.type === 'withdrawal' ? 'bg-blue-50 text-blue-600' :
+    isNational ? 'bg-indigo-50 text-indigo-600' :
+    (isAdjustment || isCancellation) ? 'bg-slate-100 text-slate-500' :
+    'bg-rose-50 text-rose-500';
+
+  const amountColor = mv.amount > 0 ? 'text-emerald-600' : 'text-manises-blue';
+
+  const status =
+    mv.type === 'withdrawal' ? 'Enviada' :
+    mv.type === 'prize' ? 'Abonado' :
+    mv.type === 'cancellation' ? 'Anulado' :
+    'Completada';
+  const statusStyle =
+    status === 'Enviada' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
+    status === 'Anulado' ? 'bg-slate-100 text-slate-500 border border-slate-200' :
+    'bg-emerald-50 text-emerald-600 border border-emerald-200';
+
+  // ── Campos por tipo ──────────────────────────────────────────────────────
+  const fields: Array<{ label: string; value: string; mono?: boolean; positive?: boolean }> = [];
+
+  if (mv.type === 'prize') {
+    fields.push({ label: 'Fecha del sorteo', value: formatDateOnly(mv.createdAt) });
+    fields.push({ label: 'Categoría del premio', value: '5 aciertos + Complementario' });
+    fields.push({ label: 'Nº de pedido origen', value: mv.orderId || 'PR-202606290014', mono: true });
+    const abono = new Date(mv.createdAt);
+    abono.setDate(abono.getDate() + 1);
+    fields.push({ label: 'Fecha del abono', value: formatDatetime(abono.toISOString()) });
+    fields.push({ label: 'Importe abonado', value: formatCurrency(mv.amount), positive: true });
+  } else if (mv.type === 'deposit') {
+    fields.push({ label: 'Fecha y hora', value: formatDatetime(mv.createdAt) });
+    const method = mv.description.includes('Bizum') ? 'Bizum'
+      : mv.description.includes('Apple') ? 'Apple Pay'
+      : mv.description.includes('Transferencia') ? 'Transferencia bancaria'
+      : 'Tarjeta bancaria';
+    fields.push({ label: 'Método de pago', value: method });
+    fields.push({ label: 'Nº de referencia', value: mv.orderId || 'RB-202606290052', mono: true });
+    fields.push({ label: 'Importe recargado', value: formatCurrency(mv.amount), positive: true });
+  } else if (mv.type === 'withdrawal') {
+    fields.push({ label: 'Fecha y hora', value: formatDatetime(mv.createdAt) });
+    fields.push({ label: 'Cuenta destino', value: mv.details?.iban || 'ES12 2100 **** **** 3456', mono: true });
+    fields.push({ label: 'Titular', value: mv.details?.recipientName || 'Rafa Sanchis' });
+    fields.push({ label: 'Importe retirado', value: formatCurrency(Math.abs(mv.amount)) });
+    fields.push({ label: 'Estado', value: 'Enviada' });
+    const prevista = new Date(mv.createdAt);
+    prevista.setDate(prevista.getDate() + 3);
+    fields.push({ label: 'Fecha prevista', value: formatDateOnly(prevista.toISOString()) });
+  } else if (isNational) {
+    fields.push({ label: 'Fecha del pedido', value: formatDatetime(mv.createdAt) });
+    fields.push({ label: 'Fecha del sorteo', value: '22 dic 2026' });
+    fields.push({ label: 'Nº de pedido', value: mv.orderId || 'LN-983055', mono: true });
+    fields.push({ label: 'Detalle', value: `${mv.details?.quantity || 1} décimos` });
+    fields.push({ label: 'Método de entrega', value: mv.details?.deliveryMode === 'shipping' ? 'Mensajería (Nacex)' : 'Custodia digital' });
+  } else if (isAdjustment) {
+    fields.push({ label: 'Fecha y hora', value: formatDatetime(mv.createdAt) });
+    fields.push({ label: 'Motivo', value: 'Corrección de saldo por el sistema' });
+    fields.push({ label: 'Nº de referencia', value: mv.orderId || 'ADJ-00058', mono: true });
+    fields.push({ label: 'Importe regularizado', value: formatCurrency(Math.abs(mv.amount)), positive: true });
+  } else if (isCancellation) {
+    fields.push({ label: 'Fecha y hora', value: formatDatetime(mv.createdAt) });
+    fields.push({ label: 'Juego anulado', value: mv.details?.gameLabel || 'Juego' });
+    fields.push({ label: 'Nº de pedido anulado', value: mv.orderId || 'CAN-00147', mono: true });
+    fields.push({ label: 'Motivo', value: 'Anulación solicitada antes del sorteo' });
+    fields.push({ label: 'Importe devuelto', value: formatCurrency(Math.abs(mv.amount)), positive: true });
+  } else {
+    // juegos activos (primitiva, bonoloto, euromillones, gordo…)
+    const sorteo = new Date(mv.createdAt);
+    sorteo.setDate(sorteo.getDate() + 3);
+    fields.push({ label: 'Fecha del pedido', value: formatDatetime(mv.createdAt) });
+    fields.push({ label: 'Sorteo', value: sorteo.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' }) });
+    fields.push({ label: 'Nº de pedido', value: mv.orderId || 'EM-983120', mono: true });
+    const combCount = mv.details?.combinations?.length || 1;
+    fields.push({ label: 'Detalle', value: `${combCount} ${combCount === 1 ? 'apuesta' : 'apuestas'}` });
+    fields.push({ label: 'Modalidad', value: 'Sencilla' });
+  }
+
+  fields.push({ label: 'Saldo resultante', value: formatCurrency(mv.balanceAfter ?? 0) });
+
+  // ── Resumen económico (solo apuestas) ────────────────────────────────────
+  const economicLines: Array<{ label: string; value: string }> = [];
+  if (isNational) {
+    const qty = mv.details?.quantity || 1;
+    const shipping = mv.details?.shippingCost || (mv.details?.deliveryMode === 'shipping' ? 12 : 0);
+    const decimosCost = Math.abs(mv.amount) - shipping;
+    const priceEach = qty > 0 ? decimosCost / qty : decimosCost;
+    economicLines.push({ label: `Décimos (${qty} × ${formatCurrency(priceEach)})`, value: formatCurrency(decimosCost) });
+    if (shipping > 0) economicLines.push({ label: 'Mensajería (Nacex)', value: formatCurrency(shipping) });
+  } else if (isGamesBet) {
+    const combCount = mv.details?.combinations?.length || 1;
+    const pricePerBet = combCount > 0 ? Math.abs(mv.amount) / combCount : Math.abs(mv.amount);
+    economicLines.push({ label: `Apuestas (${combCount} × ${formatCurrency(pricePerBet)})`, value: formatCurrency(combCount * pricePerBet) });
+  }
+
+  // ── Botones de acción ────────────────────────────────────────────────────
+  const actions: string[] = isNational ? ['Ver pedido', 'Ver escrutinio']
+    : isGamesBet ? ['Ver apuestas', 'Ver escrutinio']
+    : mv.type === 'prize' ? ['Ver escrutinio']
+    : mv.type === 'deposit' ? ['Ver comprobante']
+    : mv.type === 'withdrawal' ? ['Ver solicitud']
+    : isAdjustment ? ['Ver justificante']
+    : isCancellation ? ['Ver pedido original']
+    : [];
+
+  return (
+    <div className="flex flex-col flex-1 overflow-hidden">
+      {/* Grabber */}
+      <div className="pt-3 pb-1 flex justify-center shrink-0">
+        <div className="h-1.5 w-14 rounded-full bg-slate-200" />
+      </div>
+
+      <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-8 space-y-4">
+        {/* Cabecera */}
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Detalle del movimiento</p>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Hero: icono + nombre + importe + estado */}
+        <div className="flex flex-col items-center gap-1.5 py-3">
+          <div className={cn('w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm', iconStyle)}>
+            <DetailIcon className="w-8 h-8" />
+          </div>
+          <p className="mt-1 text-[13px] font-bold text-manises-blue">{mv.description}</p>
+          <p className={cn('text-[2rem] font-black tabular-nums leading-none', amountColor)}>
+            {mv.amount > 0 ? '+' : ''}{formatCurrency(mv.amount)}
+          </p>
+          <span className={cn('mt-1 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest', statusStyle)}>
+            {status}
+          </span>
+        </div>
+
+        {/* Campos */}
+        <div className="rounded-2xl border border-slate-100 bg-white overflow-hidden">
+          {fields.map((f, i) => (
+            <div key={i} className="flex items-center justify-between px-4 py-3 border-b border-slate-50 last:border-0">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0">{f.label}</span>
+              <span className={cn(
+                'text-xs font-bold text-right ml-3',
+                f.mono ? 'font-mono' : '',
+                f.positive ? 'text-emerald-600' : 'text-manises-blue'
+              )}>
+                {f.value}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Resumen económico */}
+        {economicLines.length > 0 && (
+          <div className="rounded-2xl border border-slate-100 bg-white overflow-hidden">
+            <div className="px-4 pt-3.5 pb-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-manises-blue">Resumen económico</p>
+            </div>
+            {economicLines.map((line, i) => (
+              <div key={i} className="flex items-center justify-between px-4 py-2.5 border-t border-slate-50">
+                <span className="text-[11px] font-medium text-slate-500">{line.label}</span>
+                <span className="text-[11px] font-bold text-manises-blue">{line.value}</span>
+              </div>
+            ))}
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-manises-blue/[0.03]">
+              <span className="text-[11px] font-black uppercase tracking-wider text-manises-blue">Total pagado</span>
+              <span className="text-sm font-black text-manises-blue">{formatCurrency(Math.abs(mv.amount))}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Aviso retirada */}
+        {mv.type === 'withdrawal' && (
+          <div className="flex items-start gap-2.5 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3">
+            <Clock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+            <p className="text-[11px] font-medium text-amber-800 leading-snug">
+              Esta transferencia puede tardar hasta <strong>72 horas hábiles</strong> en liquidarse.
+            </p>
+          </div>
+        )}
+
+        {/* Botones de acción */}
+        {actions.length > 0 && (
+          <div className="space-y-2">
+            {actions.map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => toast.info(`${label} — disponible próximamente`)}
+                className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border border-manises-blue/15 bg-manises-blue/[0.03] text-manises-blue hover:bg-manises-blue/[0.07] transition-colors"
+              >
+                <span className="text-[12px] font-black uppercase tracking-wider">{label}</span>
+                <ChevronRight className="w-4 h-4 opacity-40" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

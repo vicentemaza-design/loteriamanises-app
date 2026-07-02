@@ -88,12 +88,34 @@ export const MOCK_PROFILE_MOVEMENTS: ProfileMovement[] = [
     amount: -2.50,
     balanceAfter: 127.50,
     description: 'Apuesta Euromillones',
-    orderId: 'LN-980011',
+    orderId: 'EM-980011',
     details: {
       gameId: 'euromillones',
       gameLabel: 'Euromillones',
       combinations: ['07 18 29 40 48 + 02 09'],
     }
+  },
+  {
+    id: 'tx-107',
+    createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
+    type: 'cancellation',
+    amount: 5.00,
+    balanceAfter: 130.00,
+    description: 'Anulación de pedido Bonoloto',
+    orderId: 'CAN-00147',
+    details: {
+      gameId: 'bonoloto',
+      gameLabel: 'Bonoloto',
+    }
+  },
+  {
+    id: 'tx-108',
+    createdAt: new Date(Date.now() - 86400000 * 14).toISOString(),
+    type: 'adjustment',
+    amount: 3.00,
+    balanceAfter: 125.00,
+    description: 'Regularización de saldo',
+    orderId: 'ADJ-00058',
   }
 ];
 

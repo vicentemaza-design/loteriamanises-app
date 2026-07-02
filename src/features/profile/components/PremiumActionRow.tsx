@@ -10,11 +10,13 @@ interface PremiumActionRowProps {
   icon: LucideIcon;
   title: string;
   description?: string;
+  subdescription?: string;
   trailing?: ReactNode;
   onClick?: () => void;
   className?: string;
   tone?: ActionTone;
   badge?: string;
+  noTruncate?: boolean;
 }
 
 const toneMap: Record<ActionTone, { bg: string; text: string }> = {
@@ -30,11 +32,13 @@ export function PremiumActionRow({
   icon: Icon,
   title,
   description,
+  subdescription,
   trailing,
   onClick,
   className,
   tone = 'default',
   badge,
+  noTruncate,
 }: PremiumActionRowProps) {
   const palette = toneMap[tone];
   const content = (
@@ -51,7 +55,7 @@ export function PremiumActionRow({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-manises-blue truncate leading-tight">{title}</p>
+          <p className={cn('text-sm font-semibold text-manises-blue leading-tight', !noTruncate && 'truncate')}>{title}</p>
           {badge && (
             <span className="bg-manises-blue/5 text-manises-blue/40 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border border-manises-blue/5">
               {badge}
@@ -61,6 +65,11 @@ export function PremiumActionRow({
         {description && (
           <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-muted-foreground truncate">
             {description}
+          </p>
+        )}
+        {subdescription && (
+          <p className="mt-0 text-[10px] font-mono font-bold text-muted-foreground/70 truncate">
+            {subdescription}
           </p>
         )}
       </div>

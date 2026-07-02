@@ -1,4 +1,4 @@
-export type MovementType = 'deposit' | 'bet' | 'prize' | 'withdrawal';
+export type MovementType = 'deposit' | 'bet' | 'prize' | 'withdrawal' | 'adjustment' | 'cancellation';
 
 export interface MovementDetails {
   gameId?: string;
