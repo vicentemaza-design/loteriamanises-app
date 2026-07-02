@@ -100,6 +100,11 @@ export function NationalAdvancedFlow({
   const [activeCartKey, setActiveCartKey] = useState<string | null>(null);
   const stepperTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Auto-expand cart panel when first ticket is added
+  useEffect(() => {
+    if (nationalCart.lines.length > 0) setCartExpanded(true);
+  }, [nationalCart.lines.length]);
+
   const handleTicketTap = (key: string) => {
     if (stepperTimerRef.current) clearTimeout(stepperTimerRef.current);
     if (activeCartKey === key) { setActiveCartKey(null); return; }
@@ -309,12 +314,18 @@ export function NationalAdvancedFlow({
                   </button>
                 </div>
                 <div className="flex gap-5 overflow-x-auto px-5 pt-3 pb-5">
+                  <AnimatePresence initial={false} mode="popLayout">
                   {nationalCart.lines.map((line) => {
                     const key = `${line.drawId}-${line.number}`;
                     const isActive = activeCartKey === key;
                     return (
-                      <div
+                      <motion.div
                         key={key}
+                        layout
+                        initial={{ scale: 0.5, opacity: 0, y: 24 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0, opacity: 0, transition: { duration: 0.18 } }}
+                        transition={{ type: 'spring', stiffness: 420, damping: 22 }}
                         className="relative shrink-0 cursor-pointer"
                         onClick={() => handleTicketTap(key)}
                       >
@@ -384,9 +395,10 @@ export function NationalAdvancedFlow({
                             {line.quantity}
                           </span>
                         )}
-                      </div>
+                      </motion.div>
                     );
                   })}
+                  </AnimatePresence>
                 </div>
 
                 {/* Envío si aplica */}
@@ -416,13 +428,19 @@ export function NationalAdvancedFlow({
             {!hasLines ? (
               <span className="text-[10px] text-slate-400">Elige al menos un décimo</span>
             ) : (
-              <span className="text-[10px] font-black text-manises-blue">
+              <motion.span
+                key={nationalCart.breakdown.totalDecimos}
+                initial={{ scale: 1.3, opacity: 0.6 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 600, damping: 28 }}
+                className="text-[10px] font-black text-manises-blue"
+              >
                 {nationalCart.lines.length}{' '}
                 {nationalCart.lines.length === 1 ? 'número' : 'números'}
                 {' · '}
                 {nationalCart.breakdown.totalDecimos}{' '}
                 {nationalCart.breakdown.totalDecimos === 1 ? 'décimo' : 'décimos'} seleccionados
-              </span>
+              </motion.span>
             )}
           </div>
           {hasLines && (

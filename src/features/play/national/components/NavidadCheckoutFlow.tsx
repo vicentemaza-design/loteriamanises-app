@@ -420,6 +420,11 @@ export function NavidadCheckoutFlow({
     setCurrentBalance(availableBalance);
   }, [availableBalance]);
 
+  // Auto-expand cart panel when first ticket is added
+  useEffect(() => {
+    if (cart.length > 0) setCartExpanded(true);
+  }, [cart.length]);
+
   const filteredItems = showcaseItems.filter(i => {
     if (searchQuery && !i.number.includes(searchQuery)) return false;
     if (minAvailability > 0 && i.available < minAvailability) return false;
@@ -865,8 +870,11 @@ export function NavidadCheckoutFlow({
             const qty = cartItem?.quantity ?? 0;
 
             return (
-              <div
+              <motion.div
                 key={item.number}
+                layout
+                whileTap={{ scale: 0.97 }}
+                transition={{ layout: { type: 'spring', stiffness: 400, damping: 30 } }}
                 className={cn(
                   'flex items-center gap-2.5 rounded-xl border-2 px-3 py-1.5 transition-all',
                   isInCart
@@ -929,7 +937,7 @@ export function NavidadCheckoutFlow({
                     +
                   </button>
                 </div>
-              </div>
+              </motion.div>
             );
           })
         )}
@@ -950,11 +958,17 @@ export function NavidadCheckoutFlow({
               className="overflow-hidden"
             >
               <div className="flex gap-5 overflow-x-auto px-5 pt-3 pb-5">
+                <AnimatePresence initial={false} mode="popLayout">
                 {cart.map(item => {
                   const isActive = activeCartNumber === item.number;
                   return (
-                    <div
+                    <motion.div
                       key={item.number}
+                      layout
+                      initial={{ scale: 0.5, opacity: 0, y: 24 }}
+                      animate={{ scale: 1, opacity: 1, y: 0 }}
+                      exit={{ scale: 0, opacity: 0, transition: { duration: 0.18 } }}
+                      transition={{ type: 'spring', stiffness: 420, damping: 22 }}
                       className="relative shrink-0 cursor-pointer"
                       onClick={() => handleTicketTap(item.number)}
                     >
@@ -1024,9 +1038,10 @@ export function NavidadCheckoutFlow({
                           {item.quantity}
                         </span>
                       )}
-                    </div>
+                    </motion.div>
                   );
                 })}
+                </AnimatePresence>
               </div>
             </motion.div>
           )}
@@ -1066,9 +1081,15 @@ export function NavidadCheckoutFlow({
         <div className="mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white">
           <div className="relative flex min-w-0 flex-col items-center justify-center border-r border-white/12 px-1">
             <div className="absolute inset-x-1.5 inset-y-1.5 rounded-xl bg-white/[0.035]" />
-            <p className="relative text-[1.05rem] font-black leading-none text-white tabular-nums">
+            <motion.p
+              key={totalDecimos}
+              initial={{ scale: 1.4, opacity: 0.6 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 600, damping: 28 }}
+              className="relative text-[1.05rem] font-black leading-none text-white tabular-nums"
+            >
               {totalDecimos}
-            </p>
+            </motion.p>
             <p className="relative mt-1 text-[0.5rem] font-bold uppercase leading-none tracking-[0.08em] text-white/58">
               Total a pagar
             </p>

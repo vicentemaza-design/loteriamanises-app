@@ -1,3 +1,4 @@
+import { motion } from 'motion/react';
 import { cn } from '@/shared/lib/utils';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
 import type { NationalCartLine, NationalShowcaseItem } from '../contracts/national-play.contract';
@@ -33,8 +34,11 @@ export function NationalNumberShowcase({
             const availabilityText = item.available <= 1 ? 'Último' : `${item.available} décimos`;
 
             return (
-              <div
+              <motion.div
                 key={`${item.drawId}-${item.number}`}
+                layout
+                whileTap={{ scale: 0.97 }}
+                transition={{ layout: { type: 'spring', stiffness: 400, damping: 30 } }}
                 onClick={() => onToggle(item)}
                 className={cn(
                   'group w-full relative overflow-hidden rounded-xl border-2 px-3 py-1.5 text-left transition-all cursor-pointer select-none',
@@ -114,7 +118,7 @@ export function NationalNumberShowcase({
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
