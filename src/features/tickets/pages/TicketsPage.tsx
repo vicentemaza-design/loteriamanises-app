@@ -189,11 +189,11 @@ export function TicketsPage() {
 
   return (
     <>
-      <div className="flex min-h-full flex-col gap-3 overflow-x-hidden bg-background pb-24" ref={containerRef}>
+      <div className="flex min-h-full flex-col gap-2 overflow-x-hidden bg-background pb-24" ref={containerRef}>
 
         {/* Header */}
-        <section className="tickets-header px-4 pt-4">
-          <div className="flex items-center justify-between mb-1">
+        <section className="tickets-header px-4 pt-3">
+          <div className="flex items-center justify-between mb-0.5">
             <div className="flex items-center gap-2.5">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-manises-blue/[0.06]">
                 <TicketIcon className="h-3.5 w-3.5 text-manises-blue/70" />
@@ -238,7 +238,7 @@ export function TicketsPage() {
                 <button
                   onClick={() => { setTab(key); setGameFilter('all'); }}
                   className={cn(
-                    'w-full rounded-lg py-1.5 text-[9px] font-black uppercase tracking-wider transition-all',
+                    'w-full rounded-lg py-1 text-[9px] font-black uppercase tracking-wider transition-all',
                     tab === key ? 'bg-white text-manises-blue shadow-sm' : 'text-manises-blue/40 hover:text-manises-blue'
                   )}
                 >
@@ -251,13 +251,13 @@ export function TicketsPage() {
 
         {/* Game filter chips */}
         {availableGames.length > 1 && (
-          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide px-4 py-0.5">
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-hide px-4">
             <button
               onClick={() => setGameFilter('all')}
-              className={cn('shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all', gameFilter === 'all' ? 'bg-manises-blue text-white border-manises-blue shadow-sm' : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25')}
+              className={cn('shrink-0 inline-flex items-center px-3 py-0.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all', gameFilter === 'all' ? 'bg-manises-blue text-white border-manises-blue shadow-sm' : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25')}
             >Todos</button>
             {availableGames.map((g) => (
-              <button key={g.id} onClick={() => setGameFilter(g.id)} className={cn('shrink-0 inline-flex items-center px-3 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all', gameFilter === g.id ? 'bg-manises-blue text-white border-manises-blue shadow-sm' : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25')}>
+              <button key={g.id} onClick={() => setGameFilter(g.id)} className={cn('shrink-0 inline-flex items-center px-3 py-0.5 rounded-lg border text-[10px] font-bold uppercase tracking-wider transition-all', gameFilter === g.id ? 'bg-manises-blue text-white border-manises-blue shadow-sm' : 'bg-white text-manises-blue/55 border-manises-blue/10 hover:border-manises-blue/25')}>
                 {g.name}
               </button>
             ))}
@@ -284,7 +284,7 @@ export function TicketsPage() {
               />
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
               {tab === 'activos' && displayed.length > 0 && displayed.length < 4 && (
                 <div className="order-last mt-1 rounded-[1.5rem] border border-dashed border-manises-blue/15 bg-manises-blue/[0.02] p-4 text-center">
                   <p className="text-[12px] font-black text-manises-blue/50">¿Quieres añadir otra jugada?</p>
@@ -320,12 +320,12 @@ export function TicketsPage() {
 
                     {/* Main row */}
                     <div
-                      className="relative flex cursor-pointer items-center gap-3 py-3 pl-4 pr-2 transition-colors active:bg-slate-50/60"
+                      className="relative flex cursor-pointer items-center gap-3 py-2 pl-4 pr-2 transition-colors active:bg-slate-50/60"
                       onClick={() => navigate(`/tickets/${ticket.id}`)}
                     >
                       {/* Col 1 — Icon */}
                       <div
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] shadow-sm"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] shadow-sm"
                         style={{ backgroundColor: game.color }}
                       >
                         <GameBadge game={game} size="sm" variant="white" />
@@ -358,7 +358,7 @@ export function TicketsPage() {
                       </div>
 
                       {/* Col 3 — Status + Prize (stacked, right-aligned) */}
-                      <div className="flex min-w-[82px] shrink-0 flex-col items-end gap-[5px]">
+                      <div className="flex min-w-[82px] shrink-0 flex-col items-end gap-[3px]">
                         <PlayStatusBadge status={playStatus} />
                         {hasPrize ? (
                           <div className="flex items-center gap-0.5">
