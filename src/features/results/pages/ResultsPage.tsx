@@ -362,9 +362,27 @@ export function ResultsPage() {
 
   const tickets = hookTickets;
 
-  const sorted = [...results].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  // Game display order: lotteries first, then numeric games, then football pools
+  const GAME_ORDER: Record<string, number> = {
+    'loteria-nacional-jueves': 0,
+    'loteria-nacional-sabado': 1,
+    'loteria-navidad':         2,
+    'loteria-nino':            3,
+    'bonoloto':                4,
+    'primitiva':               5,
+    'euromillones':            6,
+    'gordo':                   7,
+    'eurodreams':              8,
+    'quiniela':                9,
+    'quinigol':                10,
+  };
+
+  const sorted = [...results].sort((a, b) => {
+    const oa = GAME_ORDER[a.gameId] ?? 99;
+    const ob = GAME_ORDER[b.gameId] ?? 99;
+    if (oa !== ob) return oa - ob;
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
 
   const filtered = sorted.filter(r => {
     if (activeFilter === 'Todos') return true;
