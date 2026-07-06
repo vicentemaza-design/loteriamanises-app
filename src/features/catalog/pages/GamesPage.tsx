@@ -250,15 +250,16 @@ function GameCardRow({ game, onClick }: { key?: Key; game: LotteryGame; onClick:
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-3 pl-1">
-            <div className="min-w-[4.85rem] text-right">
-              <p className="text-[11px] font-black leading-none text-manises-gold">
+          <div className="flex shrink-0 items-center gap-2.5">
+            <div className="text-right">
+              <p className="text-[15px] font-black leading-none text-manises-gold">
                 {formatJackpot(game.jackpot, game.isMonthly)}
               </p>
-              <p className="mt-0.5 text-[8.5px] font-medium text-white/66">{formatCurrency(game.price)}</p>
+              <p className="mt-0.5 text-[9.5px] font-semibold text-white/70">{formatCurrency(game.price)}</p>
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/12 bg-white/12 text-white/92 shadow-inner shrink-0">
-              <ChevronRight className="w-3.5 h-3.5" />
+            <div className="flex shrink-0 items-center gap-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 px-3.5 py-2 shadow-[0_4px_12px_rgba(245,158,11,0.25)]">
+              <span className="text-[9.5px] font-black uppercase tracking-wide text-slate-950">Jugar</span>
+              <ChevronRight className="h-3 w-3 stroke-[3] text-slate-950" />
             </div>
           </div>
         </div>
