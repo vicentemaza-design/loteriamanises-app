@@ -6,28 +6,34 @@ interface BallSelectionProps {
   matchedNumbers?: number[];
   matchedStars?: number[];
   type?: string;
+  large?: boolean;
 }
 
-/**
- * Visualización de bolas y aciertos para juegos de azar.
- */
 export function BallSelection({
   numbers,
   stars,
   matchedNumbers = [],
   matchedStars = [],
   type,
+  large = false,
 }: BallSelectionProps) {
   const isGordo = type === 'gordo';
+  const ballSize = large ? 'h-9 w-9' : 'h-7 w-7';
+  const ballText = large ? 'text-[13px] font-black' : 'text-[11px] font-bold';
+  const ballGap = large ? 'gap-2' : 'gap-1.5';
+  const starSize = large ? 'h-9 w-9' : 'h-7 w-7';
+  const starText = large ? 'text-[12px] font-black' : 'text-[10px] font-bold';
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <div className="flex flex-wrap gap-1.5">
+    <div className={cn('flex flex-wrap', large ? 'gap-2' : 'gap-2')}>
+      <div className={cn('flex flex-wrap', ballGap)}>
         {numbers.map((n) => (
           <div
             key={n}
             className={cn(
-              'flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-bold transition-all',
+              'flex items-center justify-center rounded-full border transition-all',
+              ballSize,
+              ballText,
               matchedNumbers.includes(n)
                 ? 'border-emerald-500 bg-emerald-500 text-white shadow-[0_0_12px_rgba(16,185,129,0.3)]'
                 : 'border-slate-200 bg-white text-slate-600'
@@ -38,12 +44,14 @@ export function BallSelection({
         ))}
       </div>
       {stars && stars.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 border-l border-slate-100 pl-2">
+        <div className={cn('flex flex-wrap border-l border-slate-100 pl-2.5', ballGap)}>
           {stars.map((s) => (
             <div
               key={s}
               className={cn(
-                'relative flex h-7 w-7 items-center justify-center text-[10px] font-bold transition-all',
+                'relative flex items-center justify-center transition-all',
+                starSize,
+                starText,
                 isGordo ? 'rounded-lg border' : 'star-shape',
                 matchedStars.includes(s)
                   ? isGordo

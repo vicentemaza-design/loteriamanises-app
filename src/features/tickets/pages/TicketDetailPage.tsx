@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, CheckCircle2, Clock, Hash, User, CreditCard, ChevronDown, ChevronRight, Truck, Lock } from 'lucide-react';
+import { Calendar, CheckCircle2, Clock, Hash, User, CreditCard, ChevronDown, ChevronRight, Truck, Lock, Trophy } from 'lucide-react';
 import { useTicket } from '../hooks/useTicket';
 import { useResults } from '@/features/results/hooks/useResults';
 import { ProfileSubHeader } from '@/features/profile/components/ProfileSubHeader';
@@ -49,12 +49,25 @@ const STATUS_CONFIG: Record<PlayStatus, { label: string; dot: string; text: stri
   rejected:    { label: 'Rechazada',  dot: 'bg-red-400',     text: 'text-red-700' },
 };
 
-function formatWeekday(date: string) {
-  return new Date(date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
-}
+const STATUS_BADGE_CLASS: Record<PlayStatus, string> = {
+  pending:     'bg-amber-50 text-amber-700 border-amber-200',
+  processing:  'bg-blue-50 text-blue-700 border-blue-200',
+  confirmed:   'bg-emerald-50 text-emerald-700 border-emerald-200',
+  scrutinized: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  rejected:    'bg-red-50 text-red-700 border-red-200',
+};
 
 function formatCompact(date: string) {
   return new Date(date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+}
+
+function formatFullDate(date: string): string {
+  return new Date(date).toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).toUpperCase();
 }
 
 // ── sub-components ─────────────────────────────────────────────────────────
@@ -67,63 +80,6 @@ type MatchResult = {
   reintegro?: number;
 } | null;
 
-function ResultBalls({ result, gameType }: { result: MatchResult; gameType: string }) {
-  if (!result) return null;
-  const nums = result.numbers.map(Number).filter(Boolean);
-  const stars = result.stars ?? [];
-  return (
-    <div className="rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2.5">
-      <p className="mb-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Resultado oficial</p>
-      <BallSelection numbers={nums} stars={stars} type={gameType} />
-      {result.reintegro != null && (
-        <p className="mt-1.5 text-[9px] font-bold text-slate-400">
-          R: <span className="text-manises-blue font-black">{result.reintegro}</span>
-        </p>
-      )}
-    </div>
-  );
-}
-
-function MyBetRow({
-  index,
-  numbers,
-  stars,
-  result,
-  game,
-  isScrutinized,
-}: {
-  index: number;
-  numbers: number[];
-  stars?: number[];
-  result: MatchResult;
-  game: (typeof LOTTERY_GAMES)[number];
-  isScrutinized: boolean;
-}) {
-  const matchedNums = result ? numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
-  const matchedStars = result && stars ? stars.filter(s => result.stars?.includes(s)) : [];
-  const hits = matchedNums.length + matchedStars.length;
-
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white px-3 py-2.5">
-      <span className="shrink-0 text-[10px] font-black text-slate-300">{index}.</span>
-      <div className="min-w-0 flex-1">
-        <BallSelection
-          numbers={numbers}
-          stars={stars}
-          matchedNumbers={matchedNums}
-          matchedStars={matchedStars}
-          type={game.type}
-        />
-      </div>
-      {isScrutinized && result && (
-        <span className={cn('shrink-0 text-[10px] font-black', hits > 0 ? 'text-emerald-600' : 'text-slate-300')}>
-          {hits > 0 ? `${hits}✓` : '—'}
-        </span>
-      )}
-    </div>
-  );
-}
-
 function getBets(ticket: Ticket): Array<{ numbers: number[]; stars?: number[] }> {
   if (ticket.bets && ticket.bets.length > 0) {
     return ticket.bets.map((nums, i) => ({
@@ -134,36 +90,7 @@ function getBets(ticket: Ticket): Array<{ numbers: number[]; stars?: number[] }>
   return [{ numbers: ticket.numbers, stars: ticket.stars }];
 }
 
-function PrizeRow({ ticket, prize }: { ticket: Ticket; prize?: number | null }) {
-  const status = getPlayStatus(ticket);
-  const isScrutinized = status === 'scrutinized';
-  if (!isScrutinized) return null;
-  const amount = prize ?? ticket.prize ?? 0;
-  return (
-    <div className={cn(
-      'flex items-center justify-between rounded-xl px-3 py-2.5 border',
-      amount > 0
-        ? 'border-emerald-100 bg-emerald-50'
-        : 'border-slate-100 bg-slate-50'
-    )}>
-      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Premio del día</span>
-      <span className={cn('text-[13px] font-black', amount > 0 ? 'text-emerald-600' : 'text-slate-400')}>
-        {amount > 0 ? formatCurrency(amount) : '0,00 €'}
-      </span>
-    </div>
-  );
-}
-
-function PendingScrutinyRow() {
-  return (
-    <div className="flex items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2.5">
-      <Clock className="h-3.5 w-3.5 shrink-0 text-slate-300" />
-      <span className="text-[10px] font-semibold text-slate-400">Pendiente de escrutinio</span>
-    </div>
-  );
-}
-
-// ── Game header ────────────────────────────────────────────────────────────
+// ── Game detail header ─────────────────────────────────────────────────────
 
 function DetailHeader({ ticket, game }: { ticket: Ticket; game: (typeof LOTTERY_GAMES)[number] }) {
   const identity = getGameIdentity(game);
@@ -176,52 +103,66 @@ function DetailHeader({ ticket, game }: { ticket: Ticket; game: (typeof LOTTERY_
   const prize = ticket.prize ?? 0;
   const isScrutinized = status === 'scrutinized';
 
+  const displayName = identity.shortName + (isSemanal ? ' Semanal' : '');
+
+  const dateLabel = isSemanal
+    ? `${formatCompact(dates[0])} → ${formatCompact(dates[dates.length - 1])} ${new Date(dates[dates.length - 1]).getFullYear()}`
+    : new Date(ticket.drawDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+
   return (
-    <div className="flex flex-col gap-3 px-4 pt-4">
-      {/* Game identity + status */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-sm" style={{ backgroundColor: game.color }}>
-            <GameBadge game={game} size="md" variant="white" />
-          </div>
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">{identity.shortName}</p>
-            <p className="text-[11px] font-bold text-slate-500">
-              {isSemanal
-                ? `${formatCompact(dates[0])} → ${formatCompact(dates[dates.length - 1])}`
-                : formatDate(ticket.drawDate)
-              }
-            </p>
-          </div>
+    <div>
+      {/* Identity row */}
+      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+        <div
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-sm"
+          style={{ backgroundColor: game.color }}
+        >
+          <GameBadge game={game} size="md" variant="white" />
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <div className="flex items-center gap-1.5">
-            <div className={cn('h-1.5 w-1.5 rounded-full', statusCfg.dot)} />
-            <span className={cn('text-[10px] font-black uppercase tracking-wider', statusCfg.text)}>{statusCfg.label}</span>
+        <div>
+          <p className="text-[14px] font-black uppercase tracking-[0.04em] text-manises-blue leading-tight">
+            {displayName}
+          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            <span className={cn(
+              'inline-flex items-center rounded-md border px-2 py-0.5 text-[8.5px] font-black uppercase tracking-wider',
+              STATUS_BADGE_CLASS[status]
+            )}>
+              {statusCfg.label}
+            </span>
+            <div className="flex items-center gap-1">
+              <Calendar className="h-3 w-3 text-slate-400" />
+              <span className="text-[10px] font-medium text-slate-400">{dateLabel}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-[1.1rem] border border-slate-100 bg-white px-3 py-2.5 shadow-sm">
-          <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Importe jugado</p>
-          <p className="mt-1 text-[15px] font-black text-manises-blue">{formatCurrency(orderTotal)}</p>
+      {/* Stats bar */}
+      <div className="grid grid-cols-3 divide-x divide-slate-100 border-y border-slate-100 bg-white">
+        <div className="flex flex-col items-center py-3 px-2">
+          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Importe jugada</p>
+          <p className="mt-1 text-[18px] font-black text-manises-blue leading-none">{formatCurrency(orderTotal)}</p>
         </div>
-        {isSemanal ? (
-          <div className="rounded-[1.1rem] border border-slate-100 bg-white px-3 py-2.5 shadow-sm">
-            <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Sorteos</p>
-            <p className="mt-1 text-[15px] font-black text-manises-blue">{dates.length}</p>
-          </div>
-        ) : (
-          <div className="rounded-[1.1rem] border border-slate-100 bg-white px-3 py-2.5 shadow-sm">
-            <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Apuestas</p>
-            <p className="mt-1 text-[15px] font-black text-manises-blue">{betsCount}</p>
-          </div>
-        )}
-        <div className={cn('rounded-[1.1rem] border px-3 py-2.5 shadow-sm', isScrutinized && prize > 0 ? 'border-emerald-100 bg-emerald-50' : 'border-slate-100 bg-white')}>
-          <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Premio</p>
-          <p className={cn('mt-1 text-[15px] font-black', isScrutinized && prize > 0 ? 'text-emerald-600' : 'text-slate-300')}>
+        <div className="flex flex-col items-center py-3 px-2">
+          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
+            {isSemanal ? 'Sorteos' : 'Apuesta'}
+          </p>
+          <p className="mt-1 text-[18px] font-black text-manises-blue leading-none">
+            {isSemanal ? dates.length : betsCount}
+          </p>
+        </div>
+        <div className={cn(
+          'flex flex-col items-center py-3 px-2',
+          isScrutinized && prize > 0 ? 'bg-emerald-50' : ''
+        )}>
+          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
+            {isSemanal ? 'Premio total' : 'Premio'}
+          </p>
+          <p className={cn(
+            'mt-1 text-[18px] font-black leading-none',
+            isScrutinized && prize > 0 ? 'text-emerald-600' : 'text-slate-300'
+          )}>
             {isScrutinized ? formatCurrency(prize) : '—'}
           </p>
         </div>
@@ -244,32 +185,80 @@ function SingleDrawDetail({
   const status = getPlayStatus(ticket);
   const isScrutinized = status === 'scrutinized';
   const bets = getBets(ticket);
+  const prize = ticket.prize ?? 0;
 
   return (
-    <div className="flex flex-col gap-3 px-4 pt-2">
-      {isScrutinized && result && <ResultBalls result={result} gameType={game.type} />}
-
-      <div className="space-y-2">
-        <p className="px-1 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
-          Mis apuestas · {bets.length} columna{bets.length !== 1 ? 's' : ''}
-        </p>
-        {bets.map((bet, i) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <div key={i}>
-            <MyBetRow
-              index={i + 1}
-              numbers={bet.numbers}
-              stars={bet.stars}
-              result={isScrutinized ? result : null}
-              game={game}
-              isScrutinized={isScrutinized}
+    <div className="flex flex-col gap-4 px-4 pt-4">
+      {/* Official result */}
+      {isScrutinized && result && (
+        <div>
+          <p className="mb-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+            Resultado oficial
+          </p>
+          <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+            <BallSelection
+              numbers={result.numbers.map(Number).filter(Boolean)}
+              stars={result.stars}
+              type={game.type}
+              large
             />
+            {result.reintegro != null && (
+              <p className="mt-2 text-[9px] font-bold text-slate-400">
+                R: <span className="font-black text-manises-blue">{result.reintegro}</span>
+              </p>
+            )}
           </div>
-        ))}
+        </div>
+      )}
+
+      {/* My bets */}
+      <div>
+        <p className="mb-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+          Mi apuesta ({bets.length})
+        </p>
+        <div className="space-y-2">
+          {bets.map((bet, i) => {
+            const matchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+            const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
+            return (
+              // eslint-disable-next-line react/no-array-index-key
+              <div key={i} className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+                <BallSelection
+                  numbers={bet.numbers}
+                  stars={bet.stars}
+                  matchedNumbers={matchedNums}
+                  matchedStars={matchedStars}
+                  type={game.type}
+                  large
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {isScrutinized && <PrizeRow ticket={ticket} />}
-      {!isScrutinized && <PendingScrutinyRow />}
+      {/* Prize — shown ONCE at bottom */}
+      {isScrutinized && (
+        <div className={cn(
+          'flex items-center justify-between rounded-2xl border px-4 py-3',
+          prize > 0 ? 'border-emerald-100 bg-emerald-50' : 'border-slate-100 bg-slate-50'
+        )}>
+          <div className="flex items-center gap-2">
+            <Trophy className={cn('h-4 w-4', prize > 0 ? 'text-emerald-500' : 'text-slate-300')} />
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Premio del día</span>
+          </div>
+          <span className={cn('text-[16px] font-black', prize > 0 ? 'text-emerald-600' : 'text-slate-400')}>
+            {formatCurrency(prize)}
+          </span>
+        </div>
+      )}
+
+      {!isScrutinized && (
+        <div className="flex items-center gap-2 rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3">
+          <Clock className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+          <span className="text-[10px] font-semibold text-slate-400">Pendiente de escrutinio</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -286,98 +275,117 @@ function SemanalDetail({
   game: (typeof LOTTERY_GAMES)[number];
 }) {
   const bets = getBets(ticket);
+  const totalPrize = ticket.prize ?? 0;
 
-  const [openDays, setOpenDays] = useState<string[]>(() => {
-    const first = dayResults.find(d => d.result);
-    return first ? [first.date] : [dayResults[0]?.date ?? ''];
-  });
+  // First draw open by default
+  const [openDays, setOpenDays] = useState<string[]>([dayResults[0]?.date ?? '']);
 
   function toggleDay(date: string) {
     setOpenDays(prev => prev.includes(date) ? prev.filter(d => d !== date) : [...prev, date]);
   }
 
-  function bestHitsForDay(result: MatchResult): number {
-    if (!result) return 0;
-    return Math.max(...bets.map(bet => {
-      const mn = bet.numbers.filter(n => result.numbers.map(Number).includes(n));
-      const ms = bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
-      return mn.length + ms.length;
-    }));
-  }
-
-  const totalPrize = ticket.prize ?? 0;
-
   return (
-    <div className="flex flex-col gap-2.5 px-4 pt-2">
-      <p className="px-1 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
-        Resultados por día · {bets.length} apuesta{bets.length !== 1 ? 's' : ''}
-      </p>
-
+    <div className="flex flex-col gap-2 px-4 pt-4">
       {dayResults.map(({ date, result }) => {
         const isOpen = openDays.includes(date);
         const hasResult = !!result;
-        const bestHits = bestHitsForDay(result);
 
         return (
-          <div key={date} className="overflow-hidden rounded-[1.35rem] border border-slate-100 bg-white shadow-sm">
+          <div key={date} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+            {/* Row header — always tappable */}
             <button
               type="button"
-              onClick={() => hasResult && toggleDay(date)}
+              onClick={() => toggleDay(date)}
               className="flex w-full items-center justify-between px-4 py-3 text-left"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex min-w-0 items-center gap-2">
                 <Calendar className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                <div>
-                  <p className="text-[11px] font-black capitalize text-manises-blue">{formatWeekday(date)}</p>
-                  {hasResult && bestHits > 0 && (
-                    <p className="text-[9px] font-black text-emerald-600">{bestHits} acierto{bestHits !== 1 ? 's' : ''} (mejor columna)</p>
-                  )}
-                  {hasResult && bestHits === 0 && (
-                    <p className="text-[9px] font-semibold text-slate-400">Sin aciertos</p>
-                  )}
-                  {!hasResult && (
-                    <p className="text-[9px] font-semibold text-slate-300">Pendiente de escrutinio</p>
-                  )}
-                </div>
+                <span className="truncate text-[10px] font-black uppercase text-manises-blue">
+                  {formatFullDate(date)}
+                </span>
               </div>
-              {hasResult
-                ? <ChevronDown className={cn('h-4 w-4 text-slate-400 transition-transform', isOpen && 'rotate-180')} />
-                : <ChevronRight className="h-4 w-4 text-slate-200" />
-              }
+              <div className="ml-2 flex shrink-0 items-center gap-1.5">
+                {!hasResult && (
+                  <span className="text-[9px] font-black text-amber-500">Pendiente</span>
+                )}
+                <ChevronDown className={cn('h-4 w-4 text-slate-400 transition-transform duration-200', isOpen && 'rotate-180')} />
+              </div>
             </button>
 
-            {isOpen && hasResult && (
-              <div className="border-t border-slate-50 px-4 pb-4 pt-3 space-y-2">
-                <ResultBalls result={result} gameType={game.type} />
-                <p className="px-1 text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
-                  Mis apuestas · {bets.length} columna{bets.length !== 1 ? 's' : ''}
+            {/* Expanded content */}
+            {isOpen && (
+              <div className="space-y-3 border-t border-slate-50 px-4 pb-4 pt-3">
+                {hasResult && (
+                  <>
+                    <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+                      Resultado oficial
+                    </p>
+                    <div className="rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2.5">
+                      <BallSelection
+                        numbers={result.numbers.map(Number).filter(Boolean)}
+                        stars={result.stars}
+                        type={game.type}
+                        large
+                      />
+                      {result.reintegro != null && (
+                        <p className="mt-1.5 text-[9px] font-bold text-slate-400">
+                          R: <span className="font-black text-manises-blue">{result.reintegro}</span>
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+                  Mi apuesta ({bets.length})
                 </p>
-                {bets.map((bet, betIdx) => (
-                  // eslint-disable-next-line react/no-array-index-key
-                  <div key={betIdx}>
-                    <MyBetRow
-                      index={betIdx + 1}
-                      numbers={bet.numbers}
-                      stars={bet.stars}
-                      result={result}
-                      game={game}
-                      isScrutinized={true}
-                    />
+                {bets.map((bet, betIdx) => {
+                  const matchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+                  const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
+                  return (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <div key={betIdx} className="rounded-xl border border-slate-100 bg-white px-3 py-2.5">
+                      <BallSelection
+                        numbers={bet.numbers}
+                        stars={bet.stars}
+                        matchedNumbers={matchedNums}
+                        matchedStars={matchedStars}
+                        type={game.type}
+                        large
+                      />
+                    </div>
+                  );
+                })}
+
+                {/* Day prize */}
+                {hasResult ? (
+                  <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="h-3.5 w-3.5 text-slate-300" />
+                      <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Premio del día</span>
+                    </div>
+                    <span className="text-[13px] font-black text-slate-400">0,00 €</span>
                   </div>
-                ))}
-                <PrizeRow ticket={ticket} prize={bestHits > 0 ? undefined : 0} />
+                ) : (
+                  <div className="flex items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2.5">
+                    <Clock className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+                    <span className="text-[10px] font-semibold text-slate-400">Pendiente de escrutinio</span>
+                  </div>
+                )}
               </div>
             )}
           </div>
         );
       })}
 
+      {/* Accumulated total prize */}
       {totalPrize > 0 && (
-        <div className="rounded-[1.35rem] border border-emerald-100 bg-emerald-50 px-4 py-3">
-          <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-emerald-500" />
             <p className="text-[10px] font-black uppercase tracking-wider text-emerald-700">Premio acumulado</p>
-            <p className="text-[15px] font-black text-emerald-600">{formatCurrency(totalPrize)}</p>
           </div>
+          <p className="text-[16px] font-black text-emerald-600">{formatCurrency(totalPrize)}</p>
         </div>
       )}
     </div>
@@ -394,34 +402,45 @@ function PedidoResumen({ ticket }: { ticket: Ticket }) {
   const deliveryMode = ticket.metadata?.deliveryMode;
   const isNational = isNationalTicket(ticket);
 
-  const items = [
-    { icon: Hash,          label: 'Nº pedido',    value: `TLJ-${code}` },
-    { icon: Calendar,      label: 'Fecha compra',  value: formatDate(ticket.createdAt) },
-    { icon: CheckCircle2,  label: 'Confirmación',  value: confirmedAt ? formatDate(confirmedAt) : '—' },
-    { icon: User,          label: 'Titular',        value: holderName ?? '—' },
-    { icon: CreditCard,    label: 'NIF',            value: holderNif ?? '—' },
+  type LucideIcon = typeof Calendar;
+  const items: Array<{ icon: LucideIcon; label: string; value: string }> = [
+    { icon: Hash,         label: 'Nº pedido',           value: `TLJ-${code}` },
+    { icon: Calendar,     label: 'Fecha de compra',       value: formatDate(ticket.createdAt) },
+    { icon: CheckCircle2, label: 'Fecha confirmación',    value: confirmedAt ? formatDate(confirmedAt) : '—' },
+    { icon: User,         label: 'Titular',                value: holderName ?? '—' },
+    { icon: CreditCard,   label: 'NIF',                    value: holderNif ?? '—' },
+    { icon: CreditCard,   label: 'Forma de pago',           value: '—' },
   ];
 
   return (
     <div className="mx-4 mt-4 mb-6 overflow-hidden rounded-[1.35rem] border border-slate-100 bg-white shadow-sm">
-      <div className="px-4 py-3 border-b border-slate-50">
+      <div className="border-b border-slate-50 px-4 py-3">
         <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Resumen del pedido</p>
       </div>
 
-      <div className="grid grid-cols-5 gap-0 divide-x divide-slate-50">
-        {items.map(({ icon: Icon, label, value }) => (
-          <div key={label} className="flex flex-col items-center gap-1 px-1 py-3 text-center">
+      <div className="grid grid-cols-2">
+        {items.map(({ icon: Icon, label, value }, i) => (
+          <div
+            key={label}
+            className={cn(
+              'flex items-start gap-2.5 px-4 py-3',
+              i % 2 === 1 && 'border-l border-slate-50',
+              i < 4 && 'border-b border-slate-50'
+            )}
+          >
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-manises-blue/[0.06]">
               <Icon className="h-3.5 w-3.5 text-manises-blue/60" />
             </div>
-            <p className="text-[8px] font-black uppercase tracking-wider text-slate-400 leading-none">{label}</p>
-            <p className="text-[9px] font-black text-manises-blue leading-tight break-all">{value}</p>
+            <div className="min-w-0">
+              <p className="text-[8px] font-black uppercase tracking-wider text-slate-400">{label}</p>
+              <p className="break-all text-[10px] font-black text-manises-blue">{value}</p>
+            </div>
           </div>
         ))}
       </div>
 
       {isNational && deliveryMode && (
-        <div className="border-t border-slate-50 px-4 py-2.5 flex items-center gap-2">
+        <div className="flex items-center gap-2 border-t border-slate-50 px-4 py-2.5">
           {deliveryMode === 'shipping'
             ? <Truck className="h-3.5 w-3.5 shrink-0 text-slate-400" />
             : <Lock className="h-3.5 w-3.5 shrink-0 text-slate-400" />
@@ -475,7 +494,6 @@ export function TicketDetailPage() {
   const drawDates = getOrderDrawDates(ticket);
   const isSemanal = !isNational && drawDates.length > 1;
 
-  // Map each draw date to its result
   const dayResults = drawDates.map(date => ({
     date,
     result: results.find(r =>
