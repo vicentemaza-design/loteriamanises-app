@@ -67,18 +67,26 @@ function hasGameFilter(filter: (typeof GAME_FILTERS)[number]): filter is Extract
 
 // ── Card body: game-specific prize/number layout ──────────────────────────────
 function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame }) {
-  const { numbers, stars, complementario, reintegro, reintegros, firstPrizeNumber, secondPrizeNumber } = result;
+  const {
+    numbers, stars, complementario, reintegro, reintegros,
+    firstPrizeNumber, secondPrizeNumber,
+    thirdPrizeNumber, fourthPrizeNumbers, fifthPrizeNumbers, secondPrizeNumbers,
+  } = result;
   const t = game.type;
   const isNational = t === 'loteria-nacional';
   const isNavidad  = t === 'navidad';
   const isNino     = t === 'nino';
 
-  // ── Lotería Nacional (Jueves / Sábado): 3-col prize grid ──
+  // ── Lotería Nacional (Jueves / Sábado) ──
+  // 3-col grid: [🏆 1º PREMIO] | [2º PREMIO] | [REINTEGROS]
   if (isNational) {
     return (
       <div className="grid grid-cols-3 divide-x divide-slate-100 border border-slate-100 rounded-xl overflow-hidden bg-blue-50/20">
         <div className="px-2.5 py-2.5 text-center">
-          <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-1.5">1º Premio</p>
+          <div className="flex items-center justify-center gap-1 mb-1.5">
+            <Trophy className="h-3 w-3 text-amber-400 shrink-0" />
+            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">1º Premio</span>
+          </div>
           <p className="text-[15px] font-black text-manises-blue tracking-wider leading-none">
             {firstPrizeNumber ?? '—'}
           </p>
@@ -99,83 +107,147 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
     );
   }
 
-  // ── Navidad / Niño: trophy header + reintegro + 2nd prize ──
-  if (isNavidad || isNino) {
+  // ── Navidad ──
+  // Row 1: [🏆 1º PREMIO (GORDO) + big number] | [REINTEGRO value]
+  // Row 2: 4-col grid — 2º | 3º | 4º (múltiples) | 5º (múltiples)
+  if (isNavidad) {
+    const hasExtendedPrizes = secondPrizeNumber || thirdPrizeNumber || fourthPrizeNumbers?.length || fifthPrizeNumbers?.length;
     return (
       <div className="flex flex-col gap-1.5">
+        {/* Row 1: Gordo + Reintegro */}
         <div className="grid grid-cols-2 divide-x divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
           <div className="px-3 py-2.5 flex items-center gap-2">
             <Trophy className="h-4 w-4 shrink-0 text-amber-400" />
             <div>
-              <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">
-                {isNavidad ? '1º Premio (Gordo)' : '1º Premio'}
-              </p>
+              <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">1º Premio (Gordo)</p>
               <p className="text-[19px] font-black text-manises-blue tracking-wider leading-none mt-1">
                 {firstPrizeNumber ?? '—'}
               </p>
             </div>
           </div>
           <div className="px-3 py-2.5">
-            <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">
-              {isNino ? 'Reintegros' : 'Reintegro'}
-            </p>
+            <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Reintegro</p>
             <p className="text-[14px] font-black text-purple-600 tracking-wide mt-1 leading-none">
-              {isNino && reintegros ? reintegros.join(' · ') : (reintegro ?? '—')}
+              {reintegro ?? reintegros?.[0] ?? '—'}
             </p>
           </div>
         </div>
-        {secondPrizeNumber && (
-          <div className="border border-slate-100 rounded-xl px-3 py-2 flex items-center gap-3 bg-slate-50/40">
-            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">2º Premio</span>
-            <span className="text-[13px] font-black text-manises-blue tracking-wider">{secondPrizeNumber}</span>
+        {/* Row 2: extended prizes */}
+        {hasExtendedPrizes && (
+          <div className="grid grid-cols-4 divide-x divide-slate-100 border border-slate-100 rounded-xl overflow-hidden bg-slate-50/40">
+            <div className="px-2 py-2 text-center">
+              <p className="text-[6.5px] font-black uppercase tracking-widest text-slate-400 mb-1">2º Premio</p>
+              <p className="text-[11px] font-black text-manises-blue tracking-wide leading-none">{secondPrizeNumber ?? '—'}</p>
+            </div>
+            <div className="px-2 py-2 text-center">
+              <p className="text-[6.5px] font-black uppercase tracking-widest text-slate-400 mb-1">3er Premio</p>
+              <p className="text-[11px] font-black text-manises-blue tracking-wide leading-none">{thirdPrizeNumber ?? '—'}</p>
+            </div>
+            <div className="px-2 py-2 text-center">
+              <p className="text-[6.5px] font-black uppercase tracking-widest text-slate-400 mb-1">4º Premios</p>
+              <p className="text-[11px] font-black text-manises-blue tracking-wide leading-none">
+                {fourthPrizeNumbers?.join(' · ') ?? '—'}
+              </p>
+            </div>
+            <div className="px-2 py-2 text-center">
+              <p className="text-[6.5px] font-black uppercase tracking-widest text-slate-400 mb-1">5º Premios</p>
+              <p className="text-[11px] font-black text-manises-blue tracking-wide leading-none truncate">
+                {fifthPrizeNumbers ? fifthPrizeNumbers.slice(0, 3).join(' · ') + (fifthPrizeNumbers.length > 3 ? ' …' : '') : '—'}
+              </p>
+            </div>
           </div>
         )}
       </div>
     );
   }
 
-  // ── Euromillones: numbers + stars + El Millón ──
+  // ── El Niño ──
+  // Row 1: [🏆 1º PREMIO + big number] | [REINTEGROS 2 · 5 · 8]
+  // Row 2: 2-col grid — 2º Premio | 2º Premio (two 2nd prizes)
+  if (isNino) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <div className="grid grid-cols-2 divide-x divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
+          <div className="px-3 py-2.5 flex items-center gap-2">
+            <Trophy className="h-4 w-4 shrink-0 text-amber-400" />
+            <div>
+              <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">1º Premio</p>
+              <p className="text-[19px] font-black text-manises-blue tracking-wider leading-none mt-1">
+                {firstPrizeNumber ?? '—'}
+              </p>
+            </div>
+          </div>
+          <div className="px-3 py-2.5">
+            <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Reintegros</p>
+            <p className="text-[14px] font-black text-purple-600 tracking-wide mt-1 leading-none">
+              {reintegros ? reintegros.join(' · ') : '—'}
+            </p>
+          </div>
+        </div>
+        {/* Two 2nd prizes */}
+        {(secondPrizeNumbers?.length || secondPrizeNumber) && (
+          <div className="grid grid-cols-2 divide-x divide-slate-100 border border-slate-100 rounded-xl overflow-hidden bg-slate-50/40">
+            <div className="px-3 py-2 text-center">
+              <p className="text-[6.5px] font-black uppercase tracking-widest text-slate-400 mb-1">2º Premio</p>
+              <p className="text-[12px] font-black text-manises-blue tracking-wide">
+                {secondPrizeNumbers?.[0] ?? secondPrizeNumber ?? '—'}
+              </p>
+            </div>
+            <div className="px-3 py-2 text-center">
+              <p className="text-[6.5px] font-black uppercase tracking-widest text-slate-400 mb-1">2º Premio</p>
+              <p className="text-[12px] font-black text-manises-blue tracking-wide">
+                {secondPrizeNumbers?.[1] ?? '—'}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Euromillones ──
+  // One row: [balls] | [ESTRELLAS stars] | [EL MILLÓN code] — all inline
   if (t === 'euromillones') {
     return (
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex flex-wrap gap-1">
-            {numbers.map((n, i) => (
-              <NumberBall key={i} number={n as number} variant="default" size="sm" />
-            ))}
-          </div>
-          {stars && stars.length > 0 && (
-            <div className="flex items-center gap-1.5 pl-2.5 border-l border-slate-200">
-              <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">Estrellas</span>
+      <div className="flex items-start gap-2.5 flex-wrap">
+        <div className="flex flex-wrap gap-1">
+          {numbers.map((n, i) => (
+            <NumberBall key={i} number={n as number} variant="default" size="sm" />
+          ))}
+        </div>
+        {stars && stars.length > 0 && (
+          <div className="flex flex-col gap-1 pl-2.5 border-l border-slate-200">
+            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Estrellas</span>
+            <div className="flex gap-1">
               {stars.map((s, i) => (
                 <StarNumberBall key={i} number={s} size="sm" />
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
         {result.drawId && (
-          <div className="flex items-center gap-2 border-t border-slate-100 pt-1.5">
-            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">El Millón</span>
-            <span className="text-[10.5px] font-black text-amber-600 tracking-wider">{result.drawId}</span>
+          <div className="flex flex-col pl-2.5 border-l border-slate-200">
+            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">El Millón</span>
+            <span className="text-[11px] font-black text-amber-600 tracking-wider mt-1">{result.drawId}</span>
           </div>
         )}
       </div>
     );
   }
 
-  // ── El Gordo: numbers + número clave ──
+  // ── El Gordo: balls inline + NÚMERO CLAVE column on right ──
   if (t === 'gordo') {
     return (
-      <div className="flex items-center gap-2.5 flex-wrap">
+      <div className="flex items-start gap-2.5 flex-wrap">
         <div className="flex flex-wrap gap-1">
           {numbers.map((n, i) => (
             <NumberBall key={i} number={n as number} variant="default" size="sm" />
           ))}
         </div>
         {stars && stars.length > 0 && (
-          <div className="flex items-center gap-1.5 pl-2.5 border-l border-slate-200">
-            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">Núm. Clave</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-[11px] font-black text-amber-700">
+          <div className="flex flex-col pl-2.5 border-l border-slate-200">
+            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Núm. Clave</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-[12px] font-black text-amber-700 mt-1">
               {stars[0]}
             </div>
           </div>
@@ -184,19 +256,19 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
     );
   }
 
-  // ── EuroDreams: numbers + número sueño ──
+  // ── EuroDreams: balls inline + NÚMERO SUEÑO column on right ──
   if (t === 'eurodreams') {
     return (
-      <div className="flex items-center gap-2.5 flex-wrap">
+      <div className="flex items-start gap-2.5 flex-wrap">
         <div className="flex flex-wrap gap-1">
           {numbers.map((n, i) => (
             <NumberBall key={i} number={n as number} variant="default" size="sm" />
           ))}
         </div>
         {stars && stars.length > 0 && (
-          <div className="flex items-center gap-1.5 pl-2.5 border-l border-slate-200">
-            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">Núm. Sueño</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-purple-200 bg-purple-50 text-[11px] font-black text-purple-700">
+          <div className="flex flex-col pl-2.5 border-l border-slate-200">
+            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Núm. Sueño</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-purple-200 bg-purple-50 text-[12px] font-black text-purple-700 mt-1">
               {stars[0]}
             </div>
           </div>
@@ -205,27 +277,28 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
     );
   }
 
-  // ── Bonoloto / Primitiva: balls + complementario + reintegro ──
+  // ── Bonoloto / Primitiva ──
+  // Layout: balls on LEFT (flex-1) | C/R stacked as large text on RIGHT
   if (t === 'bonoloto' || t === 'primitiva') {
     return (
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap gap-1">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap gap-1 flex-1">
           {numbers.map((n, i) => (
             <NumberBall key={i} number={n as number} variant="default" size="sm" />
           ))}
         </div>
         {(complementario !== undefined || reintegro !== undefined) && (
-          <div className="flex gap-4 border-t border-slate-100 pt-2">
+          <div className="flex flex-col gap-1.5 shrink-0 text-right">
             {complementario !== undefined && (
-              <div className="flex items-center gap-1.5">
-                <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">Complementario</span>
-                <NumberBall number={complementario} variant="complementario" size="sm" />
+              <div>
+                <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Complementario</p>
+                <p className="text-[18px] font-black text-manises-blue leading-none mt-0.5">{complementario}</p>
               </div>
             )}
             {reintegro !== undefined && (
-              <div className="flex items-center gap-1.5">
-                <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">Reintegro</span>
-                <NumberBall number={reintegro} variant="reintegro" size="sm" />
+              <div className={complementario !== undefined ? 'border-t border-slate-100 pt-1.5' : ''}>
+                <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Reintegro</p>
+                <p className="text-[18px] font-black text-slate-500 leading-none mt-0.5">{reintegro}</p>
               </div>
             )}
           </div>
@@ -234,11 +307,12 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
     );
   }
 
-  // ── Quiniela / Quinigol: results inline ──
+  // ── Quiniela / Quinigol ──
+  // Layout: results on LEFT (flex-1) | PLENO column on RIGHT
   if (t === 'quiniela' || game.id === 'quinigol') {
     return (
-      <div className="flex flex-col gap-1.5">
-        <div className="flex flex-wrap gap-1">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap gap-1 flex-1">
           {numbers.map((n, i) => (
             <span
               key={i}
@@ -256,11 +330,11 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
           ))}
         </div>
         {complementario !== undefined && (
-          <div className="flex items-center gap-2 border-t border-slate-100 pt-1.5">
-            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">
+          <div className="shrink-0 text-right">
+            <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">
               {game.id === 'quinigol' ? 'Pleno al 7' : 'Pleno al 15'}
-            </span>
-            <span className="text-[11px] font-black text-manises-blue">{complementario}</span>
+            </p>
+            <p className="text-[18px] font-black text-manises-blue leading-none mt-0.5">{complementario}</p>
           </div>
         )}
       </div>

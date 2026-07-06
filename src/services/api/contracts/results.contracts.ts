@@ -32,6 +32,12 @@ export interface ResultDto {
   ultimas4cifras?: string[];
   ultimas3cifras?: string[];
   ultimas2cifras?: string[];
+  // Navidad extended prizes
+  thirdPrizeNumber?: string;
+  fourthPrizeNumbers?: string[];
+  fifthPrizeNumbers?: string[];
+  // El Niño: two 2nd prizes
+  secondPrizeNumbers?: string[];
 }
 
 export type GetResultsResponseDto = ApiResponseDto<ResultDto[]>;
