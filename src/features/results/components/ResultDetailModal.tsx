@@ -8,8 +8,26 @@ import { NumberBall, NumberBallLabeled, StarNumberBall } from '@/shared/ui/Numbe
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { formatCurrency } from '@/shared/lib/utils';
-import { getGameIdentity } from '@/shared/lib/game-identity';
 import type { ResultDto, ScrutinyCategory } from '@/services/api/contracts/results.contracts';
+
+// Full game name map (same as ResultsPage cards)
+const MODAL_FULL_NAMES: Record<string, string> = {
+  'euromillones':            'Euromillones',
+  'primitiva':               'La Primitiva',
+  'bonoloto':                'Bonoloto',
+  'gordo':                   'El Gordo de la Primitiva',
+  'eurodreams':              'EuroDreams',
+  'quiniela':                'La Quiniela',
+  'quinigol':                'Quinigol',
+  'loteria-nacional-jueves': 'Lotería Jueves',
+  'loteria-nacional-sabado': 'Lotería Sábado',
+  'loteria-navidad':         'Lotería de Navidad',
+  'loteria-nino':            'Lotería del Niño',
+};
+
+function getModalFullName(gameId: string, gameName: string): string {
+  return MODAL_FULL_NAMES[gameId] ?? gameName;
+}
 
 function formatFullDate(iso: string): string {
   const d = new Date(iso);
@@ -17,7 +35,7 @@ function formatFullDate(iso: string): string {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
   });
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -27,18 +45,6 @@ interface NationalCheckerResult {
   prize: number;
   isWinner: boolean;
 }
-
-const OliveBranchLeft = () => (
-  <svg viewBox="0 0 24 50" className="w-6 h-12 fill-none stroke-blue-200/50 stroke-[1.5] shrink-0">
-    <path d="M18 45C10 40 8 25 12 5M12 5C10 8 5 10 3 8M12 15C10 18 5 20 3 18M12 25C10 28 5 30 3 28M12 35C10 38 5 40 3 38M14 8C16 10 21 8 21 5M14 18C16 20 21 18 21 15M14 28C16 30 21 28 21 25M14 38C16 40 21 38 21 35" />
-  </svg>
-);
-
-const OliveBranchRight = () => (
-  <svg viewBox="0 0 24 50" className="w-6 h-12 fill-none stroke-blue-200/50 stroke-[1.5] shrink-0">
-    <path d="M6 45C14 40 16 25 12 5M12 5C14 8 19 10 21 8M12 15C14 18 19 20 21 18M12 25C14 28 19 30 21 28M12 35C14 38 19 40 21 38M10 8C8 10 3 8 3 5M10 18C8 20 3 18 3 15M10 28C8 30 3 28 3 25M10 38C8 40 3 38 3 35" />
-  </svg>
-);
 
 function checkNationalNumber(
   inputNumber: string,
@@ -52,109 +58,63 @@ function checkNationalNumber(
   const last3 = inputNumber.slice(-3);
   const last4 = inputNumber.slice(-4);
 
-  // Exact matches
-  if (inputNumber === first) {
-    return { category: '1er Premio', prize: 30000, isWinner: true };
-  }
-  if (inputNumber === second) {
-    return { category: '2º Premio', prize: 6000, isWinner: true };
-  }
+  if (inputNumber === first) return { category: '1er Premio', prize: 30000, isWinner: true };
+  if (inputNumber === second) return { category: '2º Premio', prize: 6000, isWinner: true };
 
   let totalPrize = 0;
-  let wonCategories: string[] = [];
+  const wonCategories: string[] = [];
 
-  // Check 4-digit extractions & first prize 4-digit termination
   const extractions4 = result.ultimas4cifras ?? ['1630', '2703', '3755', '7565'];
   const matches4 = extractions4.includes(last4) || (first && first.slice(-4) === last4);
-  if (matches4) {
-    totalPrize += 75;
-    wonCategories.push('Últimas 4 cifras');
-  }
+  if (matches4) { totalPrize += 75; wonCategories.push('Últimas 4 cifras'); }
 
-  // Check 3-digit extractions & first/second prize 3-digit termination
   const extractions3 = result.ultimas3cifras ?? ['079', '081', '084', '292', '406', '690', '926'];
   const matches3 = extractions3.includes(last3) || (first && first.slice(-3) === last3) || (second && second.slice(-3) === last3);
-  if (matches3 && !matches4) {
-    totalPrize += 15;
-    wonCategories.push('Últimas 3 cifras');
-  }
+  if (matches3 && !matches4) { totalPrize += 15; wonCategories.push('Últimas 3 cifras'); }
 
-  // Check 2-digit extractions & first/second prize 2-digit termination
   const extractions2 = result.ultimas2cifras ?? ['20', '48', '54', '66', '69', '77', '90', '94'];
   const matches2 = extractions2.includes(last2) || (first && first.slice(-2) === last2) || (second && second.slice(-2) === last2);
-  if (matches2 && !matches3 && !matches4) {
-    totalPrize += 6;
-    wonCategories.push('Últimas 2 cifras');
-  }
+  if (matches2 && !matches3 && !matches4) { totalPrize += 6; wonCategories.push('Últimas 2 cifras'); }
 
-  // Check reintegro
   const reintegros = result.reintegros ?? [0, 2, 7];
-  if (reintegros.includes(Number(last))) {
-    totalPrize += decimoPrice;
-    wonCategories.push('Reintegro');
-  }
+  if (reintegros.includes(Number(last))) { totalPrize += decimoPrice; wonCategories.push('Reintegro'); }
 
-  if (totalPrize > 0) {
-    return {
-      category: wonCategories.join(' + '),
-      prize: totalPrize,
-      isWinner: true
-    };
-  }
-
+  if (totalPrize > 0) return { category: wonCategories.join(' + '), prize: totalPrize, isWinner: true };
   return { category: 'Sin premio', prize: 0, isWinner: false };
 }
 
 function parseCategory(category: string, gameType: string): { badge: string; label: string } {
   const trimmed = category.trim();
-  
-  // Check if it starts with a rank like "1ª", "2ª", etc.
   const matchRank = trimmed.match(/^(\d+ª)\s*(.*)$/);
-  if (matchRank) {
-    return {
-      badge: matchRank[1],
-      label: matchRank[2] || trimmed
-    };
-  }
-  
-  // For Bonoloto/Primitiva patterns like "6 aciertos", "5 aciertos + Complementario", etc.
+  if (matchRank) return { badge: matchRank[1], label: matchRank[2] || trimmed };
+
   if (gameType === 'bonoloto' || gameType === 'primitiva') {
-    if (trimmed.toLowerCase().includes('6 acierto') || trimmed.toLowerCase().startsWith('6')) {
+    if (trimmed.toLowerCase().includes('6 acierto') || trimmed.toLowerCase().startsWith('6'))
       return { badge: '1ª', label: trimmed };
-    }
-    if (trimmed.toLowerCase().includes('+ comp') || trimmed.toLowerCase().includes('+ c')) {
+    if (trimmed.toLowerCase().includes('+ comp') || trimmed.toLowerCase().includes('+ c'))
       return { badge: '2ª', label: trimmed };
-    }
-    if (trimmed.toLowerCase().includes('5 acierto') || trimmed.toLowerCase().startsWith('5')) {
+    if (trimmed.toLowerCase().includes('5 acierto') || trimmed.toLowerCase().startsWith('5'))
       return { badge: '3ª', label: trimmed };
-    }
-    if (trimmed.toLowerCase().includes('4 acierto') || trimmed.toLowerCase().startsWith('4')) {
+    if (trimmed.toLowerCase().includes('4 acierto') || trimmed.toLowerCase().startsWith('4'))
       return { badge: '4ª', label: trimmed };
-    }
-    if (trimmed.toLowerCase().includes('3 acierto') || trimmed.toLowerCase().startsWith('3')) {
+    if (trimmed.toLowerCase().includes('3 acierto') || trimmed.toLowerCase().startsWith('3'))
       return { badge: '5ª', label: trimmed };
-    }
-    if (trimmed.toLowerCase().startsWith('reintegro') || trimmed.toLowerCase() === 'r') {
+    if (trimmed.toLowerCase().startsWith('reintegro') || trimmed.toLowerCase() === 'r')
       return { badge: 'R', label: trimmed };
-    }
   }
-  
-  // Default fallback: check if it's reintegro
-  if (trimmed.toLowerCase().startsWith('reintegro') || trimmed.toLowerCase() === 'r') {
+  if (trimmed.toLowerCase().startsWith('reintegro') || trimmed.toLowerCase() === 'r')
     return { badge: 'R', label: trimmed };
-  }
-  
   return { badge: '•', label: trimmed };
 }
 
 function formatJackpotDisplay(amount: number, gameId: string): string {
   if (gameId === 'euromillones') {
-    const millions = amount / 1_000_000;
-    return `${millions.toLocaleString('es-ES')} MILLONES €`;
+    return `${(amount / 1_000_000).toLocaleString('es-ES')} MILLONES €`;
   }
   return `${amount.toLocaleString('es-ES')} €`;
 }
 
+// ── Scrutiny table ────────────────────────────────────────────────────────────
 function ScrutinyTable({ scrutiny, gameColor, gameType }: { scrutiny: ScrutinyCategory[]; gameColor: string; gameType: string }) {
   return (
     <div className="rounded-2xl border border-border overflow-hidden shadow-sm">
@@ -196,6 +156,19 @@ function ScrutinyTable({ scrutiny, gameColor, gameType }: { scrutiny: ScrutinyCa
   );
 }
 
+// ── Section title ─────────────────────────────────────────────────────────────
+function SectionTitle({ icon, label, color }: { icon: React.ReactNode; label: string; color: string }) {
+  return (
+    <div className="flex items-center gap-2 mb-3 select-none">
+      {icon}
+      <h4 className="text-[10px] font-black uppercase tracking-widest" style={{ color }}>
+        {label}
+      </h4>
+    </div>
+  );
+}
+
+// ── Main modal ────────────────────────────────────────────────────────────────
 interface ResultDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -209,15 +182,11 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
   const game = result ? LOTTERY_GAMES.find(g => g.id === result.gameId) : null;
 
   React.useEffect(() => {
-    if (!isOpen) {
-      setCheckerInput('');
-      setCheckerResult(null);
-    }
+    if (!isOpen) { setCheckerInput(''); setCheckerResult(null); }
   }, [isOpen]);
 
   if (!result || !game) return null;
 
-  const identity = getGameIdentity(game);
   const isNational = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
   const firstPrize = result.firstPrizeNumber ?? (Array.isArray(result.numbers) ? result.numbers.join('') : '');
 
@@ -231,8 +200,6 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
     setCheckerInput(v);
     if (checkerResult) setCheckerResult(null);
   }
-
-  const year = new Date().getFullYear();
 
   return (
     <>
@@ -254,84 +221,119 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
               <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
             </div>
 
-            {/* Header with Back Chevron */}
+            {/* Header */}
             <div
-              className="relative p-4 border-b border-gray-100 shrink-0"
+              className="relative px-4 py-3.5 border-b border-gray-100 shrink-0"
               style={{ backgroundImage: `linear-gradient(135deg, ${game.color}10, ${game.color}05)` }}
             >
               <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl opacity-40" style={{ backgroundColor: game.color }} />
-              
+
               <div className="flex items-center gap-3 relative z-10">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="p-1 rounded-full text-slate-650 hover:bg-slate-100 transition-colors mr-1 cursor-pointer"
+                  className="p-1 rounded-full text-slate-650 hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
                   aria-label="Volver"
                 >
                   <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
                 </button>
                 <GameBadge game={game} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-black text-manises-blue text-[14px] uppercase tracking-tight leading-none mb-1">{identity.shortName}</h3>
-                  <div className="flex items-center justify-between mt-1 text-[9.5px] text-muted-foreground font-semibold">
-                    <span>{formatFullDate(result.date)}</span>
-                    <span>{result.drawId || `Sorteo ${year}`}</span>
+                  <h3 className="font-black text-manises-blue text-[14px] uppercase tracking-tight leading-none">
+                    {getModalFullName(game.id, game.name)}
+                  </h3>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-[9.5px] text-muted-foreground font-semibold">
+                      {formatFullDate(result.date)}
+                    </span>
+                    {(result.drawId) && (
+                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                        Sorteo {result.drawId}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Content area */}
+            {/* Scrollable content */}
             <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
 
-              {/* ── Resultado principal ── */}
+              {/* ── RESULTADO ── */}
               <section>
-                <SectionTitle icon={<Trophy className="w-3.5 h-3.5" style={{ color: game.color }} />} label="Resultado" color={game.color} />
+                <SectionTitle
+                  icon={<Trophy className="w-3.5 h-3.5" style={{ color: game.color }} />}
+                  label="Resultado"
+                  color={game.color}
+                />
 
-                {!isNational ? (
+                {isNational ? (
+                  /* National: clean 2-column prize grid */
                   <div
-                    className="flex flex-wrap gap-2.5 p-4 rounded-2xl border justify-center shadow-inner-soft"
-                    style={{ background: `${game.color}08`, borderColor: `${game.color}20` }}
+                    className="grid grid-cols-2 divide-x overflow-hidden rounded-2xl border"
+                    style={{ borderColor: `${game.color}30`, '--tw-divide-opacity': 1 } as React.CSSProperties}
                   >
-                    {result.numbers.map((n, i) => (
-                      <NumberBall key={i} number={n as number} variant="default" />
-                    ))}
-                    {result.stars?.map((s, i) => (
-                      <StarNumberBall key={`s-${i}`} number={s} />
-                    ))}
-                    {result.complementario !== undefined && (
-                      <>
-                        <div className="w-px bg-border self-stretch mx-1" />
-                        <NumberBallLabeled label="C" number={result.complementario} variant="complementario" />
+                    {/* 1er Premio */}
+                    <div
+                      className="p-5 text-center"
+                      style={{ background: `${game.color}08` }}
+                    >
+                      <p className="text-[8.5px] font-black uppercase tracking-widest mb-2" style={{ color: game.color }}>
+                        1er Premio
+                      </p>
+                      <p className="text-[32px] font-black text-manises-blue tracking-wider leading-none">
+                        {firstPrize || '—'}
+                      </p>
+                      <p className="text-[8px] font-semibold text-slate-400 uppercase tracking-wider mt-2">
+                        30.000 € al décimo
+                      </p>
+                    </div>
+                    {/* 2º Premio */}
+                    <div
+                      className="p-5 text-center"
+                      style={{ background: `${game.color}04` }}
+                    >
+                      <p className="text-[8.5px] font-black uppercase tracking-widest mb-2" style={{ color: game.color }}>
+                        2º Premio
+                      </p>
+                      <p className="text-[32px] font-black text-manises-blue tracking-wider leading-none">
+                        {result.secondPrizeNumber || '—'}
+                      </p>
+                      <p className="text-[8px] font-semibold text-slate-400 uppercase tracking-wider mt-2">
+                        6.000 € al décimo
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  /* Non-national: balls row + C/R row */
+                  <div className="flex flex-col gap-3 p-4 rounded-2xl border" style={{ background: `${game.color}06`, borderColor: `${game.color}20` }}>
+                    {/* Main balls */}
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {result.numbers.map((n, i) => (
+                        <NumberBall key={i} number={n as number} variant="default" />
+                      ))}
+                      {result.stars?.map((s, i) => (
+                        <StarNumberBall key={`s-${i}`} number={s} />
+                      ))}
+                    </div>
+                    {/* Complementario + Reintegro on separate row */}
+                    {(result.complementario !== undefined || result.reintegro !== undefined) && (
+                      <div className="flex justify-center gap-5 border-t pt-3" style={{ borderColor: `${game.color}20` }}>
+                        {result.complementario !== undefined && (
+                          <NumberBallLabeled label="C" number={result.complementario} variant="complementario" />
+                        )}
                         {result.reintegro !== undefined && (
                           <NumberBallLabeled label="R" number={result.reintegro} variant="reintegro" />
                         )}
-                      </>
+                      </div>
                     )}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between border border-blue-100/40 rounded-2.5xl p-4 bg-blue-50/5 text-center relative overflow-hidden shadow-sm">
-                    <OliveBranchLeft />
-                    <div className="flex-1 flex flex-col items-center">
-                      <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">1er Premio</span>
-                      <span className="text-3xl font-black text-manises-blue my-1.5 tracking-wider">{firstPrize || '—'}</span>
-                      <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wide">30.000 € al décimo</span>
-                    </div>
-                    <div className="w-px h-14 bg-blue-100 self-stretch mx-2 shrink-0" />
-                    <div className="flex-1 flex flex-col items-center">
-                      <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">2º Premio</span>
-                      <span className="text-3xl font-black text-manises-blue my-1.5 tracking-wider">{result.secondPrizeNumber || '—'}</span>
-                      <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wide">6.000 € al décimo</span>
-                    </div>
-                    <OliveBranchRight />
                   </div>
                 )}
               </section>
 
-              {/* ── Bote y próximo sorteo (Combinaciones) ── */}
+              {/* ── Bote + Próximo sorteo (non-national) ── */}
               {!isNational && (
                 <section className="grid grid-cols-2 gap-3.5">
-                  {/* Tarjeta de Bote */}
                   <div className="rounded-2xl border border-emerald-500/10 bg-emerald-500/[0.02] p-4 flex flex-col justify-between shadow-sm">
                     <div className="flex items-center gap-1.5 text-[9.5px] font-extrabold uppercase tracking-wider text-emerald-600">
                       <TrendingUp className="w-3.5 h-3.5" />
@@ -344,8 +346,6 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                       <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mt-1">para el próximo sorteo</p>
                     </div>
                   </div>
-
-                  {/* Tarjeta de Próximo Sorteo */}
                   <div className="rounded-2xl border border-blue-500/10 bg-blue-500/[0.02] p-4 flex flex-col justify-between shadow-sm">
                     <div className="flex items-center gap-1.5 text-[9.5px] font-extrabold uppercase tracking-wider text-blue-600">
                       <Calendar className="w-3.5 h-3.5" />
@@ -361,20 +361,28 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                 </section>
               )}
 
-              {/* ── Escrutinio completo ── */}
+              {/* ── Escrutinio (non-national) ── */}
               {!isNational && result.scrutiny && result.scrutiny.length > 0 && (
                 <section>
-                  <SectionTitle icon={<Trophy className="w-3.5 h-3.5" style={{ color: game.color }} />} label="Escrutinio del sorteo" color={game.color} />
+                  <SectionTitle
+                    icon={<Trophy className="w-3.5 h-3.5" style={{ color: game.color }} />}
+                    label="Escrutinio del sorteo"
+                    color={game.color}
+                  />
                   <ScrutinyTable scrutiny={result.scrutiny} gameColor={game.color} gameType={game.type} />
                 </section>
               )}
 
-              {/* ── Comprobador y Listado de Premios (Lotería Nacional) ── */}
+              {/* ── Comprobador + Listado de premios (national) ── */}
               {isNational && (
                 <section className="flex flex-col gap-6">
-                  {/* Comprobador Card */}
+                  {/* Comprobador */}
                   <div>
-                    <SectionTitle icon={<Search className="w-3.5 h-3.5" style={{ color: game.color }} />} label="Comprueba tu número" color={game.color} />
+                    <SectionTitle
+                      icon={<Search className="w-3.5 h-3.5" style={{ color: game.color }} />}
+                      label="Comprueba tu número"
+                      color={game.color}
+                    />
                     <div className="rounded-2xl border border-border p-4 flex flex-col gap-3" style={{ background: `${game.color}04` }}>
                       <p className="text-[10.5px] text-muted-foreground font-semibold">
                         Introduce el número de tu décimo y comprueba si ha sido premiado.
@@ -396,7 +404,7 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                           className="shrink-0 font-black text-xs px-5 bg-manises-blue text-white hover:bg-manises-blue/90"
                           style={checkerInput.length === 5 ? { backgroundColor: game.color, color: '#fff' } : undefined}
                         >
-                          COMPROBAR
+                          Comprobar
                         </Button>
                       </div>
                       <p className="text-[9.5px] text-muted-foreground font-bold text-center mt-1">
@@ -405,116 +413,78 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                     </div>
                   </div>
 
-                  {/* Listado de Premios */}
+                  {/* Listado de premios */}
                   <div id="prize-list-section">
-                    <SectionTitle icon={<Trophy className="w-3.5 h-3.5" style={{ color: game.color }} />} label="Listado de Premios" color={game.color} />
-                    
-                    <div className="rounded-2xl border border-border bg-white overflow-hidden p-4 flex flex-col gap-3.5 shadow-sm">
-                      {/* 1º Premio Row */}
-                      <div className="flex items-center justify-between py-1">
-                        <div className="flex items-center gap-3">
-                          <span className="w-5.5 h-5.5 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-[10px] shadow-sm shadow-amber-500/20 shrink-0">1º</span>
-                          <div>
-                            <p className="font-black text-slate-800 text-[11px] uppercase tracking-wide">1º PREMIO</p>
-                            <p className="text-[9.5px] font-bold text-slate-400 leading-none">30.000 € al décimo</p>
-                          </div>
-                        </div>
-                        <span className="font-black text-base text-manises-blue tracking-[0.12em] shrink-0">{firstPrize}</span>
-                      </div>
+                    <SectionTitle
+                      icon={<Trophy className="w-3.5 h-3.5" style={{ color: game.color }} />}
+                      label="Listado de Premios"
+                      color={game.color}
+                    />
+                    <div className="rounded-2xl border border-border bg-white overflow-hidden shadow-sm">
+                      {/* 1º Premio */}
+                      <PrizeRow
+                        badge="1º"
+                        badgeColor="#f59e0b"
+                        label="1er Premio"
+                        sublabel="30.000 € al décimo"
+                        value={firstPrize}
+                      />
 
-                      <div className="h-[1px] bg-slate-100" />
+                      {/* 2º Premio */}
+                      <PrizeRow
+                        badge="2º"
+                        badgeColor="#94a3b8"
+                        label="2º Premio"
+                        sublabel="6.000 € al décimo"
+                        value={result.secondPrizeNumber || '—'}
+                      />
 
-                      {/* 2º Premio Row */}
-                      <div className="flex items-center justify-between py-1">
-                        <div className="flex items-center gap-3">
-                          <span className="w-5.5 h-5.5 rounded-full bg-slate-400 text-white flex items-center justify-center font-bold text-[10px] shadow-sm shadow-slate-400/25 shrink-0">2º</span>
-                          <div>
-                            <p className="font-black text-slate-800 text-[11px] uppercase tracking-wide">2º PREMIO</p>
-                            <p className="text-[9.5px] font-bold text-slate-400 leading-none">6.000 € al décimo</p>
-                          </div>
-                        </div>
-                        <span className="font-black text-base text-manises-blue tracking-[0.12em] shrink-0">{result.secondPrizeNumber || '—'}</span>
-                      </div>
-
-                      <div className="h-[1px] bg-slate-100" />
-
-                      {/* Últimas 4 Cifras Row */}
+                      {/* Últimas 4 cifras */}
                       {result.ultimas4cifras && (
-                        <>
-                          <div className="flex items-center justify-between py-1">
-                            <div className="flex items-center gap-3">
-                              <span className="w-5.5 h-5.5 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-[10px] shadow-sm shadow-blue-500/20 shrink-0">4</span>
-                              <div>
-                                <p className="font-black text-slate-800 text-[11px] uppercase tracking-wide">ÚLTIMAS 4 CIFRAS</p>
-                                <p className="text-[9.5px] font-bold text-slate-400 leading-none">75 € al décimo</p>
-                              </div>
-                            </div>
-                            <span className="font-black text-[12px] text-manises-blue tracking-[0.12em] shrink-0">
-                              {result.ultimas4cifras.join('  ')}
-                            </span>
-                          </div>
-                          <div className="h-[1px] bg-slate-100" />
-                        </>
+                        <PrizeRow
+                          badge="4"
+                          badgeColor="#3b82f6"
+                          label="Últimas 4 cifras"
+                          sublabel="75 € al décimo"
+                          value={result.ultimas4cifras.join('  ')}
+                          multiline={result.ultimas4cifras.length > 2}
+                        />
                       )}
 
-                      {/* Últimas 3 Cifras Row */}
+                      {/* Últimas 3 cifras */}
                       {result.ultimas3cifras && (
-                        <>
-                          <div className="flex items-start justify-between py-1">
-                            <div className="flex items-center gap-3">
-                              <span className="w-5.5 h-5.5 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-[10px] shadow-sm shadow-emerald-500/20 shrink-0">3</span>
-                              <div>
-                                <p className="font-black text-slate-800 text-[11px] uppercase tracking-wide">ÚLTIMAS 3 CIFRAS</p>
-                                <p className="text-[9.5px] font-bold text-slate-400 leading-none">15 € al décimo</p>
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-end leading-normal text-[12px] font-black text-manises-blue tracking-[0.12em] text-right">
-                              <div>{result.ultimas3cifras.slice(0, 4).join('  ')}</div>
-                              {result.ultimas3cifras.length > 4 && (
-                                <div>{result.ultimas3cifras.slice(4).join('  ')}</div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="h-[1px] bg-slate-100" />
-                        </>
+                        <PrizeRow
+                          badge="3"
+                          badgeColor="#10b981"
+                          label="Últimas 3 cifras"
+                          sublabel="15 € al décimo"
+                          value={result.ultimas3cifras.join('  ')}
+                          multiline
+                        />
                       )}
 
-                      {/* Últimas 2 Cifras Row */}
+                      {/* Últimas 2 cifras */}
                       {result.ultimas2cifras && (
-                        <>
-                          <div className="flex items-start justify-between py-1">
-                            <div className="flex items-center gap-3">
-                              <span className="w-5.5 h-5.5 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-[10px] shadow-sm shadow-orange-500/20 shrink-0">2</span>
-                              <div>
-                                <p className="font-black text-slate-800 text-[11px] uppercase tracking-wide">ÚLTIMAS 2 CIFRAS</p>
-                                <p className="text-[9.5px] font-bold text-slate-400 leading-none">6 € al décimo</p>
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-end leading-normal text-[12px] font-black text-manises-blue tracking-[0.12em] text-right">
-                              <div>{result.ultimas2cifras.slice(0, 4).join('  ')}</div>
-                              {result.ultimas2cifras.length > 4 && (
-                                <div>{result.ultimas2cifras.slice(4).join('  ')}</div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="h-[1px] bg-slate-100" />
-                        </>
+                        <PrizeRow
+                          badge="2"
+                          badgeColor="#f97316"
+                          label="Últimas 2 cifras"
+                          sublabel="6 € al décimo"
+                          value={result.ultimas2cifras.join('  ')}
+                          multiline
+                        />
                       )}
 
-                      {/* Reintegros Row */}
+                      {/* Reintegros */}
                       {result.reintegros && (
-                        <div className="flex items-center justify-between py-1">
-                          <div className="flex items-center gap-3">
-                            <span className="w-5.5 h-5.5 rounded-full bg-purple-500 text-white flex items-center justify-center font-bold text-[10px] shadow-sm shadow-purple-500/20 shrink-0">R</span>
-                            <div>
-                              <p className="font-black text-slate-800 text-[11px] uppercase tracking-wide">REINTEGROS</p>
-                              <p className="text-[9.5px] font-bold text-slate-400 leading-none">3 € al décimo</p>
-                            </div>
-                          </div>
-                          <div className="text-[12px] font-black text-manises-blue tracking-[0.18em] text-right shrink-0">
-                            {result.reintegros.join('  ')}
-                          </div>
-                        </div>
+                        <PrizeRow
+                          badge="R"
+                          badgeColor="#a855f7"
+                          label="Reintegros"
+                          sublabel="3 € al décimo"
+                          value={result.reintegros.join('  ')}
+                          isLast
+                        />
                       )}
                     </div>
                   </div>
@@ -530,7 +500,7 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
         )}
       </AnimatePresence>
 
-      {/* Comprobador Result Popup Modal (Overlay z-150) */}
+      {/* Checker result popup */}
       <AnimatePresence>
         {checkerResult && (
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
@@ -547,7 +517,6 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
               exit={{ scale: 0.9, opacity: 0 }}
               className="relative w-full max-w-[22rem] bg-white rounded-[2rem] p-6 shadow-2xl z-10 border border-gray-100 flex flex-col items-center text-center font-sans"
             >
-              {/* Close Button */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -557,7 +526,6 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                 <X className="w-4 h-4" />
               </Button>
 
-              {/* Icon */}
               <div className="mt-4 mb-4">
                 {checkerResult.isWinner ? (
                   <div className="w-16 h-16 rounded-full bg-manises-blue flex items-center justify-center shadow-lg">
@@ -570,27 +538,22 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                 )}
               </div>
 
-              {/* Title & Subtitle */}
               <h4 className={`text-[15px] font-black tracking-wider uppercase ${checkerResult.isWinner ? 'text-manises-blue' : 'text-gray-500'}`}>
-                {checkerResult.isWinner ? '¡ENHORABUENA!' : 'LO SENTIMOS'}
+                {checkerResult.isWinner ? '¡Enhorabuena!' : 'Lo sentimos'}
               </h4>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mt-1">
                 {checkerResult.isWinner ? 'Tu número ha sido premiado' : 'Tu número no ha sido premiado'}
               </p>
 
-              {/* Number Box */}
               <div className="w-full bg-gray-50 border border-gray-150 rounded-2xl py-3.5 my-4">
                 <span className="text-3xl font-black text-manises-blue tracking-[0.16em]">
                   {checkerInput}
                 </span>
               </div>
 
-              {/* Prize or Message */}
               {checkerResult.isWinner ? (
                 <div className="flex flex-col items-center">
-                  <p className="text-2xl font-black text-emerald-600 leading-none">
-                    {checkerResult.prize} €
-                  </p>
+                  <p className="text-2xl font-black text-emerald-600 leading-none">{checkerResult.prize} €</p>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">al décimo</p>
                 </div>
               ) : (
@@ -600,7 +563,6 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                 </div>
               )}
 
-              {/* Info Note (only for winner) */}
               {checkerResult.isWinner && (
                 <div className="mt-4 flex gap-1.5 items-start text-left bg-emerald-50/50 border border-emerald-100/50 rounded-xl p-3 text-[10px] text-emerald-700 leading-normal">
                   <span className="text-xs shrink-0 mt-0.5">ℹ️</span>
@@ -611,27 +573,22 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                 </div>
               )}
 
-              {/* Buttons */}
               <div className="flex flex-col gap-2 w-full mt-6">
                 <Button
                   onClick={() => {
                     setCheckerResult(null);
-                    // Scroll to prize list
                     document.getElementById('prize-list-section')?.scrollIntoView({ behavior: 'smooth' });
                   }}
                   variant="outline"
                   className="w-full text-[10px] font-bold h-10 border-gray-250 text-slate-650 hover:bg-gray-50 bg-white tracking-wider cursor-pointer"
                 >
-                  VER LISTADO DE PREMIOS
+                  Ver listado de premios
                 </Button>
                 <Button
-                  onClick={() => {
-                    setCheckerResult(null);
-                    setCheckerInput('');
-                  }}
+                  onClick={() => { setCheckerResult(null); setCheckerInput(''); }}
                   className="w-full text-[10px] font-black h-10 bg-manises-blue text-white hover:bg-manises-blue/90 tracking-wider cursor-pointer"
                 >
-                  COMPROBAR OTRO NÚMERO
+                  Comprobar otro número
                 </Button>
               </div>
             </motion.div>
@@ -642,13 +599,49 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
   );
 }
 
-function SectionTitle({ icon, label, color }: { icon: React.ReactNode; label: string; color: string }) {
+// ── Prize row helper ──────────────────────────────────────────────────────────
+function PrizeRow({
+  badge, badgeColor, label, sublabel, value, multiline = false, isLast = false,
+}: {
+  badge: string;
+  badgeColor: string;
+  label: string;
+  sublabel: string;
+  value: string;
+  multiline?: boolean;
+  isLast?: boolean;
+}) {
   return (
-    <div className="flex items-center gap-2 mb-3 select-none">
-      {icon}
-      <h4 className="text-[10px] font-black uppercase tracking-widest" style={{ color }}>
-        {label}
-      </h4>
-    </div>
+    <>
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-3">
+          <span
+            className="h-6 w-6 shrink-0 rounded-full flex items-center justify-center font-black text-[9.5px] text-white shadow-sm"
+            style={{ backgroundColor: badgeColor }}
+          >
+            {badge}
+          </span>
+          <div>
+            <p className="font-black text-slate-800 text-[11px] uppercase tracking-wide leading-none">{label}</p>
+            <p className="text-[9.5px] font-bold text-slate-400 leading-none mt-0.5">{sublabel}</p>
+          </div>
+        </div>
+        {multiline ? (
+          <div className="flex flex-col items-end text-[11.5px] font-black text-manises-blue tracking-[0.1em] leading-snug text-right max-w-[45%]">
+            {value.split('  ').reduce<string[][]>((acc, v, i) => {
+              const row = Math.floor(i / 4);
+              if (!acc[row]) acc[row] = [];
+              acc[row].push(v);
+              return acc;
+            }, []).map((chunk, i) => (
+              <span key={i}>{chunk.join('  ')}</span>
+            ))}
+          </div>
+        ) : (
+          <span className="font-black text-[15px] text-manises-blue tracking-[0.1em] shrink-0">{value}</span>
+        )}
+      </div>
+      {!isLast && <div className="h-px bg-slate-100 mx-4" />}
+    </>
   );
 }
