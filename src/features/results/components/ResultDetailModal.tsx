@@ -210,12 +210,13 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
-            className="fixed inset-x-0 top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] z-[55] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] flex flex-col max-w-lg mx-auto shadow-2xl border-x border-slate-100"
+            className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] z-[55] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] flex flex-col max-w-lg mx-auto shadow-2xl border-x border-slate-100"
+            style={{ top: 'env(safe-area-inset-top, 0px)' }}
           >
             {/* Top Prize Banner */}
             <div className="w-full bg-[#0a4792] text-white py-2 px-5 flex items-center justify-between text-[10px] font-black uppercase tracking-wider cursor-pointer hover:bg-[#083c7a] transition-colors shrink-0 select-none">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs">🏆</span>
+                <Trophy className="w-3.5 h-3.5 text-manises-gold shrink-0" />
                 <span>Premio vendido aquí en Manises</span>
               </div>
               <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
@@ -248,7 +249,7 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                     </span>
                     {(result.drawId) && (
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                        Sorteo {result.drawId}
+                        {result.drawId}
                       </span>
                     )}
                   </div>
