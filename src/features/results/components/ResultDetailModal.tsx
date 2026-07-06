@@ -210,11 +210,13 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
-            className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] z-[55] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] flex flex-col max-w-lg mx-auto shadow-2xl border-x border-slate-100"
-            style={{ top: 'env(safe-area-inset-top, 0px)' }}
+            className="fixed inset-x-0 top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] z-[55] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] flex flex-col max-w-lg mx-auto shadow-2xl border-x border-slate-100"
           >
-            {/* Top Prize Banner */}
-            <div className="w-full bg-[#0a4792] text-white py-2 px-5 flex items-center justify-between text-[10px] font-black uppercase tracking-wider cursor-pointer hover:bg-[#083c7a] transition-colors shrink-0 select-none">
+            {/* Top Prize Banner — padding-top absorbs the safe-area so content sits below status bar */}
+            <div
+              className="w-full bg-[#0a4792] text-white px-5 pb-2 flex items-center justify-between text-[10px] font-black uppercase tracking-wider cursor-pointer hover:bg-[#083c7a] transition-colors shrink-0 select-none"
+              style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.5rem)' }}
+            >
               <div className="flex items-center gap-1.5">
                 <Trophy className="w-3.5 h-3.5 text-manises-gold shrink-0" />
                 <span>Premio vendido aquí en Manises</span>
