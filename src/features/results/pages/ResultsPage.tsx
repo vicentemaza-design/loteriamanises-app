@@ -1,17 +1,13 @@
 import { useState } from 'react';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { GameBadge } from '@/shared/ui/GameBadge';
-import { NumberBall, NumberBallLabeled, StarNumberBall } from '@/shared/ui/NumberBall';
-import { Button } from '@/shared/ui/Button';
-import { formatDate } from '@/shared/lib/utils';
+import { NumberBall, StarNumberBall } from '@/shared/ui/NumberBall';
 import { getBusinessDate } from '@/shared/lib/timezone';
-import { Trophy, TrendingUp, CheckSquare, Info, ChevronRight } from 'lucide-react';
+import { Trophy, ChevronRight } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
-import { getGameTheme } from '@/shared/lib/game-theme';
 import { ComparisonModal } from '../components/ComparisonModal';
 import { ResultDetailModal } from '../components/ResultDetailModal';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import type { Ticket } from '@/shared/types/domain';
 import { useResults } from '../hooks/useResults';
 import { ResultCardSkeleton } from '@/shared/ui/Skeleton';
 import { useTickets } from '@/features/tickets/hooks/useTickets';
@@ -20,67 +16,41 @@ import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInterac
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { getGameIdentity } from '@/shared/lib/game-identity';
-import loteriaJuevesTicket from '@/assets/images/loteria_jueves_ticket.jpg';
-import loteriaSabadoTicket from '@/assets/images/loteria_sabado_ticket.jpg';
+import type { LotteryGame } from '@/shared/types/domain';
 
 gsap.registerPlugin(useGSAP);
 
-function formatListDate(iso: string): string {
-  const d = new Date(iso);
-  const str = d.toLocaleDateString('es-ES', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  });
-  const cleaned = str.replace(/\./g, '');
-  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-}
-
-const NATIONAL_TICKET_IMAGES: Record<string, string> = {
-  'loteria-nacional-jueves': loteriaJuevesTicket,
-  'loteria-nacional-sabado': loteriaSabadoTicket,
+// Full game name mapping for card headers (more formal than shortName)
+const CARD_FULL_NAMES: Record<string, string> = {
+  'euromillones':           'Euromillones',
+  'primitiva':              'La Primitiva',
+  'bonoloto':               'Bonoloto',
+  'gordo':                  'El Gordo de la Primitiva',
+  'eurodreams':             'EuroDreams',
+  'quiniela':               'La Quiniela',
+  'quinigol':               'Quinigol',
+  'loteria-nacional-jueves':'Lotería del Jueves',
+  'loteria-nacional-sabado':'Lotería del Sábado',
+  'loteria-navidad':        'Lotería de Navidad',
+  'loteria-nino':           'Lotería del Niño',
 };
 
-// Tickets de muestra para el modo demo (para que funcione el comparador)
-// TODO: Mover a tickets.mock.ts en el Sprint 2
-const DEMO_TICKETS: Ticket[] = [
-  {
-    id: 'demo-1',
-    userId: 'demo-user',
-    gameId: 'euromillones',
-    gameType: 'euromillones',
-    numbers: [12, 14, 23, 38, 47],
-    stars: [3, 9],
-    drawDate: '2026-04-08',
-    status: 'won',
-    price: 2.5,
-    prize: 12.50,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'demo-2',
-    userId: 'demo-user',
-    gameId: 'primitiva',
-    gameType: 'primitiva',
-    numbers: [4, 12, 21, 30, 44, 49],
-    drawDate: '2026-04-08',
-    status: 'lost',
-    price: 1.00,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'demo-3',
-    userId: 'demo-user',
-    gameId: 'loteria-nacional-sabado',
-    gameType: 'loteria-nacional',
-    numbers: [6, 9, 8, 4, 4],
-    drawDate: '2026-04-11',
-    status: 'won',
-    price: 6.00,
-    prize: 30_000,
-    createdAt: new Date().toISOString(),
-  },
-];
+function getCardFullName(gameId: string, gameName: string): string {
+  return CARD_FULL_NAMES[gameId] ?? gameName;
+}
+
+function formatCardDate(iso: string, gameType: string): string {
+  const d = new Date(iso);
+  const noWeekday = gameType === 'navidad' || gameType === 'nino';
+  if (noWeekday) {
+    return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
+      .replace(/ de /g, ' ');
+  }
+  const str = d.toLocaleDateString('es-ES', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  }).replace(/ de /g, ' ');
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 const GAME_FILTERS = [
   { key: 'Todos', label: 'Todos' },
@@ -95,6 +65,219 @@ function hasGameFilter(filter: (typeof GAME_FILTERS)[number]): filter is Extract
   return 'game' in filter;
 }
 
+// ── Card body: game-specific prize/number layout ──────────────────────────────
+function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame }) {
+  const { numbers, stars, complementario, reintegro, reintegros, firstPrizeNumber, secondPrizeNumber } = result;
+  const t = game.type;
+  const isNational = t === 'loteria-nacional';
+  const isNavidad  = t === 'navidad';
+  const isNino     = t === 'nino';
+
+  // ── Lotería Nacional (Jueves / Sábado): 3-col prize grid ──
+  if (isNational) {
+    return (
+      <div className="grid grid-cols-3 divide-x divide-slate-100 border border-slate-100 rounded-xl overflow-hidden bg-blue-50/20">
+        <div className="px-2.5 py-2.5 text-center">
+          <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-1.5">1º Premio</p>
+          <p className="text-[15px] font-black text-manises-blue tracking-wider leading-none">
+            {firstPrizeNumber ?? '—'}
+          </p>
+        </div>
+        <div className="px-2.5 py-2.5 text-center">
+          <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-1.5">2º Premio</p>
+          <p className="text-[15px] font-black text-manises-blue tracking-wider leading-none">
+            {secondPrizeNumber ?? '—'}
+          </p>
+        </div>
+        <div className="px-2.5 py-2.5 text-center">
+          <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-1.5">Reintegros</p>
+          <p className="text-[13px] font-black text-purple-600 tracking-wide leading-none">
+            {reintegros ? reintegros.join(' · ') : '—'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Navidad / Niño: trophy header + reintegro + 2nd prize ──
+  if (isNavidad || isNino) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <div className="grid grid-cols-2 divide-x divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
+          <div className="px-3 py-2.5 flex items-center gap-2">
+            <Trophy className="h-4 w-4 shrink-0 text-amber-400" />
+            <div>
+              <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">
+                {isNavidad ? '1º Premio (Gordo)' : '1º Premio'}
+              </p>
+              <p className="text-[19px] font-black text-manises-blue tracking-wider leading-none mt-1">
+                {firstPrizeNumber ?? '—'}
+              </p>
+            </div>
+          </div>
+          <div className="px-3 py-2.5">
+            <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">
+              {isNino ? 'Reintegros' : 'Reintegro'}
+            </p>
+            <p className="text-[14px] font-black text-purple-600 tracking-wide mt-1 leading-none">
+              {isNino && reintegros ? reintegros.join(' · ') : (reintegro ?? '—')}
+            </p>
+          </div>
+        </div>
+        {secondPrizeNumber && (
+          <div className="border border-slate-100 rounded-xl px-3 py-2 flex items-center gap-3 bg-slate-50/40">
+            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">2º Premio</span>
+            <span className="text-[13px] font-black text-manises-blue tracking-wider">{secondPrizeNumber}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Euromillones: numbers + stars + El Millón ──
+  if (t === 'euromillones') {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex flex-wrap gap-1">
+            {numbers.map((n, i) => (
+              <NumberBall key={i} number={n as number} variant="default" size="sm" />
+            ))}
+          </div>
+          {stars && stars.length > 0 && (
+            <div className="flex items-center gap-1.5 pl-2.5 border-l border-slate-200">
+              <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">Estrellas</span>
+              {stars.map((s, i) => (
+                <StarNumberBall key={i} number={s} size="sm" />
+              ))}
+            </div>
+          )}
+        </div>
+        {result.drawId && (
+          <div className="flex items-center gap-2 border-t border-slate-100 pt-1.5">
+            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">El Millón</span>
+            <span className="text-[10.5px] font-black text-amber-600 tracking-wider">{result.drawId}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── El Gordo: numbers + número clave ──
+  if (t === 'gordo') {
+    return (
+      <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="flex flex-wrap gap-1">
+          {numbers.map((n, i) => (
+            <NumberBall key={i} number={n as number} variant="default" size="sm" />
+          ))}
+        </div>
+        {stars && stars.length > 0 && (
+          <div className="flex items-center gap-1.5 pl-2.5 border-l border-slate-200">
+            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">Núm. Clave</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-[11px] font-black text-amber-700">
+              {stars[0]}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── EuroDreams: numbers + número sueño ──
+  if (t === 'eurodreams') {
+    return (
+      <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="flex flex-wrap gap-1">
+          {numbers.map((n, i) => (
+            <NumberBall key={i} number={n as number} variant="default" size="sm" />
+          ))}
+        </div>
+        {stars && stars.length > 0 && (
+          <div className="flex items-center gap-1.5 pl-2.5 border-l border-slate-200">
+            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">Núm. Sueño</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-purple-200 bg-purple-50 text-[11px] font-black text-purple-700">
+              {stars[0]}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Bonoloto / Primitiva: balls + complementario + reintegro ──
+  if (t === 'bonoloto' || t === 'primitiva') {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap gap-1">
+          {numbers.map((n, i) => (
+            <NumberBall key={i} number={n as number} variant="default" size="sm" />
+          ))}
+        </div>
+        {(complementario !== undefined || reintegro !== undefined) && (
+          <div className="flex gap-4 border-t border-slate-100 pt-2">
+            {complementario !== undefined && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">Complementario</span>
+                <NumberBall number={complementario} variant="complementario" size="sm" />
+              </div>
+            )}
+            {reintegro !== undefined && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">Reintegro</span>
+                <NumberBall number={reintegro} variant="reintegro" size="sm" />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── Quiniela / Quinigol: results inline ──
+  if (t === 'quiniela' || game.id === 'quinigol') {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <div className="flex flex-wrap gap-1">
+          {numbers.map((n, i) => (
+            <span
+              key={i}
+              className={cn(
+                'inline-flex h-6 min-w-[1.4rem] px-1 items-center justify-center rounded font-black text-[10px] border',
+                n === '1' || n === 1
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : n === '2' || n === 2
+                    ? 'bg-red-50 text-red-600 border-red-200'
+                    : 'bg-slate-50 text-slate-600 border-slate-200'
+              )}
+            >
+              {n}
+            </span>
+          ))}
+        </div>
+        {complementario !== undefined && (
+          <div className="flex items-center gap-2 border-t border-slate-100 pt-1.5">
+            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">
+              {game.id === 'quinigol' ? 'Pleno al 7' : 'Pleno al 15'}
+            </span>
+            <span className="text-[11px] font-black text-manises-blue">{complementario}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Fallback
+  return (
+    <div className="flex flex-wrap gap-1">
+      {numbers.map((n, i) => (
+        <NumberBall key={i} number={n as number} variant="default" size="sm" />
+      ))}
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 export function ResultsPage() {
   const { user, isDemo } = useAuth();
   const { results, isLoading, error } = useResults();
@@ -105,7 +288,6 @@ export function ResultsPage() {
 
   const tickets = hookTickets;
 
-  // Sort results chronologically — most recent first
   const sorted = [...results].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
@@ -118,26 +300,18 @@ export function ResultsPage() {
 
   useGSAP(() => {
     gsap.from('.results-header > *', {
-      y: -20,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.1,
-      ease: 'power3.out'
+      y: -20, opacity: 0, duration: 0.8, stagger: 0.1, ease: 'power3.out',
     });
-
     gsap.from('.result-card', {
-      y: 30,
-      opacity: 0,
-      stagger: 0.1,
-      duration: 0.8,
-      ease: 'power2.out',
-      clearProps: 'all'
+      y: 30, opacity: 0, stagger: 0.1, duration: 0.8, ease: 'power2.out', clearProps: 'all',
     });
   }, [activeFilter, filtered.length, isLoading]);
 
   return (
     <div className="relative min-h-full overflow-x-hidden bg-background">
       <div className="relative z-10 flex flex-col gap-3 p-4">
+
+        {/* Page header */}
         <section className="px-1 pt-0.5 flex items-center justify-between results-header">
           <div>
             <h2 className="text-sm font-black text-manises-blue uppercase tracking-widest mb-1">Resultados</h2>
@@ -153,7 +327,6 @@ export function ResultsPage() {
           {GAME_FILTERS.map((filter) => {
             const identity = hasGameFilter(filter) ? getGameIdentity(filter.game) : null;
             const isActive = activeFilter === filter.key;
-
             return (
               <PremiumTouchInteraction key={filter.key} scale={0.95}>
                 <button
@@ -173,22 +346,18 @@ export function ResultsPage() {
                       />
                       {filter.label}
                     </>
-                  ) : (
-                    filter.label
-                  )}
+                  ) : filter.label}
                 </button>
               </PremiumTouchInteraction>
             );
           })}
         </div>
 
-        {/* Resultados */}
-        <div className="flex flex-col gap-2">
+        {/* Cards */}
+        <div className="flex flex-col gap-2.5">
           {isLoading && (
             <div className="flex flex-col gap-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <ResultCardSkeleton key={i} />
-              ))}
+              {Array.from({ length: 3 }).map((_, i) => <ResultCardSkeleton key={i} />)}
             </div>
           )}
 
@@ -207,99 +376,65 @@ export function ResultsPage() {
           {!isLoading && !error && filtered.map((result) => {
             const game = LOTTERY_GAMES.find(g => g.id === result.gameId);
             if (!game) return null;
-            const identity = getGameIdentity(game);
-            const theme = getGameTheme(game);
 
             const userTicketsForSort = tickets.filter(t =>
               t.gameId === result.gameId &&
               t.drawDate === getBusinessDate(result.date)
             );
+            const hasUserTickets = userTicketsForSort.length > 0;
 
             return (
               <div
                 key={`${result.gameId}-${result.date}`}
                 onClick={() => setDetailResult(result)}
-                className="result-card relative bg-card rounded-2xl border border-white/80 overflow-hidden surface-neo-soft cursor-pointer hover:border-slate-350 transition-colors select-none"
+                className="result-card bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm cursor-pointer active:scale-[0.99] transition-all select-none hover:shadow-md hover:border-slate-200/80"
               >
-                <div className="absolute bottom-0 left-0 top-0 w-1" style={{ backgroundColor: game.color }} />
+                {/* Top color accent */}
+                <div className="h-[3px]" style={{ backgroundColor: game.color }} />
 
-                <div className="px-3.5 py-3 pl-4" style={{ ...theme.surface, backgroundImage: `linear-gradient(to right, ${game.color}0A, transparent 55%)` }}>
-                  {/* Header de la tarjeta */}
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex min-w-0 items-center gap-2">
+                <div className="px-4 pt-3 pb-3.5">
+                  {/* Header row: game icon + name + "Premios y escrutinio >" */}
+                  <div className="flex items-start justify-between gap-2 mb-0.5">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
                       <GameBadge game={game} size="sm" />
-                      <p className="text-[11px] font-black leading-tight text-manises-blue uppercase tracking-tight">{identity.shortName}</p>
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-black text-manises-blue leading-tight uppercase tracking-tight truncate">
+                          {getCardFullName(game.id, game.name)}
+                        </p>
+                        {/* Date directly under name, aligned with text */}
+                        <p
+                          className="text-[9px] font-semibold mt-0.5 capitalize"
+                          style={{ color: game.color }}
+                        >
+                          {formatCardDate(result.date, game.type)}
+                        </p>
+                      </div>
                     </div>
-                    <span className="text-[9.5px] font-bold text-muted-foreground uppercase">{formatListDate(result.date)}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setDetailResult(result); }}
+                      className="shrink-0 flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-wide pt-0.5"
+                      style={{ color: game.color }}
+                    >
+                      Premios y escrutinio
+                      <ChevronRight className="w-2.5 h-2.5 stroke-[2.5]" />
+                    </button>
                   </div>
 
-                  {/* Resultado principal en la tarjeta */}
-                  {game.type !== 'loteria-nacional' ? (
-                    <div className="flex flex-wrap gap-1.5 mb-1.5">
-                      {result.numbers.map((n: number, i: number) => (
-                        <NumberBall key={i} number={n} variant="default" size="sm" />
-                      ))}
-                      {result.stars?.map((s: number, i: number) => (
-                        <StarNumberBall key={`s-${i}`} number={s} size="sm" />
-                      ))}
-                      {result.complementario !== undefined && (
-                        <>
-                          <div className="w-px bg-border self-stretch mx-1" />
-                          <NumberBallLabeled label="C" number={result.complementario} variant="complementario" size="sm" />
-                          {result.reintegro !== undefined && (
-                            <NumberBallLabeled label="R" number={result.reintegro} variant="reintegro" size="sm" />
-                          )}
-                        </>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 mb-1.5 pt-0.5 justify-between">
-                      <div className="flex items-center gap-2 bg-blue-50/15 border border-blue-100/30 px-3 py-1.5 rounded-xl flex-1 justify-between">
-                        <div className="flex flex-col">
-                          <span className="text-[7.5px] font-black text-blue-500 uppercase tracking-widest leading-none">1º Premio</span>
-                          <span className="text-sm font-black text-manises-blue tracking-wider mt-0.5">{result.firstPrizeNumber || '—'}</span>
-                        </div>
-                        <div className="w-px h-5.5 bg-blue-100" />
-                        <div className="flex flex-col">
-                          <span className="text-[7.5px] font-black text-blue-500 uppercase tracking-widest leading-none">2º Premio</span>
-                          <span className="text-sm font-black text-manises-blue tracking-wider mt-0.5">{result.secondPrizeNumber || '—'}</span>
-                        </div>
-                      </div>
-                      
-                      {result.reintegros && result.reintegros.length > 0 && (
-                        <div className="flex flex-col items-center shrink-0 pl-1">
-                          <span className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Reintegros</span>
-                          <div className="flex gap-1">
-                            {result.reintegros.map((digit: number) => (
-                              <span key={digit} className="inline-flex h-4.5 w-4.5 items-center justify-center rounded-full bg-purple-50 border border-purple-100 text-[8px] font-black text-purple-700">
-                                {digit}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                  {/* Game-specific prize/number content */}
+                  <div className="mt-2.5">
+                    <ResultCardBody result={result} game={game} />
+                  </div>
+
+                  {/* User tickets badge (subtle, no compare button) */}
+                  {hasUserTickets && (
+                    <div className="mt-2.5 flex items-center gap-1.5 border-t border-slate-100 pt-2">
+                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      <span className="text-[8.5px] font-bold text-emerald-600 uppercase tracking-wider">
+                        Tienes {userTicketsForSort.length} apuesta{userTicketsForSort.length > 1 ? 's' : ''} en este sorteo
+                      </span>
                     </div>
                   )}
-
-                  {/* Footer links / actions */}
-                  <div className="flex items-center justify-between mt-1 border-t border-slate-100/50 pt-1.5">
-                    <div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setComparingResult(result);
-                        }}
-                        className="text-[9px] font-bold uppercase tracking-wider text-manises-blue/50 hover:text-manises-blue flex items-center gap-0.5 cursor-pointer"
-                      >
-                        <CheckSquare className="w-3 h-3 mr-1 shrink-0" />
-                        Comparar{userTicketsForSort.length > 0 ? ` (${userTicketsForSort.length})` : ''}
-                      </button>
-                    </div>
-                    <span className="text-[9px] font-bold uppercase tracking-wider flex items-center gap-0.5" style={{ color: game.color }}>
-                      Premios y escrutinio <ChevronRight className="w-2.5 h-2.5 stroke-[2.5]" />
-                    </span>
-                  </div>
                 </div>
               </div>
             );
@@ -311,14 +446,14 @@ export function ResultsPage() {
         </p>
       </div>
 
-      {/* Modal de detalle */}
+      {/* Detail modal */}
       <ResultDetailModal
         isOpen={!!detailResult}
         onClose={() => setDetailResult(null)}
         result={detailResult}
       />
 
-      {/* Modal de comparación */}
+      {/* Comparison modal */}
       <ComparisonModal
         isOpen={!!comparingResult}
         onClose={() => setComparingResult(null)}
