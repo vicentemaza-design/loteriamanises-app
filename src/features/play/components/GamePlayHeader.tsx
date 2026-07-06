@@ -12,9 +12,17 @@ interface GamePlayHeaderProps {
   onInfo: () => void;
 }
 
+const NATIONAL_LOTTERY_TYPES = new Set(['loteria-nacional', 'navidad', 'nino']);
+
 export function GamePlayHeader({ game, drawTime, onBack, onInfo }: GamePlayHeaderProps) {
-  const { gameDrafts, openGameReview } = usePlaySession();
-  const count = gameDrafts.length;
+  const { gameDrafts, lotteryDrafts, openGameReview, openLotteryReview } = usePlaySession();
+  const isLotteryGame = NATIONAL_LOTTERY_TYPES.has(game.type);
+  const count = isLotteryGame ? lotteryDrafts.length : gameDrafts.length;
+
+  const handleCartClick = () => {
+    if (isLotteryGame) openLotteryReview();
+    else openGameReview();
+  };
 
   return (
     <div
@@ -46,8 +54,8 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo }: GamePlayHeade
           {count > 0 && (
             <button
               type="button"
-              onClick={openGameReview}
-              aria-label={`Ver cesta — ${count} jugadas`}
+              onClick={handleCartClick}
+              aria-label={`Ver cesta — ${count} ${count === 1 ? 'artículo' : 'artículos'}`}
               className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white transition-all hover:bg-white/25 active:scale-95"
             >
               <ShoppingBag className="h-4.5 w-4.5" />

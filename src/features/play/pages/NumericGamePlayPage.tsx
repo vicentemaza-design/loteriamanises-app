@@ -246,7 +246,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     reducedSystemId: mode === 'reduced' ? selectedReductionSystemId : undefined,
   });
 
-  const allAvailableDraws = useMemo(() => getUpcomingDraws(game.type, new Date(), 4), [game.type]);
+  const allAvailableDraws = useMemo(() => getUpcomingDraws(game.type, new Date(), maxWeeksSelectable), [game.type, maxWeeksSelectable]);
   const groupedAllDraws = useMemo(() => groupDrawsByWeek(allAvailableDraws), [allAvailableDraws]);
 
   const currentWeekDraws = useMemo(() => getDrawsForCurrentWeek(game.type, new Date()), [game.type]);
@@ -294,7 +294,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   // Sin método elegido (cualquier modo): mostrar setup. En cuanto hay tipo+método resueltos, solo pantalla final (editable con "Cambiar", que reabre este mismo flujo).
   const shouldShowInlineSetup = !supportsQuickPick || betMethod === null;
   // Dentro del setup: ¿hay selector de fecha con varios sorteos entre los que elegir?
-  const hasDateSelector = supportsTimeSelection && game.type !== 'gordo';
+  const hasDateSelector = supportsTimeSelection;
   // Paso 1 (elegir fecha) vs paso 2 (tipo de jugada + cómo jugar), según mockup del cliente
   const onDateStep = shouldShowInlineSetup && hasDateSelector && !dateStepConfirmed;
 

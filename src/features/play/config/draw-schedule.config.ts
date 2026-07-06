@@ -48,7 +48,7 @@ export const DRAW_SCHEDULE_CONFIG: Partial<Record<GameType, DrawScheduleConfig>>
     drawWeekdays: [0],
     drawHour: 13,
     drawMinute: 0,
-    maxWeeksSelectable: DEFAULT_MAX_WEEKS_SELECTABLE,
+    maxWeeksSelectable: 5,
     supportsMultipleDrawSelection: true,
     supportsSubscription: false,
   },
