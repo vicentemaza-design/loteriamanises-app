@@ -38,6 +38,7 @@ export interface TicketMetadata {
   seriesFractions?: Array<{ serie: string; fraccion: string }>;
   holderNif?: string;
   betsCount?: number;
+  dayPrizes?: Record<string, number>;
   [key: string]: unknown;
 }
 

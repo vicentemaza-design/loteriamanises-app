@@ -284,11 +284,14 @@ function SemanalDetail({
     setOpenDays(prev => prev.includes(date) ? prev.filter(d => d !== date) : [...prev, date]);
   }
 
+  const dayPrizes = ticket.metadata?.dayPrizes ?? {};
+
   return (
     <div className="flex flex-col gap-2 px-4 pt-4">
       {dayResults.map(({ date, result }) => {
         const isOpen = openDays.includes(date);
         const hasResult = !!result;
+        const dayPrize = dayPrizes[date] ?? 0;
 
         return (
           <div key={date} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
@@ -305,8 +308,14 @@ function SemanalDetail({
                 </span>
               </div>
               <div className="ml-2 flex shrink-0 items-center gap-1.5">
+                {/* Prize label: shown always (open or collapsed) when relevant */}
                 {!hasResult && (
                   <span className="text-[9px] font-black text-amber-500">Pendiente</span>
+                )}
+                {hasResult && dayPrize > 0 && (
+                  <span className="text-[9px] font-black text-emerald-600">
+                    Premio: {formatCurrency(dayPrize)}
+                  </span>
                 )}
                 <ChevronDown className={cn('h-4 w-4 text-slate-400 transition-transform duration-200', isOpen && 'rotate-180')} />
               </div>
@@ -357,14 +366,19 @@ function SemanalDetail({
                   );
                 })}
 
-                {/* Day prize */}
+                {/* Day prize — reads from dayPrizes metadata */}
                 {hasResult ? (
-                  <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-2.5">
+                  <div className={cn(
+                    'flex items-center justify-between rounded-xl border px-4 py-2.5',
+                    dayPrize > 0 ? 'border-emerald-100 bg-emerald-50' : 'border-slate-100 bg-slate-50'
+                  )}>
                     <div className="flex items-center gap-2">
-                      <Trophy className="h-3.5 w-3.5 text-slate-300" />
-                      <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Premio del día</span>
+                      <Trophy className={cn('h-3.5 w-3.5', dayPrize > 0 ? 'text-emerald-500' : 'text-slate-300')} />
+                      <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">Premio del día</span>
                     </div>
-                    <span className="text-[13px] font-black text-slate-400">0,00 €</span>
+                    <span className={cn('text-[13px] font-black', dayPrize > 0 ? 'text-emerald-600' : 'text-slate-400')}>
+                      {formatCurrency(dayPrize)}
+                    </span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2.5">
