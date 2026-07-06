@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { Truck, Lock, Package, Clock, CheckCircle2, Trophy, MapPin, Info, Wallet } from 'lucide-react';
+import type { ElementType, ReactNode } from 'react';
+import { Clock, CheckCircle2, Trophy, User, Truck, Lock, LayoutList, AlertTriangle, Info } from 'lucide-react';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
-import { formatCurrency, formatDate, cn } from '@/shared/lib/utils';
+import { formatCurrency, cn } from '@/shared/lib/utils';
 import type { Ticket } from '@/shared/types/domain';
+
+// ── helpers ────────────────────────────────────────────────────────────────
 
 type PlayStatus = 'pending' | 'processing' | 'confirmed' | 'scrutinized' | 'rejected';
 
@@ -14,344 +16,476 @@ function getPlayStatus(t: Ticket): PlayStatus {
 }
 
 function getDrawId(ticket: Ticket): string {
+  if (ticket.gameType === 'navidad') return 'navidad';
+  if (ticket.gameType === 'nino') return 'nino';
   if (ticket.gameId.includes('jueves')) return 'jueves';
-  if (ticket.gameId.includes('sabado') || ticket.gameId.includes('sábado')) return 'sabado';
-  if (ticket.gameType === 'navidad') return 'sabado';
-  return 'jueves';
+  return 'sabado';
 }
 
-// ── Shared: Decimo image + number ─────────────────────────────────────────
+function getNumber(ticket: Ticket): string {
+  return (ticket.metadata?.nationalNumber ?? ticket.numbers.join('')).padStart(5, '0');
+}
 
-function DecimoImage({ ticket }: { ticket: Ticket }) {
-  const number = (ticket.metadata?.nationalNumber ?? ticket.numbers.join('')).padStart(5, '0');
+function getQty(ticket: Ticket): number {
+  return ticket.metadata?.nationalQuantity ?? 1;
+}
+
+function getOrderTotal(ticket: Ticket): number {
+  return typeof ticket.metadata?.orderTotalPrice === 'number' ? ticket.metadata.orderTotalPrice : ticket.price;
+}
+
+function getPedidoCode(ticket: Ticket): string {
+  return `TLJ-${ticket.id.slice(-8).toUpperCase()}`;
+}
+
+const DRAW_NAMES: Record<string, string> = {
+  'navidad': 'Lotería de Navidad',
+  'nino': 'El Niño',
+  'loteria-nacional': 'Lotería Nacional',
+};
+
+function getDrawName(ticket: Ticket): string {
+  return ticket.metadata?.nationalDrawLabel ?? DRAW_NAMES[ticket.gameType] ?? 'Lotería';
+}
+
+function formatLongDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  const date = d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const time = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  return `${date} ${time}`;
+}
+
+// ── Document status header ─────────────────────────────────────────────────
+
+type StatusVariant = 'pending' | 'confirmed' | 'scrutinized';
+
+function DocumentStatusHeader({
+  variant,
+  description,
+}: {
+  variant: StatusVariant;
+  description: string;
+}) {
+  const configs = {
+    pending: {
+      Icon: Clock,
+      circleBg: 'bg-amber-100',
+      iconColor: 'text-amber-500',
+      titleColor: 'text-amber-600',
+      title: 'PENDIENTE DE CONFIRMACIÓN',
+      subtitle: 'Solicitud recibida',
+    },
+    confirmed: {
+      Icon: CheckCircle2,
+      circleBg: 'bg-emerald-100',
+      iconColor: 'text-emerald-600',
+      titleColor: 'text-emerald-600',
+      title: 'CONFIRMADO',
+      subtitle: 'Justificante de compra',
+    },
+    scrutinized: {
+      Icon: Trophy,
+      circleBg: 'bg-manises-blue/10',
+      iconColor: 'text-manises-blue',
+      titleColor: 'text-manises-blue',
+      title: 'ESCRUTADO',
+      subtitle: 'Resultado del sorteo',
+    },
+  } as const;
+
+  const { Icon, circleBg, iconColor, titleColor, title, subtitle } = configs[variant];
+
   return (
-    <div className="relative overflow-hidden rounded-2xl shadow-sm">
-      <NationalTicketThumbnail drawId={getDrawId(ticket)} className="w-full" />
-      <div className="absolute bottom-2 right-2 rounded-lg bg-white/90 px-2 py-1 backdrop-blur-sm">
-        <p className="text-[13px] font-black tracking-widest text-manises-blue">{number}</p>
+    <div className="flex flex-col items-center gap-2 px-6 pt-6 pb-4 text-center">
+      <div className={cn('flex h-[56px] w-[56px] items-center justify-center rounded-full', circleBg)}>
+        <Icon className={cn('h-7 w-7', iconColor)} />
+      </div>
+      <div>
+        <p className={cn('text-[13px] font-black uppercase tracking-[0.10em]', titleColor)}>{title}</p>
+        <p className="mt-0.5 text-[11px] font-semibold text-slate-400">{subtitle}</p>
+      </div>
+      <p className="max-w-[290px] text-[11px] font-medium leading-relaxed text-slate-500">{description}</p>
+    </div>
+  );
+}
+
+// ── Stats bar: NÚMERO | DÉCIMOS | IMPORTE TOTAL ────────────────────────────
+
+function StatsBar({ number, qty, total }: { number: string; qty: number; total: number }) {
+  return (
+    <div className="grid grid-cols-3 divide-x divide-slate-100 border-y border-slate-100 bg-white">
+      <div className="flex flex-col items-center py-3 px-2">
+        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Número</p>
+        <p className="mt-1 text-[20px] font-black tracking-[0.10em] text-manises-blue leading-none">{number}</p>
+      </div>
+      <div className="flex flex-col items-center py-3 px-2">
+        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Décimos</p>
+        <p className="mt-1 text-[20px] font-black text-manises-blue leading-none">{qty}</p>
+        <p className="text-[9px] font-semibold text-slate-400">{qty === 1 ? 'décimo' : 'décimos'}</p>
+      </div>
+      <div className="flex flex-col items-center py-3 px-2">
+        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Importe total</p>
+        <p className="mt-1 text-[15px] font-black text-emerald-600 leading-none">{formatCurrency(total)}</p>
       </div>
     </div>
   );
 }
 
-// ── Shared: Series & fracciones ────────────────────────────────────────────
+// ── Décimo image with number overlay ──────────────────────────────────────
+
+function DecimoImage({ ticket }: { ticket: Ticket }) {
+  const number = getNumber(ticket);
+  const series = ticket.metadata?.seriesFractions ?? [];
+  const firstSerie = series.length > 0 ? String(series[0].serie) : null;
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl shadow-md">
+      <NationalTicketThumbnail drawId={getDrawId(ticket)} className="w-full" />
+      <div className="absolute bottom-2.5 right-2.5 rounded-xl bg-white/92 px-3 py-1.5 shadow-sm backdrop-blur-sm">
+        <p className="text-[14px] font-black tracking-[0.14em] text-manises-blue">{number}</p>
+      </div>
+      {firstSerie && (
+        <div className="absolute top-2.5 right-2.5 rounded-lg bg-white/92 px-2.5 py-1 shadow-sm backdrop-blur-sm">
+          <p className="text-[9px] font-bold text-slate-500">
+            SERIE <span className="font-black text-manises-blue">{firstSerie}</span>
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Section wrapper ─────────────────────────────────────────────────────────
+
+function InfoSection({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: ElementType;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+      <div className="flex items-center gap-2 border-b border-slate-50 px-4 py-2.5">
+        <Icon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+        <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-500">{title}</p>
+      </div>
+      <div className="divide-y divide-slate-50">{children}</div>
+    </div>
+  );
+}
+
+function InfoRow({
+  label,
+  value,
+  valueClass,
+  multiline,
+}: {
+  label: string;
+  value: string;
+  valueClass?: string;
+  multiline?: boolean;
+}) {
+  return (
+    <div className={cn('flex items-start justify-between gap-4 px-4 py-2', multiline && 'items-start')}>
+      <span className="shrink-0 text-[10px] font-medium text-slate-400">{label}</span>
+      <span className={cn('text-right text-[10px] font-black text-manises-blue', valueClass)}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+// ── Series y fracciones (grouped) ──────────────────────────────────────────
 
 function SeriesFracciones({ ticket }: { ticket: Ticket }) {
   const items = ticket.metadata?.seriesFractions ?? [];
-  const status = getPlayStatus(ticket);
-  const isPending = status === 'pending' || status === 'processing';
-
-  if (isPending) {
-    return (
-      <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-3">
-        <div className="flex items-center gap-2">
-          <Info className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">Datos provisionales</p>
-            <p className="text-[9px] font-semibold text-slate-400">Las series y fracciones se asignarán cuando el pedido esté confirmado.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  const qty = getQty(ticket);
   if (items.length === 0) return null;
 
+  const grouped = items.reduce<Record<string, (string | number)[]>>((acc, { serie, fraccion }) => {
+    const key = String(serie);
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(fraccion);
+    return acc;
+  }, {});
+
   return (
-    <div className="rounded-xl border border-slate-100 bg-white px-4 py-3">
-      <p className="mb-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Series y fracciones asignadas</p>
-      <div className="grid grid-cols-2 gap-2">
-        {items.map((item, i) => (
-          <div key={`${item.serie}-${item.fraccion}-${i}`} className="rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-2">
-            <p className="text-[9px] font-black text-manises-blue">Serie {item.serie}</p>
-            <p className="text-[8px] font-bold text-slate-400">Fracción {item.fraccion}</p>
+    <InfoSection icon={LayoutList} title="Series y fracciones asignadas">
+      <div className="px-4 py-3 space-y-1.5">
+        {Object.entries(grouped).map(([serie, fracciones]) => (
+          <div key={serie} className="flex items-baseline gap-1">
+            <span className="text-[10px] font-black text-manises-blue shrink-0">Serie {serie}</span>
+            <span className="text-[9px] text-slate-300 mx-0.5">·</span>
+            <span className="text-[10px] font-medium text-slate-500">
+              Frac.: {(fracciones as (string | number)[]).join(', ')}
+            </span>
           </div>
         ))}
+        <div className="border-t border-slate-100 pt-1.5">
+          <span className="text-[10px] font-black text-manises-blue">
+            Total: {qty} {qty === 1 ? 'décimo' : 'décimos'}
+          </span>
+        </div>
       </div>
-    </div>
+    </InfoSection>
   );
 }
 
-// ── State: processing + shipping (Tramitando, Envío a domicilio) ───────────
+// ── Datos del titular ───────────────────────────────────────────────────────
 
-function StateProcessingShipping({ ticket }: { ticket: Ticket }) {
-  const orderTotal = typeof ticket.metadata?.orderTotalPrice === 'number' ? ticket.metadata.orderTotalPrice : ticket.price;
-  const qty = ticket.metadata?.nationalQuantity ?? 1;
-  const shipping = 6.00; // demo shipping cost
-  const decimosTotal = qty * (ticket.price);
-  const address = ticket.metadata?.shippingAddress;
-  const number = (ticket.metadata?.nationalNumber ?? ticket.numbers.join('')).padStart(5, '0');
+function DatosTitular({ ticket }: { ticket: Ticket }) {
+  const holderName = ticket.metadata?.holderName;
+  const holderNif = ticket.metadata?.holderNif;
+  if (!holderName && !holderNif) return null;
 
   return (
-    <div className="flex flex-col gap-3 px-4 pt-3">
-      {/* Número solicitado */}
-      <div className="rounded-[1.35rem] border border-slate-100 bg-white px-4 py-4 text-center shadow-sm">
-        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Número solicitado</p>
-        <p className="mt-1 text-[36px] font-black tracking-[0.12em] text-manises-blue">{number}</p>
-        <p className="text-[11px] font-bold text-slate-500">{qty} {qty === 1 ? 'décimo' : 'décimos'}</p>
-      </div>
-
-      {/* Status banner */}
-      <div className="flex items-start gap-3 rounded-[1.35rem] border border-orange-100 bg-orange-50 px-4 py-3.5">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-orange-100">
-          <Package className="h-4.5 w-4.5 text-orange-600" />
-        </div>
-        <div>
-          <p className="text-[11px] font-black text-orange-700">Envío a domicilio</p>
-          <p className="text-[10px] font-semibold leading-relaxed text-orange-600">
-            Estamos gestionando tu solicitud de compra. Recibirás una notificación cuando el pedido esté listo para su envío.
-          </p>
-        </div>
-      </div>
-
-      {/* Resumen económico */}
-      <div className="grid grid-cols-2 gap-2.5">
-        <div className="rounded-[1.1rem] border border-slate-100 bg-white px-3 py-3 shadow-sm">
-          <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Resumen del pedido</p>
-          <div className="mt-2 space-y-1">
-            <div className="flex justify-between">
-              <span className="text-[10px] font-semibold text-slate-500">Décimos ({qty})</span>
-              <span className="text-[10px] font-black text-manises-blue">{formatCurrency(decimosTotal)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[10px] font-semibold text-slate-500">Gastos de envío</span>
-              <span className="text-[10px] font-black text-manises-blue">{formatCurrency(shipping)}</span>
-            </div>
-            <div className="flex justify-between border-t border-slate-100 pt-1 mt-1">
-              <span className="text-[10px] font-black text-slate-700">Total pedido</span>
-              <span className="text-[11px] font-black text-manises-blue">{formatCurrency(orderTotal)}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-[1.1rem] border border-slate-100 bg-white px-3 py-3 shadow-sm">
-          <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Dirección de entrega</p>
-          {address ? (
-            <div className="mt-1.5 space-y-0.5">
-              <p className="text-[10px] font-black text-manises-blue">{address.name} {address.surnames}</p>
-              <p className="text-[9px] font-semibold leading-relaxed text-slate-500">{address.address}</p>
-              <p className="text-[9px] font-semibold text-slate-400">{address.postalCode} {address.municipality}</p>
-            </div>
-          ) : (
-            <p className="mt-1 text-[9px] font-semibold text-slate-400">—</p>
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2.5">
-        <div className="flex items-center gap-2">
-          <Info className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-          <p className="text-[9px] font-semibold leading-relaxed text-slate-500">
-            Te notificaremos en esta misma pantalla cuando el pedido haya sido confirmado y esté listo para su envío.
-          </p>
-        </div>
-      </div>
-    </div>
+    <InfoSection icon={User} title="Datos del titular">
+      {holderName && <InfoRow label="Titular" value={holderName} />}
+      {holderNif && <InfoRow label="NIF" value={holderNif} />}
+    </InfoSection>
   );
 }
 
-// ── State: pending + custody (Solicitud recibida) ──────────────────────────
+// ── Datos de envío (mensajería) ─────────────────────────────────────────────
 
-function StatePendingCustody({ ticket }: { ticket: Ticket }) {
-  const qty = ticket.metadata?.nationalQuantity ?? 1;
-  const number = (ticket.metadata?.nationalNumber ?? ticket.numbers.join('')).padStart(5, '0');
+function DatosEnvio({ ticket }: { ticket: Ticket }) {
+  const addr = ticket.metadata?.shippingAddress;
+  if (!addr) return null;
+
+  const fullName = `${addr.name} ${addr.surnames ?? ''}`.trim();
+  const fullAddress = `${addr.address}, ${addr.postalCode} ${addr.municipality}${addr.province ? ` (${addr.province})` : ''}`;
 
   return (
-    <div className="flex flex-col gap-3 px-4 pt-3">
-      <div className="flex items-start gap-3 rounded-[1.35rem] border border-amber-100 bg-amber-50 px-4 py-3.5">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100">
-          <Clock className="h-4.5 w-4.5 text-amber-600" />
-        </div>
-        <div>
-          <p className="text-[11px] font-black text-amber-700">Solicitud recibida</p>
-          <p className="text-[10px] font-semibold leading-relaxed text-amber-600">
-            Hemos recibido correctamente tu solicitud de compra. Estamos verificando la disponibilidad del número solicitado. Una vez validado y asignado, el pedido pasará a estado Confirmado.
-          </p>
-        </div>
-      </div>
-
-      {/* Número solicitado */}
-      <div className="rounded-[1.35rem] border border-slate-100 bg-white px-4 py-4 text-center shadow-sm">
-        <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">Número solicitado</p>
-        <p className="mt-2 text-[36px] font-black tracking-[0.12em] text-manises-blue">{number}</p>
-        <div className="mt-2 flex justify-center gap-4">
-          <div className="text-center">
-            <p className="text-[9px] font-black uppercase text-slate-400">Cantidad solicitada</p>
-            <p className="text-[12px] font-black text-manises-blue">{qty} {qty === 1 ? 'décimo' : 'décimos'}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-[9px] font-black uppercase text-slate-400">Importe solicitado</p>
-            <p className="text-[12px] font-black text-manises-blue">{formatCurrency(ticket.price * qty)}</p>
-          </div>
-        </div>
-      </div>
-
-      <SeriesFracciones ticket={ticket} />
-
-      <div className="rounded-xl border border-amber-100 bg-amber-50/60 px-3 py-2.5">
-        <div className="flex items-center gap-2">
-          <Clock className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-          <p className="text-[9px] font-semibold leading-relaxed text-amber-700">
-            Pedido pendiente de confirmación. Recibirás una notificación cuando el pedido haya sido confirmado o si fuera necesario realizar alguna modificación por falta de disponibilidad.
-          </p>
-        </div>
-      </div>
-    </div>
+    <InfoSection icon={Truck} title="Datos de envío (Mensajería)">
+      <InfoRow label="Nombre" value={fullName} />
+      <InfoRow label="Dirección" value={fullAddress} multiline />
+      <InfoRow label="Código Postal" value={addr.postalCode} />
+      {addr.phone && <InfoRow label="Teléfono" value={addr.phone} />}
+      {ticket.metadata?.shippingStatus && (
+        <InfoRow label="Empresa de transporte" value={ticket.metadata.shippingStatus} />
+      )}
+    </InfoSection>
   );
 }
 
-// ── State: confirmed ───────────────────────────────────────────────────────
+// ── Custodia digital info ───────────────────────────────────────────────────
 
-function StateConfirmed({ ticket }: { ticket: Ticket }) {
-  const confirmedAt = ticket.metadata?.confirmedAt;
-  const deliveryMode = ticket.metadata?.deliveryMode;
-  const address = ticket.metadata?.shippingAddress;
-  const qty = ticket.metadata?.nationalQuantity ?? 1;
-  const isShipping = deliveryMode === 'shipping';
-  const [decimoType, setDecimoType] = useState<'tradicional' | 'azul'>('tradicional');
-
+function DatosCustodia() {
   return (
-    <div className="flex flex-col gap-3 px-4 pt-3">
-      {/* Delivery type chip row */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className={cn(
-          'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-black',
-          isShipping
-            ? 'border-blue-100 bg-blue-50 text-blue-700'
-            : 'border-emerald-100 bg-emerald-50 text-emerald-700'
-        )}>
-          {isShipping ? <Truck className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-          {isShipping ? 'Envío por mensajería' : 'Décimo custodiado'}
-        </div>
-        {confirmedAt && (
-          <p className="text-[10px] font-semibold text-slate-400">Confirmado {formatDate(confirmedAt)}</p>
-        )}
+    <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-100">
+        <Lock className="h-4 w-4 text-emerald-600" />
       </div>
-
-      {/* Tipo de décimo selector (solo mensajería) */}
-      {isShipping && (
-        <div className="flex gap-1.5 rounded-xl border border-slate-100 bg-slate-50 p-1">
-          {(['tradicional', 'azul'] as const).map(type => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => setDecimoType(type)}
-              className={cn(
-                'flex-1 rounded-lg py-1.5 text-[9px] font-black uppercase tracking-wider transition-all',
-                decimoType === type ? 'bg-white text-manises-blue shadow-sm' : 'text-slate-400 hover:text-slate-600'
-              )}
-            >
-              Décimo {type === 'tradicional' ? 'Tradicional' : 'Azul'}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Decimo image */}
-      <DecimoImage ticket={ticket} />
-
-      <SeriesFracciones ticket={ticket} />
-
-      {/* Shipping address (if mensajería) */}
-      {isShipping && address && (
-        <div className="rounded-xl border border-slate-100 bg-white px-4 py-3">
-          <div className="flex items-start gap-2">
-            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
-            <div className="space-y-0.5">
-              <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Datos de entrega</p>
-              <p className="text-[10px] font-black text-manises-blue">{address.name} {address.surnames}</p>
-              <p className="text-[9px] font-semibold text-slate-500">{address.address}</p>
-              <p className="text-[9px] font-semibold text-slate-400">{address.postalCode} {address.municipality} ({address.province})</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Custody info + "Cómo autorizas el premio" */}
-      {!isShipping && (
-        <>
-          <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-2.5">
-            <div className="flex items-center gap-2">
-              <Lock className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
-              <p className="text-[9px] font-semibold leading-relaxed text-emerald-700">
-                Décimo en custodia en Lotería Manises. Puedes visualizar en todo momento la imagen del décimo depositado.
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-100 bg-white px-4 py-3">
-            <div className="flex items-start gap-2 mb-2">
-              <Wallet className="mt-0.5 h-3.5 w-3.5 shrink-0 text-manises-blue/60" />
-              <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Cómo autorizas el premio</p>
-            </div>
-            <p className="text-[10px] font-semibold text-slate-600 leading-relaxed">
-              Si este décimo resulta premiado, el importe se ingresará automáticamente en tu cuenta de Manises Lotería una vez finalizado el escrutinio. No necesitas hacer ninguna gestión adicional.
-            </p>
-          </div>
-        </>
-      )}
-
-      {/* Participation summary */}
-      <div className="rounded-xl border border-slate-100 bg-white px-3 py-2.5">
-        <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-1.5">Participación</p>
-        <p className="text-[10px] font-semibold text-slate-600">
-          Participas en {qty === 1 ? '1 décimo completo' : `${qty} décimos`} del número asignado. Incluye todas las series y fracciones indicadas.
+      <div>
+        <p className="text-[11px] font-black text-emerald-700">Custodia digital</p>
+        <p className="mt-0.5 text-[10px] font-medium leading-relaxed text-emerald-600">
+          Tu décimo está custodiado en Admin. Lotería Manises. Los premios menores se abonan automáticamente en tu saldo.
         </p>
       </div>
     </div>
   );
 }
 
-// ── State: scrutinized ─────────────────────────────────────────────────────
+// ── Premios obtenidos (escrutado) ───────────────────────────────────────────
 
-function StateScrutinized({ ticket }: { ticket: Ticket }) {
+function PremiosObtenidos({ prize, isShipping }: { prize: number; isShipping: boolean }) {
+  return (
+    <div className="space-y-2">
+      <div className="overflow-hidden rounded-2xl border border-orange-200 bg-orange-50">
+        <div className="flex items-center gap-2 border-b border-orange-100 px-4 py-2.5">
+          <Trophy className="h-3.5 w-3.5 shrink-0 text-orange-500" />
+          <p className="text-[9px] font-black uppercase tracking-[0.14em] text-orange-600">Premios obtenidos</p>
+        </div>
+        <div className="divide-y divide-orange-100">
+          <div className="flex justify-between px-4 py-2">
+            <span className="text-[10px] font-medium text-slate-500">Premio obtenido</span>
+            <span className="text-[10px] font-black text-manises-blue">{formatCurrency(prize)}</span>
+          </div>
+          <div className="flex justify-between px-4 py-2">
+            <span className="text-[10px] font-black text-manises-blue">Total premiado</span>
+            <span className="text-[12px] font-black text-manises-blue">{formatCurrency(prize)}</span>
+          </div>
+        </div>
+      </div>
+      {isShipping && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
+          <p className="text-[10px] font-medium leading-relaxed text-amber-700">
+            Los premios deberán cobrarse presentando el décimo físico original en cualquier punto de venta oficial de Loterías.
+          </p>
+        </div>
+      )}
+      {!isShipping && (
+        <div className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3">
+          <Lock className="h-4 w-4 shrink-0 text-emerald-500 mt-0.5" />
+          <p className="text-[10px] font-medium leading-relaxed text-emerald-700">
+            Premio ingresado automáticamente en tu saldo de Lotería Manises tras el escrutinio.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Resumen económico ───────────────────────────────────────────────────────
+
+function ResumenEconomico({
+  ticket,
+  showPrize,
+}: {
+  ticket: Ticket;
+  showPrize?: boolean;
+}) {
+  const qty = getQty(ticket);
+  const orderTotal = getOrderTotal(ticket);
+  const isShipping = ticket.metadata?.deliveryMode === 'shipping';
+  const decimosTotal = qty * ticket.price;
+  const shippingCost = isShipping ? Math.max(orderTotal - decimosTotal, 0) : 0;
   const prize = ticket.prize ?? 0;
-  const hasPrize = prize > 0;
-  const deliveryMode = ticket.metadata?.deliveryMode;
-  const isCustody = deliveryMode === 'custody';
 
   return (
-    <div className="flex flex-col gap-3 px-4 pt-3">
-      {/* Prize result */}
-      {hasPrize ? (
-        <div className="flex items-start gap-3 rounded-[1.35rem] border border-emerald-100 bg-emerald-50 px-4 py-3.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100">
-            <Trophy className="h-4.5 w-4.5 text-emerald-600" />
+    <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+      <div className="border-b border-slate-50 px-4 py-2.5">
+        <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-500">Resumen económico</p>
+      </div>
+      <div className="space-y-2 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] text-slate-500">Importe de décimos</span>
+          <span className="text-[10px] font-black text-manises-blue">{formatCurrency(isShipping ? decimosTotal : orderTotal)}</span>
+        </div>
+        {isShipping && shippingCost > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-slate-500">Gastos de envío</span>
+            <span className="text-[10px] font-black text-manises-blue">{formatCurrency(shippingCost)}</span>
           </div>
-          <div>
-            <p className="text-[11px] font-black text-emerald-700">Premio disponible en tu cuenta</p>
-            <p className="text-[22px] font-black leading-none text-emerald-600">{formatCurrency(prize)}</p>
-            <p className="text-[9px] font-semibold text-emerald-600/80">
-              {isCustody ? 'Importe ingresado automáticamente en tu saldo.' : 'Puedes consultar el estado del cobro en la sección "Mi cuenta".'}
-            </p>
+        )}
+        {showPrize && prize > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-slate-500">Premios obtenidos</span>
+            <span className="text-[10px] font-black text-emerald-600">{formatCurrency(prize)}</span>
+          </div>
+        )}
+        <div className="flex items-center justify-between border-t border-slate-100 pt-2">
+          <span className="text-[11px] font-black text-manises-blue">Total pagado</span>
+          <span className="text-[14px] font-black text-manises-blue">{formatCurrency(orderTotal)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── State: Pending ─────────────────────────────────────────────────────────
+
+function StatePending({ ticket }: { ticket: Ticket }) {
+  const number = getNumber(ticket);
+  const qty = getQty(ticket);
+  const orderTotal = getOrderTotal(ticket);
+  const drawName = getDrawName(ticket);
+  const drawDate = formatLongDate(ticket.drawDate);
+
+  return (
+    <div className="flex flex-col gap-4 px-4 pb-6">
+      <DocumentStatusHeader
+        variant="pending"
+        description="Hemos recibido correctamente tu solicitud. Estamos comprobando la disponibilidad del número solicitado. Cuando el pedido sea confirmado recibirás una notificación y este documento pasará a ser tu justificante de compra."
+      />
+
+      <InfoSection icon={Info} title="Datos de la solicitud">
+        <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+          <span className="shrink-0 text-[10px] font-medium text-slate-400">Número solicitado</span>
+          <span className="text-right font-mono text-[18px] font-black tracking-[0.12em] text-manises-blue leading-tight">
+            {number}
+          </span>
+        </div>
+        <InfoRow label="Décimos solicitados" value={`${qty} ${qty === 1 ? 'décimo' : 'décimos'}`} />
+        <InfoRow
+          label="Importe solicitado"
+          value={formatCurrency(orderTotal)}
+          valueClass="text-amber-600"
+        />
+        <InfoRow label="Fecha de solicitud" value={formatDateTime(ticket.createdAt)} />
+        <div className="flex items-start justify-between gap-4 px-4 py-2">
+          <span className="shrink-0 text-[10px] font-medium text-slate-400">Sorteo</span>
+          <div className="text-right">
+            <p className="text-[10px] font-black text-manises-blue">{drawName}</p>
+            <p className="text-[10px] font-semibold text-slate-400">{drawDate}</p>
           </div>
         </div>
-      ) : (
-        <div className="flex items-center gap-3 rounded-[1.35rem] border border-slate-100 bg-slate-50 px-4 py-3.5">
-          <CheckCircle2 className="h-5 w-5 shrink-0 text-slate-300" />
-          <div>
-            <p className="text-[11px] font-black text-slate-500">Sorteo celebrado</p>
-            <p className="text-[10px] font-semibold text-slate-400">El número no ha resultado premiado en este sorteo.</p>
-          </div>
-        </div>
-      )}
+        <InfoRow label="Nº de pedido" value={getPedidoCode(ticket)} />
+      </InfoSection>
 
-      {/* Decimo image */}
-      <DecimoImage ticket={ticket} />
+      <div className="flex items-start gap-2.5 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
+        <p className="text-[10px] font-medium leading-relaxed text-slate-500">
+          Este documento no tiene validez como justificante de compra.
+        </p>
+      </div>
+    </div>
+  );
+}
 
-      <SeriesFracciones ticket={ticket} />
+// ── State: Confirmed ────────────────────────────────────────────────────────
 
-      {/* Custody auto-payment info */}
-      {isCustody && hasPrize && (
-        <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-2.5">
-          <div className="flex items-center gap-2">
-            <Lock className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
-            <p className="text-[9px] font-semibold leading-relaxed text-emerald-700">
-              Cobro automático de premios. El importe se ingresará automáticamente en tu cuenta tras validar todos los sorteos. Puedes consultarlo en tu saldo disponible.
-            </p>
-          </div>
-        </div>
-      )}
+function StateConfirmed({ ticket }: { ticket: Ticket }) {
+  const number = getNumber(ticket);
+  const qty = getQty(ticket);
+  const orderTotal = getOrderTotal(ticket);
+  const isShipping = ticket.metadata?.deliveryMode === 'shipping';
+
+  return (
+    <div className="flex flex-col gap-4 pb-6">
+      <DocumentStatusHeader
+        variant="confirmed"
+        description="Tu compra ha sido realizada con éxito. Este documento es tu justificante de compra."
+      />
+
+      <StatsBar number={number} qty={qty} total={orderTotal} />
+
+      <div className="flex flex-col gap-4 px-4">
+        <DecimoImage ticket={ticket} />
+        <SeriesFracciones ticket={ticket} />
+        <DatosTitular ticket={ticket} />
+        {isShipping ? <DatosEnvio ticket={ticket} /> : <DatosCustodia />}
+        <ResumenEconomico ticket={ticket} />
+      </div>
+    </div>
+  );
+}
+
+// ── State: Scrutinized ──────────────────────────────────────────────────────
+
+function StateScrutinized({ ticket }: { ticket: Ticket }) {
+  const number = getNumber(ticket);
+  const qty = getQty(ticket);
+  const orderTotal = getOrderTotal(ticket);
+  const isShipping = ticket.metadata?.deliveryMode === 'shipping';
+  const prize = ticket.prize ?? 0;
+  const hasPrize = prize > 0;
+
+  return (
+    <div className="flex flex-col gap-4 pb-6">
+      <DocumentStatusHeader
+        variant="scrutinized"
+        description="El sorteo ha sido celebrado. Este es el resultado definitivo de tu compra."
+      />
+
+      <StatsBar number={number} qty={qty} total={orderTotal} />
+
+      <div className="flex flex-col gap-4 px-4">
+        <DecimoImage ticket={ticket} />
+        <SeriesFracciones ticket={ticket} />
+        <DatosTitular ticket={ticket} />
+        {isShipping ? <DatosEnvio ticket={ticket} /> : <DatosCustodia />}
+        {hasPrize && <PremiosObtenidos prize={prize} isShipping={isShipping} />}
+        <ResumenEconomico ticket={ticket} showPrize={hasPrize} />
+      </div>
     </div>
   );
 }
@@ -360,15 +494,11 @@ function StateScrutinized({ ticket }: { ticket: Ticket }) {
 
 export function NationalDetailContent({ ticket }: { ticket: Ticket }) {
   const status = getPlayStatus(ticket);
-  const deliveryMode = ticket.metadata?.deliveryMode;
-  const isShipping = deliveryMode === 'shipping';
 
-  if (status === 'processing' && isShipping) return <StateProcessingShipping ticket={ticket} />;
-  if (status === 'pending' || status === 'processing') return <StatePendingCustody ticket={ticket} />;
+  if (status === 'pending' || status === 'processing') return <StatePending ticket={ticket} />;
   if (status === 'confirmed') return <StateConfirmed ticket={ticket} />;
   if (status === 'scrutinized') return <StateScrutinized ticket={ticket} />;
 
-  // rejected or fallback
   return (
     <div className="mx-4 mt-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3">
       <p className="text-[11px] font-black text-red-700">Pedido rechazado</p>

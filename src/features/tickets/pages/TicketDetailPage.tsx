@@ -485,9 +485,12 @@ export function TicketDetailPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-background pb-24">
-      <ProfileSubHeader title="Detalle de jugada" onBack={() => navigate(-1)} />
+      <ProfileSubHeader
+        title={isNational ? 'Detalle de compra' : 'Detalle de jugada'}
+        onBack={() => navigate(-1)}
+      />
 
-      <DetailHeader ticket={ticket} game={game} />
+      {!isNational && <DetailHeader ticket={ticket} game={game} />}
 
       {isNational ? (
         <NationalDetailContent ticket={ticket} />
@@ -497,7 +500,7 @@ export function TicketDetailPage() {
         <SingleDrawDetail ticket={ticket} result={dayResults[0]?.result ?? null} game={game} />
       )}
 
-      <PedidoResumen ticket={ticket} />
+      {!isNational && <PedidoResumen ticket={ticket} />}
     </div>
   );
 }
