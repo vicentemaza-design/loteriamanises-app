@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { EmptyState } from '@/shared/ui/EmptyState';
@@ -11,12 +11,10 @@ import {
   Shield,
   Repeat2,
   MoreHorizontal,
-  Truck,
   Trophy,
   ScrollText,
   Eye,
   Bell,
-  ChevronRight,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTickets } from '../hooks/useTickets';
@@ -46,17 +44,17 @@ function getPlayStatus(ticket: Ticket): PlayStatus {
 }
 
 const PLAY_STATUS_CONFIG: Record<PlayStatus, { label: string; className: string }> = {
-  pending:     { label: 'Pendiente',   className: 'bg-amber-50 text-amber-700 border-amber-200' },
-  processing:  { label: 'Tramitando',  className: 'bg-blue-50 text-blue-700 border-blue-200' },
-  confirmed:   { label: 'Confirmada',  className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  scrutinized: { label: 'Escrutada',   className: 'bg-slate-100 text-slate-700 border-slate-200' },
-  rejected:    { label: 'Rechazada',   className: 'bg-red-50 text-red-700 border-red-200' },
+  pending:     { label: 'Pendiente',  className: 'bg-amber-50 text-amber-700 border-amber-200' },
+  processing:  { label: 'Tramitando', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  confirmed:   { label: 'Confirmada', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  scrutinized: { label: 'Escrutada',  className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  rejected:    { label: 'Rechazada',  className: 'bg-red-50 text-red-700 border-red-200' },
 };
 
 function PlayStatusBadge({ status }: { status: PlayStatus }) {
   const { label, className } = PLAY_STATUS_CONFIG[status];
   return (
-    <span className={cn('inline-flex rounded-full border px-1.5 py-0 text-[9px] font-black uppercase tracking-wider', className)}>
+    <span className={cn('inline-flex items-center whitespace-nowrap rounded-md border px-2 py-[3px] text-[8.5px] font-black uppercase tracking-wider', className)}>
       {label}
     </span>
   );
@@ -109,9 +107,8 @@ function getQuantityLabel(ticket: Ticket): string {
   }
   const dates = getOrderDrawDates(ticket);
   const betsCount = typeof ticket.metadata?.betsCount === 'number' ? ticket.metadata.betsCount : 1;
-  const betsLabel = `${betsCount} ${betsCount === 1 ? 'apuesta' : 'apuestas'}`;
-  if (dates.length > 1) return `${dates.length} sorteos · ${betsLabel}`;
-  return betsLabel;
+  if (dates.length > 1) return `${dates.length} sorteos`;
+  return `${betsCount} ${betsCount === 1 ? 'apuesta' : 'apuestas'}`;
 }
 
 function getSelectionSummary(ticket: Ticket): string {
@@ -119,7 +116,7 @@ function getSelectionSummary(ticket: Ticket): string {
     return (ticket.metadata?.nationalNumber ?? ticket.numbers.join('')).padStart(5, '0');
   }
   const starsLabel = ticket.stars && ticket.stars.length > 0
-    ? ` + ${ticket.stars.map(s => String(s).padStart(2, '0')).join(', ')}`
+    ? ` + ${ticket.stars.map(s => String(s).padStart(2, '0')).join(' ')}`
     : '';
   return `${ticket.numbers.map(n => String(n).padStart(2, '0')).join(' ')}${starsLabel}`;
 }
@@ -133,7 +130,6 @@ export function TicketsPage() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [searchOpen, setSearchOpen] = useState(false);
   const [receiptTicket, setReceiptTicket] = useState<Ticket | null>(null);
-
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -271,7 +267,7 @@ export function TicketsPage() {
         {/* List */}
         <section className="min-h-[400px] flex-1 px-4">
           {isLoading ? (
-            <div className="flex flex-col gap-3.5">
+            <div className="flex flex-col gap-2">
               {Array.from({ length: 4 }).map((_, i) => <TicketCardSkeleton key={i} />)}
             </div>
           ) : error ? (
@@ -288,7 +284,7 @@ export function TicketsPage() {
               />
             </div>
           ) : (
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               {tab === 'activos' && displayed.length > 0 && displayed.length < 4 && (
                 <div className="order-last mt-1 rounded-[1.5rem] border border-dashed border-manises-blue/15 bg-manises-blue/[0.02] p-4 text-center">
                   <p className="text-[12px] font-black text-manises-blue/50">¿Quieres añadir otra jugada?</p>
@@ -303,7 +299,7 @@ export function TicketsPage() {
                 if (!game) return null;
 
                 const isExpanded = expandedIds.has(ticket.id);
-                const nationalTicket = isNationalTicket(ticket);
+                const national = isNationalTicket(ticket);
                 const playStatus = getPlayStatus(ticket);
                 const identity = getGameIdentity(game);
                 const orderTotal = getOrderTotal(ticket);
@@ -311,60 +307,70 @@ export function TicketsPage() {
                 const quantityLabel = getQuantityLabel(ticket);
                 const selectionSummary = getSelectionSummary(ticket);
                 const prize = getPrizeLabel(ticket);
-                const hasMessaging = nationalTicket && ticket.metadata?.deliveryMode === 'shipping';
+                const hasMessaging = national && ticket.metadata?.deliveryMode === 'shipping';
+                const hasPrize = ticket.prize != null && ticket.prize > 0;
 
                 return (
                   <div
                     key={ticket.id}
-                    className="ticket-card relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_2px_8px_rgba(15,23,42,0.04)]"
+                    className="ticket-card relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_1px_6px_rgba(15,23,42,0.05)]"
                   >
-                    {/* Color bar */}
+                    {/* Left color accent */}
                     <div className="absolute bottom-0 left-0 top-0 w-[3px]" style={{ backgroundColor: game.color }} />
 
-                    {/* Main row — tappable → detalle */}
+                    {/* Main row */}
                     <div
-                      className="relative flex cursor-pointer items-center gap-2.5 pl-4 pr-2 py-2.5 active:bg-slate-50/70 transition-colors"
+                      className="relative flex cursor-pointer items-center gap-3 py-3 pl-4 pr-2 transition-colors active:bg-slate-50/60"
                       onClick={() => navigate(`/tickets/${ticket.id}`)}
                     >
-                      {/* Icon */}
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white" style={{ backgroundColor: game.color }}>
+                      {/* Col 1 — Icon */}
+                      <div
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] shadow-sm"
+                        style={{ backgroundColor: game.color }}
+                      >
                         <GameBadge game={game} size="sm" variant="white" />
                       </div>
 
-                      {/* Content: 2 lines */}
+                      {/* Col 2 — Main info */}
                       <div className="min-w-0 flex-1">
-                        {/* Line 1: name · price · status */}
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] font-black uppercase tracking-tight text-manises-blue">{identity.shortName}</span>
-                          <span className="text-[10px] font-bold text-manises-blue/50">{formatCurrency(orderTotal ?? 0)}</span>
-                          <PlayStatusBadge status={playStatus} />
+                        {/* Game name + badges */}
+                        <p className="flex items-center gap-1 text-[10px] font-black uppercase leading-none tracking-[0.10em] text-manises-blue">
+                          {identity.shortName}
                           {ticket.isSubscription && <Repeat2 className="h-2.5 w-2.5 shrink-0 text-manises-gold" />}
                           {ticket.hasInsurance && <Shield className="h-2.5 w-2.5 shrink-0 text-manises-gold" />}
-                        </div>
-                        {/* Line 2: numbers · date · quantity */}
-                        <p className="mt-0.5 truncate text-[10px] text-slate-400">
-                          <span className={cn('font-black text-manises-blue', nationalTicket && 'font-mono tracking-widest')}>
-                            {selectionSummary}
-                          </span>
-                          <span className="mx-1 text-slate-300">·</span>
+                        </p>
+                        {/* Numbers — prominent */}
+                        <p className={cn(
+                          'mt-[3px] truncate font-black leading-snug text-manises-blue',
+                          national ? 'text-[15px] font-mono tracking-[0.14em]' : 'text-[12px]'
+                        )}>
+                          {selectionSummary}
+                        </p>
+                        {/* Meta line: date · qty · [mensajería ·] cost */}
+                        <p className="mt-[3px] truncate text-[9px] font-medium leading-none text-slate-400">
                           {orderDatesSummary}
-                          <span className="mx-1 text-slate-300">·</span>
+                          {' · '}
                           {quantityLabel}
-                          {hasMessaging && (
-                            <><span className="mx-1 text-slate-300">·</span><Truck className="inline h-2.5 w-2.5 mr-0.5 align-middle" />Mensajería</>
-                          )}
+                          {hasMessaging ? ' · Mensajería' : ''}
+                          {' · '}
+                          {formatCurrency(orderTotal ?? 0)}
                         </p>
                       </div>
 
-                      {/* Prize (if any) */}
-                      {ticket.prize && ticket.prize > 0 && (
-                        <div className="flex shrink-0 items-center gap-0.5 mr-1">
-                          <Trophy className="h-3 w-3 text-emerald-500" />
-                          <span className="text-[11px] font-black text-emerald-600">{prize}</span>
-                        </div>
-                      )}
+                      {/* Col 3 — Status + Prize (stacked, right-aligned) */}
+                      <div className="flex min-w-[82px] shrink-0 flex-col items-end gap-[5px]">
+                        <PlayStatusBadge status={playStatus} />
+                        {hasPrize ? (
+                          <div className="flex items-center gap-0.5">
+                            <Trophy className="h-3 w-3 text-emerald-500" />
+                            <span className="text-[11px] font-black text-emerald-600">{prize}</span>
+                          </div>
+                        ) : (
+                          <span className="text-[12px] font-bold text-slate-300">—</span>
+                        )}
+                      </div>
 
-                      {/* Actions toggle */}
+                      {/* Col 4 — Context menu */}
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); toggleExpand(ticket.id); }}
@@ -380,7 +386,7 @@ export function TicketsPage() {
                       </button>
                     </div>
 
-                    {/* Actions strip (expandable) */}
+                    {/* Expandable quick actions */}
                     <AnimatePresence initial={false}>
                       {isExpanded && (
                         <motion.div
@@ -390,18 +396,18 @@ export function TicketsPage() {
                           transition={{ duration: 0.18, ease: 'easeOut' }}
                           className="overflow-hidden"
                         >
-                          <div className="flex gap-1.5 border-t border-gray-50 px-4 py-2">
+                          <div className="flex gap-1.5 border-t border-gray-50 px-4 py-2.5">
                             {([
-                              { icon: Repeat2,    label: 'Repetir',    action: () => navigate(`/play/${ticket.gameId}`) },
-                              { icon: Bell,       label: 'Abonarme',   action: () => toast.info('Abono pendiente de integración.') },
-                              { icon: Eye,        label: 'Ver',        action: () => navigate(`/tickets/${ticket.id}`) },
+                              { icon: Repeat2,    label: 'Repetir',     action: () => navigate(`/play/${ticket.gameId}`) },
+                              { icon: Bell,       label: 'Abonarme',    action: () => toast.info('Abono pendiente de integración.') },
+                              { icon: Eye,        label: 'Ver',         action: () => navigate(`/tickets/${ticket.id}`) },
                               { icon: ScrollText, label: 'Certificado', action: () => setReceiptTicket(ticket) },
                             ] as const).map(({ icon: Icon, label, action }) => (
                               <button
                                 key={label}
                                 type="button"
                                 onClick={action}
-                                className="flex flex-1 flex-col items-center gap-0.5 rounded-xl border border-gray-100 bg-white py-2 text-[8px] font-black uppercase tracking-wider text-manises-blue transition-colors hover:border-manises-blue/20 hover:bg-manises-blue/[0.04] active:scale-[0.97]"
+                                className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-gray-100 bg-white py-2 text-[8px] font-black uppercase tracking-wider text-manises-blue transition-colors hover:border-manises-blue/20 hover:bg-manises-blue/[0.04] active:scale-[0.97]"
                               >
                                 <Icon className="h-3.5 w-3.5" />
                                 {label}
