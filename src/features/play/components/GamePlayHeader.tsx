@@ -10,11 +10,12 @@ interface GamePlayHeaderProps {
   drawTime: string;
   onBack: () => void;
   onInfo: () => void;
+  titleOverride?: string;
 }
 
 const NATIONAL_LOTTERY_TYPES = new Set(['loteria-nacional', 'navidad', 'nino']);
 
-export function GamePlayHeader({ game, drawTime, onBack, onInfo }: GamePlayHeaderProps) {
+export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride }: GamePlayHeaderProps) {
   const { gameDrafts, lotteryDrafts, openGameReview, openLotteryReview } = usePlaySession();
   const isLotteryGame = NATIONAL_LOTTERY_TYPES.has(game.type);
   const count = isLotteryGame ? lotteryDrafts.length : gameDrafts.length;
@@ -43,7 +44,7 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo }: GamePlayHeade
           <div className="flex items-center gap-2">
             <GameBadge game={game} size="sm" className="w-8 h-8 rounded-lg shadow-none bg-white/10" />
             <div>
-              <h1 className="font-bold text-base leading-tight">{game.name}</h1>
+              <h1 className="font-bold text-base leading-tight">{titleOverride ?? game.name}</h1>
               <p className="text-[10px] text-white/60 font-medium">
                 {formatDrawTime(drawTime)}
               </p>

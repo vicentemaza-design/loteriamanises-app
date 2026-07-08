@@ -84,7 +84,7 @@ export function GamePlayBottomMenu({
           onClick={onContinue}
           disabled={!canSubmit}
           className={cn(
-            'relative m-1.5 flex h-auto min-w-0 items-center justify-center overflow-hidden rounded-xl bg-manises-gold px-4 text-[1rem] font-black leading-none tracking-normal text-manises-blue transition-all active:scale-[0.985]',
+            'relative m-1.5 flex h-auto min-w-0 items-center justify-center overflow-hidden rounded-xl bg-manises-gold px-4 text-[0.85rem] font-black leading-none tracking-normal text-manises-blue transition-all active:scale-[0.985]',
             'shadow-[inset_0_1px_0_rgba(255,255,255,0.42),0_6px_14px_rgba(0,0,0,0.14),0_0_14px_rgba(245,197,24,0.14)]',
             !canSubmit && 'cursor-not-allowed bg-white/10 text-white/45 shadow-none'
           )}
