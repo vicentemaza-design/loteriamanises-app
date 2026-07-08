@@ -1,13 +1,13 @@
 import { useNavigate } from 'react-router-dom';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import type { Key } from 'react';
-import { 
-  ChevronRight, 
-  Clock, 
-  Trophy, 
-  Sparkles 
+import {
+  ChevronRight,
+  Clock,
+  Trophy,
+  Sparkles
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { formatJackpot, formatCurrency, formatDrawTime } from '@/shared/lib/utils';
@@ -33,31 +33,42 @@ const NOTICES = [
 ];
 
 function NoticeTicker() {
-  const [index, setIndex] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const posRef = useRef(0);
+  const rafRef = useRef(0);
+  const sep = ' '.repeat(20) + '·' + ' '.repeat(20);
+  const combined = NOTICES.join(sep);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % NOTICES.length);
-    }, 6000);
-    return () => clearInterval(timer);
+    const track = trackRef.current;
+    if (!track) return;
+
+    const step = () => {
+      posRef.current -= 1;
+      // Reset when we've scrolled exactly one copy's width
+      if (-posRef.current >= track.scrollWidth / 2) {
+        posRef.current = 0;
+      }
+      track.style.transform = `translateX(${posRef.current}px)`;
+      rafRef.current = requestAnimationFrame(step);
+    };
+
+    rafRef.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
   return (
-    <div className="w-full bg-[#f8fafc] border-y border-slate-100 py-2.5 px-5 flex items-center gap-2 overflow-hidden min-h-[40px] shadow-sm">
-      <Trophy className="w-4 h-4 text-amber-500 shrink-0 animate-bounce" />
-      <div className="relative flex-1 h-5 overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={index}
-            initial={{ y: 15, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -15, opacity: 0 }}
-            transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="absolute inset-x-0 top-0 text-[11px] font-bold text-manises-blue tracking-wide truncate"
-          >
-            {NOTICES[index]}
-          </motion.p>
-        </AnimatePresence>
+    <div className="w-full bg-[#f8fafc] border-y border-slate-100 py-2.5 px-4 flex items-center gap-3 overflow-hidden min-h-[40px] shadow-sm">
+      <Trophy className="w-4 h-4 text-amber-500 shrink-0" />
+      <div className="flex-1 overflow-hidden">
+        <div ref={trackRef} style={{ display: 'flex', width: 'max-content' }}>
+          <span className="whitespace-nowrap text-[11px] font-bold text-manises-blue tracking-wide" style={{ paddingRight: '5rem' }}>
+            {combined}
+          </span>
+          <span className="whitespace-nowrap text-[11px] font-bold text-manises-blue tracking-wide" style={{ paddingRight: '5rem' }} aria-hidden>
+            {combined}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -79,10 +90,10 @@ function ChristmasCard({ onClick }: { onClick: () => void }) {
         className="absolute inset-0 w-full h-full object-cover opacity-65 transition-transform duration-[2000ms] group-hover:scale-105 pointer-events-none"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-[#0c0e17] via-[#0c0e17]/50 to-transparent" />
-      
+
       <div className="absolute top-0 left-0 w-24 h-24 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-12 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-      
+
       <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
         <div className="absolute top-2 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
         <div className="absolute top-12 left-1/3 w-1 h-1 bg-white rounded-full" />
@@ -198,7 +209,7 @@ function EuromillionsCard({ jackpot, nextDraw, onClick }: { jackpot: number; nex
             <span className="text-[10px] font-black text-amber-950">★</span>
             <div className="absolute top-0.5 left-1.5 w-2.5 h-1 bg-white/80 rounded-full rotate-[-15deg]" />
           </div>
-        
+
         <div className="absolute top-4 left-4 w-1.5 h-1.5 bg-yellow-300 rounded-full animate-ping" />
         <div className="absolute bottom-6 right-2 w-1 h-1 bg-blue-300 rounded-full" />
       </div>
@@ -316,7 +327,7 @@ export function GamesPage() {
       <NoticeTicker />
 
       {/* Main page content layout */}
-      <motion.div 
+      <motion.div
         variants={listAnimation}
         initial="hidden"
         animate="show"
@@ -330,10 +341,10 @@ export function GamesPage() {
         {/* 3. Euromillions Featured Banner */}
         {euromillonesGame && (
           <motion.div variants={itemAnimation}>
-            <EuromillionsCard 
-              jackpot={euromillonesGame.jackpot} 
-              nextDraw={euromillonesGame.nextDraw} 
-              onClick={() => navigate('/play/euromillones')} 
+            <EuromillionsCard
+              jackpot={euromillonesGame.jackpot}
+              nextDraw={euromillonesGame.nextDraw}
+              onClick={() => navigate('/play/euromillones')}
             />
           </motion.div>
         )}
@@ -349,8 +360,8 @@ export function GamesPage() {
         </motion.div>
 
         {/* 5. Todos los sorteos List (Original Card Grid style) */}
-        <motion.div 
-          variants={listAnimation} 
+        <motion.div
+          variants={listAnimation}
           className="grid grid-cols-1 gap-2"
         >
           {sortedListGames.map((game) => (
@@ -358,7 +369,7 @@ export function GamesPage() {
               key={game.id}
               variants={itemAnimation}
             >
-              <GameCardRow 
+              <GameCardRow
                 game={game}
                 onClick={() => navigate(`/play/${game.id}`)}
               />

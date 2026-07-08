@@ -135,21 +135,48 @@ function StatsBar({ number, qty, total }: { number: string; qty: number; total: 
   );
 }
 
+// ── Bounding boxes (mismos valores que NationalTicketVisual) ───────────────
+
+const NUMBER_BOX: Record<string, { top: string; left: string; width: string; height: string }> = {
+  jueves:  { top: '13%', left: '40%', width: '38%', height: '15%' },
+  sabado:  { top: '10%', left: '38%', width: '38%', height: '15%' },
+  navidad: { top:  '7%', left: '43%', width: '38%', height: '16%' },
+  nino:    { top: '13%', left: '40%', width: '38%', height: '15%' },
+};
+
 // ── Décimo image with number overlay ──────────────────────────────────────
 
 function DecimoImage({ ticket }: { ticket: Ticket }) {
   const number = getNumber(ticket);
+  const drawId = getDrawId(ticket);
   const series = ticket.metadata?.seriesFractions ?? [];
   const firstSerie = series.length > 0 ? String(series[0].serie) : null;
+  const box = NUMBER_BOX[drawId] ?? NUMBER_BOX.jueves;
 
   return (
     <div className="relative overflow-hidden rounded-2xl shadow-md">
-      <NationalTicketThumbnail drawId={getDrawId(ticket)} className="w-full" />
-      <div className="absolute bottom-2.5 right-2.5 rounded-xl bg-white/92 px-3 py-1.5 shadow-sm backdrop-blur-sm">
-        <p className="text-[14px] font-black tracking-[0.14em] text-manises-blue">{number}</p>
+      <NationalTicketThumbnail drawId={drawId} className="w-full" />
+      {/* Número en el hueco en blanco del décimo */}
+      <div
+        className="absolute z-10 flex items-center justify-center overflow-hidden pointer-events-none"
+        style={box}
+      >
+        <span
+          style={{
+            fontFamily: '"Courier New", Courier, monospace',
+            fontSize: 'clamp(22px, 9.5vw, 42px)',
+            fontWeight: 900,
+            letterSpacing: '0.18em',
+            lineHeight: 1,
+            color: '#111827',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {number}
+        </span>
       </div>
       {firstSerie && (
-        <div className="absolute top-2.5 right-2.5 rounded-lg bg-white/92 px-2.5 py-1 shadow-sm backdrop-blur-sm">
+        <div className="absolute top-2.5 right-2.5 z-20 rounded-lg bg-white/92 px-2.5 py-1 shadow-sm backdrop-blur-sm">
           <p className="text-[9px] font-bold text-slate-500">
             SERIE <span className="font-black text-manises-blue">{firstSerie}</span>
           </p>

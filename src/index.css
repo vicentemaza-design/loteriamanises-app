@@ -294,6 +294,12 @@
     background-clip: text;
   }
 
+  /* Tipografía manuscrita — slogans y frases emocionales */
+  .font-manuscript {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-style: italic;
+  }
+
   /* Scrollbar invisible pero funcional */
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -424,6 +430,14 @@
   /* Botones y inputs — sin tap highlight */
   button, a, input, select, textarea {
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Previene el zoom automático de iOS Safari al hacer foco en inputs
+     (iOS hace zoom cuando font-size < 16px) */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
   }
 
   /* Focus visible accesible */

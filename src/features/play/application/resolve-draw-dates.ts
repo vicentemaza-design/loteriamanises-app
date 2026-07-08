@@ -52,7 +52,7 @@ export function getAvailableNationalDrawDates(
     : getNextWeekdayIso(6, 13, now);
 
   const dates = [baseDraw];
-  for (let index = 1; index < 5; index += 1) {
+  for (let index = 1; index < 12; index += 1) {
     const date = new Date(baseDraw);
     date.setDate(date.getDate() + (index * 7));
     dates.push(date.toISOString());
