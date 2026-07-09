@@ -7,6 +7,7 @@ interface BallSelectionProps {
   matchedStars?: number[];
   type?: string;
   large?: boolean;
+  medium?: boolean;
   compact?: boolean;
 }
 
@@ -17,12 +18,13 @@ export function BallSelection({
   matchedStars = [],
   type,
   large = false,
+  medium = false,
   compact = false,
 }: BallSelectionProps) {
   const isGordo = type === 'gordo';
-  const ballSize  = large ? 'h-9 w-9' : compact ? 'h-[22px] w-[22px]' : 'h-7 w-7';
-  const ballText  = large ? 'text-[13px] font-black' : compact ? 'text-[9px] font-bold' : 'text-[11px] font-bold';
-  const gap       = large ? 'gap-2' : compact ? 'gap-1' : 'gap-1.5';
+  const ballSize  = large ? 'h-9 w-9' : medium ? 'h-8 w-8' : compact ? 'h-[22px] w-[22px]' : 'h-7 w-7';
+  const ballText  = large ? 'text-[13px] font-black' : medium ? 'text-[12px] font-bold' : compact ? 'text-[9px] font-bold' : 'text-[11px] font-bold';
+  const gap       = large ? 'gap-2' : medium ? 'gap-1.5' : compact ? 'gap-1' : 'gap-1.5';
 
   return (
     <div className={cn('flex items-center', gap, 'overflow-x-auto')}>
@@ -51,7 +53,7 @@ export function BallSelection({
             {isGordo ? (
               <div className={cn(
                 'flex shrink-0 items-center justify-center rounded-md border',
-                large ? 'h-9 w-9' : compact ? 'h-[18px] w-[18px]' : 'h-6 w-6',
+                large ? 'h-9 w-9' : medium ? 'h-7 w-7' : compact ? 'h-[18px] w-[18px]' : 'h-6 w-6',
                 'border-amber-200 bg-amber-50',
               )}>
                 <svg
@@ -61,7 +63,7 @@ export function BallSelection({
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className={large ? 'h-5 w-5' : compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5'}
+                  className={large ? 'h-5 w-5' : medium ? 'h-4 w-4' : compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5'}
                 >
                   <rect x="3" y="3" width="18" height="18" rx="2" />
                 </svg>
@@ -73,7 +75,7 @@ export function BallSelection({
                 stroke="#d97706"
                 strokeWidth="1.5"
                 strokeLinejoin="round"
-                className={large ? 'h-8 w-8' : compact ? 'h-4 w-4' : 'h-6 w-6'}
+                className={large ? 'h-8 w-8' : medium ? 'h-7 w-7' : compact ? 'h-4 w-4' : 'h-6 w-6'}
               >
                 <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
               </svg>

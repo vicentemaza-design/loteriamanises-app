@@ -281,7 +281,7 @@ function BoletosGrid({
                     />
                     {bet.reintegro != null && (
                       <span className={cn(
-                        'ml-auto shrink-0 rounded-md px-1.5 py-0.5 text-[9px] font-black',
+                        'ml-auto shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black',
                         reintegroMatch ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
                       )}>
                         R:{bet.reintegro}
@@ -341,11 +341,12 @@ function BoletoGroupsView({
           <p className="mb-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
             Resultado oficial
           </p>
-          <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+          <div className="rounded-2xl border border-slate-100 bg-white px-4 py-2 shadow-sm">
             <BallSelection
               numbers={result.numbers.map(Number).filter(Boolean)}
               stars={result.stars}
               type={game.type}
+              medium
             />
           </div>
         </div>
@@ -659,7 +660,7 @@ function SingleDrawDetail({
           <p className="mb-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
             Resultado oficial
           </p>
-          <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+          <div className="rounded-2xl border border-slate-100 bg-white px-4 py-2 shadow-sm">
             <div className="flex items-center gap-2">
               <BallSelection
                 numbers={result.numbers.map(Number).filter(Boolean)}
@@ -668,7 +669,7 @@ function SingleDrawDetail({
                 large
               />
               {result.reintegro != null && (
-                <span className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[11px] font-black bg-slate-100 text-slate-500">
+                <span className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[13px] font-black bg-slate-100 text-slate-500">
                   R:{result.reintegro}
                 </span>
               )}
@@ -689,7 +690,7 @@ function SingleDrawDetail({
             const reintegroMatches = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
             return (
               // eslint-disable-next-line react/no-array-index-key
-              <div key={i} className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+              <div key={i} className="rounded-2xl border border-slate-100 bg-white px-4 py-2 shadow-sm">
                 <div className="flex items-center gap-2">
                   <BallSelection
                     numbers={bet.numbers}
@@ -701,7 +702,7 @@ function SingleDrawDetail({
                   />
                   {bet.reintegro != null && (
                     <span className={cn(
-                      'ml-auto shrink-0 rounded-lg px-2 py-1 text-[11px] font-black',
+                      'ml-auto shrink-0 rounded-lg px-2 py-1 text-[13px] font-black',
                       reintegroMatches ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
                     )}>
                       R:{bet.reintegro}
@@ -809,15 +810,16 @@ function SemanalDetail({
                     <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
                       Resultado oficial
                     </p>
-                    <div className="rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2.5">
+                    <div className="rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2">
                       <div className="flex items-center gap-2">
                         <BallSelection
                           numbers={result.numbers.map(Number).filter(Boolean)}
                           stars={result.stars}
                           type={game.type}
+                          medium
                         />
                         {result.reintegro != null && (
-                          <span className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[11px] font-black bg-slate-100 text-slate-500">
+                          <span className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[13px] font-black bg-slate-100 text-slate-500">
                             R:{result.reintegro}
                           </span>
                         )}
@@ -845,7 +847,7 @@ function SemanalDetail({
                     const reintegroMatches = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
                     return (
                       // eslint-disable-next-line react/no-array-index-key
-                      <div key={betIdx} className="rounded-xl border border-slate-100 bg-white px-3 py-2.5">
+                      <div key={betIdx} className="rounded-xl border border-slate-100 bg-white px-3 py-2">
                         <div className="flex items-center gap-2">
                           <BallSelection
                             numbers={bet.numbers}
@@ -857,7 +859,7 @@ function SemanalDetail({
                           />
                           {bet.reintegro != null && (
                             <span className={cn(
-                              'ml-auto shrink-0 rounded-md px-1.5 py-0.5 text-[9px] font-black',
+                              'ml-auto shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-black',
                               reintegroMatches ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
                             )}>
                               R:{bet.reintegro}
