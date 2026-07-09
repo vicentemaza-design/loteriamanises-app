@@ -394,6 +394,235 @@ function BoletoGroupsView({
   );
 }
 
+// ── Quiniela detail ────────────────────────────────────────────────────────
+
+type QuinielaFixtureItem = { id: number; home: string; away: string };
+
+function QuinielaDetailView({
+  ticket,
+  result,
+}: {
+  ticket: Ticket;
+  result: MatchResult;
+}) {
+  const status      = getPlayStatus(ticket);
+  const isScrutinized = status === 'scrutinized';
+  const prize       = ticket.prize ?? 0;
+  const picks       = (ticket.metadata?.picks as string[]) ?? [];
+  const fixtures    = (ticket.metadata?.quinielaFixtures as QuinielaFixtureItem[]) ?? [];
+  const system      = (ticket.metadata?.quinielaSystem as string) ?? 'simple';
+  const modalidad   = ticket.metadata?.quinielaModalidad as string | undefined;
+  const betsCount   = getBetsCount(ticket);
+
+  const regularPicks = picks.slice(0, 14);
+  const p15Pick      = picks[14] ?? null;
+
+  const resultNums   = result?.numbers ?? [];
+
+  function resultSign(idx: number): string | null {
+    const r = resultNums[idx];
+    return r != null ? String(r) : null;
+  }
+
+  function isHit(idx: number, pick: string): boolean {
+    const r = resultSign(idx);
+    if (!r) return false;
+    return pick === r;
+  }
+
+  const hitCount = regularPicks.filter((p, i) => isHit(i, p)).length;
+
+  // Parse P15: pick "2/1" → { home:'2', away:'1' }
+  // Parse P15 result: "M-1" → { home:'M', away:'1' }
+  const [p15PickHome, p15PickAway] = p15Pick ? p15Pick.split('/') : [null, null];
+  const p15Fixture = fixtures.find(f => f.id === 15);
+  const p15ResultRaw = result ? String(resultNums[14] ?? '') : '';
+  const [p15ResHome, p15ResAway] = p15ResultRaw ? p15ResultRaw.split('-') : [null, null];
+
+  const systemLabel = system === 'simple'
+    ? 'Columna sencilla'
+    : system === 'manises' && modalidad
+      ? `Reducción Manises · ${modalidad === 'al_13' ? 'Al 13' : modalidad === 'al_12' ? 'Al 12' : 'Al 11'}`
+      : system === 'oficial'
+        ? 'Reducción oficial'
+        : 'Múltiple';
+
+  return (
+    <div className="flex flex-col gap-3 px-4 pt-4">
+
+      {/* Sistema + stats */}
+      <div className="flex items-center gap-2">
+        <span className="rounded-full border border-manises-blue/15 bg-manises-blue/6 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-manises-blue">
+          {systemLabel}
+        </span>
+        <span className="text-[10px] font-medium text-slate-400">
+          {betsCount} {betsCount === 1 ? 'apuesta' : 'apuestas'}
+        </span>
+        {isScrutinized && (
+          <span className={cn(
+            'ml-auto rounded-full px-2.5 py-1 text-[9px] font-black',
+            hitCount >= 12 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+          )}>
+            {hitCount} / 14 aciertos
+          </span>
+        )}
+      </div>
+
+      {/* Resultado oficial (si escrutada) */}
+      {isScrutinized && result && (
+        <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+          <div className="flex items-center gap-2 border-b border-slate-50 bg-slate-50/60 px-3 py-2">
+            <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Resultado oficial</p>
+            <div className="ml-auto flex gap-2">
+              {['1', 'X', '2'].map(s => (
+                <span key={s} className="flex h-5 w-5 items-center justify-center rounded-md bg-manises-blue/10 text-[8px] font-black text-manises-blue">{s}</span>
+              ))}
+            </div>
+          </div>
+          <div className="divide-y divide-slate-50">
+            {fixtures.filter(f => f.id !== 15).slice(0, 14).map((fix) => {
+              const rSign = resultSign(fix.id - 1);
+              return (
+                <div key={fix.id} className="flex items-center gap-2 px-3 py-1.5">
+                  <span className="w-4 shrink-0 text-[9px] font-black text-slate-300 text-right tabular-nums">{fix.id}</span>
+                  <p className="flex-1 min-w-0 text-[10.5px] font-semibold text-slate-600 truncate">
+                    {fix.home} <span className="text-slate-300 font-normal">·</span> {fix.away}
+                  </p>
+                  <span className={cn(
+                    'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[11px] font-black',
+                    rSign === '1' ? 'bg-manises-blue text-white' :
+                    rSign === 'X' ? 'bg-slate-500 text-white' :
+                    rSign === '2' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-300'
+                  )}>
+                    {rSign ?? '?'}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Mi pronóstico */}
+      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="border-b border-slate-50 bg-manises-blue/[0.03] px-3 py-2">
+          <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">Mi pronóstico</p>
+        </div>
+        <div className="divide-y divide-slate-50">
+          {regularPicks.map((pick, idx) => {
+            const fix     = fixtures.find(f => f.id === idx + 1);
+            const hit     = isScrutinized && isHit(idx, pick);
+            const miss    = isScrutinized && result != null && !isHit(idx, pick);
+            const isMulti = pick.length > 1;
+            return (
+              <div key={idx} className="flex items-center gap-2 px-3 py-1.5">
+                <span className="w-4 shrink-0 text-[9px] font-black text-slate-300 text-right tabular-nums">{idx + 1}</span>
+                <p className="flex-1 min-w-0 text-[10.5px] font-semibold text-slate-600 truncate">
+                  {fix ? `${fix.home} · ${fix.away}` : `Partido ${idx + 1}`}
+                </p>
+                {isMulti && (
+                  <span className={cn(
+                    'shrink-0 rounded-md px-1.5 py-0.5 text-[8px] font-black',
+                    pick.length >= 3 ? 'bg-violet-100 text-violet-600' : 'bg-manises-blue/10 text-manises-blue'
+                  )}>
+                    {pick.length >= 3 ? 'Triple' : 'Doble'}
+                  </span>
+                )}
+                <div className="flex gap-1 shrink-0">
+                  {['1', 'X', '2'].map(sign => {
+                    const active   = pick.includes(sign);
+                    const correct  = active && hit;
+                    const wrong    = active && miss;
+                    return (
+                      <span key={sign} className={cn(
+                        'flex h-7 w-7 items-center justify-center rounded-lg text-[11px] font-black transition-colors',
+                        correct ? 'bg-emerald-500 text-white' :
+                        wrong   ? 'bg-red-400 text-white' :
+                        active  ? 'bg-manises-blue text-white' :
+                                  'bg-slate-50 text-slate-300'
+                      )}>
+                        {sign}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Pleno al 15 */}
+      {p15Pick && p15Fixture && (
+        <div className="overflow-hidden rounded-2xl border border-amber-100/80 bg-white shadow-sm">
+          <div className="flex items-center gap-2 border-b border-amber-50 bg-amber-50/60 px-3 py-1.5">
+            <div className="flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-white">
+              <span className="text-[8px] font-black leading-none">15</span>
+            </div>
+            <p className="text-[9px] font-black uppercase tracking-[0.14em] text-amber-700">Pleno al 15 (por goles)</p>
+            {isScrutinized && p15ResultRaw && (
+              <span className="ml-auto rounded-full bg-amber-100 px-2 py-0.5 text-[8px] font-black text-amber-700">
+                Resultado: {p15ResultRaw}
+              </span>
+            )}
+          </div>
+          {[
+            { label: 'L', name: p15Fixture.home, pickGoal: p15PickHome, resGoal: p15ResHome },
+            { label: 'V', name: p15Fixture.away, pickGoal: p15PickAway, resGoal: p15ResAway },
+          ].map(({ label, name, pickGoal, resGoal }) => (
+            <div key={label} className={cn(
+              'flex items-center gap-2 px-3 py-1.5',
+              label === 'L' ? 'border-b border-amber-50/60' : ''
+            )}>
+              <span className="w-4 shrink-0 text-[9px] font-black text-amber-300 text-right">{label}</span>
+              <p className="flex-1 min-w-0 text-[10.5px] font-semibold text-slate-600 truncate">{name}</p>
+              <div className="flex gap-1 shrink-0">
+                {['0', '1', '2', 'M'].map(sign => {
+                  const active  = pickGoal === sign;
+                  const correct = active && isScrutinized && resGoal === sign;
+                  const wrong   = active && isScrutinized && resGoal !== null && resGoal !== sign;
+                  return (
+                    <span key={sign} className={cn(
+                      'flex h-7 w-7 items-center justify-center rounded-lg text-[11px] font-black',
+                      correct ? 'bg-emerald-500 text-white' :
+                      wrong   ? 'bg-red-400 text-white' :
+                      active  ? 'bg-amber-500 text-white' :
+                                'bg-amber-50 text-amber-400'
+                    )}>
+                      {sign}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Premio / Pendiente */}
+      {isScrutinized ? (
+        <div className={cn(
+          'flex items-center justify-between rounded-2xl border px-4 py-3',
+          prize > 0 ? 'border-emerald-100 bg-emerald-50' : 'border-slate-100 bg-slate-50'
+        )}>
+          <div className="flex items-center gap-2">
+            <Trophy className={cn('h-4 w-4', prize > 0 ? 'text-emerald-500' : 'text-slate-300')} />
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Premio</span>
+          </div>
+          <span className={cn('text-[16px] font-black', prize > 0 ? 'text-emerald-600' : 'text-slate-400')}>
+            {formatCurrency(prize)}
+          </span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3">
+          <Clock className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+          <span className="text-[10px] font-semibold text-slate-400">Pendiente de escrutinio</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Single draw detail ─────────────────────────────────────────────────────
 
 function SingleDrawDetail({
@@ -780,6 +1009,8 @@ export function TicketDetailPage() {
 
       {isNational ? (
         <NationalDetailContent ticket={ticket} />
+      ) : ticket.gameType === 'quiniela' ? (
+        <QuinielaDetailView ticket={ticket} result={dayResults[0]?.result ?? null} />
       ) : isSemanal ? (
         <SemanalDetail ticket={ticket} dayResults={dayResults} game={game} />
       ) : (

@@ -238,6 +238,92 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
     createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
   },
 
+  // ── Quiniela escrutada (columna sencilla) ─────────────────────────────────
+  {
+    id: 'demo-quiniela-sencilla',
+    userId: 'demo-user',
+    gameId: 'quiniela',
+    gameType: 'quiniela',
+    numbers: [],
+    drawDate: '2026-05-31',
+    status: 'lost',
+    prize: 0,
+    price: 0.75,
+    metadata: {
+      playStatus: 'scrutinized',
+      orderTotalPrice: 0.75,
+      betsCount: 1,
+      holderName: 'Rafael Sanchis Penadés',
+      holderNif: '25252925Z',
+      quinielaSystem: 'simple',
+      // Picks de los 14 partidos + P15 codificado como "golesLocal/golesVisitante"
+      // Resultado del sorteo: [1,2,1,'X',2,1,1,'X',1,2,1,1,'X',2,'M-1']
+      // → 10 aciertos regulares de 14 + fallo en P15
+      picks: ['1', 'X', '2', '1', 'X', '1', '1', 'X', '1', '2', '1', '1', 'X', '2', '2/1'],
+      quinielaFixtures: [
+        { id: 1,  home: 'Real Madrid',     away: 'Osasuna' },
+        { id: 2,  home: 'FC Barcelona',    away: 'Villarreal' },
+        { id: 3,  home: 'Atlético Madrid', away: 'Athletic Club' },
+        { id: 4,  home: 'Real Sociedad',   away: 'Rayo Vallecano' },
+        { id: 5,  home: 'Real Betis',      away: 'Celta de Vigo' },
+        { id: 6,  home: 'Valencia CF',     away: 'Las Palmas' },
+        { id: 7,  home: 'Girona',          away: 'Getafe' },
+        { id: 8,  home: 'Alavés',          away: 'Espanyol' },
+        { id: 9,  home: 'Sevilla',         away: 'Mallorca' },
+        { id: 10, home: 'Valladolid',      away: 'Almería' },
+        { id: 11, home: 'Levante',         away: 'Eibar' },
+        { id: 12, home: 'Zaragoza',        away: 'Huesca' },
+        { id: 13, home: 'Rapid Viena',     away: 'RB Salzburg' },
+        { id: 14, home: 'Ajax',            away: 'PSV Eindhoven' },
+        { id: 15, home: 'Feyenoord',       away: 'AZ Alkmaar' },
+      ],
+    },
+    createdAt: new Date(Date.now() - 86400000 * 40).toISOString(),
+  },
+
+  // ── Quiniela pendiente (Reducidas Manises al 13, 96 apuestas) ─────────────
+  {
+    id: 'demo-quiniela-manises',
+    userId: 'demo-user',
+    gameId: 'quiniela',
+    gameType: 'quiniela',
+    numbers: [],
+    drawDate: '2026-07-12',
+    status: 'pending',
+    prize: 0,
+    price: 72.00,
+    metadata: {
+      playStatus: 'confirmed',
+      confirmedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+      orderTotalPrice: 72.00,
+      betsCount: 96,
+      holderName: 'Rafael Sanchis Penadés',
+      holderNif: '25252925Z',
+      quinielaSystem: 'manises',
+      quinielaModalidad: 'al_13',
+      // Pronóstico base con dobles y triples (genera las 96 apuestas reducidas)
+      picks: ['1X', '2', '1', 'X2', '1X2', '1', '2', 'X', '1', 'X2', '1', '1X', 'X', '2', '1/M'],
+      quinielaFixtures: [
+        { id: 1,  home: 'Real Madrid',     away: 'FC Barcelona' },
+        { id: 2,  home: 'Valencia',        away: 'Sevilla' },
+        { id: 3,  home: 'Villarreal',      away: 'Real Betis' },
+        { id: 4,  home: 'Athletic Club',   away: 'Real Sociedad' },
+        { id: 5,  home: 'Atlético Madrid', away: 'Getafe' },
+        { id: 6,  home: 'Las Palmas',      away: 'Osasuna' },
+        { id: 7,  home: 'Celta',           away: 'Espanyol' },
+        { id: 8,  home: 'Alavés',          away: 'Mallorca' },
+        { id: 9,  home: 'Rayo',            away: 'Girona' },
+        { id: 10, home: 'Granada',         away: 'Almería' },
+        { id: 11, home: 'Zaragoza',        away: 'Sporting' },
+        { id: 12, home: 'Levante',         away: 'Eibar' },
+        { id: 13, home: 'Sandefjord',      away: 'HamKam' },
+        { id: 14, home: 'Brann',           away: 'Stabaek' },
+        { id: 15, home: 'Sandefjord Fotball', away: 'Hamkam IL' },
+      ],
+    },
+    createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
+  },
+
   // ── Lotería Jueves en trámite (mensajería, sin confirmar) ─────────────────
   {
     id: 'demo-lotjueves-processing',
