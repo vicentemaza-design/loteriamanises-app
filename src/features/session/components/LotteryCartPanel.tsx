@@ -25,8 +25,11 @@ function isAbonable(number: string): boolean {
 }
 
 // Navidad/niño → siempre DÉCIMO. Jueves/sábado → TICKET si termina en 3 o 7
+// Demo: 23019 forzado a TICKET para mostrar el flujo de ver ticket
+const DEMO_TICKET_NUMBERS = new Set(['23019', '45002', '12086', '67054', '89021']);
 function getTicketLabel(gameType: string, number: string): 'DÉCIMO' | 'TICKET' {
   if (gameType === 'navidad' || gameType === 'nino') return 'DÉCIMO';
+  if (DEMO_TICKET_NUMBERS.has(number)) return 'TICKET';
   return ['3', '7'].includes(number.slice(-1)) ? 'TICKET' : 'DÉCIMO';
 }
 
@@ -215,29 +218,31 @@ function LotteryDraftRow({ draft, color, deliveryMode, onDelete, onQty }: {
           </button>
         </div>
 
-        {/* Custodia: Abonarme (si abonable) + Ver ticket */}
-        {isCustodia && (
-          <div className="mt-1.5 flex gap-1.5">
-            {canAbonarse && (
-              <button type="button" onClick={() => setAbonarseOpen(true)}
-                className="flex items-center gap-1.5 rounded-lg border border-manises-gold/30 bg-manises-gold/5 px-2.5 py-1 text-[10px] font-black text-manises-gold transition-colors hover:bg-manises-gold/10">
-                <Star className="h-3 w-3" /> Abonarme
-              </button>
-            )}
-            <button type="button" onClick={() => setCustodiaTicketOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-black text-manises-blue transition-colors hover:bg-slate-100">
-              <Eye className="h-3 w-3" /> Ver ticket
+        {/* Custodia: solo Abonarme (si abonable) */}
+        {isCustodia && canAbonarse && (
+          <div className="mt-1.5">
+            <button type="button" onClick={() => setAbonarseOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-manises-gold/30 bg-manises-gold/5 px-2.5 py-1 text-[10px] font-black text-manises-gold transition-colors hover:bg-manises-gold/10">
+              <Star className="h-3 w-3" /> Abonarme
             </button>
           </div>
         )}
 
-        {/* Mensajería: Ver décimo / Ver ticket → abre mockup */}
+        {/* Mensajería: un botón cuyo modal depende del tipo de número */}
         {!isCustodia && (
-          <button type="button" onClick={() => setTicketMockupOpen(true)}
-            className="mt-1.5 flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-black text-manises-blue transition-colors hover:bg-slate-100">
-            <Eye className="h-3 w-3" />
-            {label === 'DÉCIMO' ? 'Ver décimo' : 'Ver ticket'}
-          </button>
+          <div className="mt-1.5">
+            {label === 'DÉCIMO' ? (
+              <button type="button" onClick={() => setTicketMockupOpen(true)}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-black text-manises-blue transition-colors hover:bg-slate-100">
+                <Eye className="h-3 w-3" /> Ver décimo
+              </button>
+            ) : (
+              <button type="button" onClick={() => setCustodiaTicketOpen(true)}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-black text-manises-blue transition-colors hover:bg-slate-100">
+                <Eye className="h-3 w-3" /> Ver ticket
+              </button>
+            )}
+          </div>
         )}
       </div>
       <AbonarseModal isOpen={abonarseOpen} onClose={() => setAbonarseOpen(false)} decimalNumber={number} />

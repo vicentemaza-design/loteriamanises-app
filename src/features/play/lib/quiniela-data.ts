@@ -59,15 +59,15 @@ export function calcDirectBets(matches: QuinielaMatch[]): number {
   }, 1);
 }
 
-/** Upcoming Thursdays from a reference date */
-export function getUpcomingThursdays(from: Date, count: number): Date[] {
+/** Upcoming Sundays from a reference date (La Quiniela se resuelve el domingo) */
+export function getUpcomingSundays(from: Date, count: number): Date[] {
   const result: Date[] = [];
   const d = new Date(from);
   d.setHours(18, 0, 0, 0);
-  // Advance to next Thursday (4 = Thursday)
+  // Advance to next Sunday (0 = Sunday)
   const day = d.getDay();
-  const daysUntilThursday = day <= 4 ? 4 - day : 7 - day + 4;
-  d.setDate(d.getDate() + daysUntilThursday);
+  const daysUntilSunday = day === 0 ? 7 : 7 - day;
+  d.setDate(d.getDate() + daysUntilSunday);
   for (let i = 0; i < count; i++) {
     result.push(new Date(d));
     d.setDate(d.getDate() + 7);

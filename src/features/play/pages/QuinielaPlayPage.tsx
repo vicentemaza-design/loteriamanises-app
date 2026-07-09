@@ -19,7 +19,7 @@ import { PurchaseBottomBar } from '../components/PurchaseBottomBar';
 import { QuinielaSimpleSection, type QuinielaSimpleSummary } from '../components/QuinielaSimpleSection';
 import { QuinielaManisesSection, type QuinielaManisesSummary } from '../components/QuinielaManisesSection';
 import { QuinielaOficialSection, type QuinielaOficialSummary } from '../components/QuinielaOficialSection';
-import { getUpcomingThursdays } from '../lib/quiniela-data';
+import { getUpcomingSundays } from '../lib/quiniela-data';
 import { getFixturesForDate } from '../lib/quiniela-fixtures';
 import type { LotteryGame } from '@/shared/types/domain';
 
@@ -80,7 +80,7 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   // Draw date selection
-  const drawDates = useMemo(() => getUpcomingThursdays(new Date(), 5), []);
+  const drawDates = useMemo(() => getUpcomingSundays(new Date(), 5), []);
   const [selectedDrawDate, setSelectedDrawDate] = useState<Date>(() => drawDates[0]);
 
   // Summaries from each section

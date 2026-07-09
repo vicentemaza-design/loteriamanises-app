@@ -5,7 +5,8 @@ import type { QuinielaResult } from '../lib/quiniela-data';
 import type { QuinielaFixture } from '../lib/quiniela-fixtures';
 
 const PRICE_PER_COL = 0.75;
-const MAX_COLS = 7;
+const MIN_COLS = 2;
+const MAX_COLS = 8;
 
 type Column = (QuinielaResult | null)[];
 
@@ -25,7 +26,7 @@ interface Props {
 }
 
 export function QuinielaSimpleSection({ fixtures, onSummaryChange }: Props) {
-  const [columns, setColumns] = useState<Column[]>([makeEmptyColumn()]);
+  const [columns, setColumns] = useState<Column[]>([makeEmptyColumn(), makeEmptyColumn()]);
   const [activeIdx, setActiveIdx] = useState(0);
 
   const emitSummary = useCallback((cols: Column[]) => {
@@ -47,7 +48,7 @@ export function QuinielaSimpleSection({ fixtures, onSummaryChange }: Props) {
   };
 
   const removeColumn = () => {
-    if (columns.length <= 1) return;
+    if (columns.length <= MIN_COLS) return;
     const next = columns.slice(0, -1);
     setColumns(next);
     setActiveIdx(Math.min(activeIdx, next.length - 1));
@@ -75,7 +76,7 @@ export function QuinielaSimpleSection({ fixtures, onSummaryChange }: Props) {
         <button
           type="button"
           onClick={removeColumn}
-          disabled={columns.length <= 1}
+          disabled={columns.length <= MIN_COLS}
           className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-500 disabled:opacity-30 active:scale-95 transition-transform"
         >
           <Minus className="h-4 w-4" />
