@@ -314,7 +314,7 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
           <img
             src="/quiniela-stadium.jpeg"
             alt=""
-            className="h-full w-full object-cover object-[center_20%] opacity-[0.13]"
+            className="h-full w-full object-cover object-[center_20%] opacity-[0.22]"
             loading="eager"
             draggable={false}
           />
