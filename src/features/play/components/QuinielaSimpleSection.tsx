@@ -130,11 +130,13 @@ export function QuinielaSimpleSection({ fixtures, onSummaryChange }: Props) {
               const complete = col.every(r => r !== null) && plena?.home !== null && plena?.away !== null;
               return (
                 <button key={i} type="button" onClick={() => setActiveIdx(i)}
-                  className={cn('h-1.5 rounded-full transition-all',
-                    i === activeIdx ? 'bg-manises-blue w-4' :
-                    complete ? 'bg-emerald-400 w-1.5' : 'bg-slate-200 w-1.5'
-                  )}
-                />
+                  className="p-2 -m-2"
+                >
+                  <span className={cn('block h-2.5 rounded-full transition-all',
+                    i === activeIdx ? 'bg-manises-blue w-6' :
+                    complete ? 'bg-emerald-400 w-2.5' : 'bg-slate-200 w-2.5'
+                  )} />
+                </button>
               );
             })}
           </div>
