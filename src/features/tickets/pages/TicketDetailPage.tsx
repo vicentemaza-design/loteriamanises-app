@@ -14,6 +14,19 @@ import { formatDate, formatCurrency, cn } from '@/shared/lib/utils';
 import type { Ticket } from '@/shared/types/domain';
 import { useState } from 'react';
 
+// ── Boleto grouping constants ──────────────────────────────────────────────
+
+const BOLETO_SIZE: Partial<Record<string, number>> = {
+  euromillones: 5,
+  primitiva: 8,
+};
+
+function groupIntoBoletos<T>(arr: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size));
+  return result;
+}
+
 // ── helpers ────────────────────────────────────────────────────────────────
 
 function isNationalTicket(t: Ticket) {
@@ -139,34 +152,212 @@ function DetailHeader({ ticket, game }: { ticket: Ticket; game: (typeof LOTTERY_
       </div>
 
       {/* Stats bar */}
-      <div className="grid grid-cols-3 divide-x divide-slate-100 border-y border-slate-100 bg-white">
-        <div className="flex flex-col items-center py-3 px-2">
-          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Importe jugada</p>
-          <p className="mt-1 text-[18px] font-black text-manises-blue leading-none">{formatCurrency(orderTotal)}</p>
+      {(() => {
+        const isEuro = ticket.gameType === 'euromillones';
+        const isPrim = ticket.gameType === 'primitiva';
+        const jokerBoletos = (ticket.metadata?.jokerBoletos as Array<{ jokerNumber: string }> | undefined) ?? [];
+        const hasJoker = jokerBoletos.length > 0;
+        const fourCols = isEuro || (isPrim && hasJoker);
+        const prizeCell = (
+          <div className={cn('flex flex-col items-center py-3 px-1', isScrutinized && prize > 0 ? 'bg-emerald-50' : '')}>
+            <p className="text-[7px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Premio total</p>
+            <p className={cn('mt-1 font-black leading-none', fourCols ? 'text-[15px]' : 'text-[18px]', isScrutinized && prize > 0 ? 'text-emerald-600' : 'text-slate-300')}>
+              {isScrutinized ? formatCurrency(prize) : '—'}
+            </p>
+          </div>
+        );
+        if (fourCols) {
+          return (
+            <div className="grid grid-cols-4 divide-x divide-slate-100 border-y border-slate-100 bg-white">
+              <div className="flex flex-col items-center py-3 px-1">
+                <p className="text-[7px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Importe jugada</p>
+                <p className="mt-1 text-[15px] font-black text-manises-blue leading-none">{formatCurrency(orderTotal)}</p>
+              </div>
+              <div className="flex flex-col items-center py-3 px-1">
+                <p className="text-[7px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Nº columnas</p>
+                <p className="mt-1 text-[15px] font-black text-manises-blue leading-none">{betsCount}</p>
+              </div>
+              {isEuro && (
+                <div className="flex flex-col items-center py-3 px-1">
+                  <p className="text-[7px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Sorteos</p>
+                  <p className="mt-1 text-[15px] font-black text-manises-blue leading-none">{isSemanal ? dates.length : 1}</p>
+                </div>
+              )}
+              {isPrim && hasJoker && (
+                <div className="flex flex-col items-center py-3 px-1">
+                  <p className="text-[7px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Joker</p>
+                  <p className="mt-1 text-[15px] font-black text-emerald-600 leading-none">🍀 {jokerBoletos.length}</p>
+                </div>
+              )}
+              {prizeCell}
+            </div>
+          );
+        }
+        return (
+          <div className="grid grid-cols-3 divide-x divide-slate-100 border-y border-slate-100 bg-white">
+            <div className="flex flex-col items-center py-3 px-2">
+              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Importe jugada</p>
+              <p className="mt-1 text-[18px] font-black text-manises-blue leading-none">{formatCurrency(orderTotal)}</p>
+            </div>
+            <div className="flex flex-col items-center py-3 px-2">
+              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">{isSemanal ? 'Sorteos' : 'Apuesta'}</p>
+              <p className="mt-1 text-[18px] font-black text-manises-blue leading-none">{isSemanal ? dates.length : betsCount}</p>
+            </div>
+            <div className={cn('flex flex-col items-center py-3 px-2', isScrutinized && prize > 0 ? 'bg-emerald-50' : '')}>
+              <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">{isSemanal ? 'Premio total' : 'Premio'}</p>
+              <p className={cn('mt-1 text-[18px] font-black leading-none', isScrutinized && prize > 0 ? 'text-emerald-600' : 'text-slate-300')}>
+                {isScrutinized ? formatCurrency(prize) : '—'}
+              </p>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
+// ── Boleto groups view (Euromillones + Primitiva) ──────────────────────────
+
+function BoletoGroupsView({
+  ticket,
+  result,
+  game,
+}: {
+  ticket: Ticket;
+  result: MatchResult;
+  game: (typeof LOTTERY_GAMES)[number];
+}) {
+  const status = getPlayStatus(ticket);
+  const isScrutinized = status === 'scrutinized';
+  const bets = getBets(ticket);
+  const prize = ticket.prize ?? 0;
+
+  const boletosSize = BOLETO_SIZE[ticket.gameType] ?? bets.length;
+  const boletoGroups = groupIntoBoletos(bets, boletosSize);
+
+  const millonBoletos = (ticket.metadata?.millonBoletos as Array<{ codeFrom: string; codeTo: string }> | undefined) ?? [];
+  const jokerBoletos = (ticket.metadata?.jokerBoletos as Array<{ jokerNumber: string }> | undefined) ?? [];
+  const hasJoker = jokerBoletos.length > 0;
+
+  return (
+    <div className="flex flex-col gap-4 px-4 pt-4">
+      {/* Resultado oficial */}
+      {isScrutinized && result && (
+        <div>
+          <p className="mb-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+            Resultado oficial
+          </p>
+          <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+            <BallSelection
+              numbers={result.numbers.map(Number).filter(Boolean)}
+              stars={result.stars}
+              type={game.type}
+              large
+            />
+          </div>
         </div>
-        <div className="flex flex-col items-center py-3 px-2">
-          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
-            {isSemanal ? 'Sorteos' : 'Apuesta'}
-          </p>
-          <p className="mt-1 text-[18px] font-black text-manises-blue leading-none">
-            {isSemanal ? dates.length : betsCount}
-          </p>
-        </div>
-        <div className={cn(
-          'flex flex-col items-center py-3 px-2',
-          isScrutinized && prize > 0 ? 'bg-emerald-50' : ''
-        )}>
-          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">
-            {isSemanal ? 'Premio total' : 'Premio'}
-          </p>
-          <p className={cn(
-            'mt-1 text-[18px] font-black leading-none',
-            isScrutinized && prize > 0 ? 'text-emerald-600' : 'text-slate-300'
-          )}>
-            {isScrutinized ? formatCurrency(prize) : '—'}
-          </p>
+      )}
+
+      {/* Mis jugadas — agrupadas por boletos */}
+      <div>
+        <p className="mb-3 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+          Mis jugadas
+        </p>
+        <div className="flex flex-col gap-3">
+          {boletoGroups.map((groupBets, boletoIdx) => {
+            const colFrom = boletoIdx * boletosSize + 1;
+            const colTo = colFrom + groupBets.length - 1;
+            const millonData = millonBoletos[boletoIdx];
+            const jokerData = jokerBoletos[boletoIdx];
+
+            return (
+              <div key={boletoIdx} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+                {/* Cabecera del boleto */}
+                <div className="flex items-center justify-between border-b border-slate-50 bg-manises-blue/[0.035] px-4 py-2">
+                  <p className="text-[10px] font-black uppercase tracking-[0.06em] text-manises-blue">
+                    Boleto {boletoIdx + 1}
+                    <span className="ml-1.5 font-semibold normal-case text-slate-400">
+                      (Col. {colFrom}{colTo > colFrom ? `–${colTo}` : ''})
+                    </span>
+                  </p>
+                  {hasJoker && jokerData && (
+                    <span className="flex items-center gap-1 text-[11px] font-black text-emerald-600">
+                      🍀 {jokerData.jokerNumber}
+                    </span>
+                  )}
+                </div>
+
+                {/* Filas de columnas */}
+                <div className="divide-y divide-slate-50 px-3">
+                  {groupBets.map((bet, betIdx) => {
+                    const colNum = colFrom + betIdx;
+                    const matchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+                    const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
+                    return (
+                      <div key={betIdx} className="flex items-center gap-2 py-2">
+                        <span className="w-5 shrink-0 text-right text-[9px] font-black text-slate-300">{colNum}</span>
+                        <BallSelection
+                          numbers={bet.numbers}
+                          stars={bet.stars}
+                          matchedNumbers={matchedNums}
+                          matchedStars={matchedStars}
+                          type={game.type}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Códigos de El Millón (Euromillones) */}
+                {millonData && (
+                  <div className="border-t border-amber-100/60 bg-amber-50/40 px-4 py-2.5">
+                    <p className="text-[7px] font-black uppercase tracking-[0.18em] text-slate-400">
+                      Códigos de El Millón (asignados)
+                    </p>
+                    <p className="mt-0.5 font-mono text-[12px] font-black tracking-[0.05em] text-manises-blue">
+                      {millonData.codeFrom}{' '}
+                      <span className="text-[10px] font-semibold text-slate-400">A</span>{' '}
+                      {millonData.codeTo}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
+
+      {/* Nota Joker (solo Primitiva) */}
+      {hasJoker && ticket.gameType === 'primitiva' && (
+        <div className="flex items-start gap-2.5 rounded-2xl border border-emerald-100 bg-emerald-50/50 px-4 py-3">
+          <span className="text-base leading-tight">🍀</span>
+          <p className="text-[10px] font-medium leading-relaxed text-slate-500">
+            El Joker no es por columna, es por boleto. Cada boleto tiene un solo Joker, independientemente del número de columnas que contenga.
+          </p>
+        </div>
+      )}
+
+      {/* Premio */}
+      {isScrutinized && (
+        <div className={cn(
+          'flex items-center justify-between rounded-2xl border px-4 py-3',
+          prize > 0 ? 'border-emerald-100 bg-emerald-50' : 'border-slate-100 bg-slate-50'
+        )}>
+          <div className="flex items-center gap-2">
+            <Trophy className={cn('h-4 w-4', prize > 0 ? 'text-emerald-500' : 'text-slate-300')} />
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">Premio del día</span>
+          </div>
+          <span className={cn('text-[16px] font-black', prize > 0 ? 'text-emerald-600' : 'text-slate-400')}>
+            {formatCurrency(prize)}
+          </span>
+        </div>
+      )}
+      {!isScrutinized && (
+        <div className="flex items-center gap-2 rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3">
+          <Clock className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+          <span className="text-[10px] font-semibold text-slate-400">Pendiente de escrutinio</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -182,6 +373,11 @@ function SingleDrawDetail({
   result: MatchResult;
   game: (typeof LOTTERY_GAMES)[number];
 }) {
+  // Euromillones and Primitiva use boleto-grouped display
+  if (BOLETO_SIZE[ticket.gameType]) {
+    return <BoletoGroupsView ticket={ticket} result={result} game={game} />;
+  }
+
   const status = getPlayStatus(ticket);
   const isScrutinized = status === 'scrutinized';
   const bets = getBets(ticket);
