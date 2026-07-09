@@ -125,27 +125,73 @@ export const MOCK_GAME_SUBSCRIPTIONS: GameSubscription[] = [
     id: 'sub-game-01',
     gameId: 'euromillones',
     gameName: 'Euromillones',
-    betsCount: 1,
-    nextChargeDate: new Date(Date.now() + 86400000 * 2).toISOString(), // En 2 días
-    amount: 2.50,
+    betsCount: 4,
+    nextChargeDate: new Date(Date.now() + 86400000 * 1).toISOString(),
+    amount: 10.00,
     status: 'active',
+    frequency: 'Semanal (lunes)',
+    registeredAt: '2026-05-12T10:00:00.000Z',
+    paymentMethod: 'Saldo y tarjeta',
+    chargeMethod: 'Antes de cada sorteo',
     combinations: [
-      { numbers: [7, 14, 23, 38, 47], stars: [3, 9] }
-    ]
+      { numbers: [5, 12, 21, 30, 44], stars: [3, 9] },
+      { numbers: [7, 15, 22, 33, 41], stars: [2, 11] },
+      { numbers: [2, 11, 19, 28, 37], stars: [5, 10] },
+      { numbers: [9, 17, 23, 31, 43], stars: [1, 7] },
+    ],
   },
   {
     id: 'sub-game-02',
     gameId: 'primitiva',
     gameName: 'La Primitiva',
     betsCount: 2,
-    nextChargeDate: new Date(Date.now() + 86400000 * 4).toISOString(), // En 4 días
-    amount: 2.00,
+    nextChargeDate: new Date(Date.now() + 86400000 * 1).toISOString(),
+    amount: 4.00,
     status: 'active',
+    frequency: 'Semanal (lunes)',
+    registeredAt: '2026-04-08T10:00:00.000Z',
+    paymentMethod: 'Saldo',
+    chargeMethod: 'Antes de cada sorteo',
     combinations: [
       { numbers: [5, 12, 21, 30, 44, 49] },
-      { numbers: [2, 18, 25, 33, 40, 47] }
-    ]
-  }
+      { numbers: [2, 18, 25, 33, 40, 47] },
+    ],
+  },
+  {
+    id: 'sub-game-03',
+    gameId: 'bonoloto',
+    gameName: 'Bonoloto',
+    betsCount: 3,
+    nextChargeDate: new Date(Date.now() + 86400000 * 2).toISOString(),
+    amount: 3.00,
+    status: 'active',
+    frequency: 'Semanal (martes)',
+    registeredAt: '2026-03-20T10:00:00.000Z',
+    paymentMethod: 'Tarjeta Visa ···· 4242',
+    chargeMethod: 'Antes de cada sorteo',
+    combinations: [
+      { numbers: [5, 12, 21, 30, 44, 49] },
+      { numbers: [3,  8, 15, 17, 38, 44] },
+      { numbers: [1,  8, 24, 42, 43, 46] },
+    ],
+  },
+  {
+    id: 'sub-game-04',
+    gameId: 'gordo',
+    gameName: 'El Gordo',
+    betsCount: 2,
+    nextChargeDate: new Date(Date.now() + 86400000 * 3).toISOString(),
+    amount: 5.00,
+    status: 'active',
+    frequency: 'Semanal (domingo)',
+    registeredAt: '2026-06-01T10:00:00.000Z',
+    paymentMethod: 'Saldo y tarjeta',
+    chargeMethod: 'Antes de cada sorteo',
+    combinations: [
+      { numbers: [12, 18, 23, 34, 45], stars: [7] },
+      { numbers: [ 5, 14, 22, 31, 49], stars: [3] },
+    ],
+  },
 ];
 
 // ── JUGADAS FAVORITAS ────────────────────────────────────────────────

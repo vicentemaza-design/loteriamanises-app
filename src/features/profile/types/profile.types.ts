@@ -40,6 +40,10 @@ export interface GameSubscription {
   amount: number;
   status: 'active' | 'pending-cancel';
   combinations: SubscriptionBet[];
+  frequency?: string;
+  registeredAt?: string;
+  paymentMethod?: string;
+  chargeMethod?: string;
 }
 
 export interface FavoritePlay {

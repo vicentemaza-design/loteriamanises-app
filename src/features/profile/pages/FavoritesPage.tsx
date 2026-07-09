@@ -5,6 +5,7 @@ import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';
 import { Button } from '@/shared/ui/Button';
 import { useFavoritePlays } from '../hooks/useFavoritePlays';
+import { BallSelection } from '@/features/tickets/components/BallSelection';
 
 export function FavoritesPage() {
   const navigate = useNavigate();
@@ -25,6 +26,8 @@ export function FavoritesPage() {
         <div className="space-y-3">
           {favorites.map((favorite) => {
             const game = LOTTERY_GAMES.find((item) => item.id === favorite.gameId);
+            const firstBet = favorite.combinations[0];
+            const extraBets = favorite.combinations.length - 1;
             return (
               <PremiumSectionCard
                 key={favorite.id}
@@ -34,9 +37,21 @@ export function FavoritesPage() {
                 tone="blue"
               >
                 <div className="space-y-3">
-                  <div className="rounded-2xl bg-slate-50 px-3 py-3">
-                    <p className="text-sm font-black text-manises-blue">{favorite.numbersLabel}</p>
-                  </div>
+                  {/* Bolas de la primera apuesta */}
+                  {firstBet && (
+                    <div className="rounded-2xl bg-slate-50 px-3 py-3">
+                      <BallSelection
+                        numbers={firstBet.numbers}
+                        stars={firstBet.stars}
+                        type={favorite.gameId}
+                      />
+                      {extraBets > 0 && (
+                        <p className="mt-2 text-[10px] font-semibold text-slate-400">
+                          + {extraBets} {extraBets === 1 ? 'apuesta' : 'apuestas'} más
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex gap-2">
                     <Button

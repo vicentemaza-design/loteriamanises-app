@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { MOCK_GAME_SUBSCRIPTIONS } from '@/features/profile/data/profile.mock';
 import type { GameSubscription } from '@/features/profile/types/profile.types';
 
-const STORAGE_KEY = 'manises_profile_game_subscriptions_v1';
+const STORAGE_KEY = 'manises_profile_game_subscriptions_v2';
 
 function readSubscriptions(): GameSubscription[] {
   if (typeof window === 'undefined') {

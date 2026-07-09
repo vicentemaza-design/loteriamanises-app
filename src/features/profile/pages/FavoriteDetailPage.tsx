@@ -7,16 +7,7 @@ import { Button } from '@/shared/ui/Button';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';
 import { useFavoritePlays } from '../hooks/useFavoritePlays';
-import type { SubscriptionBet } from '../types/profile.types';
-
-function formatBet(bet: SubscriptionBet) {
-  const main = bet.numbers.map((value) => String(value).padStart(2, '0')).join('  ');
-  if (bet.stars?.length) {
-    const stars = bet.stars.map((value) => String(value).padStart(2, '0')).join('  ');
-    return `${main}  ·  ${stars}`;
-  }
-  return main;
-}
+import { BallSelection } from '@/features/tickets/components/BallSelection';
 
 export function FavoriteDetailPage() {
   const navigate = useNavigate();
@@ -44,24 +35,28 @@ export function FavoriteDetailPage() {
       <ProfileSubHeader title="Detalle de jugada" subtitle={game?.name ?? 'Favorita'} backTo="/profile/favorites" />
 
       <div className="flex flex-col gap-4 p-4">
+        {/* Nombre de la favorita */}
         <PremiumSectionCard
           title={favorite.title}
           eyebrow={game?.name ?? 'Juego'}
           description={`${favorite.betsCount} ${favorite.betsCount === 1 ? 'apuesta' : 'apuestas'}`}
           tone="blue"
         >
-          <div className="space-y-3">
+          <div className="space-y-2">
             {favorite.combinations.map((bet, index) => (
               <div key={`${favorite.id}-${index}`} className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Apuesta {index + 1}</p>
-                <p className="mt-2 font-mono text-sm font-black tracking-[0.18em] text-manises-blue">
-                  {formatBet(bet)}
-                </p>
+                {favorite.combinations.length > 1 && (
+                  <p className="mb-2 text-[9px] font-black uppercase tracking-[0.12em] text-slate-400">
+                    Apuesta {index + 1}
+                  </p>
+                )}
+                <BallSelection numbers={bet.numbers} stars={bet.stars} type={favorite.gameId} />
               </div>
             ))}
           </div>
         </PremiumSectionCard>
 
+        {/* Cambiar nombre */}
         <PremiumSectionCard title="Cambiar nombre" eyebrow="Identificación rápida" description="Ponle un nombre claro para reconocerla al instante." tone="default">
           <div className="space-y-3">
             <input
