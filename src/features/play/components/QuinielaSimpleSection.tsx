@@ -118,8 +118,11 @@ export function QuinielaSimpleSection({ fixtures, onSummaryChange }: Props) {
 
         {/* Column dots */}
         <div className="flex-1 text-center">
-          <p className="text-[12px] font-black text-manises-blue leading-tight">
-            Columna {activeIdx + 1} de {columns.length}
+          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400 leading-tight">
+            Columnas
+          </p>
+          <p className="text-[14px] font-black text-manises-blue leading-tight">
+            {activeIdx + 1} de {columns.length}
           </p>
           <div className="mt-1 flex gap-1 justify-center">
             {columns.map((col, i) => {

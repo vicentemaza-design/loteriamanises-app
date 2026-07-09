@@ -66,6 +66,8 @@ export interface GuaranteeTable {
   rows: { prob: string; values: string[] }[];
   development: string[];
   totalCols: number;
+  plenaHome?: string[];
+  plenaAway?: string[];
 }
 
 export type ManisesModalidad = 'directo' | 'al_13' | 'al_12' | 'al_11';
@@ -93,6 +95,8 @@ export const MANISES_REDUCTIONS: {
         'X  1  X  2  X  X  1  X  X  1  2  X  1  X  X',
       ],
       totalCols: 96,
+      plenaHome: ['2', '1', 'M'],
+      plenaAway: ['1', 'M', '0'],
     },
   },
   {
@@ -112,6 +116,8 @@ export const MANISES_REDUCTIONS: {
         '1  2  X  X  2  X  X  1  2  1  X  2  1  X  1',
       ],
       totalCols: 48,
+      plenaHome: ['1', 'M', '2'],
+      plenaAway: ['M', '0', '1'],
     },
   },
   {
@@ -131,6 +137,8 @@ export const MANISES_REDUCTIONS: {
         '2  1  X  2  1  2  1  X  2  2  1  X  2  1  X',
       ],
       totalCols: 18,
+      plenaHome: ['2', 'M', '1'],
+      plenaAway: ['1', '0', '2'],
     },
   },
 ];
