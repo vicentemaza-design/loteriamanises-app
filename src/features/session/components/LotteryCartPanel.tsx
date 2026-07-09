@@ -159,8 +159,8 @@ function CustodiaTicketModal({ number, onClose }: { number: string; onClose: () 
 
             {/* Códigos de serie */}
             <div className="absolute text-center" style={{ bottom: '2%', left: '54%', transform: 'translateX(-50%)' }}>
-              <p className="whitespace-nowrap font-mono tracking-tight text-gray-800" style={{ fontSize: 8 }}>{line1}</p>
-              <p className="whitespace-nowrap font-mono tracking-tight text-gray-800" style={{ fontSize: 8 }}>{line2}</p>
+              <p className="whitespace-nowrap font-mono tracking-tight text-gray-800" style={{ fontSize: 7 }}>{line1}</p>
+              <p className="whitespace-nowrap font-mono tracking-tight text-gray-800" style={{ fontSize: 7 }}>{line2}</p>
             </div>
           </div>
 
