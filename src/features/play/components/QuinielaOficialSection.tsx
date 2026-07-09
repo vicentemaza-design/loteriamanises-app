@@ -3,11 +3,10 @@ import { Trash2, Lock, ChevronDown } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import {
-  makeInitialMatches,
+  makeInitialOficialMatches,
   OFICIAL_REDUCTIONS,
-  type QuinielaMatch,
+  type QuinielaOficialMatch,
   type QuinielaResult,
-  getMatchTypeBadge,
 } from '../lib/quiniela-data';
 import type { QuinielaFixture } from '../lib/quiniela-fixtures';
 
@@ -16,7 +15,7 @@ const REGULAR_SIGNS = ['1', 'X', '2'] as const;
 const PLENA_SIGNS   = ['0', '1', '2', 'M'] as const;
 
 export interface QuinielaOficialSummary {
-  matches:    QuinielaMatch[];
+  matches:    QuinielaOficialMatch[];
   plenaHome:  QuinielaResult;
   plenaAway:  QuinielaResult;
   reductionId: string;
@@ -88,7 +87,7 @@ function GuaranteeCard({ table, totalCols }: {
 
 /* ── Sección principal ───────────────────────────────────────────────────── */
 export function QuinielaOficialSection({ fixtures, onSummaryChange }: Props) {
-  const [matches, setMatches]     = useState<QuinielaMatch[]>(() => makeInitialMatches(fixtures.filter(f => f.id !== 15)));
+  const [matches, setMatches]     = useState<QuinielaOficialMatch[]>(() => makeInitialOficialMatches(fixtures.filter(f => f.id !== 15)));
   const [plenaHome, setPlenaHome] = useState<QuinielaResult>(null);
   const [plenaAway, setPlenaAway] = useState<QuinielaResult>(null);
   const [reductionId, setReductionId] = useState<string>('7D_13');
@@ -107,7 +106,7 @@ export function QuinielaOficialSection({ fixtures, onSummaryChange }: Props) {
   const price = bets * PRICE_PER_BET;
 
   const emitSummary = useCallback((
-    m: QuinielaMatch[], ph: QuinielaResult, pa: QuinielaResult, rid: string
+    m: QuinielaOficialMatch[], ph: QuinielaResult, pa: QuinielaResult, rid: string
   ) => {
     const red = OFICIAL_REDUCTIONS.find(r => r.id === rid);
     const b   = red?.bets ?? 0;
@@ -146,8 +145,12 @@ export function QuinielaOficialSection({ fixtures, onSummaryChange }: Props) {
     setter(sorted || null);
   };
 
+  const toggleReducido = (matchId: number) => {
+    setMatches(prev => prev.map(m => m.id === matchId ? { ...m, isReducido: !m.isReducido } : m));
+  };
+
   const clearAll = () => {
-    setMatches(makeInitialMatches(fixtures.filter(f => f.id !== 15)));
+    setMatches(makeInitialOficialMatches(fixtures.filter(f => f.id !== 15)));
     setPlenaHome(null);
     setPlenaAway(null);
   };
@@ -267,7 +270,6 @@ export function QuinielaOficialSection({ fixtures, onSummaryChange }: Props) {
       <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm divide-y divide-slate-50">
         {regularFixtures.map((template, idx) => {
           const match = matches[idx];
-          const badge = getMatchTypeBadge(match?.result ?? null);
           return (
             <div key={template.id} className="flex items-center gap-2 py-1.5 px-3">
               <span className="w-4 shrink-0 text-[10px] font-black text-slate-300 text-right tabular-nums">
@@ -294,13 +296,18 @@ export function QuinielaOficialSection({ fixtures, onSummaryChange }: Props) {
                   );
                 })}
               </div>
-              <span className={cn(
-                'w-9 shrink-0 text-[9px] font-black text-right',
-                badge === 'Triple' ? 'text-violet-600' :
-                badge === 'Doble'  ? 'text-manises-blue' : 'text-slate-200'
-              )}>
-                {badge ?? '—'}
-              </span>
+              <button
+                type="button"
+                onClick={() => match && toggleReducido(match.id)}
+                className={cn(
+                  'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-black transition-all active:scale-90',
+                  match?.isReducido
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-manises-blue text-white'
+                )}
+              >
+                {match?.isReducido ? 'R' : 'D'}
+              </button>
             </div>
           );
         })}
