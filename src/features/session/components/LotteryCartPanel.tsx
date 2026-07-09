@@ -139,7 +139,7 @@ function CustodiaTicketModal({ number, onClose }: { number: string; onClose: () 
             <img src="/assets/decimo-template.jpg" className="block w-full" alt="Décimo digital" />
 
             {/* Número — zona blanca superior */}
-            <div className="absolute top-[11%] left-[59%] -translate-x-1/2">
+            <div className="absolute top-[11%] left-[55%] -translate-x-1/2">
               <span className="font-mono text-[32px] font-black tracking-[0.08em] text-gray-900 whitespace-nowrap">
                 {number}
               </span>
