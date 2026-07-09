@@ -338,7 +338,6 @@ function BoletoGroupsView({
               numbers={result.numbers.map(Number).filter(Boolean)}
               stars={result.stars}
               type={game.type}
-              large
             />
           </div>
         </div>
@@ -800,7 +799,6 @@ function SemanalDetail({
                         numbers={result.numbers.map(Number).filter(Boolean)}
                         stars={result.stars}
                         type={game.type}
-                        large
                       />
                       {result.reintegro != null && (
                         <p className="mt-1.5 text-[9px] font-bold text-slate-400">
@@ -837,7 +835,7 @@ function SemanalDetail({
                           matchedNumbers={matchedNums}
                           matchedStars={matchedStars}
                           type={game.type}
-                          large
+                          compact
                         />
                         {bet.reintegro != null && (
                           <p className="mt-1.5 text-[9px] font-bold text-slate-400">
