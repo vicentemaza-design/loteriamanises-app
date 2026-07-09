@@ -122,13 +122,31 @@ const QUINIELA_CALENDAR: Record<string, QuinielaFixture[]> = {
 const FALLBACK_FIXTURES: QuinielaFixture[] = QUINIELA_CALENDAR['2026-07-12'];
 
 /**
- * Devuelve los 15 partidos del domingo indicado.
- * Si no hay datos en el calendario, usa el fallback.
+ * Devuelve los partidos de la jornada para la fecha indicada.
+ * La fecha puede ser cualquier día (domingo, miércoles, especial mundial…).
  *
- * Para integración BE, reemplaza esta función por:
+ * INTEGRACIÓN BE → sustituye por:
  *   await fetch(`/api/quiniela/fixtures?date=${key}`)
  */
 export function getFixturesForDate(date: Date): QuinielaFixture[] {
   const key = date.toISOString().slice(0, 10);
   return QUINIELA_CALENDAR[key] ?? FALLBACK_FIXTURES;
+}
+
+/**
+ * Devuelve las fechas de las próximas jornadas disponibles.
+ * Las fechas vienen del calendario de jornadas, no de un algoritmo
+ * de días de la semana — así funciona con domingos, miércoles, mundiales, etc.
+ *
+ * INTEGRACIÓN BE → sustituye por:
+ *   await fetch(`/api/quiniela/jornadas?upcoming=true&limit=${count}`)
+ *   y mapea cada jornada a su fecha.
+ */
+export function getUpcomingJornadaDates(from: Date, count: number): Date[] {
+  const today = from.toISOString().slice(0, 10);
+  return Object.keys(QUINIELA_CALENDAR)
+    .filter(key => key >= today)
+    .sort()
+    .slice(0, count)
+    .map(key => new Date(`${key}T18:00:00`));
 }

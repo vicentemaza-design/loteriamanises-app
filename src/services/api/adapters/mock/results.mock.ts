@@ -273,6 +273,139 @@ export const MOCK_RESULTS_DATA: ResultDto[] = [
       { category: 'Especial Pleno al 15', winners: 0, prizePerWinner: 45000 },
     ],
   },
+
+  // ── RESULTADOS PARA DEMO DE ACIERTOS ──────────────────────────────────────
+
+  // PRIMITIVA — 8 May 2026 (coincide con demo-primitiva status:'won')
+  // Apuesta 1 del ticket: [5,12,21,30,49,6] → acierta 5, 12, 21 (3 aciertos)
+  {
+    gameId: 'primitiva',
+    gameType: 'primitiva',
+    date: '2026-05-08T21:30:00.000Z',
+    numbers: [5, 12, 21, 33, 41, 47],
+    complementario: 30,
+    reintegro: 4,
+    drawId: 'Sorteo 37/26',
+    jackpotNext: 9000000,
+    nextDrawDate: '2026-05-11T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 Aciertos', winners: 0, prizePerWinner: 9000000 },
+      { category: '5 Aciertos + Complementario', winners: 0, prizePerWinner: 0 },
+      { category: '5 Aciertos', winners: 12, prizePerWinner: 2890.15 },
+      { category: '4 Aciertos', winners: 612, prizePerWinner: 52.40 },
+      { category: '3 Aciertos', winners: 18430, prizePerWinner: 8.00 },
+      { category: 'Reintegro', winners: 198200, prizePerWinner: 1.00 },
+    ],
+  },
+
+  // BONOLOTO — 5 May 2026 (día 1 de demo-bonoloto-semanal)
+  // Apuesta 1: [7,17,20,22,32,44] → acierta 7, 17, 20 (3 aciertos)
+  {
+    gameId: 'bonoloto',
+    gameType: 'bonoloto',
+    date: '2026-05-05T21:30:00.000Z',
+    numbers: [7, 17, 20, 26, 38, 48],
+    complementario: 22,
+    reintegro: 5,
+    drawId: 'Sorteo 3.219',
+    jackpotNext: 1800000,
+    nextDrawDate: '2026-05-06T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 aciertos', winners: 0, prizePerWinner: 1800000 },
+      { category: '5 aciertos + Complementario', winners: 1, prizePerWinner: 45210.50 },
+      { category: '5 aciertos', winners: 62, prizePerWinner: 890.20 },
+      { category: '4 aciertos', winners: 2810, prizePerWinner: 28.50 },
+      { category: '3 aciertos', winners: 58900, prizePerWinner: 4.00 },
+      { category: 'Reintegro', winners: 389100, prizePerWinner: 0.50 },
+    ],
+  },
+
+  // BONOLOTO — 6 May 2026 (día 2 de demo-bonoloto-semanal)
+  // Apuesta 2: [3,8,15,17,38,44] → acierta 3, 8, 15, 38, 44 (5 aciertos!) + complementario 17
+  {
+    gameId: 'bonoloto',
+    gameType: 'bonoloto',
+    date: '2026-05-06T21:30:00.000Z',
+    numbers: [3, 8, 15, 38, 44, 49],
+    complementario: 17,
+    reintegro: 2,
+    drawId: 'Sorteo 3.220',
+    jackpotNext: 2100000,
+    nextDrawDate: '2026-05-07T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 aciertos', winners: 0, prizePerWinner: 2100000 },
+      { category: '5 aciertos + Complementario', winners: 1, prizePerWinner: 31200.80 },
+      { category: '5 aciertos', winners: 74, prizePerWinner: 960.10 },
+      { category: '4 aciertos', winners: 3120, prizePerWinner: 30.20 },
+      { category: '3 aciertos', winners: 64200, prizePerWinner: 4.00 },
+      { category: 'Reintegro', winners: 401200, prizePerWinner: 0.50 },
+    ],
+  },
+
+  // BONOLOTO — 7 May 2026 (día 3)
+  {
+    gameId: 'bonoloto',
+    gameType: 'bonoloto',
+    date: '2026-05-07T21:30:00.000Z',
+    numbers: [2, 11, 19, 30, 39, 47],
+    complementario: 8,
+    reintegro: 9,
+    drawId: 'Sorteo 3.221',
+    jackpotNext: 2300000,
+    nextDrawDate: '2026-05-08T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 aciertos', winners: 0, prizePerWinner: 2300000 },
+      { category: '5 aciertos + Complementario', winners: 0, prizePerWinner: 0 },
+      { category: '5 aciertos', winners: 55, prizePerWinner: 1010.50 },
+      { category: '4 aciertos', winners: 2900, prizePerWinner: 31.40 },
+      { category: '3 aciertos', winners: 61000, prizePerWinner: 4.00 },
+      { category: 'Reintegro', winners: 395000, prizePerWinner: 0.50 },
+    ],
+  },
+
+  // EUROMILLONES — 11 Abr 2026 (sorteo 1 de demo-euro-subscription)
+  // Apuesta 6: [1,11,23,29,46] estrellas [4,12] → acierta 1, 11, 29 + estrella 4 (3ª+1)
+  {
+    gameId: 'euromillones',
+    gameType: 'euromillones',
+    date: '2026-04-11T21:00:00.000Z',
+    numbers: [1, 11, 29, 35, 43],
+    stars: [4, 7],
+    drawId: 'Sorteo 1781',
+    jackpotNext: 68000000,
+    nextDrawDate: '2026-04-15T21:00:00.000Z',
+    scrutiny: [
+      { category: '1ª (5 + 2)', winners: 0, prizePerWinner: 68000000 },
+      { category: '2ª (5 + 1)', winners: 2, prizePerWinner: 312400.00 },
+      { category: '3ª (5 + 0)', winners: 5, prizePerWinner: 51200.00 },
+      { category: '4ª (4 + 2)', winners: 22, prizePerWinner: 890.00 },
+      { category: '5ª (4 + 1)', winners: 498, prizePerWinner: 98.40 },
+      { category: '9ª (3 + 1)', winners: 24100, prizePerWinner: 11.20 },
+      { category: '12ª (2 + 1)', winners: 380200, prizePerWinner: 5.80 },
+    ],
+  },
+
+  // EUROMILLONES — 15 Abr 2026 (sorteo 2 de demo-euro-subscription)
+  // Apuesta 1: [7,14,23,38,47] estrellas [3,9] → acierta 7, 14, 23 + estrella 3 (3ª+1)
+  {
+    gameId: 'euromillones',
+    gameType: 'euromillones',
+    date: '2026-04-15T21:00:00.000Z',
+    numbers: [7, 14, 23, 31, 50],
+    stars: [3, 8],
+    drawId: 'Sorteo 1783',
+    jackpotNext: 75000000,
+    nextDrawDate: '2026-04-18T21:00:00.000Z',
+    scrutiny: [
+      { category: '1ª (5 + 2)', winners: 0, prizePerWinner: 75000000 },
+      { category: '2ª (5 + 1)', winners: 3, prizePerWinner: 289100.00 },
+      { category: '3ª (5 + 0)', winners: 7, prizePerWinner: 48900.00 },
+      { category: '4ª (4 + 2)', winners: 31, prizePerWinner: 1050.00 },
+      { category: '5ª (4 + 1)', winners: 612, prizePerWinner: 104.20 },
+      { category: '9ª (3 + 1)', winners: 26800, prizePerWinner: 12.50 },
+      { category: '12ª (2 + 1)', winners: 412000, prizePerWinner: 6.20 },
+    ],
+  },
 ];
 
 // Sorted most recent first (mirrors Firebase's orderBy('date', 'desc'))

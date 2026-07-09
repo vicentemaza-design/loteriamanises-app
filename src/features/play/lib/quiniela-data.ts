@@ -59,21 +59,6 @@ export function calcDirectBets(matches: QuinielaMatch[]): number {
   }, 1);
 }
 
-/** Upcoming Sundays from a reference date (La Quiniela se resuelve el domingo) */
-export function getUpcomingSundays(from: Date, count: number): Date[] {
-  const result: Date[] = [];
-  const d = new Date(from);
-  d.setHours(18, 0, 0, 0);
-  // Advance to next Sunday (0 = Sunday)
-  const day = d.getDay();
-  const daysUntilSunday = day === 0 ? 7 : 7 - day;
-  d.setDate(d.getDate() + daysUntilSunday);
-  for (let i = 0; i < count; i++) {
-    result.push(new Date(d));
-    d.setDate(d.getDate() + 7);
-  }
-  return result;
-}
 
 export interface GuaranteeTable {
   title: string;

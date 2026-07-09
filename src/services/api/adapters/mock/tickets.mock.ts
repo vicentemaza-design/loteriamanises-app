@@ -105,11 +105,11 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
       [ 4, 16, 19, 24, 35, 41],
     ],
     drawDate: '2026-05-05',
-    status: 'pending',
-    prize: 5.00,
+    status: 'lost',
+    prize: 31.40,
     price: 3.00,
     metadata: {
-      playStatus: 'confirmed',
+      playStatus: 'scrutinized',
       orderTotalPrice: 3.00,
       betsCount: 5,
       orderDrawDates: [
@@ -216,10 +216,11 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
       [5,7],[8,11],[1,12],[2,9],[3,6],
     ],
     drawDate: '2026-04-15',
-    status: 'pending',
+    status: 'won',
+    prize: 25.00,
     price: 75.00,
     metadata: {
-      playStatus: 'confirmed',
+      playStatus: 'scrutinized',
       orderDrawDates: ['2026-04-11', '2026-04-15'],
       orderTotalPrice: 75.00,
       betsCount: 25,
