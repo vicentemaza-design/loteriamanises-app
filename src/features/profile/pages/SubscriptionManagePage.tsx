@@ -50,7 +50,7 @@ export function SubscriptionManagePage() {
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h2 className="font-mono text-[1.9rem] font-black tracking-[0.16em] text-manises-blue">{subscription.number}</h2>
+                <h2 className="font-mono text-[1.6rem] font-black tracking-[0.1em] text-manises-blue">{subscription.number}</h2>
                 <span className={cn(
                   'rounded-full px-2 py-1 text-[8px] font-black uppercase tracking-wider',
                   subscription.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'

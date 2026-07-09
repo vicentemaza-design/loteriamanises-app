@@ -2,12 +2,13 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X, CreditCard, Smartphone, ShieldCheck, ArrowRight,
-  CheckCircle2, Loader2, Plus, Landmark, Copy, AlertCircle,
+  CheckCircle2, Loader2, Plus, Landmark, Copy, AlertCircle, Lock, Sparkles,
 } from 'lucide-react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { Button } from '@/shared/ui/Button';
 import { formatCurrency } from '@/shared/lib/utils';
 import { toast } from 'sonner';
+import { RedsysGateway, type SavedCardData } from './RedsysGateway';
 
 interface TopUpModalProps {
   isOpen: boolean;
@@ -26,6 +27,20 @@ const BANK_TRANSFER_INFO = {
   'Concepto/Ref.': 'REF-RECARGA-2026',
 } as const;
 
+function persistCard(cardData: SavedCardData) {
+  const stored = localStorage.getItem('manises_payment_cards');
+  const existing = stored ? JSON.parse(stored) : [];
+  const newCard = {
+    id: `card-${Date.now()}`,
+    brand: cardData.brand,
+    last4: cardData.last4,
+    expires: cardData.expires,
+    isDefault: existing.length === 0,
+  };
+  localStorage.setItem('manises_payment_cards', JSON.stringify([...existing, newCard]));
+  toast.success(`${cardData.brand} •••• ${cardData.last4} guardada para futuras compras`);
+}
+
 export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUpModalProps) {
   const [selectedAmount, setSelectedAmount] = useState<number>(10);
   const [isCustom, setIsCustom] = useState(false);
@@ -33,8 +48,11 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('apple');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [saveCard, setSaveCard] = useState(true);
-  const [newCard, setNewCard] = useState({ number: '', name: '', expiry: '', cvv: '' });
+  const [showRedsys, setShowRedsys] = useState(false);
+  // Datos de la tarjeta usada para pagar (sin guardar) — para ofrecer guardarla post-pago
+  const [recentCard, setRecentCard] = useState<SavedCardData | null>(null);
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [showTokenizeRedsys, setShowTokenizeRedsys] = useState(false);
 
   const effectiveAmount = isCustom ? (parseFloat(customValue) || 0) : selectedAmount;
   const isTransfer = selectedMethod === 'transfer';
@@ -48,8 +66,10 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       setSelectedMethod('apple');
       setIsProcessing(false);
       setIsSuccess(false);
-      setSaveCard(true);
-      setNewCard({ number: '', name: '', expiry: '', cvv: '' });
+      setShowRedsys(false);
+      setRecentCard(null);
+      setShowSavePrompt(false);
+      setShowTokenizeRedsys(false);
     }
   }, [isOpen]);
 
@@ -66,8 +86,8 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       toast.error('El importe máximo de recarga es 500 €.');
       return;
     }
-    if (isNewCard && (!newCard.number || !newCard.name || !newCard.expiry || !newCard.cvv)) {
-      toast.error('Completa los datos de la tarjeta antes de continuar.');
+    if (isNewCard) {
+      setShowRedsys(true);
       return;
     }
     setIsProcessing(true);
@@ -82,7 +102,41 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
     }
   };
 
-  const isDisabled = isProcessing;
+  const handleRedsysAuthorize = async (savedCard: boolean, cardData: SavedCardData) => {
+    setShowRedsys(false);
+    setIsProcessing(true);
+    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      await onSuccess(effectiveAmount);
+      if (savedCard) {
+        persistCard(cardData);
+        setIsSuccess(true);
+        setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
+      } else {
+        // Pago ok pero no guardó — ofrecer guardar post-pago
+        setRecentCard(cardData);
+        setIsProcessing(false);
+        setShowSavePrompt(true);
+      }
+    } catch {
+      toast.error('No se ha podido completar el pago.');
+      setIsProcessing(false);
+    }
+  };
+
+  const handleTokenizeAuthorize = (_save: boolean, cardData: SavedCardData) => {
+    setShowTokenizeRedsys(false);
+    persistCard(cardData);
+    setShowSavePrompt(false);
+    setIsSuccess(true);
+    setTimeout(() => { onClose(); }, 1500);
+  };
+
+  const dismissSavePrompt = () => {
+    setShowSavePrompt(false);
+    setIsSuccess(true);
+    setTimeout(() => { onClose(); }, 1500);
+  };
 
   const btnBg = 'bg-manises-blue hover:bg-[#083d7d]';
 
@@ -90,6 +144,27 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
     <AnimatePresence>
       {isOpen && (
         <>
+          <AnimatePresence>
+            {showRedsys && (
+              <RedsysGateway
+                mode="payment"
+                amount={effectiveAmount}
+                onAuthorize={handleRedsysAuthorize}
+                onCancel={() => setShowRedsys(false)}
+              />
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {showTokenizeRedsys && (
+              <RedsysGateway
+                mode="tokenize"
+                onAuthorize={handleTokenizeAuthorize}
+                onCancel={() => setShowTokenizeRedsys(false)}
+              />
+            )}
+          </AnimatePresence>
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -104,12 +179,59 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="fixed bottom-0 left-0 right-0 z-[100] bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col max-h-[calc(100dvh-0.75rem)]"
           >
-            {/* Grabber */}
             <div className="w-full flex justify-center pt-3 pb-2 shrink-0">
               <div className="w-12 h-1.5 rounded-full bg-gray-200" />
             </div>
 
-            {isSuccess ? (
+            {showSavePrompt && recentCard ? (
+              <motion.div
+                key="save-prompt"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col p-6 pb-8 gap-5"
+              >
+                {/* Éxito del pago */}
+                <div className="flex items-center gap-3 rounded-2xl bg-emerald-50 border border-emerald-100 px-4 py-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                  <p className="text-sm font-black text-emerald-700">
+                    ¡Recarga de {formatCurrency(effectiveAmount)} completada!
+                  </p>
+                </div>
+
+                {/* Oferta de guardar */}
+                <div className="flex flex-col items-center text-center gap-3 pt-2">
+                  <div className="w-16 h-16 rounded-2xl bg-manises-blue/10 flex items-center justify-center">
+                    <Sparkles className="w-8 h-8 text-manises-blue" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-manises-blue">¿Pagar más rápido la próxima vez?</h3>
+                    <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">
+                      Guarda tu {recentCard.brand} •••• {recentCard.last4} para recargar sin introducir los datos de nuevo.
+                      Solo necesitas confirmar con tu banco.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 mt-1"
+                  style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
+                >
+                  <Button
+                    onClick={() => setShowTokenizeRedsys(true)}
+                    className="w-full h-14 rounded-2xl bg-manises-blue hover:bg-[#083d7d] text-white font-black text-base shadow-md"
+                  >
+                    <Lock className="w-4 h-4 mr-2" />
+                    Sí, guardar tarjeta en Redsys
+                  </Button>
+                  <button
+                    onClick={dismissSavePrompt}
+                    className="w-full h-11 rounded-2xl text-slate-400 text-sm font-semibold hover:bg-slate-50 transition-all"
+                  >
+                    No, gracias
+                  </button>
+                </div>
+              </motion.div>
+            ) : isSuccess ? (
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -125,10 +247,8 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
               </motion.div>
             ) : (
               <>
-                {/* ── Scrollable content ─────────────────────────────── */}
                 <div className="flex-1 overflow-y-auto px-5 pt-2 pb-6 space-y-5 overscroll-contain">
 
-                  {/* Header */}
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-2xl font-black text-manises-blue">Añadir fondos</h3>
@@ -150,7 +270,6 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                     </p>
                   </div>
 
-                  {/* Amount */}
                   <div className="space-y-3">
                     <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest pl-1">Selecciona importe</p>
                     <div className="grid grid-cols-3 gap-2">
@@ -201,37 +320,31 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                     )}
                   </div>
 
-                  {/* Method selector */}
                   <div className="space-y-3">
                     <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest pl-1">Método de pago</p>
                     <div className="space-y-2">
-                      {/* Existing card */}
                       <MethodRow
                         id="card" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
                         iconEl={<CreditCard className="w-5 h-5" />} label="Visa **** 4452" sub="Exp: 09/27"
                         selBg="bg-manises-blue" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
                       />
-                      {/* Apple Pay */}
                       <MethodRow
                         id="apple" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
                         iconEl={<Smartphone className="w-5 h-5" />} label="Apple Pay" sub="Pago instantáneo"
                         selBg="bg-black" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
                       />
-                      {/* Bizum */}
                       <MethodRow
                         id="bizum" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
                         iconEl={<span className="font-black italic text-base">bz</span>} label="Bizum" sub="Recarga rápida"
                         selBg="bg-[#00c4b3]" selBorder="border-[#00c4b3]" selCardBg="bg-[#00c4b3]/10"
                         selLabel="text-[#00c4b3]" selDot="bg-[#00c4b3]"
                       />
-                      {/* Transferencia bancaria */}
                       <MethodRow
                         id="transfer" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
                         iconEl={<Landmark className="w-5 h-5" />} label="Transferencia bancaria" sub="Hasta 72 h hábiles"
                         selBg="bg-emerald-600" selBorder="border-emerald-500" selCardBg="bg-emerald-50/60"
                         selLabel="text-emerald-700" selDot="bg-emerald-600"
                       />
-                      {/* Nueva tarjeta */}
                       <button
                         onClick={() => setSelectedMethod('new-card')}
                         disabled={isProcessing}
@@ -242,14 +355,21 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isNewCard ? 'bg-manises-blue text-white' : 'border border-slate-200 text-slate-400'}`}>
                           <Plus className="w-5 h-5" />
                         </div>
-                        <p className={`text-sm font-bold ${isNewCard ? 'text-manises-blue' : 'text-slate-500'}`}>
-                          Añadir nueva tarjeta
-                        </p>
+                        <div className="text-left flex-1">
+                          <p className={`text-sm font-bold ${isNewCard ? 'text-manises-blue' : 'text-slate-500'}`}>
+                            Añadir nueva tarjeta
+                          </p>
+                          {isNewCard && (
+                            <p className="text-[9px] text-manises-blue/60 font-medium flex items-center gap-1 mt-0.5">
+                              <Lock className="w-2.5 h-2.5" />
+                              Te redirigiremos a la pasarela segura Redsys
+                            </p>
+                          )}
+                        </div>
                       </button>
                     </div>
                   </div>
 
-                  {/* Transfer info block */}
                   {isTransfer && (
                     <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 space-y-3">
                       <p className="text-[10px] font-black text-blue-700 uppercase tracking-widest">Datos de transferencia (demo)</p>
@@ -276,63 +396,12 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                     </div>
                   )}
 
-                  {/* New card form */}
-                  {isNewCard && (
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-                      <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest">Datos de la tarjeta (demo)</p>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="Número de tarjeta"
-                        value={newCard.number}
-                        onChange={e => setNewCard(p => ({ ...p, number: e.target.value.replace(/\D/g, '').slice(0, 16) }))}
-                        className="w-full h-11 px-4 rounded-xl border-2 border-slate-200 bg-white text-sm font-bold text-manises-blue outline-none focus:border-manises-blue transition-all tracking-widest"
-                      />
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          placeholder="MM/AA"
-                          maxLength={5}
-                          value={newCard.expiry}
-                          onChange={e => setNewCard(p => ({ ...p, expiry: e.target.value }))}
-                          className="h-11 px-4 rounded-xl border-2 border-slate-200 bg-white text-sm font-bold text-manises-blue outline-none focus:border-manises-blue transition-all"
-                        />
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="CVV"
-                          maxLength={4}
-                          value={newCard.cvv}
-                          onChange={e => setNewCard(p => ({ ...p, cvv: e.target.value.replace(/\D/g, '') }))}
-                          className="h-11 px-4 rounded-xl border-2 border-slate-200 bg-white text-sm font-bold text-manises-blue outline-none focus:border-manises-blue transition-all"
-                        />
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Nombre del titular"
-                        value={newCard.name}
-                        onChange={e => setNewCard(p => ({ ...p, name: e.target.value }))}
-                        className="w-full h-11 px-4 rounded-xl border-2 border-slate-200 bg-white text-sm font-bold text-manises-blue outline-none focus:border-manises-blue transition-all uppercase"
-                      />
-                      <label className="flex items-center gap-2.5 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={saveCard}
-                          onChange={e => setSaveCard(e.target.checked)}
-                          className="w-4 h-4 accent-manises-blue rounded"
-                        />
-                        <span className="text-[11px] font-bold text-manises-blue">Guardar tarjeta para futuras compras</span>
-                      </label>
-                    </div>
-                  )}
-
                   <div className="flex items-center justify-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-emerald-600" />
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Demo · no operativo</p>
                   </div>
                 </div>
 
-                {/* ── Sticky footer — SIEMPRE VISIBLE ────────────────── */}
                 <div
                   className="shrink-0 px-5 pt-3 border-t border-gray-100 bg-white space-y-2"
                   style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}
@@ -345,13 +414,15 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                   <PremiumTouchInteraction scale={0.98} className="w-full">
                     <Button
                       onClick={handlePay}
-                      disabled={isDisabled}
+                      disabled={isProcessing}
                       className={`w-full h-14 rounded-2xl text-white font-black text-lg transition-all shadow-md ${btnBg}`}
                     >
                       {isProcessing ? (
                         <><Loader2 className="w-6 h-6 mr-2 animate-spin" /> Verificando...</>
                       ) : isTransfer ? (
                         <>Ver datos de transferencia <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
+                      ) : isNewCard ? (
+                        <>Ir a Redsys <Lock className="w-5 h-5 ml-2 opacity-70" /></>
                       ) : effectiveAmount > 0 ? (
                         <>Recargar {formatCurrency(effectiveAmount)} demo <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
                       ) : (

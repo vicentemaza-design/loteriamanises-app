@@ -1,35 +1,27 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
-import { Plus, Shield, Trash2, Star, AlertTriangle, ChevronRight, CreditCard, Info } from 'lucide-react';
+import { Plus, Shield, Trash2, Star, AlertTriangle, CreditCard, Info, CheckCircle2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { toast } from 'sonner';
 import { MOCK_PAYMENT_CARDS } from '../data/profile.mock';
 import type { PaymentCard } from '../types/profile.types';
+import { RedsysGateway, type SavedCardData } from '../components/RedsysGateway';
 
 import visaLogo from '@/assets/games/visa.svg';
 import mastercardLogo from '@/assets/games/mastercard.svg';
 
-const HOW_TO_STEPS = [
-  'Realiza una recarga de saldo por el importe que desees (mínimo 1 €).',
-  'Durante el pago, marca la opción "Guardar tarjeta para futuras compras".',
-  'El importe de la recarga se añadirá a tu saldo y podrás utilizarlo en la compra.',
-  'Al finalizar el pago, tu tarjeta quedará almacenada en Redsys.',
-  'La próxima vez, podrás pagar de forma rápida sin volver a introducir los datos.',
-];
-
 export function PaymentsPage() {
-  const navigate = useNavigate();
-
   const [cards, setCards] = useState<PaymentCard[]>(() => {
     const saved = localStorage.getItem('manises_payment_cards');
-    if (saved) {
-      try { return JSON.parse(saved); } catch {}
-    }
-    return MOCK_PAYMENT_CARDS;
+    const extra: PaymentCard[] = saved ? (() => { try { return JSON.parse(saved); } catch { return []; } })() : [];
+    // Los mocks siempre presentes; las tarjetas añadidas en sesión se añaden al final
+    const mockIds = new Set(MOCK_PAYMENT_CARDS.map(c => c.id));
+    return [...MOCK_PAYMENT_CARDS, ...extra.filter((c: PaymentCard) => !mockIds.has(c.id))];
   });
 
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [showRedsys, setShowRedsys] = useState(false);
+  const [addedCard, setAddedCard] = useState<SavedCardData | null>(null);
 
   const saveCards = (next: PaymentCard[]) => {
     setCards(next);
@@ -37,19 +29,34 @@ export function PaymentsPage() {
   };
 
   const setDefaultCard = (id: string) => {
-    saveCards(cards.map(c => ({ ...c, isDefault: c.id === id })));
+    saveCards(cards.map((c: PaymentCard) => ({ ...c, isDefault: c.id === id })));
     toast.success('Tarjeta predeterminada actualizada.');
   };
 
   const handleDelete = () => {
     if (!deleteConfirm) return;
-    const next = cards.filter(c => c.id !== deleteConfirm);
-    if (cards.find(c => c.id === deleteConfirm)?.isDefault && next.length > 0) {
+    const next = cards.filter((c: PaymentCard) => c.id !== deleteConfirm);
+    if (cards.find((c: PaymentCard) => c.id === deleteConfirm)?.isDefault && next.length > 0) {
       next[0].isDefault = true;
     }
     saveCards(next);
     setDeleteConfirm(null);
     toast.success('Tarjeta eliminada con éxito.');
+  };
+
+  const handleTokenizeAuthorize = (_saveCard: boolean, cardData: SavedCardData) => {
+    setShowRedsys(false);
+    const newCard: PaymentCard = {
+      id: `card-${Date.now()}`,
+      brand: cardData.brand,
+      last4: cardData.last4,
+      expires: cardData.expires,
+      isDefault: cards.length === 0,
+    };
+    const next = [...cards, newCard];
+    saveCards(next);
+    setAddedCard(cardData);
+    setTimeout(() => setAddedCard(null), 3000);
   };
 
   const getCardStyle = (brand: string) => {
@@ -59,9 +66,37 @@ export function PaymentsPage() {
 
   return (
     <div className="flex min-h-full flex-col bg-[#f5f7fa] pb-24">
-      <ProfileSubHeader title="Métodos de Pago" />
+      <ProfileSubHeader title="Mis tarjetas" />
+
+      {/* Redsys tokenization overlay */}
+      <AnimatePresence>
+        {showRedsys && (
+          <RedsysGateway
+            mode="tokenize"
+            onAuthorize={handleTokenizeAuthorize}
+            onCancel={() => setShowRedsys(false)}
+          />
+        )}
+      </AnimatePresence>
 
       <div className="flex flex-col gap-4 px-4 pt-5 pb-6">
+
+        {/* Tarjeta añadida — feedback visual */}
+        <AnimatePresence>
+          {addedCard && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="flex items-center gap-3 rounded-2xl bg-emerald-50 border border-emerald-200 px-4 py-3"
+            >
+              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+              <p className="text-xs font-bold text-emerald-700">
+                {addedCard.brand} •••• {addedCard.last4} guardada correctamente
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ── TARJETAS GUARDADAS ──────────────────────────────────── */}
         <section>
@@ -74,7 +109,18 @@ export function PaymentsPage() {
 
           <div className="flex flex-col gap-2.5">
             <AnimatePresence mode="popLayout">
-              {cards.map(card => {
+              {cards.length === 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center"
+                >
+                  <CreditCard className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                  <p className="text-xs font-bold text-slate-400">No tienes tarjetas guardadas</p>
+                  <p className="text-[10px] text-slate-300 mt-0.5">Añade una para pagar más rápido</p>
+                </motion.div>
+              )}
+              {cards.map((card: PaymentCard) => {
                 const style = getCardStyle(card.brand);
                 return (
                   <motion.div
@@ -85,14 +131,13 @@ export function PaymentsPage() {
                     exit={{ opacity: 0, scale: 0.97 }}
                     className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-sm"
                   >
-                    {/* Mini tarjeta — proporción ISO/IEC 7810, ~42% del contenedor */}
+                    {/* Mini tarjeta */}
                     <div
                       className={`relative shrink-0 overflow-hidden rounded-xl bg-gradient-to-br ${style.gradient} shadow-lg`}
                       style={{ width: '42%', aspectRatio: '85.6 / 53.98' }}
                     >
                       <div className="absolute -right-5 -bottom-5 w-24 h-24 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
                       <div className="relative z-10 flex h-full flex-col justify-between p-3">
-                        {/* Chip + NFC */}
                         <div className="flex items-start justify-between">
                           <div
                             className="h-[18px] w-[26px] rounded-[3px]"
@@ -107,11 +152,9 @@ export function PaymentsPage() {
                             <circle cx="9" cy="10" r="1.5" fill="white"/>
                           </svg>
                         </div>
-                        {/* Número */}
                         <p className="font-mono text-[8.5px] font-bold tracking-[0.14em] text-white/90">
                           •••• •••• •••• {card.last4}
                         </p>
-                        {/* Caduca + logo */}
                         <div className="flex items-end justify-between">
                           <div>
                             <p className="text-[5px] font-bold uppercase tracking-[0.15em] text-white/40">Caduca</p>
@@ -163,69 +206,33 @@ export function PaymentsPage() {
           </div>
         </section>
 
-        {/* ── GUARDAR NUEVA TARJETA (CTA) ─────────────────────────── */}
+        {/* ── AÑADIR TARJETA — va directo a Redsys tokenize ─────────── */}
         <button
           type="button"
-          onClick={() => navigate('/profile/wallet')}
+          onClick={() => setShowRedsys(true)}
           className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-manises-blue/20 bg-white px-4 py-3.5 text-left shadow-sm active:scale-[0.98] transition-transform"
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-manises-blue/10">
             <Plus className="h-5 w-5 text-manises-blue" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-black text-manises-blue">Guardar nueva tarjeta</p>
+            <p className="text-[13px] font-black text-manises-blue">Añadir nueva tarjeta</p>
             <p className="mt-0.5 text-[10px] font-medium leading-snug text-slate-400">
-              Para guardar tu tarjeta necesitas realizar una recarga de saldo mínima 1 €.
+              Te redirigiremos a Redsys para introducir los datos de forma segura.
             </p>
           </div>
-          <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
         </button>
 
-        {/* ── CÓMO GUARDAR UNA TARJETA ────────────────────────────── */}
-        <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
-          <div className="flex items-start gap-3 px-4 pt-4 pb-3 border-b border-slate-100">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-manises-blue/10">
-              <CreditCard className="h-4 w-4 text-manises-blue" />
-            </div>
-            <div>
-              <p className="text-[12px] font-black text-manises-blue">¿Cómo guardar una tarjeta?</p>
-              <p className="mt-0.5 text-[10px] font-medium leading-snug text-slate-400">
-                Para guardar tu tarjeta y pagar más rápido en futuras compras:
-              </p>
-            </div>
-          </div>
-          <div className="px-4 py-3.5 space-y-2.5">
-            {HOW_TO_STEPS.map((step, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-manises-blue text-white text-[9px] font-black mt-0.5">
-                  {i + 1}
-                </span>
-                <p className="text-[11px] font-medium leading-snug text-slate-500">{step}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── AVISO DE SEGURIDAD ───────────────────────────────────── */}
+        {/* ── AVISO DE SEGURIDAD ───────────────────────────────────────── */}
         <div className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3.5">
           <Shield className="h-4 w-4 shrink-0 text-slate-400 mt-0.5" />
           <p className="text-[10px] font-medium leading-relaxed text-slate-500">
             Las tarjetas se almacenan de forma segura por{' '}
             <span className="font-black text-slate-600">Redsys</span>{' '}
-            (entidad bancaria Redsys). Lotería Manises nunca guarda los datos
-            completos de tu tarjeta.
+            (Banco Santander). Lotería Manises nunca almacena ni accede a los datos
+            completos de tu tarjeta — solo guarda el token de referencia.
           </p>
         </div>
-
-        {/* ── CTA PRINCIPAL ────────────────────────────────────────── */}
-        <button
-          type="button"
-          onClick={() => navigate('/profile/wallet')}
-          className="w-full rounded-2xl py-4 text-sm font-black uppercase tracking-[0.12em] text-white shadow-lg active:scale-[0.98] transition-transform"
-          style={{ background: 'linear-gradient(135deg, #062d6b 0%, #0a4792 100%)' }}
-        >
-          Recargar saldo y guardar tarjeta
-        </button>
 
       </div>
 

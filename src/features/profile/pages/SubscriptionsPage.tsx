@@ -228,7 +228,7 @@ export function SubscriptionsPage() {
                           >
                             <ReservationCheckbox checked={checked} />
                             <div className="min-w-0 flex-1">
-                              <p className="font-mono text-[1.7rem] font-black tracking-[0.18em] text-manises-blue">{line.number}</p>
+                              <p className="font-mono text-[1.45rem] font-black tracking-[0.1em] text-manises-blue">{line.number}</p>
                               <p className="text-[11px] font-semibold text-slate-400">
                                 {line.quantity} {line.quantity === 1 ? 'décimo' : 'décimos'}
                               </p>
@@ -287,7 +287,7 @@ export function SubscriptionsPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-mono text-[1.75rem] font-black tracking-[0.16em] text-manises-blue">{item.number}</h3>
+                        <h3 className="font-mono text-[1.45rem] font-black tracking-[0.1em] text-manises-blue">{item.number}</h3>
                         <span className={cn(
                           'rounded-full px-2 py-1 text-[8px] font-black uppercase tracking-wider',
                           item.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'

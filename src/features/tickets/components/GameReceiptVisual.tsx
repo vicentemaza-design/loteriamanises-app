@@ -46,8 +46,11 @@ export function GameReceiptVisual({ ticket, selectionSummary }: GameReceiptVisua
     case 'primitiva':
     case 'bonoloto':
       return (
-        <div className="py-4">
+        <div className="space-y-6 py-4">
           <ReceiptNumbersBlock label="Combinación" numbers={numbers} />
+          {ticket.betReintegros != null && ticket.betReintegros.length > 0 && (
+            <ReceiptNumbersBlock label="Reintegro" numbers={[ticket.betReintegros[0]]} variant="circle" />
+          )}
         </div>
       );
 

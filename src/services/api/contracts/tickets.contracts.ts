@@ -14,6 +14,7 @@ export interface TicketDto {
   stars?: number[];
   bets?: number[][];
   betStars?: number[][];
+  betReintegros?: number[];
   drawDate: string; // ISO Date
   status: 'pending' | 'won' | 'lost';
   prize?: number;

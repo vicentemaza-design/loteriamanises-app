@@ -78,6 +78,7 @@ export interface Ticket {
   stars?: number[];
   bets?: number[][];
   betStars?: number[][];
+  betReintegros?: number[];
   drawDate: string;
   status: 'pending' | 'won' | 'lost';
   prize?: number;

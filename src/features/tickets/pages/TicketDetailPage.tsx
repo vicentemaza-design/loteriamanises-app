@@ -93,11 +93,12 @@ type MatchResult = {
   reintegro?: number;
 } | null;
 
-function getBets(ticket: Ticket): Array<{ numbers: number[]; stars?: number[] }> {
+function getBets(ticket: Ticket): Array<{ numbers: number[]; stars?: number[]; reintegro?: number }> {
   if (ticket.bets && ticket.bets.length > 0) {
     return ticket.bets.map((nums, i) => ({
       numbers: nums,
       stars: ticket.betStars?.[i],
+      reintegro: ticket.betReintegros?.[i],
     }));
   }
   return [{ numbers: ticket.numbers, stars: ticket.stars }];
@@ -216,7 +217,93 @@ function DetailHeader({ ticket, game }: { ticket: Ticket; game: (typeof LOTTERY_
   );
 }
 
-// ── Boleto groups view (Euromillones + Primitiva) ──────────────────────────
+// ── Boleto grid (shared between single-draw and multi-draw views) ───────────
+
+function BoletosGrid({
+  bets,
+  boletosSize,
+  result,
+  game,
+  millonBoletos,
+  jokerBoletos,
+}: {
+  bets: Array<{ numbers: number[]; stars?: number[]; reintegro?: number }>;
+  boletosSize: number;
+  result: MatchResult;
+  game: (typeof LOTTERY_GAMES)[number];
+  millonBoletos: Array<{ codeFrom: string; codeTo: string }>;
+  jokerBoletos: Array<{ jokerNumber: string }>;
+}) {
+  const hasJoker = jokerBoletos.length > 0;
+  const boletoGroups = groupIntoBoletos(bets, boletosSize);
+
+  return (
+    <div className="flex flex-col gap-3">
+      {boletoGroups.map((groupBets, boletoIdx) => {
+        const colFrom = boletoIdx * boletosSize + 1;
+        const colTo = colFrom + groupBets.length - 1;
+        const millonData = millonBoletos[boletoIdx];
+        const jokerData = jokerBoletos[boletoIdx];
+
+        return (
+          <div key={boletoIdx} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+            {/* Cabecera del boleto */}
+            <div className="flex items-center justify-between border-b border-slate-50 bg-manises-blue/[0.035] px-4 py-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.06em] text-manises-blue">
+                Boleto {boletoIdx + 1}
+                <span className="ml-1.5 font-semibold normal-case text-slate-400">
+                  (Col. {colFrom}{colTo > colFrom ? `–${colTo}` : ''})
+                </span>
+              </p>
+              {hasJoker && jokerData && (
+                <span className="flex items-center gap-1 text-[11px] font-black text-emerald-600">
+                  🍀 {jokerData.jokerNumber}
+                </span>
+              )}
+            </div>
+
+            {/* Filas de columnas */}
+            <div className="divide-y divide-slate-50 px-3">
+              {groupBets.map((bet, betIdx) => {
+                const colNum = colFrom + betIdx;
+                const matchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+                const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
+                return (
+                  <div key={betIdx} className="flex items-center gap-2 py-2">
+                    <span className="w-5 shrink-0 text-right text-[9px] font-black text-slate-300">{colNum}</span>
+                    <BallSelection
+                      numbers={bet.numbers}
+                      stars={bet.stars}
+                      matchedNumbers={matchedNums}
+                      matchedStars={matchedStars}
+                      type={game.type}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Códigos de El Millón (Euromillones) */}
+            {millonData && (
+              <div className="border-t border-amber-100/60 bg-amber-50/40 px-4 py-2.5">
+                <p className="text-[7px] font-black uppercase tracking-[0.18em] text-slate-400">
+                  Códigos de El Millón (asignados)
+                </p>
+                <p className="mt-0.5 font-mono text-[12px] font-black tracking-[0.05em] text-manises-blue">
+                  {millonData.codeFrom}{' '}
+                  <span className="text-[10px] font-semibold text-slate-400">A</span>{' '}
+                  {millonData.codeTo}
+                </p>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Boleto groups view (Euromillones + Primitiva, single draw) ──────────────
 
 function BoletoGroupsView({
   ticket,
@@ -233,8 +320,6 @@ function BoletoGroupsView({
   const prize = ticket.prize ?? 0;
 
   const boletosSize = BOLETO_SIZE[ticket.gameType] ?? bets.length;
-  const boletoGroups = groupIntoBoletos(bets, boletosSize);
-
   const millonBoletos = (ticket.metadata?.millonBoletos as Array<{ codeFrom: string; codeTo: string }> | undefined) ?? [];
   const jokerBoletos = (ticket.metadata?.jokerBoletos as Array<{ jokerNumber: string }> | undefined) ?? [];
   const hasJoker = jokerBoletos.length > 0;
@@ -263,68 +348,14 @@ function BoletoGroupsView({
         <p className="mb-3 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
           Mis jugadas
         </p>
-        <div className="flex flex-col gap-3">
-          {boletoGroups.map((groupBets, boletoIdx) => {
-            const colFrom = boletoIdx * boletosSize + 1;
-            const colTo = colFrom + groupBets.length - 1;
-            const millonData = millonBoletos[boletoIdx];
-            const jokerData = jokerBoletos[boletoIdx];
-
-            return (
-              <div key={boletoIdx} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-                {/* Cabecera del boleto */}
-                <div className="flex items-center justify-between border-b border-slate-50 bg-manises-blue/[0.035] px-4 py-2">
-                  <p className="text-[10px] font-black uppercase tracking-[0.06em] text-manises-blue">
-                    Boleto {boletoIdx + 1}
-                    <span className="ml-1.5 font-semibold normal-case text-slate-400">
-                      (Col. {colFrom}{colTo > colFrom ? `–${colTo}` : ''})
-                    </span>
-                  </p>
-                  {hasJoker && jokerData && (
-                    <span className="flex items-center gap-1 text-[11px] font-black text-emerald-600">
-                      🍀 {jokerData.jokerNumber}
-                    </span>
-                  )}
-                </div>
-
-                {/* Filas de columnas */}
-                <div className="divide-y divide-slate-50 px-3">
-                  {groupBets.map((bet, betIdx) => {
-                    const colNum = colFrom + betIdx;
-                    const matchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
-                    const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
-                    return (
-                      <div key={betIdx} className="flex items-center gap-2 py-2">
-                        <span className="w-5 shrink-0 text-right text-[9px] font-black text-slate-300">{colNum}</span>
-                        <BallSelection
-                          numbers={bet.numbers}
-                          stars={bet.stars}
-                          matchedNumbers={matchedNums}
-                          matchedStars={matchedStars}
-                          type={game.type}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Códigos de El Millón (Euromillones) */}
-                {millonData && (
-                  <div className="border-t border-amber-100/60 bg-amber-50/40 px-4 py-2.5">
-                    <p className="text-[7px] font-black uppercase tracking-[0.18em] text-slate-400">
-                      Códigos de El Millón (asignados)
-                    </p>
-                    <p className="mt-0.5 font-mono text-[12px] font-black tracking-[0.05em] text-manises-blue">
-                      {millonData.codeFrom}{' '}
-                      <span className="text-[10px] font-semibold text-slate-400">A</span>{' '}
-                      {millonData.codeTo}
-                    </p>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <BoletosGrid
+          bets={bets}
+          boletosSize={boletosSize}
+          result={result}
+          game={game}
+          millonBoletos={millonBoletos}
+          jokerBoletos={jokerBoletos}
+        />
       </div>
 
       {/* Nota Joker (solo Primitiva) */}
@@ -416,6 +447,7 @@ function SingleDrawDetail({
           {bets.map((bet, i) => {
             const matchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
             const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
+            const reintegroMatches = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
             return (
               // eslint-disable-next-line react/no-array-index-key
               <div key={i} className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
@@ -427,6 +459,11 @@ function SingleDrawDetail({
                   type={game.type}
                   large
                 />
+                {bet.reintegro != null && (
+                  <p className="mt-2 text-[9px] font-bold text-slate-400">
+                    R: <span className={reintegroMatches ? 'font-black text-emerald-600' : 'font-black text-manises-blue'}>{bet.reintegro}</span>
+                  </p>
+                )}
               </div>
             );
           })}
@@ -472,6 +509,9 @@ function SemanalDetail({
 }) {
   const bets = getBets(ticket);
   const totalPrize = ticket.prize ?? 0;
+  const boletosSize = BOLETO_SIZE[ticket.gameType];
+  const millonBoletos = (ticket.metadata?.millonBoletos as Array<{ codeFrom: string; codeTo: string }> | undefined) ?? [];
+  const jokerBoletos = (ticket.metadata?.jokerBoletos as Array<{ jokerNumber: string }> | undefined) ?? [];
 
   // First draw open by default
   const [openDays, setOpenDays] = useState<string[]>([dayResults[0]?.date ?? '']);
@@ -544,23 +584,40 @@ function SemanalDetail({
                 <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
                   Mi apuesta ({bets.length})
                 </p>
-                {bets.map((bet, betIdx) => {
-                  const matchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
-                  const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
-                  return (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <div key={betIdx} className="rounded-xl border border-slate-100 bg-white px-3 py-2.5">
-                      <BallSelection
-                        numbers={bet.numbers}
-                        stars={bet.stars}
-                        matchedNumbers={matchedNums}
-                        matchedStars={matchedStars}
-                        type={game.type}
-                        large
-                      />
-                    </div>
-                  );
-                })}
+                {boletosSize ? (
+                  <BoletosGrid
+                    bets={bets}
+                    boletosSize={boletosSize}
+                    result={result}
+                    game={game}
+                    millonBoletos={millonBoletos}
+                    jokerBoletos={jokerBoletos}
+                  />
+                ) : (
+                  bets.map((bet, betIdx) => {
+                    const matchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+                    const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
+                    const reintegroMatches = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
+                    return (
+                      // eslint-disable-next-line react/no-array-index-key
+                      <div key={betIdx} className="rounded-xl border border-slate-100 bg-white px-3 py-2.5">
+                        <BallSelection
+                          numbers={bet.numbers}
+                          stars={bet.stars}
+                          matchedNumbers={matchedNums}
+                          matchedStars={matchedStars}
+                          type={game.type}
+                          large
+                        />
+                        {bet.reintegro != null && (
+                          <p className="mt-1.5 text-[9px] font-bold text-slate-400">
+                            R: <span className={reintegroMatches ? 'font-black text-emerald-600' : 'font-black text-manises-blue'}>{bet.reintegro}</span>
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
 
                 {/* Day prize — reads from dayPrizes metadata */}
                 {hasResult ? (

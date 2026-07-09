@@ -45,6 +45,7 @@ export const ticketsMapper = {
       stars: dto.stars,
       bets: dto.bets,
       betStars: dto.betStars,
+      betReintegros: dto.betReintegros,
       drawDate: dto.drawDate,
       status: dto.status,
       prize: dto.prize,

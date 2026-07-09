@@ -24,12 +24,14 @@ function isAbonable(number: string): boolean {
   return ['0', '2', '5'].includes(last);
 }
 
-// Navidad/niño → siempre DÉCIMO. Jueves/sábado → TICKET si termina en 3 o 7
-// Demo: 23019 forzado a TICKET para mostrar el flujo de ver ticket
-const DEMO_TICKET_NUMBERS = new Set(['23019', '45002', '12086', '67054', '89021']);
+// El set demo tiene prioridad sobre cualquier regla de gameType — en producción
+// esto vendrá del campo ticketFormat del BE/SALAE.
+// Navidad/niño → siempre DÉCIMO salvo que el número esté en el set demo.
+// Jueves/sábado → TICKET si termina en 3 o 7.
+const DEMO_TICKET_NUMBERS = new Set(['23019', '45002', '12086', '67054', '89021', '44501']);
 function getTicketLabel(gameType: string, number: string): 'DÉCIMO' | 'TICKET' {
-  if (gameType === 'navidad' || gameType === 'nino') return 'DÉCIMO';
   if (DEMO_TICKET_NUMBERS.has(number)) return 'TICKET';
+  if (gameType === 'navidad' || gameType === 'nino') return 'DÉCIMO';
   return ['3', '7'].includes(number.slice(-1)) ? 'TICKET' : 'DÉCIMO';
 }
 

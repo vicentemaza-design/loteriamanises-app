@@ -4,7 +4,7 @@ import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { Button } from '@/shared/ui/Button';
 import { formatCurrency, cn } from '@/shared/lib/utils';
-import { ArrowDownLeft, ArrowUpRight, Landmark, Plus, Trophy } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Landmark, Plus, Trophy, CreditCard } from 'lucide-react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { toast } from 'sonner';
 import gsap from 'gsap';
@@ -160,6 +160,12 @@ export function WalletPage() {
         <section className="space-y-2.5">
           <h3 className="text-xs font-black text-manises-blue uppercase tracking-widest pl-1">Gestión de cuenta</h3>
           <div className="flex flex-col gap-3">
+            <PremiumActionRow
+              icon={CreditCard}
+              title="Mis tarjetas"
+              description="Tarjetas guardadas en Redsys para pagos rápidos."
+              onClick={() => navigate('/profile/payments')}
+            />
             <PremiumActionRow
               icon={ArrowDownLeft}
               title="Ver todos los movimientos"
