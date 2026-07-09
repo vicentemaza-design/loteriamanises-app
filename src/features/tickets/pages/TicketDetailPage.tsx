@@ -83,6 +83,18 @@ function formatFullDate(date: string): string {
   }).toUpperCase();
 }
 
+// ── helpers ────────────────────────────────────────────────────────────────
+
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+const NUMBERS_PER_ROW: Record<string, number> = {
+  primitiva: 6, bonoloto: 6, gordo: 5, euromillones: 5, eurodreams: 6,
+};
+
 // ── sub-components ─────────────────────────────────────────────────────────
 
 type MatchResult = {
@@ -265,32 +277,46 @@ function BoletosGrid({
               )}
             </div>
 
-            {/* Filas de columnas — compact: números + estrellas en la misma línea */}
+            {/* Filas de columnas */}
             <div className="divide-y divide-slate-50 px-2">
               {groupBets.map((bet, betIdx) => {
                 const colNum = colFrom + betIdx;
-                const matchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+                const allMatchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
                 const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
                 const reintegroMatch = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
+                const perRow = NUMBERS_PER_ROW[game.type] ?? 6;
+                const rows = largeBalls && bet.numbers.length > perRow
+                  ? chunkArray(bet.numbers, perRow)
+                  : [bet.numbers];
                 return (
-                  <div key={betIdx} className="flex items-center gap-1.5 py-1.5">
-                    <span className="w-5 shrink-0 text-right text-[9px] font-black text-slate-300 tabular-nums">{colNum}</span>
-                    <BallSelection
-                      numbers={bet.numbers}
-                      stars={bet.stars}
-                      matchedNumbers={matchedNums}
-                      matchedStars={matchedStars}
-                      type={game.type}
-                      large={largeBalls}
-                    />
-                    {bet.reintegro != null && (
-                      <span className={cn(
-                        'ml-auto shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black',
-                        reintegroMatch ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
-                      )}>
-                        R:{bet.reintegro}
-                      </span>
-                    )}
+                  <div key={betIdx} className="py-1.5">
+                    {rows.map((rowNums, rowIdx) => {
+                      const isLast = rowIdx === rows.length - 1;
+                      const rowMatchedNums = allMatchedNums.filter(n => rowNums.includes(n));
+                      return (
+                        <div key={rowIdx} className={cn('flex items-center gap-1.5', rowIdx > 0 && 'mt-1')}>
+                          <span className="w-5 shrink-0 text-right text-[9px] font-black text-slate-300 tabular-nums">
+                            {rowIdx === 0 ? colNum : ''}
+                          </span>
+                          <BallSelection
+                            numbers={rowNums}
+                            stars={isLast ? bet.stars : undefined}
+                            matchedNumbers={rowMatchedNums}
+                            matchedStars={isLast ? matchedStars : []}
+                            type={game.type}
+                            large={largeBalls}
+                          />
+                          {isLast && bet.reintegro != null && (
+                            <span className={cn(
+                              'ml-auto shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black',
+                              reintegroMatch ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
+                            )}>
+                              R:{bet.reintegro}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })}
@@ -723,38 +749,50 @@ function SingleDrawDetail({
         </p>
         <div className="space-y-2">
           {bets.map((bet, i) => {
-            const matchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+            const allMatchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
             const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
             const reintegroMatches = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
             const claveMatches = game.type === 'gordo' && bet.stars?.[0] != null && result?.stars?.includes(bet.stars[0]);
+            const perRow = NUMBERS_PER_ROW[game.type] ?? 6;
+            const rows = bet.numbers.length > perRow
+              ? chunkArray(bet.numbers, perRow)
+              : [bet.numbers];
             return (
               // eslint-disable-next-line react/no-array-index-key
               <div key={i} className="rounded-2xl border border-slate-100 bg-white px-4 py-2 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <BallSelection
-                    numbers={bet.numbers}
-                    stars={game.type === 'gordo' ? undefined : bet.stars}
-                    matchedNumbers={matchedNums}
-                    matchedStars={game.type === 'gordo' ? [] : matchedStars}
-                    type={game.type}
-                    large
-                  />
-                  {game.type === 'gordo' && bet.stars?.[0] != null && (
-                    <span className={cn(
-                      'ml-auto text-[13px] font-black',
-                      claveMatches ? 'text-emerald-600' : 'text-amber-600'
-                    )}>
-                      Clave: {bet.stars[0]}
-                    </span>
-                  )}
-                  {game.type !== 'gordo' && bet.reintegro != null && (
-                    <span className={cn(
-                      'ml-auto shrink-0 rounded-lg px-2 py-1 text-[13px] font-black',
-                      reintegroMatches ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
-                    )}>
-                      R:{bet.reintegro}
-                    </span>
-                  )}
+                <div className="flex flex-col gap-1">
+                  {rows.map((rowNums, rowIdx) => {
+                    const isLast = rowIdx === rows.length - 1;
+                    const rowMatchedNums = allMatchedNums.filter(n => rowNums.includes(n));
+                    return (
+                      <div key={rowIdx} className="flex items-center gap-2">
+                        <BallSelection
+                          numbers={rowNums}
+                          stars={isLast && game.type !== 'gordo' ? bet.stars : undefined}
+                          matchedNumbers={rowMatchedNums}
+                          matchedStars={isLast && game.type !== 'gordo' ? matchedStars : []}
+                          type={game.type}
+                          large
+                        />
+                        {isLast && game.type === 'gordo' && bet.stars?.[0] != null && (
+                          <span className={cn(
+                            'ml-auto text-[13px] font-black',
+                            claveMatches ? 'text-emerald-600' : 'text-amber-600'
+                          )}>
+                            Clave: {bet.stars[0]}
+                          </span>
+                        )}
+                        {isLast && game.type !== 'gordo' && bet.reintegro != null && (
+                          <span className={cn(
+                            'ml-auto shrink-0 rounded-lg px-2 py-1 text-[13px] font-black',
+                            reintegroMatches ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
+                          )}>
+                            R:{bet.reintegro}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -898,29 +936,41 @@ function SemanalDetail({
                   />
                 ) : (
                   bets.map((bet, betIdx) => {
-                    const matchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+                    const allMatchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
                     const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
                     const reintegroMatches = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
+                    const perRow = NUMBERS_PER_ROW[game.type] ?? 6;
+                    const rows = bet.numbers.length > perRow
+                      ? chunkArray(bet.numbers, perRow)
+                      : [bet.numbers];
                     return (
                       // eslint-disable-next-line react/no-array-index-key
                       <div key={betIdx} className="rounded-xl border border-slate-100 bg-white px-3 py-2">
-                        <div className="flex items-center gap-2">
-                          <BallSelection
-                            numbers={bet.numbers}
-                            stars={bet.stars}
-                            matchedNumbers={matchedNums}
-                            matchedStars={matchedStars}
-                            type={game.type}
-                            large
-                          />
-                          {bet.reintegro != null && (
-                            <span className={cn(
-                              'ml-auto shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-black',
-                              reintegroMatches ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
-                            )}>
-                              R:{bet.reintegro}
-                            </span>
-                          )}
+                        <div className="flex flex-col gap-1">
+                          {rows.map((rowNums, rowIdx) => {
+                            const isLast = rowIdx === rows.length - 1;
+                            const rowMatchedNums = allMatchedNums.filter(n => rowNums.includes(n));
+                            return (
+                              <div key={rowIdx} className="flex items-center gap-2">
+                                <BallSelection
+                                  numbers={rowNums}
+                                  stars={isLast ? bet.stars : undefined}
+                                  matchedNumbers={rowMatchedNums}
+                                  matchedStars={isLast ? matchedStars : []}
+                                  type={game.type}
+                                  large
+                                />
+                                {isLast && bet.reintegro != null && (
+                                  <span className={cn(
+                                    'ml-auto shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-black',
+                                    reintegroMatches ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
+                                  )}>
+                                    R:{bet.reintegro}
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     );

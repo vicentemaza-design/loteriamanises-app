@@ -148,6 +148,48 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
     createdAt: new Date(Date.now() - 3600000).toISOString(),
   },
 
+  // ── Primitiva sistema — 11 números en 1 columna (jugada múltiple) ─────────
+  {
+    id: 'demo-primitiva-sistema',
+    userId: 'demo-user',
+    gameId: 'primitiva',
+    gameType: 'primitiva',
+    numbers: [5, 12, 21, 30, 41, 47, 8, 16, 25, 33, 44],
+    bets: [[5, 12, 21, 30, 41, 47, 8, 16, 25, 33, 44]],
+    betReintegros: [4],
+    drawDate: '2026-05-08',
+    status: 'won',
+    prize: 2.00,
+    price: 462.00,
+    metadata: {
+      playStatus: 'scrutinized',
+      orderTotalPrice: 462.00,
+      betsCount: 1,
+      orderDrawDates: ['2026-05-08'],
+    },
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+  },
+
+  // ── El Gordo múltiple — 10 números + clave en 1 apuesta ──────────────────
+  {
+    id: 'demo-gordo-multiple',
+    userId: 'demo-user',
+    gameId: 'gordo',
+    gameType: 'gordo',
+    numbers: [5, 14, 22, 31, 49, 7, 16, 23, 34, 45],
+    stars: [7],
+    drawDate: '2026-05-09',
+    status: 'pending',
+    price: 3.00,
+    metadata: {
+      playStatus: 'pending',
+      orderTotalPrice: 3.00,
+      betsCount: 1,
+      orderDrawDates: ['2026-05-09'],
+    },
+    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+  },
+
   // ── El Gordo escrutado con premio ────────────────────────────────────────
   {
     id: 'demo-gordo-won',
