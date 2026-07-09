@@ -6,7 +6,7 @@ interface QuinielaMatch {
   id: number;
   home: string;
   away: string;
-  result: '1' | 'X' | '2' | '1X' | '12' | 'X2' | '1X2' | null;
+  result: string | null;
 }
 
 interface Props {
@@ -37,8 +37,9 @@ const INITIAL_MATCHES: QuinielaMatch[] = [
 export function QuinielaProfessionalSelector({ mode, reducedType, initialSelection, onSelectionChange }: Props) {
   const [matches, setMatches] = useState<QuinielaMatch[]>(INITIAL_MATCHES);
   
-  const doublesCount = matches.filter(m => ['1X', '12', 'X2'].includes(m.result || '')).length;
-  const triplesCount = matches.filter(m => m.result === '1X2').length;
+  const regularMatches = matches.filter(m => m.id !== 15);
+  const doublesCount = regularMatches.filter(m => m.result !== null && m.result.length === 2).length;
+  const triplesCount = regularMatches.filter(m => m.result === '1X2').length;
 
   const config = reducedType ? QUINIELA_REDUCED_TABLES[reducedType] : null;
 
@@ -60,25 +61,22 @@ export function QuinielaProfessionalSelector({ mode, reducedType, initialSelecti
     );
   }, [initialSelection]);
 
-  const toggleResult = (matchId: number, val: '1' | 'X' | '2') => {
+  const toggleResult = (matchId: number, val: string) => {
+    const isPlena = matchId === 15;
+    const order = isPlena ? '012M' : '1X2';
     setMatches(prev => prev.map(m => {
       if (m.id !== matchId) return m;
-      
       const current = m.result;
       let next: QuinielaMatch['result'] = null;
-
       if (!current) next = val;
       else if (current === val) next = null;
       else {
-        // Lógica de múltiples (solo si el click añade un signo nuevo)
-        const parts = new Set(current.split(''));
+        const parts = new Set<string>(current.split(''));
         if (parts.has(val)) parts.delete(val);
         else parts.add(val);
-        
-        const sorted = Array.from(parts).sort().join('') as QuinielaMatch['result'];
+        const sorted = [...parts].sort((a, b) => order.indexOf(a) - order.indexOf(b)).join('');
         next = sorted || null;
       }
-
       return { ...m, result: next };
     }));
   };
@@ -115,15 +113,15 @@ export function QuinielaProfessionalSelector({ mode, reducedType, initialSelecti
               <p className="text-[11px] font-bold text-slate-700 truncate">{match.away}</p>
             </div>
             <div className="flex gap-1.5">
-              {['1', 'X', '2'].map((v) => {
+              {(match.id === 15 ? ['0', '1', '2', 'M'] : ['1', 'X', '2']).map((v) => {
                 const isActive = match.result?.includes(v);
                 return (
                   <button
                     key={v}
-                    onClick={() => toggleResult(match.id, v as '1'|'X'|'2')}
+                    onClick={() => toggleResult(match.id, v)}
                     className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black transition-all ${
-                      isActive 
-                        ? 'bg-manises-blue text-white shadow-md scale-95' 
+                      isActive
+                        ? 'bg-manises-blue text-white shadow-md scale-95'
                         : 'bg-slate-50 text-slate-400 hover:bg-slate-100 active:scale-90'
                     }`}
                   >

@@ -107,10 +107,11 @@ export function QuinielaOficialSection({ fixtures, onSummaryChange }: Props) {
   const [reductionId, setReductionId] = useState<string>('7D_13');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const doublesTotal  = matches.filter(m => m.result && m.result.length === 2).length;
-  const triplesTotal  = matches.filter(m => m.result === '1X2').length;
-  const reducidosD    = matches.filter(m => m.isReducido && m.result && m.result.length === 2).length;
-  const reducidosT    = matches.filter(m => m.isReducido && m.result === '1X2').length;
+  const regularMatches = matches.filter(m => m.id !== 15);
+  const doublesTotal  = regularMatches.filter(m => m.result && m.result.length === 2).length;
+  const triplesTotal  = regularMatches.filter(m => m.result === '1X2').length;
+  const reducidosD    = regularMatches.filter(m => m.isReducido && m.result && m.result.length === 2).length;
+  const reducidosT    = regularMatches.filter(m => m.isReducido && m.result === '1X2').length;
   const directosD     = doublesTotal - reducidosD;
   const directosT     = triplesTotal - reducidosT;
 
@@ -128,7 +129,9 @@ export function QuinielaOficialSection({ fixtures, onSummaryChange }: Props) {
 
   useEffect(() => { emitSummary(matches, reductionId); }, [matches, reductionId, emitSummary]);
 
-  const toggleSign = (matchId: number, sign: '1' | 'X' | '2') => {
+  const toggleSign = (matchId: number, sign: string) => {
+    const isPlena = matchId === 15;
+    const order = isPlena ? '012M' : '1X2';
     setMatches(prev => prev.map(m => {
       if (m.id !== matchId) return m;
       const cur = m.result;
@@ -141,18 +144,17 @@ export function QuinielaOficialSection({ fixtures, onSummaryChange }: Props) {
         const parts = new Set<string>(cur.split(''));
         if (parts.has(sign)) parts.delete(sign);
         else parts.add(sign);
-        const sorted = [...parts].sort((a, b) => '1X2'.indexOf(a) - '1X2'.indexOf(b)).join('');
-        next = (sorted || null) as QuinielaResult;
+        const sorted = [...parts].sort((a, b) => order.indexOf(a) - order.indexOf(b)).join('');
+        next = sorted || null;
       }
-      // Clear reducido if no longer has a result
       return { ...m, result: next, isReducido: next === null ? false : m.isReducido };
     }));
   };
 
   const toggleReducido = (matchId: number) => {
     setMatches(prev => prev.map(m => {
-      // Solo dobles/triples pueden marcarse como reducido
-      if (m.id !== matchId || !m.result || m.result.length < 2) return m;
+      // Pleno al 15 no participa en la reducción; solo dobles/triples pueden marcarse
+      if (m.id !== matchId || m.id === 15 || !m.result || m.result.length < 2) return m;
       return { ...m, isReducido: !m.isReducido };
     }));
   };
@@ -163,8 +165,8 @@ export function QuinielaOficialSection({ fixtures, onSummaryChange }: Props) {
 
   const getOficialBadge = (m: QuinielaOficialMatch): { label: string; color: string } | null => {
     if (!m.result) return null;
+    if (m.id === 15) return null; // Pleno al 15 no tiene badge R/D
     const isMulti = m.result.length >= 2;
-    // Sencilla: siempre entra en la reducción implícitamente, no se puede cambiar
     if (!isMulti) return { label: '—', color: 'text-slate-300' };
     if (m.isReducido) return { label: 'R', color: 'bg-manises-blue text-white' };
     return { label: 'D', color: 'bg-slate-100 text-slate-500' };
@@ -228,7 +230,7 @@ export function QuinielaOficialSection({ fixtures, onSummaryChange }: Props) {
                 )}
               </div>
               <div className="flex gap-1">
-                {(['1', 'X', '2'] as const).map(sign => {
+                {(template.id === 15 ? ['0', '1', '2', 'M'] : ['1', 'X', '2']).map(sign => {
                   const isActive = match.result?.includes(sign);
                   return (
                     <button

@@ -119,14 +119,14 @@ export function QuinielaManisesSection({ fixtures, onSummaryChange }: Props) {
   const [modalidad, setModalidad] = useState<ManisesModalidad>('directo');
   const [expandedModalidad, setExpandedModalidad] = useState<string | null>(null);
 
-  const doublesCount = matches.filter(m => m.result && m.result.length === 2).length;
-  const triplesCount = matches.filter(m => m.result === '1X2').length;
+  const regularMatches = matches.filter(m => m.id !== 15);
+  const doublesCount = regularMatches.filter(m => m.result && m.result.length === 2).length;
+  const triplesCount = regularMatches.filter(m => m.result === '1X2').length;
   const allSelected  = matches.every(m => m.result !== null);
 
   const directBets = matches.reduce((acc, m) => {
     if (!m.result) return 0;
-    const len = m.result === '1X2' ? 3 : m.result.length === 2 ? 2 : 1;
-    return acc * len;
+    return acc * m.result.length;
   }, 1);
 
   const bets  = modalidad === 'directo'
@@ -135,13 +135,13 @@ export function QuinielaManisesSection({ fixtures, onSummaryChange }: Props) {
   const price = bets * PRICE_PER_BET;
 
   const emitSummary = useCallback((m: QuinielaMatch[], mod: ManisesModalidad) => {
-    const db   = m.filter(x => x.result && x.result.length === 2).length;
-    const tb   = m.filter(x => x.result === '1X2').length;
+    const reg  = m.filter(x => x.id !== 15);
+    const db   = reg.filter(x => x.result && x.result.length === 2).length;
+    const tb   = reg.filter(x => x.result === '1X2').length;
     const all  = m.every(x => x.result !== null);
     const dB   = m.reduce((a, x) => {
       if (!x.result) return 0;
-      const l = x.result === '1X2' ? 3 : x.result.length === 2 ? 2 : 1;
-      return a * l;
+      return a * x.result.length;
     }, 1);
     const b    = mod === 'directo' ? dB : MANISES_REDUCTIONS.find(r => r.id === mod)?.bets ?? 0;
     const valid = all && (mod === 'directo' || db + tb >= 1);
@@ -150,7 +150,9 @@ export function QuinielaManisesSection({ fixtures, onSummaryChange }: Props) {
 
   useEffect(() => { emitSummary(matches, modalidad); }, [matches, modalidad, emitSummary]);
 
-  const toggleSign = (matchId: number, sign: '1' | 'X' | '2') => {
+  const toggleSign = (matchId: number, sign: string) => {
+    const isPlena = matchId === 15;
+    const order = isPlena ? '012M' : '1X2';
     setMatches(prev => prev.map(m => {
       if (m.id !== matchId) return m;
       const cur = m.result;
@@ -163,8 +165,8 @@ export function QuinielaManisesSection({ fixtures, onSummaryChange }: Props) {
         const parts = new Set<string>(cur.split(''));
         if (parts.has(sign)) parts.delete(sign);
         else parts.add(sign);
-        const sorted = [...parts].sort((a, b) => '1X2'.indexOf(a) - '1X2'.indexOf(b)).join('');
-        next = (sorted || null) as QuinielaResult;
+        const sorted = [...parts].sort((a, b) => order.indexOf(a) - order.indexOf(b)).join('');
+        next = sorted || null;
       }
       return { ...m, result: next };
     }));
@@ -209,7 +211,7 @@ export function QuinielaManisesSection({ fixtures, onSummaryChange }: Props) {
                 )}
               </div>
               <div className="flex gap-1">
-                {(['1', 'X', '2'] as const).map(sign => {
+                {(template.id === 15 ? ['0', '1', '2', 'M'] : ['1', 'X', '2']).map(sign => {
                   const isActive = match.result?.includes(sign);
                   return (
                     <button

@@ -1,4 +1,4 @@
-export type QuinielaResult = '1' | 'X' | '2' | '1X' | '12' | 'X2' | '1X2' | null;
+export type QuinielaResult = string | null;
 
 export interface QuinielaMatch {
   id: number;
@@ -41,20 +41,21 @@ export function makeInitialOficialMatches(
   return fixtures.map(m => ({ ...m, result: null, isReducido: false }));
 }
 
+export const PLENA_SIGNS = ['0', '1', '2', 'M'] as const;
+export const REGULAR_SIGNS = ['1', 'X', '2'] as const;
+
 export function getMatchTypeBadge(result: QuinielaResult): 'Simple' | 'Doble' | 'Triple' | null {
   if (!result) return null;
-  const count = result.length === 3 ? 3 : result.length === 2 ? 2 : 1;
-  if (count === 1) return 'Simple';
-  if (count === 2) return 'Doble';
-  return 'Triple';
+  if (result.length >= 3) return 'Triple';
+  if (result.length === 2) return 'Doble';
+  return 'Simple';
 }
 
 /** Calculates direct bets for a Manises multiple (Directo modalidad) */
 export function calcDirectBets(matches: QuinielaMatch[]): number {
   return matches.reduce((acc, m) => {
-    if (!m.result) return 0; // Not all selected → invalid
-    const len = m.result === '1X2' ? 3 : m.result.length === 2 ? 2 : 1;
-    return acc * len;
+    if (!m.result) return 0;
+    return acc * m.result.length; // '1X2'.length=3, '0M'.length=2, etc.
   }, 1);
 }
 

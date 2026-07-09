@@ -53,7 +53,7 @@ export function QuinielaSimpleSection({ fixtures, onSummaryChange }: Props) {
     setActiveIdx(Math.min(activeIdx, next.length - 1));
   };
 
-  const toggleSign = (matchIdx: number, sign: '1' | 'X' | '2') => {
+  const toggleSign = (matchIdx: number, sign: string) => {
     setColumns(prev => {
       const next = prev.map((col, ci) => {
         if (ci !== activeIdx) return col;
@@ -130,7 +130,7 @@ export function QuinielaSimpleSection({ fixtures, onSummaryChange }: Props) {
                 )}
               </div>
               <div className="flex gap-1">
-                {(['1', 'X', '2'] as const).map(sign => {
+                {(match.id === 15 ? ['0', '1', '2', 'M'] : ['1', 'X', '2']).map(sign => {
                   const isActive = selected === sign;
                   return (
                     <button
