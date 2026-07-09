@@ -665,9 +665,10 @@ function SingleDrawDetail({
                 numbers={result.numbers.map(Number).filter(Boolean)}
                 stars={result.stars}
                 type={game.type}
+                large
               />
               {result.reintegro != null && (
-                <span className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[11px] font-black bg-slate-50 text-slate-500">
+                <span className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[11px] font-black bg-slate-100 text-slate-500">
                   R:{result.reintegro}
                 </span>
               )}
@@ -696,6 +697,7 @@ function SingleDrawDetail({
                     matchedNumbers={matchedNums}
                     matchedStars={matchedStars}
                     type={game.type}
+                    large
                   />
                   {bet.reintegro != null && (
                     <span className={cn(
@@ -808,16 +810,18 @@ function SemanalDetail({
                       Resultado oficial
                     </p>
                     <div className="rounded-xl border border-slate-100 bg-slate-50/60 px-3 py-2.5">
-                      <BallSelection
-                        numbers={result.numbers.map(Number).filter(Boolean)}
-                        stars={result.stars}
-                        type={game.type}
-                      />
-                      {result.reintegro != null && (
-                        <p className="mt-1.5 text-[9px] font-bold text-slate-400">
-                          R: <span className="font-black text-manises-blue">{result.reintegro}</span>
-                        </p>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <BallSelection
+                          numbers={result.numbers.map(Number).filter(Boolean)}
+                          stars={result.stars}
+                          type={game.type}
+                        />
+                        {result.reintegro != null && (
+                          <span className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[11px] font-black bg-slate-100 text-slate-500">
+                            R:{result.reintegro}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
@@ -849,7 +853,7 @@ function SemanalDetail({
                             matchedNumbers={matchedNums}
                             matchedStars={matchedStars}
                             type={game.type}
-                            compact
+                            large
                           />
                           {bet.reintegro != null && (
                             <span className={cn(
