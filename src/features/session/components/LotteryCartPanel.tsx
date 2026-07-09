@@ -55,15 +55,17 @@ function TicketMockupModal({ number, gameType, label, onClose }: {
           onClick={e => e.stopPropagation()}
         >
           {/* Cabecera */}
-          <div className="mb-4 flex items-center justify-between">
-            <div>
+          <div className="mb-4">
+            <div className="flex items-center justify-between">
               <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">{label}</p>
-              <p className="font-mono text-[22px] font-black tracking-[0.18em] text-manises-blue">{number}</p>
+              <button type="button" onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200">
+                <Xmark className="h-4 w-4" />
+              </button>
             </div>
-            <button type="button" onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200">
-              <Xmark className="h-4 w-4" />
-            </button>
+            <p className="mt-1 text-center font-mono text-[30px] font-black tracking-[0.18em] text-manises-blue">
+              {number}
+            </p>
           </div>
 
           {/* Imagen mockup */}
