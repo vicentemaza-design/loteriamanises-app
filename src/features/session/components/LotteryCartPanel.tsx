@@ -56,10 +56,7 @@ function TicketMockupModal({ number, gameType, label, onClose }: {
         >
           {/* Cabecera */}
           <div className="mb-4 flex items-center justify-between">
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">{label}</p>
-              <p className="font-mono text-[22px] font-black tracking-[0.18em] text-manises-blue">{number}</p>
-            </div>
+            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">{label}</p>
             <button type="button" onClick={onClose}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200">
               <Xmark className="h-4 w-4" />
@@ -69,7 +66,7 @@ function TicketMockupModal({ number, gameType, label, onClose }: {
           {/* Imagen mockup */}
           <div className="relative overflow-hidden rounded-2xl">
             <NationalTicketThumbnail drawId={drawId} className="w-full" />
-            <div className="absolute top-[10%] left-[56%] -translate-x-1/2 text-center">
+            <div className="absolute top-[10%] left-[60%] -translate-x-1/2 text-center">
               <span className="font-mono text-[28px] font-black tracking-[0.2em] text-gray-900">
                 {number}
               </span>
