@@ -118,7 +118,10 @@ function getSelectionSummary(ticket: Ticket): string {
   const starsLabel = ticket.stars && ticket.stars.length > 0
     ? ` + ${ticket.stars.map(s => String(s).padStart(2, '0')).join(' ')}`
     : '';
-  return `${ticket.numbers.map(n => String(n).padStart(2, '0')).join(' ')}${starsLabel}`;
+  const reintegroLabel = ticket.betReintegros?.[0] != null
+    ? ` · R:${ticket.betReintegros[0]}`
+    : '';
+  return `${ticket.numbers.map(n => String(n).padStart(2, '0')).join(' ')}${starsLabel}${reintegroLabel}`;
 }
 
 export function TicketsPage() {
