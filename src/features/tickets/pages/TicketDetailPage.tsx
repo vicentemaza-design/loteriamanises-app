@@ -248,44 +248,45 @@ function BoletosGrid({
         return (
           <div key={boletoIdx} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
             {/* Cabecera del boleto */}
-            <div className="flex items-center justify-between border-b border-slate-50 bg-manises-blue/[0.035] px-4 py-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.06em] text-manises-blue">
+            <div className="flex items-center justify-between border-b border-slate-50 bg-manises-blue/[0.035] px-3 py-2">
+              <p className="text-[9px] font-black uppercase tracking-[0.06em] text-manises-blue">
                 Boleto {boletoIdx + 1}
                 <span className="ml-1.5 font-semibold normal-case text-slate-400">
-                  (Col. {colFrom}{colTo > colFrom ? `–${colTo}` : ''})
+                  (Columnas {colFrom}{colTo > colFrom ? ` - ${colTo}` : ''})
                 </span>
               </p>
               {hasJoker && jokerData && (
-                <span className="flex items-center gap-1 text-[11px] font-black text-emerald-600">
+                <span className="flex items-center gap-1 text-[10px] font-black text-emerald-600">
                   🍀 {jokerData.jokerNumber}
                 </span>
               )}
             </div>
 
-            {/* Filas de columnas */}
-            <div className="divide-y divide-slate-50 px-3">
+            {/* Filas de columnas — compact: números + estrellas en la misma línea */}
+            <div className="divide-y divide-slate-50 px-2">
               {groupBets.map((bet, betIdx) => {
                 const colNum = colFrom + betIdx;
                 const matchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
                 const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
                 return (
-                  <div key={betIdx} className="flex items-center gap-2 py-2">
-                    <span className="w-5 shrink-0 text-right text-[9px] font-black text-slate-300">{colNum}</span>
+                  <div key={betIdx} className="flex items-center gap-1.5 py-1.5">
+                    <span className="w-5 shrink-0 text-right text-[9px] font-black text-slate-300 tabular-nums">{colNum}</span>
                     <BallSelection
                       numbers={bet.numbers}
                       stars={bet.stars}
                       matchedNumbers={matchedNums}
                       matchedStars={matchedStars}
                       type={game.type}
+                      compact
                     />
                   </div>
                 );
               })}
             </div>
 
-            {/* Códigos de El Millón (Euromillones) */}
+            {/* Códigos de El Millón (Euromillones) — al final de cada boleto */}
             {millonData && (
-              <div className="border-t border-amber-100/60 bg-amber-50/40 px-4 py-2.5">
+              <div className="border-t border-amber-100/60 bg-amber-50/40 px-3 py-2">
                 <p className="text-[7px] font-black uppercase tracking-[0.18em] text-slate-400">
                   Códigos de El Millón (asignados)
                 </p>

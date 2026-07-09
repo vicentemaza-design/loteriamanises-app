@@ -11,7 +11,7 @@
 export interface QuinielaFixture {
   id: number;
   home: string;
-  away: string; // vacío para "Pleno al 15"
+  away: string;
 }
 
 // ── TEMPORADA 2026-27 ────────────────────────────────────────
@@ -34,7 +34,7 @@ const QUINIELA_CALENDAR: Record<string, QuinielaFixture[]> = {
     { id: 12, home: 'Levante',         away: 'Eibar' },
     { id: 13, home: 'Sandefjord',      away: 'HamKam' },
     { id: 14, home: 'Brann',           away: 'Stabaek' },
-    { id: 15, home: 'Pleno al 15',     away: '' },
+    { id: 15, home: 'Sandefjord Fotball', away: 'Hamkam IL' },
   ],
 
   // Jornada 2 — 19 Jul 2026
@@ -53,7 +53,7 @@ const QUINIELA_CALENDAR: Record<string, QuinielaFixture[]> = {
     { id: 12, home: 'Eibar',           away: 'Zaragoza' },
     { id: 13, home: 'HamKam',          away: 'Brann' },
     { id: 14, home: 'Stabaek',         away: 'Sandefjord' },
-    { id: 15, home: 'Pleno al 15',     away: '' },
+    { id: 15, home: 'Hamkam IL',       away: 'Brann' },
   ],
 
   // Jornada 3 — 26 Jul 2026
@@ -72,7 +72,7 @@ const QUINIELA_CALENDAR: Record<string, QuinielaFixture[]> = {
     { id: 12, home: 'Levante',         away: 'Sporting' },
     { id: 13, home: 'Sandefjord',      away: 'Stabaek' },
     { id: 14, home: 'HamKam',          away: 'Brann' },
-    { id: 15, home: 'Pleno al 15',     away: '' },
+    { id: 15, home: 'Brann',           away: 'Sandefjord' },
   ],
 
   // Jornada 4 — 2 Ago 2026
@@ -91,7 +91,7 @@ const QUINIELA_CALENDAR: Record<string, QuinielaFixture[]> = {
     { id: 12, home: 'Sporting',        away: 'Granada' },
     { id: 13, home: 'Brann',           away: 'HamKam' },
     { id: 14, home: 'Stabaek',         away: 'Sandefjord' },
-    { id: 15, home: 'Pleno al 15',     away: '' },
+    { id: 15, home: 'Stabaek',         away: 'Hamkam IL' },
   ],
 
   // Jornada 5 — 9 Ago 2026
@@ -110,7 +110,7 @@ const QUINIELA_CALENDAR: Record<string, QuinielaFixture[]> = {
     { id: 12, home: 'Eibar',           away: 'Sporting' },
     { id: 13, home: 'HamKam',          away: 'Sandefjord' },
     { id: 14, home: 'Brann',           away: 'Stabaek' },
-    { id: 15, home: 'Pleno al 15',     away: '' },
+    { id: 15, home: 'HamKam',          away: 'Sandefjord' },
   ],
 
   // ── Añade aquí las siguientes jornadas ──

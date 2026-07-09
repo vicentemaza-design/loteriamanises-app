@@ -26,7 +26,7 @@ export const DEFAULT_MATCH_TEMPLATES: Omit<QuinielaMatch, 'result'>[] = [
   { id: 12, home: 'Levante',         away: 'Eibar' },
   { id: 13, home: 'Sandefjord',      away: 'HamKam' },
   { id: 14, home: 'Brann',           away: 'Stabaek' },
-  { id: 15, home: 'Pleno al 15',     away: '' },
+  { id: 15, home: 'Sandefjord Fotball', away: 'Hamkam IL' },
 ];
 
 export function makeInitialMatches(

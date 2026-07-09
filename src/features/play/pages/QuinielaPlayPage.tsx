@@ -98,6 +98,15 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
   const isValid = activeSummary?.isValid ?? false;
   const availableBalance = profile?.balance ?? 0;
 
+  const playCta = (() => {
+    if (isValid) return 'Añadir jugada';
+    if (system === 'manises' && manisesSummary?.mode === 'manises') {
+      const allDone = manisesSummary.matches.every(m => m.result !== null) && manisesSummary.plenaHome !== null && manisesSummary.plenaAway !== null;
+      if (allDone) return 'Necesitas al menos un doble o triple';
+    }
+    return 'Completa el pronóstico de los 15 partidos';
+  })();
+
   const handleSelectSystem = (s: QuinielaSystem) => {
     setSystem(s);
     setStep('play');
@@ -122,14 +131,16 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
       let systemId: string | undefined;
 
       if (system === 'simple' && simpleSummary) {
-        // Each column = one draft
         const drawDate = getBusinessDate(selectedDrawDate.toISOString());
         let totalAdded = 0;
-        for (const col of simpleSummary.columns) {
-          const colMatches = col.map((result, idx) => ({
-            id: idx + 1,
-            value: result ?? '',
-          })).filter(m => m.value);
+        for (let ci = 0; ci < simpleSummary.columns.length; ci++) {
+          const col   = simpleSummary.columns[ci];
+          const plena = simpleSummary.plenas[ci];
+          const colMatches = [
+            ...col.map((result, idx) => ({ id: idx + 1, value: result ?? '' })).filter(m => m.value),
+            // Match 15 (Pleno al 15): encode as "home/away" goal tally
+            ...(plena?.home && plena?.away ? [{ id: 15, value: `${plena.home}/${plena.away}` }] : []),
+          ];
 
           const selection = buildGameSelection({
             game,
@@ -178,10 +189,20 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
       }
 
       if (system === 'manises' && manisesSummary) {
-        matches = manisesSummary.matches.map(m => ({ id: m.id, value: m.result ?? '' }));
-        systemId = manisesSummary.modalidad === 'directo' ? undefined : `manises_${manisesSummary.modalidad}`;
+        matches = [
+          ...manisesSummary.matches.map(m => ({ id: m.id, value: m.result ?? '' })),
+          ...(manisesSummary.plenaHome && manisesSummary.plenaAway
+            ? [{ id: 15, value: `${manisesSummary.plenaHome}/${manisesSummary.plenaAway}` }]
+            : []),
+        ];
+        systemId = manisesSummary.mode === 'multiple' ? undefined : `manises_${manisesSummary.modalidad}`;
       } else if (system === 'oficial' && oficialSummary) {
-        matches = oficialSummary.matches.map(m => ({ id: m.id, value: m.result ?? '' }));
+        matches = [
+          ...oficialSummary.matches.map(m => ({ id: m.id, value: m.result ?? '' })),
+          ...(oficialSummary.plenaHome && oficialSummary.plenaAway
+            ? [{ id: 15, value: `${oficialSummary.plenaHome}/${oficialSummary.plenaAway}` }]
+            : []),
+        ];
         systemId = oficialSummary.reductionId;
       }
 
@@ -464,7 +485,7 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
           availableBalance={availableBalance}
           totalPrice={totalPrice}
           canContinue={isValid && totalPrice <= availableBalance}
-          ctaLabel={isValid ? 'Añadir jugada' : 'Completa el pronóstico de los 15 partidos'}
+          ctaLabel={playCta}
           onContinue={handlePlay}
           activeColor={game.color}
           validationText="Completa el pronóstico de los 15 partidos"
