@@ -155,6 +155,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
     gameId: 'gordo',
     gameType: 'gordo',
     numbers: [5, 14, 22, 31, 49],
+    stars: [3],
     drawDate: '2026-05-09',
     status: 'pending',
     price: 1.50,

@@ -90,6 +90,7 @@ type MatchResult = {
   date: string;
   numbers: (number | string)[];
   stars?: number[];
+  complementario?: number;
   reintegro?: number;
 } | null;
 
@@ -226,6 +227,7 @@ function BoletosGrid({
   game,
   millonBoletos,
   jokerBoletos,
+  largeBalls = false,
 }: {
   bets: Array<{ numbers: number[]; stars?: number[]; reintegro?: number }>;
   boletosSize: number;
@@ -233,6 +235,7 @@ function BoletosGrid({
   game: (typeof LOTTERY_GAMES)[number];
   millonBoletos: Array<{ codeFrom: string; codeTo: string }>;
   jokerBoletos: Array<{ jokerNumber: string }>;
+  largeBalls?: boolean;
 }) {
   const hasJoker = jokerBoletos.length > 0;
   const boletoGroups = groupIntoBoletos(bets, boletosSize);
@@ -278,6 +281,7 @@ function BoletosGrid({
                       matchedNumbers={matchedNums}
                       matchedStars={matchedStars}
                       type={game.type}
+                      large={largeBalls}
                     />
                     {bet.reintegro != null && (
                       <span className={cn(
@@ -342,12 +346,28 @@ function BoletoGroupsView({
             Resultado oficial
           </p>
           <div className="rounded-2xl border border-slate-100 bg-white px-4 py-2 shadow-sm">
-            <BallSelection
-              numbers={result.numbers.map(Number).filter(Boolean)}
-              stars={result.stars}
-              type={game.type}
-              medium
-            />
+            <div className="flex items-center gap-2">
+              <BallSelection
+                numbers={result.numbers.map(Number).filter(Boolean)}
+                stars={result.stars}
+                type={game.type}
+                large={!result.stars?.length}
+                medium={!!result.stars?.length}
+              />
+              {result.complementario != null && (
+                <div className="ml-1 flex flex-col items-center gap-0.5">
+                  <span className="text-[7px] font-black uppercase tracking-wider text-slate-400">C</span>
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-[13px] font-black text-slate-600">
+                    {result.complementario}
+                  </div>
+                </div>
+              )}
+              {result.reintegro != null && (
+                <span className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[13px] font-black bg-slate-100 text-slate-500">
+                  R:{result.reintegro}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -364,6 +384,7 @@ function BoletoGroupsView({
           game={game}
           millonBoletos={millonBoletos}
           jokerBoletos={jokerBoletos}
+          largeBalls={!result?.stars?.length && game.type !== 'euromillones'}
         />
       </div>
 
@@ -668,6 +689,14 @@ function SingleDrawDetail({
                 type={game.type}
                 large
               />
+              {result.complementario != null && (
+                <div className="ml-1 flex flex-col items-center gap-0.5">
+                  <span className="text-[7px] font-black uppercase tracking-wider text-slate-400">C</span>
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-[13px] font-black text-slate-600">
+                    {result.complementario}
+                  </div>
+                </div>
+              )}
               {result.reintegro != null && (
                 <span className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[13px] font-black bg-slate-100 text-slate-500">
                   R:{result.reintegro}
@@ -818,6 +847,14 @@ function SemanalDetail({
                           type={game.type}
                           medium
                         />
+                        {result.complementario != null && (
+                          <div className="ml-1 flex flex-col items-center gap-0.5">
+                            <span className="text-[7px] font-black uppercase tracking-wider text-slate-400">C</span>
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-[12px] font-black text-slate-600">
+                              {result.complementario}
+                            </div>
+                          </div>
+                        )}
                         {result.reintegro != null && (
                           <span className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[13px] font-black bg-slate-100 text-slate-500">
                             R:{result.reintegro}
