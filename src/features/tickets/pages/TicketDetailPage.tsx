@@ -411,7 +411,7 @@ function BoletoGroupsView({
           game={game}
           millonBoletos={millonBoletos}
           jokerBoletos={jokerBoletos}
-          largeBalls={!result?.stars?.length && game.type !== 'euromillones'}
+          largeBalls
         />
       </div>
 
