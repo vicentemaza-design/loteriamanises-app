@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Xmark, Trash, Lock, Plus, EditPencil, Truck, Star, ShieldCheck, Eye, WarningTriangle, NavArrowLeft } from 'iconoir-react/regular';
 import { CreditCard, Check, Loader2, CheckCircle2 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { formatCurrency } from '@/shared/lib/utils';
 import { usePlaySession } from '../hooks/usePlaySession';
 import { usePlaySessionConfirm } from '../hooks/usePlaySessionConfirm';
@@ -87,12 +88,102 @@ function TicketMockupModal({ number, gameType, label, onClose }: {
   );
 }
 
+// Genera códigos de serie y hash deterministas a partir del número del décimo
+function generateSerial(number: string): { line1: string; line2: string } {
+  let s = 0;
+  for (let i = 0; i < number.length; i++) {
+    s = ((s * 31) + number.charCodeAt(i)) & 0x7fffffff;
+  }
+  const groups: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    s = (s * 1664525 + 1013904223) & 0x7fffffff;
+    groups.push(String(s % 100000).padStart(5, '0'));
+  }
+  const hex = '0123456789ABCDEF';
+  let line2 = '';
+  for (let i = 0; i < 20; i++) {
+    s = (s * 1664525 + 1013904223) & 0x7fffffff;
+    line2 += hex[s % 16];
+  }
+  return { line1: groups.join('-'), line2 };
+}
+
+// Modal custodia digital — usa la imagen template del décimo en blanco
+function CustodiaTicketModal({ number, onClose }: { number: string; onClose: () => void }) {
+  const { line1, line2 } = generateSerial(number);
+  const qrValue = `LOTERIA-MANISES-${number}-${line2}`;
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[400] flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm px-6"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+          className="relative w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl"
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Cabecera */}
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">DÉCIMO</p>
+            <button type="button" onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:bg-slate-200">
+              <Xmark className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Template con overlays */}
+          <div className="relative overflow-hidden rounded-2xl">
+            <img src="/assets/decimo-template.jpg" className="block w-full" alt="Décimo digital" />
+
+            {/* Número — zona blanca superior */}
+            <div className="absolute top-[7%] left-[59%] -translate-x-1/2">
+              <span className="font-mono text-[32px] font-black tracking-[0.08em] text-gray-900 whitespace-nowrap">
+                {number}
+              </span>
+            </div>
+
+            {/* QR — zona azul inferior izquierda */}
+            <div className="absolute" style={{ top: '62%', left: '2%' }}>
+              <QRCodeSVG value={qrValue} size={52} level="M" />
+            </div>
+
+            {/* MANISES */}
+            <div className="absolute" style={{ bottom: '14%', left: '54%', transform: 'translateX(-50%)' }}>
+              <p className="whitespace-nowrap font-black tracking-[0.14em] text-gray-900" style={{ fontSize: 10 }}>
+                MANISES
+              </p>
+            </div>
+
+            {/* Códigos de serie */}
+            <div className="absolute text-center" style={{ bottom: '2%', left: '54%', transform: 'translateX(-50%)' }}>
+              <p className="whitespace-nowrap font-mono tracking-tight text-gray-800" style={{ fontSize: 6 }}>{line1}</p>
+              <p className="whitespace-nowrap font-mono tracking-tight text-gray-800" style={{ fontSize: 6 }}>{line2}</p>
+            </div>
+          </div>
+
+          {/* Aviso */}
+          <div className="mt-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5">
+            <WarningTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+            <p className="text-[10px] font-semibold leading-relaxed text-amber-700">
+              Imagen de ejemplo · Pendiente de integración con el backend para mostrar el décimo real del número {number}.
+            </p>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 function LotteryDraftRow({ draft, color, deliveryMode, onDelete, onQty }: {
   draft: PlayDraft; color: string; deliveryMode: 'custodia' | 'mensajeria';
   onDelete: () => void; onQty: (delta: number) => void;
 }) {
   const [abonarseOpen, setAbonarseOpen] = useState(false);
   const [ticketMockupOpen, setTicketMockupOpen] = useState(false);
+  const [custodiaTicketOpen, setCustodiaTicketOpen] = useState(false);
   if (draft.selection.type !== 'national') return null;
   const number = draft.selection.number;
   const label = getTicketLabel(draft.gameType, number);
@@ -124,12 +215,20 @@ function LotteryDraftRow({ draft, color, deliveryMode, onDelete, onQty }: {
           </button>
         </div>
 
-        {/* Custodia: Abonarme solo si es abonable */}
-        {isCustodia && canAbonarse && (
-          <button type="button" onClick={() => setAbonarseOpen(true)}
-            className="mt-1.5 flex items-center gap-1.5 rounded-lg border border-manises-gold/30 bg-manises-gold/5 px-2.5 py-1 text-[10px] font-black text-manises-gold transition-colors hover:bg-manises-gold/10">
-            <Star className="h-3 w-3" /> Abonarme
-          </button>
+        {/* Custodia: Abonarme (si abonable) + Ver ticket */}
+        {isCustodia && (
+          <div className="mt-1.5 flex gap-1.5">
+            {canAbonarse && (
+              <button type="button" onClick={() => setAbonarseOpen(true)}
+                className="flex items-center gap-1.5 rounded-lg border border-manises-gold/30 bg-manises-gold/5 px-2.5 py-1 text-[10px] font-black text-manises-gold transition-colors hover:bg-manises-gold/10">
+                <Star className="h-3 w-3" /> Abonarme
+              </button>
+            )}
+            <button type="button" onClick={() => setCustodiaTicketOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-black text-manises-blue transition-colors hover:bg-slate-100">
+              <Eye className="h-3 w-3" /> Ver ticket
+            </button>
+          </div>
         )}
 
         {/* Mensajería: Ver décimo / Ver ticket → abre mockup */}
@@ -144,6 +243,9 @@ function LotteryDraftRow({ draft, color, deliveryMode, onDelete, onQty }: {
       <AbonarseModal isOpen={abonarseOpen} onClose={() => setAbonarseOpen(false)} decimalNumber={number} />
       {ticketMockupOpen && (
         <TicketMockupModal number={number} gameType={draft.gameType} label={label} onClose={() => setTicketMockupOpen(false)} />
+      )}
+      {custodiaTicketOpen && (
+        <CustodiaTicketModal number={number} onClose={() => setCustodiaTicketOpen(false)} />
       )}
     </>
   );
