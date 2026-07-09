@@ -363,6 +363,90 @@ export const MOCK_RESULTS_DATA: ResultDto[] = [
     ],
   },
 
+  // BONOLOTO — 8 May 2026 (día 4 de demo-bonoloto-semanal)
+  {
+    gameId: 'bonoloto',
+    gameType: 'bonoloto',
+    date: '2026-05-08T21:30:00.000Z',
+    numbers: [4, 14, 21, 33, 42, 47],
+    complementario: 5,
+    reintegro: 7,
+    drawId: 'Sorteo 3.222',
+    jackpotNext: 2500000,
+    nextDrawDate: '2026-05-09T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 aciertos', winners: 0, prizePerWinner: 2500000 },
+      { category: '5 aciertos + Complementario', winners: 0, prizePerWinner: 0 },
+      { category: '5 aciertos', winners: 48, prizePerWinner: 1120.00 },
+      { category: '4 aciertos', winners: 2700, prizePerWinner: 30.00 },
+      { category: '3 aciertos', winners: 59000, prizePerWinner: 4.00 },
+      { category: 'Reintegro', winners: 392000, prizePerWinner: 0.50 },
+    ],
+  },
+
+  // BONOLOTO — 9 May 2026 (día 5 de demo-bonoloto-semanal)
+  {
+    gameId: 'bonoloto',
+    gameType: 'bonoloto',
+    date: '2026-05-09T21:30:00.000Z',
+    numbers: [1, 8, 24, 37, 43, 46],
+    complementario: 19,
+    reintegro: 1,
+    drawId: 'Sorteo 3.223',
+    jackpotNext: 2700000,
+    nextDrawDate: '2026-05-10T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 aciertos', winners: 0, prizePerWinner: 2700000 },
+      { category: '5 aciertos + Complementario', winners: 0, prizePerWinner: 0 },
+      { category: '5 aciertos', winners: 61, prizePerWinner: 980.40 },
+      { category: '4 aciertos', winners: 3010, prizePerWinner: 29.50 },
+      { category: '3 aciertos', winners: 62100, prizePerWinner: 4.00 },
+      { category: 'Reintegro', winners: 398200, prizePerWinner: 0.50 },
+    ],
+  },
+
+  // BONOLOTO — 10 May 2026 (día 6 de demo-bonoloto-semanal)
+  {
+    gameId: 'bonoloto',
+    gameType: 'bonoloto',
+    date: '2026-05-10T21:30:00.000Z',
+    numbers: [6, 13, 20, 29, 40, 48],
+    complementario: 32,
+    reintegro: 4,
+    drawId: 'Sorteo 3.224',
+    jackpotNext: 2900000,
+    nextDrawDate: '2026-05-11T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 aciertos', winners: 0, prizePerWinner: 2900000 },
+      { category: '5 aciertos + Complementario', winners: 0, prizePerWinner: 0 },
+      { category: '5 aciertos', winners: 53, prizePerWinner: 1050.00 },
+      { category: '4 aciertos', winners: 2850, prizePerWinner: 31.00 },
+      { category: '3 aciertos', winners: 60500, prizePerWinner: 4.00 },
+      { category: 'Reintegro', winners: 394500, prizePerWinner: 0.50 },
+    ],
+  },
+
+  // BONOLOTO — 11 May 2026 (día 7 de demo-bonoloto-semanal)
+  {
+    gameId: 'bonoloto',
+    gameType: 'bonoloto',
+    date: '2026-05-11T21:30:00.000Z',
+    numbers: [10, 18, 27, 35, 44, 49],
+    complementario: 22,
+    reintegro: 3,
+    drawId: 'Sorteo 3.225',
+    jackpotNext: 3200000,
+    nextDrawDate: '2026-05-12T21:30:00.000Z',
+    scrutiny: [
+      { category: '6 aciertos', winners: 0, prizePerWinner: 3200000 },
+      { category: '5 aciertos + Complementario', winners: 0, prizePerWinner: 0 },
+      { category: '5 aciertos', winners: 70, prizePerWinner: 1090.00 },
+      { category: '4 aciertos', winners: 3100, prizePerWinner: 30.50 },
+      { category: '3 aciertos', winners: 63000, prizePerWinner: 4.00 },
+      { category: 'Reintegro', winners: 401000, prizePerWinner: 0.50 },
+    ],
+  },
+
   // EUROMILLONES — 11 Abr 2026 (sorteo 1 de demo-euro-subscription)
   // Apuesta 6: [1,11,23,29,46] estrellas [4,12] → acierta 1, 11, 29 + estrella 4 (3ª+1)
   {
