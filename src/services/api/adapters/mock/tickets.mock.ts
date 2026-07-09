@@ -148,6 +148,28 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
     createdAt: new Date(Date.now() - 3600000).toISOString(),
   },
 
+  // ── El Gordo escrutado con premio ────────────────────────────────────────
+  {
+    id: 'demo-gordo-won',
+    userId: 'demo-user',
+    gameId: 'gordo',
+    gameType: 'gordo',
+    numbers: [2, 17, 28, 40, 45],
+    stars: [7],
+    drawDate: '2026-05-31',
+    status: 'won',
+    prize: 23,
+    price: 1.50,
+    metadata: {
+      playStatus: 'scrutinized',
+      orderTotalPrice: 1.50,
+      betsCount: 1,
+      orderDrawDates: ['2026-05-31'],
+      dayPrizes: { '2026-05-31': 23 },
+    },
+    createdAt: new Date(Date.now() - 86400000 * 40).toISOString(),
+  },
+
   // ── El Gordo pendiente ────────────────────────────────────────────────────
   {
     id: 'demo-gordo-pending',
