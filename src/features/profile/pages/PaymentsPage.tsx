@@ -72,7 +72,7 @@ export function PaymentsPage() {
             <Info className="w-3 h-3 text-slate-300" />
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2.5">
             <AnimatePresence mode="popLayout">
               {cards.map(card => {
                 const style = getCardStyle(card.brand);
@@ -83,60 +83,78 @@ export function PaymentsPage() {
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.97 }}
+                    className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-3.5 shadow-sm"
                   >
-                    {/* Visual de tarjeta */}
-                    <div className={`relative h-28 rounded-2xl p-4 overflow-hidden bg-gradient-to-br ${style.gradient} shadow-lg`}>
-                      <div className="absolute -right-4 -top-4 w-20 h-20 bg-white/5 rounded-full blur-xl" />
-                      <div className="relative z-10 flex flex-col h-full justify-between">
-                        <div className="flex justify-between items-start">
-                          <div className="w-9 h-6 bg-white/10 backdrop-blur-md rounded-md border border-white/20 flex items-center justify-center p-1">
-                            <img
-                              src={style.logo}
-                              alt={card.brand}
-                              className="w-full h-full object-contain brightness-0 invert opacity-85"
-                            />
-                          </div>
-                          <span className="text-[8px] font-bold text-white/40 uppercase tracking-wider">
-                            {card.brand}
-                          </span>
+                    {/* Mini tarjeta — proporción ISO/IEC 7810, ~42% del contenedor */}
+                    <div
+                      className={`relative shrink-0 overflow-hidden rounded-xl bg-gradient-to-br ${style.gradient} shadow-lg`}
+                      style={{ width: '42%', aspectRatio: '85.6 / 53.98' }}
+                    >
+                      <div className="absolute -right-5 -bottom-5 w-24 h-24 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                      <div className="relative z-10 flex h-full flex-col justify-between p-3">
+                        {/* Chip + NFC */}
+                        <div className="flex items-start justify-between">
+                          <div
+                            className="h-[18px] w-[26px] rounded-[3px]"
+                            style={{
+                              background: 'linear-gradient(135deg, #f9e77e 0%, #c8960a 45%, #f5c518 70%, #a07010 100%)',
+                              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 3px rgba(0,0,0,0.3)',
+                            }}
+                          />
+                          <svg width="11" height="13" viewBox="0 0 18 20" fill="none" className="opacity-25">
+                            <path d="M9 4 Q14 10 9 16" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                            <path d="M9 1 Q17 10 9 19" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                            <circle cx="9" cy="10" r="1.5" fill="white"/>
+                          </svg>
                         </div>
-                        <div>
-                          <p className="text-white font-bold tracking-[0.2em] text-sm font-mono">
-                            •••• •••• •••• {card.last4}
-                          </p>
-                          <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.14em] text-white/50">
-                            Caduca: {card.expires}
-                          </p>
+                        {/* Número */}
+                        <p className="font-mono text-[8.5px] font-bold tracking-[0.14em] text-white/90">
+                          •••• •••• •••• {card.last4}
+                        </p>
+                        {/* Caduca + logo */}
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <p className="text-[5px] font-bold uppercase tracking-[0.15em] text-white/40">Caduca</p>
+                            <p className="font-mono text-[8px] font-bold tracking-[0.08em] text-white/80">{card.expires}</p>
+                          </div>
+                          <img src={style.logo} alt={card.brand} className="h-[18px] object-contain brightness-0 invert opacity-75" />
                         </div>
                       </div>
                     </div>
 
-                    {/* Acciones */}
-                    <div className="flex items-center gap-3 px-1 mt-2">
-                      {card.isDefault ? (
-                        <span className="flex items-center gap-1 text-[10px] font-black text-manises-blue">
-                          <Star className="w-3 h-3 fill-manises-gold text-manises-gold" />
-                          Predeterminada
-                        </span>
-                      ) : (
+                    {/* Info + acciones */}
+                    <div className="flex flex-1 flex-col gap-2.5 min-w-0">
+                      <div>
+                        <p className="text-[13px] font-black text-manises-blue leading-none">
+                          {card.brand} •••• {card.last4}
+                        </p>
+                        <p className="mt-1 text-[10px] font-medium text-slate-400">Caduca: {card.expires}</p>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        {card.isDefault ? (
+                          <span className="flex items-center gap-1 text-[11px] font-black text-manises-blue">
+                            <Star className="w-3.5 h-3.5 fill-manises-gold text-manises-gold" />
+                            Predeterminada
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setDefaultCard(card.id)}
+                            className="flex w-fit items-center gap-1 text-[11px] font-bold text-slate-400 active:scale-95 transition-transform"
+                          >
+                            <Star className="w-3.5 h-3.5" />
+                            Hacer predeterminada
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={() => setDefaultCard(card.id)}
-                          className="flex items-center gap-1 text-[10px] font-bold text-slate-400 active:scale-95 transition-transform"
+                          onClick={() => setDeleteConfirm(card.id)}
+                          className="flex w-fit items-center gap-1 text-[11px] font-bold text-red-400 active:scale-95 transition-transform"
                         >
-                          <Star className="w-3 h-3" />
-                          Hacer predeterminada
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Eliminar
                         </button>
-                      )}
-                      <div className="flex-1" />
-                      <button
-                        type="button"
-                        onClick={() => setDeleteConfirm(card.id)}
-                        className="flex items-center gap-1 text-[10px] font-bold text-red-400 active:scale-95 transition-transform"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        Eliminar
-                      </button>
+                      </div>
                     </div>
                   </motion.div>
                 );
