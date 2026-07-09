@@ -278,7 +278,6 @@ function BoletosGrid({
                       matchedNumbers={matchedNums}
                       matchedStars={matchedStars}
                       type={game.type}
-                      compact
                     />
                     {bet.reintegro != null && (
                       <span className={cn(
@@ -661,17 +660,18 @@ function SingleDrawDetail({
             Resultado oficial
           </p>
           <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
-            <BallSelection
-              numbers={result.numbers.map(Number).filter(Boolean)}
-              stars={result.stars}
-              type={game.type}
-              large
-            />
-            {result.reintegro != null && (
-              <p className="mt-2 text-[9px] font-bold text-slate-400">
-                R: <span className="font-black text-manises-blue">{result.reintegro}</span>
-              </p>
-            )}
+            <div className="flex items-center gap-2">
+              <BallSelection
+                numbers={result.numbers.map(Number).filter(Boolean)}
+                stars={result.stars}
+                type={game.type}
+              />
+              {result.reintegro != null && (
+                <span className="ml-auto shrink-0 rounded-lg px-2 py-1 text-[11px] font-black bg-slate-50 text-slate-500">
+                  R:{result.reintegro}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -696,7 +696,6 @@ function SingleDrawDetail({
                     matchedNumbers={matchedNums}
                     matchedStars={matchedStars}
                     type={game.type}
-                    large
                   />
                   {bet.reintegro != null && (
                     <span className={cn(
