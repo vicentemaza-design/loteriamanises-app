@@ -145,9 +145,9 @@ function CustodiaTicketModal({ number, onClose }: { number: string; onClose: () 
               </span>
             </div>
 
-            {/* QR — zona azul inferior izquierda */}
-            <div className="absolute" style={{ top: '62%', left: '2%' }}>
-              <QRCodeSVG value={qrValue} size={52} level="M" />
+            {/* QR — zona azul, anclado en esquina superior izquierda */}
+            <div className="absolute" style={{ top: '52%', left: '1%' }}>
+              <QRCodeSVG value={qrValue} size={78} level="M" />
             </div>
 
             {/* MANISES */}
