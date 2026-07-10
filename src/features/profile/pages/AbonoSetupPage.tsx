@@ -175,13 +175,14 @@ function StepSelectNumber({ onSelect }: { onSelect: (n: string, avail: Subscript
             type="button"
             onClick={toggleSearch}
             className={cn(
-              'flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-all',
+              'flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 transition-all',
               searchOpen || search
                 ? 'border-manises-blue bg-manises-blue text-white'
-                : 'border-slate-200 bg-white text-slate-400',
+                : 'border-slate-200 bg-white text-slate-500',
             )}
           >
-            <Search className="h-3.5 w-3.5" />
+            <Search className="h-3 w-3" />
+            <span className="text-[11px] font-black">Buscar número</span>
           </button>
         </div>
 
