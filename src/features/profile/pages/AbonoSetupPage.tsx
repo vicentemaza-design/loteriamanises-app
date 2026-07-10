@@ -579,7 +579,7 @@ export function AbonoSetupPage() {
               </span>
               <span className="text-[10.5px] font-medium leading-relaxed text-slate-500">
                 He leído y acepto las{' '}
-                <span className="font-bold text-manises-blue underline underline-offset-2">condiciones del servicio de abonos</span>.
+                <span onClick={() => navigate('/legal/condiciones')} className="font-bold text-manises-blue underline underline-offset-2 cursor-pointer">condiciones del servicio de abonos</span>.
               </span>
             </label>
 
@@ -617,7 +617,7 @@ export function AbonoSetupPage() {
               </span>
               <span className="text-[10.5px] font-medium leading-relaxed text-slate-500">
                 He leído y acepto las{' '}
-                <span className="font-bold text-manises-blue underline underline-offset-2">condiciones del servicio de abonos</span>.
+                <span onClick={() => navigate('/legal/condiciones')} className="font-bold text-manises-blue underline underline-offset-2 cursor-pointer">condiciones del servicio de abonos</span>.
               </span>
             </label>
 

@@ -41,6 +41,9 @@ import { PrizeTaxPage } from '@/features/profile/pages/PrizeTaxPage';
 import { TechnicalMatrixPage } from '@/features/admin/pages/TechnicalMatrixPage';
 import { DeliveredPrizesPage } from '@/features/catalog/pages/DeliveredPrizesPage';
 import { CompanyLandingPage } from '@/features/company/pages/CompanyLandingPage';
+import { CondicionesPage } from '@/features/legal/pages/CondicionesPage';
+import { PrivacidadPage } from '@/features/legal/pages/PrivacidadPage';
+import { AvisoLegalPage } from '@/features/legal/pages/AvisoLegalPage';
 
 export function AppRouter() {
   return (
@@ -61,6 +64,9 @@ export function AppRouter() {
         <Route path="/games" element={<GamesPage />} />
         <Route path="/play/:gameId" element={<GamePlayPage />} />
         <Route path="/results" element={<ResultsPage />} />
+        <Route path="/legal/condiciones" element={<CondicionesPage />} />
+        <Route path="/legal/privacidad" element={<PrivacidadPage />} />
+        <Route path="/legal/aviso" element={<AvisoLegalPage />} />
 
         <Route element={<RequireAuth />}>
           <Route path="/tickets" element={<TicketsPage />} />

@@ -370,9 +370,9 @@ export function RegisterPage() {
         {/* Pie legal minimalista */}
         <div className="flex flex-col items-center gap-3 px-4 opacity-30 mt-2">
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-            <button className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Términos</button>
+            <button onClick={() => navigate('/legal/condiciones')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Términos</button>
             <span className="text-[8px]">•</span>
-            <button className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Privacidad</button>
+            <button onClick={() => navigate('/legal/privacidad')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Privacidad</button>
             <span className="text-[8px]">•</span>
             <button className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Juego responsable</button>
             <span className="text-[8px]">•</span>
