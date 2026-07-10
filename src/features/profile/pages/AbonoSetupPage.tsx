@@ -182,7 +182,7 @@ function StepSelectNumber({ onSelect }: { onSelect: (n: string, avail: Subscript
             )}
           >
             <Search className="h-3 w-3" />
-            <span className="text-[11px] font-black">Buscar número</span>
+            <span className="text-[11px] font-black">Buscar</span>
           </button>
         </div>
 
