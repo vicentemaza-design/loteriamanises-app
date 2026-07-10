@@ -1,4 +1,8 @@
+import { useNavigate } from 'react-router-dom';
+
 export function ResponsibleGamingFooter() {
+  const navigate = useNavigate();
+
   return (
     <div
       className="border-t border-slate-100 bg-slate-50/60 px-5 pb-5 pt-5"
@@ -41,6 +45,15 @@ export function ResponsibleGamingFooter() {
           <p className="text-[8px] font-medium leading-relaxed text-slate-400">
             Información de juego seguro · Consulta condiciones y límites
           </p>
+        </div>
+
+        {/* Pie legal */}
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-1 opacity-50">
+          <button onClick={() => navigate('/legal/condiciones')} className="text-[8px] font-bold uppercase tracking-widest text-slate-500 transition-opacity hover:opacity-70">Condiciones</button>
+          <span className="text-[7px] text-slate-300">·</span>
+          <button onClick={() => navigate('/legal/privacidad')} className="text-[8px] font-bold uppercase tracking-widest text-slate-500 transition-opacity hover:opacity-70">Privacidad</button>
+          <span className="text-[7px] text-slate-300">·</span>
+          <button onClick={() => navigate('/legal/aviso')} className="text-[8px] font-bold uppercase tracking-widest text-slate-500 transition-opacity hover:opacity-70">Aviso legal</button>
         </div>
 
       </div>
