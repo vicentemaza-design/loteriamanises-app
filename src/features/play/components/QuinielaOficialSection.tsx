@@ -26,6 +26,7 @@ export interface QuinielaOficialSummary {
 
 interface Props {
   fixtures:        QuinielaFixture[];
+  drawDate:        Date;
   onSummaryChange: (s: QuinielaOficialSummary) => void;
 }
 
@@ -86,7 +87,12 @@ function GuaranteeCard({ table, totalCols }: {
 }
 
 /* ── Sección principal ───────────────────────────────────────────────────── */
-export function QuinielaOficialSection({ fixtures, onSummaryChange }: Props) {
+export function QuinielaOficialSection({ fixtures, drawDate, onSummaryChange }: Props) {
+  const drawDateLabel = (() => {
+    const s = drawDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  })();
+
   const [matches, setMatches]     = useState<QuinielaOficialMatch[]>(() => makeInitialOficialMatches(fixtures.filter(f => f.id !== 15)));
   const [plenaHome, setPlenaHome] = useState<QuinielaResult>(null);
   const [plenaAway, setPlenaAway] = useState<QuinielaResult>(null);
@@ -158,28 +164,33 @@ export function QuinielaOficialSection({ fixtures, onSummaryChange }: Props) {
   return (
     <div className="space-y-2.5">
 
-      {/* ── Header: stats + Borrar ───────────────────────────────── */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1 grid grid-cols-3 gap-1 rounded-xl border border-slate-100 bg-white px-3 py-2 shadow-sm">
-          {[
-            { label: 'Dobles',   value: String(doublesCount), color: 'text-manises-blue' },
-            { label: 'Triples',  value: String(triplesCount), color: 'text-violet-600' },
-            { label: 'Apuestas', value: allSelected ? String(bets) : '—', color: 'text-slate-600' },
-          ].map(s => (
-            <div key={s.label} className="text-center">
-              <p className={cn('text-[12px] font-black leading-tight', s.color)}>{s.value}</p>
-              <p className="mt-0.5 text-[7px] font-bold uppercase tracking-wide text-slate-400">{s.label}</p>
-            </div>
-          ))}
-        </div>
+      {/* ── Fecha + Borrar boleto ───────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-[18px] font-black text-manises-blue leading-tight">
+          {drawDateLabel}
+        </h2>
         <button
           type="button"
           onClick={clearAll}
-          className="flex items-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-red-500 active:scale-95 transition-transform"
+          className="flex items-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 py-1.5 text-red-500 active:scale-95 transition-transform"
         >
-          <Trash2 className="h-3.5 w-3.5" />
-          <span className="text-[9px] font-black uppercase tracking-wide">Borrar</span>
+          <Trash2 className="h-3 w-3" />
+          <span className="text-[9px] font-black uppercase tracking-wide">Borrar boleto</span>
         </button>
+      </div>
+
+      {/* ── Stats strip ─────────────────────────────────────────────── */}
+      <div className="grid grid-cols-3 gap-1 rounded-xl border border-slate-100 bg-white px-3 py-2 shadow-sm">
+        {[
+          { label: 'Dobles',   value: String(doublesCount), color: 'text-manises-blue' },
+          { label: 'Triples',  value: String(triplesCount), color: 'text-violet-600' },
+          { label: 'Apuestas', value: allSelected ? String(bets) : '—', color: 'text-slate-600' },
+        ].map(s => (
+          <div key={s.label} className="text-center">
+            <p className={cn('text-[12px] font-black leading-tight', s.color)}>{s.value}</p>
+            <p className="mt-0.5 text-[7px] font-bold uppercase tracking-wide text-slate-400">{s.label}</p>
+          </div>
+        ))}
       </div>
 
       {/* ── Reduction pills (horizontal scroll) ──────────────────── */}

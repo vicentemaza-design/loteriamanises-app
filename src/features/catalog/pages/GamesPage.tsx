@@ -124,10 +124,22 @@ function ChristmasCard({ onClick }: { onClick: () => void }) {
       </div>
 
       <div className="relative flex items-center justify-center h-full w-24 shrink-0 z-10 select-none">
-        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-yellow-400 border border-yellow-300 shadow-xl flex flex-col items-center justify-center p-1 text-center group-hover:scale-105 group-hover:rotate-6 transition-all duration-300">
-          <span className="text-[15px] font-black text-slate-950 leading-none">22</span>
-          <span className="text-[8px] font-black text-slate-900 uppercase tracking-tight leading-none mt-0.5">DIC</span>
-          <span className="text-[7.5px] font-bold text-slate-800 leading-none mt-0.5">{year}</span>
+        <div className="flex flex-col items-center group-hover:scale-105 group-hover:rotate-6 transition-all duration-300">
+          {/* Capuchón */}
+          <div className="flex flex-col items-center">
+            <div className="w-1.5 h-2 rounded-t-sm" style={{ background: 'linear-gradient(to right, #e5e7eb, #9ca3af, #e5e7eb)' }} />
+            <div className="w-5 h-1.5 rounded-sm" style={{ background: 'linear-gradient(to bottom, #9ca3af, #6b7280)' }} />
+          </div>
+          {/* Bola */}
+          <div
+            className="w-14 h-14 rounded-full shadow-xl flex flex-col items-center justify-center p-1 text-center relative overflow-hidden border border-yellow-300/60"
+            style={{ background: 'radial-gradient(circle at 35% 28%, #fef9c3, #fbbf24 48%, #92400e 100%)' }}
+          >
+            <div className="absolute top-1.5 left-2.5 w-4 h-2 rounded-full bg-white/45 rotate-[-20deg]" />
+            <span className="text-[15px] font-black text-slate-950 leading-none relative z-10">22</span>
+            <span className="text-[8px] font-black text-slate-900 uppercase tracking-tight leading-none mt-0.5 relative z-10">DIC</span>
+            <span className="text-[7.5px] font-bold text-slate-800 leading-none mt-0.5 relative z-10">{year}</span>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -197,18 +209,27 @@ function EuromillionsCard({ jackpot, nextDraw, onClick }: { jackpot: number; nex
       </div>
 
       <div className="relative flex items-center justify-end h-full w-32 shrink-0 z-10 select-none">
-        <div className="absolute right-12 bottom-4 w-12 h-12 rounded-full bg-gradient-to-br from-yellow-100 via-white to-slate-200 shadow-2xl flex items-center justify-center border border-white/40 rotate-[-12deg] group-hover:translate-y-[-2px] transition-transform duration-300">
-          <span className="text-xs font-black text-slate-800">12</span>
-          <div className="absolute top-1 left-2 w-3 h-1.5 bg-white/70 rounded-full rotate-[-15deg]" />
+        <div
+          className="absolute right-12 bottom-4 w-12 h-12 rounded-full shadow-2xl flex items-center justify-center border border-white/40 rotate-[-12deg] group-hover:translate-y-[-2px] transition-transform duration-300 overflow-hidden"
+          style={{ background: 'radial-gradient(circle at 33% 28%, #ffffff, #e2e8f0 50%, #94a3b8 100%)' }}
+        >
+          <span className="text-xs font-black text-slate-700 relative z-10">12</span>
+          <div className="absolute top-1 left-1.5 w-3 h-1.5 bg-white/75 rounded-full rotate-[-15deg]" />
         </div>
-        <div className="absolute right-4 top-2 w-14 h-14 rounded-full bg-gradient-to-br from-blue-100 via-white to-blue-200 shadow-2xl flex items-center justify-center border border-white/50 rotate-[15deg] z-10 group-hover:translate-x-[2px] transition-transform duration-300">
-          <span className="text-sm font-black text-blue-900">07</span>
-          <div className="absolute top-1 left-2 w-4.5 h-2 bg-white/80 rounded-full rotate-[-15deg]" />
+        <div
+          className="absolute right-4 top-2 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center border border-white/50 rotate-[15deg] z-10 group-hover:translate-x-[2px] transition-transform duration-300 overflow-hidden"
+          style={{ background: 'radial-gradient(circle at 33% 28%, #dbeafe, #60a5fa 52%, #1e3a8a 100%)' }}
+        >
+          <span className="text-sm font-black text-white relative z-10">07</span>
+          <div className="absolute top-1 left-2 w-4 h-2 bg-white/75 rounded-full rotate-[-15deg]" />
         </div>
-          <div className="absolute right-0 bottom-2 w-10 h-10 rounded-full bg-gradient-to-br from-yellow-300 via-amber-400 to-amber-600 shadow-2xl flex items-center justify-center border border-yellow-200/50 rotate-[-5deg] z-20 group-hover:scale-105 transition-transform duration-300">
-            <span className="text-[10px] font-black text-amber-950">★</span>
-            <div className="absolute top-0.5 left-1.5 w-2.5 h-1 bg-white/80 rounded-full rotate-[-15deg]" />
-          </div>
+        <div
+          className="absolute right-0 bottom-2 w-10 h-10 rounded-full shadow-2xl flex items-center justify-center border border-yellow-200/50 rotate-[-5deg] z-20 group-hover:scale-105 transition-transform duration-300 overflow-hidden"
+          style={{ background: 'radial-gradient(circle at 33% 28%, #fef08a, #f59e0b 52%, #78350f 100%)' }}
+        >
+          <span className="text-[10px] font-black text-amber-950 relative z-10">★</span>
+          <div className="absolute top-0.5 left-1.5 w-2.5 h-1 bg-white/75 rounded-full rotate-[-15deg]" />
+        </div>
 
         <div className="absolute top-4 left-4 w-1.5 h-1.5 bg-yellow-300 rounded-full animate-ping" />
         <div className="absolute bottom-6 right-2 w-1 h-1 bg-blue-300 rounded-full" />

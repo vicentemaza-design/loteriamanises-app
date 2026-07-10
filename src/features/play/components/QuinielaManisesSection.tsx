@@ -34,6 +34,7 @@ export interface QuinielaManisesSummary {
 
 interface Props {
   fixtures:        QuinielaFixture[];
+  drawDate:        Date;
   onSummaryChange: (s: QuinielaManisesSummary) => void;
 }
 
@@ -132,7 +133,7 @@ function GuaranteeTable({ table, totalCols, plenaFixture }: {
 
 // ── Sección principal ──────────────────────────────────────────────────────
 
-export function QuinielaManisesSection({ fixtures, onSummaryChange }: Props) {
+export function QuinielaManisesSection({ fixtures, drawDate, onSummaryChange }: Props) {
   // ── Core state ────────────────────────────────────────────────────────────
   const [matches, setMatches]     = useState<QuinielaMatch[]>(() => makeInitialMatches(fixtures.filter(f => f.id !== 15)));
   const [plenaHome, setPlenaHome] = useState<QuinielaResult>(null);
@@ -247,12 +248,20 @@ export function QuinielaManisesSection({ fixtures, onSummaryChange }: Props) {
     setPlenaAway(null);
   };
 
+  const drawDateLabel = (() => {
+    const s = drawDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  })();
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-2.5">
 
-      {/* ── Borrar boleto ───────────────────────────────────────────── */}
-      <div className="flex items-center justify-end">
+      {/* ── Fecha + Borrar boleto ───────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-[18px] font-black text-manises-blue leading-tight">
+          {drawDateLabel}
+        </h2>
         <button
           type="button"
           onClick={clearAll}
@@ -277,6 +286,106 @@ export function QuinielaManisesSection({ fixtures, onSummaryChange }: Props) {
           </div>
         ))}
       </div>
+
+      {/* ── Match grid (partidos 1–14, filas compactas) ──────────────── */}
+      <div>
+        <p className="mb-2 text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">
+          Pronóstico (15 partidos)
+        </p>
+        <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm divide-y divide-slate-50">
+          {fixtures.filter(f => f.id !== 15).map((template, idx) => {
+            const match = matches[idx];
+            const badge = getMatchTypeBadge(match?.result ?? null);
+            return (
+              <div key={template.id} className="flex items-center gap-2 py-1.5 px-3">
+                <span className="w-4 shrink-0 text-[10px] font-black text-slate-300 text-right tabular-nums">
+                  {template.id}
+                </span>
+                <p className="flex-1 min-w-0 text-[10.5px] font-semibold text-slate-600 truncate">
+                  {template.home} <span className="text-slate-300 font-normal">·</span> {template.away}
+                </p>
+                <div className="flex gap-1 shrink-0">
+                  {REGULAR_SIGNS.map(sign => {
+                    const isActive = match?.result?.includes(sign);
+                    return (
+                      <button
+                        key={sign}
+                        type="button"
+                        onClick={() => match && toggleSign(match.id, sign)}
+                        className={cn(
+                          'flex h-7 w-7 items-center justify-center rounded-lg text-[11px] font-black transition-all active:scale-90',
+                          isActive ? 'bg-manises-blue text-white shadow-sm' : 'bg-slate-50 text-slate-400'
+                        )}
+                      >
+                        {sign}
+                      </button>
+                    );
+                  })}
+                </div>
+                <span className={cn(
+                  'w-9 shrink-0 text-[9px] font-black text-right',
+                  badge === 'Triple' ? 'text-violet-600' :
+                  badge === 'Doble'  ? 'text-manises-blue' : 'text-slate-200'
+                )}>
+                  {badge ?? '—'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Pleno al 15 (por goles) ────────────────────────────────── */}
+      {plenaFixture && (
+        <div className="overflow-hidden rounded-2xl border border-amber-100/80 bg-white shadow-sm">
+          <div className="flex items-center gap-2 border-b border-amber-50 bg-amber-50/60 px-3 py-1.5">
+            <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-400 text-white">
+              <span className="text-[8px] font-black leading-none">15</span>
+            </div>
+            <p className="text-[9px] font-black uppercase tracking-[0.14em] text-amber-700">
+              Pleno al 15 (por goles)
+            </p>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 border-b border-amber-50/60">
+            <span className="w-4 shrink-0 text-[9px] font-black text-amber-300 text-right">L</span>
+            <p className="flex-1 min-w-0 text-[10.5px] font-semibold text-slate-600 truncate">{plenaFixture.home}</p>
+            <div className="flex gap-1 shrink-0">
+              {PLENA_SIGNS.map(sign => (
+                <button
+                  key={sign}
+                  type="button"
+                  onClick={() => togglePlena('home', sign)}
+                  className={cn(
+                    'flex h-7 w-7 items-center justify-center rounded-lg text-[11px] font-black transition-all active:scale-90',
+                    plenaHome?.includes(sign) ? 'bg-amber-500 text-white shadow-sm' : 'bg-amber-50 text-amber-500'
+                  )}
+                >
+                  {sign}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5">
+            <span className="w-4 shrink-0 text-[9px] font-black text-amber-300 text-right">V</span>
+            <p className="flex-1 min-w-0 text-[10.5px] font-semibold text-slate-600 truncate">{plenaFixture.away}</p>
+            <div className="flex gap-1 shrink-0">
+              {PLENA_SIGNS.map(sign => (
+                <button
+                  key={sign}
+                  type="button"
+                  onClick={() => togglePlena('away', sign)}
+                  className={cn(
+                    'flex h-7 w-7 items-center justify-center rounded-lg text-[11px] font-black transition-all active:scale-90',
+                    plenaAway?.includes(sign) ? 'bg-amber-500 text-white shadow-sm' : 'bg-amber-50 text-amber-500'
+                  )}
+                >
+                  {sign}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Unified options list (Múltiple + Reducciones) ────────────── */}
       <div className="rounded-2xl border border-slate-100 bg-white shadow-sm overflow-hidden">
@@ -354,101 +463,6 @@ export function QuinielaManisesSection({ fixtures, onSummaryChange }: Props) {
           })}
         </div>
       </div>
-
-      {/* ── Match grid (partidos 1–14, filas compactas) ──────────────── */}
-      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm divide-y divide-slate-50">
-        {fixtures.filter(f => f.id !== 15).map((template, idx) => {
-          const match = matches[idx];
-          const badge = getMatchTypeBadge(match?.result ?? null);
-          return (
-            <div key={template.id} className="flex items-center gap-2 py-1.5 px-3">
-              <span className="w-4 shrink-0 text-[10px] font-black text-slate-300 text-right tabular-nums">
-                {template.id}
-              </span>
-              <p className="flex-1 min-w-0 text-[10.5px] font-semibold text-slate-600 truncate">
-                {template.home} <span className="text-slate-300 font-normal">·</span> {template.away}
-              </p>
-              <div className="flex gap-1 shrink-0">
-                {REGULAR_SIGNS.map(sign => {
-                  const isActive = match?.result?.includes(sign);
-                  return (
-                    <button
-                      key={sign}
-                      type="button"
-                      onClick={() => match && toggleSign(match.id, sign)}
-                      className={cn(
-                        'flex h-7 w-7 items-center justify-center rounded-lg text-[11px] font-black transition-all active:scale-90',
-                        isActive ? 'bg-manises-blue text-white shadow-sm' : 'bg-slate-50 text-slate-400'
-                      )}
-                    >
-                      {sign}
-                    </button>
-                  );
-                })}
-              </div>
-              <span className={cn(
-                'w-9 shrink-0 text-[9px] font-black text-right',
-                badge === 'Triple' ? 'text-violet-600' :
-                badge === 'Doble'  ? 'text-manises-blue' : 'text-slate-200'
-              )}>
-                {badge ?? '—'}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ── Pleno al 15 (por goles) ────────────────────────────────── */}
-      {plenaFixture && (
-        <div className="overflow-hidden rounded-2xl border border-amber-100/80 bg-white shadow-sm">
-          <div className="flex items-center gap-2 border-b border-amber-50 bg-amber-50/60 px-3 py-1.5">
-            <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-400 text-white">
-              <span className="text-[8px] font-black leading-none">15</span>
-            </div>
-            <p className="text-[9px] font-black uppercase tracking-[0.14em] text-amber-700">
-              Pleno al 15 (por goles)
-            </p>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5 border-b border-amber-50/60">
-            <span className="w-4 shrink-0 text-[9px] font-black text-amber-300 text-right">L</span>
-            <p className="flex-1 min-w-0 text-[10.5px] font-semibold text-slate-600 truncate">{plenaFixture.home}</p>
-            <div className="flex gap-1 shrink-0">
-              {PLENA_SIGNS.map(sign => (
-                <button
-                  key={sign}
-                  type="button"
-                  onClick={() => togglePlena('home', sign)}
-                  className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-lg text-[11px] font-black transition-all active:scale-90',
-                    plenaHome?.includes(sign) ? 'bg-amber-500 text-white shadow-sm' : 'bg-amber-50 text-amber-500'
-                  )}
-                >
-                  {sign}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="flex items-center gap-2 px-3 py-1.5">
-            <span className="w-4 shrink-0 text-[9px] font-black text-amber-300 text-right">V</span>
-            <p className="flex-1 min-w-0 text-[10.5px] font-semibold text-slate-600 truncate">{plenaFixture.away}</p>
-            <div className="flex gap-1 shrink-0">
-              {PLENA_SIGNS.map(sign => (
-                <button
-                  key={sign}
-                  type="button"
-                  onClick={() => togglePlena('away', sign)}
-                  className={cn(
-                    'flex h-7 w-7 items-center justify-center rounded-lg text-[11px] font-black transition-all active:scale-90',
-                    plenaAway?.includes(sign) ? 'bg-amber-500 text-white shadow-sm' : 'bg-amber-50 text-amber-500'
-                  )}
-                >
-                  {sign}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── Aviso reducción sin dobles/triples ──────────────────────── */}
       {selectedOption !== 'multiple' && doublesCount + triplesCount === 0 && allRegular && plenaOk && (

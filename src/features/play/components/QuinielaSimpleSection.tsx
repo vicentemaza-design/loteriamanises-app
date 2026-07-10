@@ -32,10 +32,15 @@ export interface QuinielaSimpleSummary {
 
 interface Props {
   fixtures: QuinielaFixture[];
+  drawDate: Date;
   onSummaryChange: (s: QuinielaSimpleSummary) => void;
 }
 
-export function QuinielaSimpleSection({ fixtures, onSummaryChange }: Props) {
+export function QuinielaSimpleSection({ fixtures, drawDate, onSummaryChange }: Props) {
+  const drawDateLabel = (() => {
+    const s = drawDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  })();
   const [columns, setColumns]   = useState<Column[]>([makeEmptyColumn(), makeEmptyColumn()]);
   const [plenas, setPlenas]     = useState<PlenaCol[]>([makeEmptyPlena(), makeEmptyPlena()]);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -103,6 +108,11 @@ export function QuinielaSimpleSection({ fixtures, onSummaryChange }: Props) {
 
   return (
     <div className="space-y-2.5">
+
+      {/* ── Fecha ──────────────────────────────────────────────────── */}
+      <h2 className="text-[18px] font-black text-manises-blue leading-tight">
+        {drawDateLabel}
+      </h2>
 
       {/* ── Column navigator ───────────────────────────────────────── */}
       <div className="flex items-center gap-2 rounded-2xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm">

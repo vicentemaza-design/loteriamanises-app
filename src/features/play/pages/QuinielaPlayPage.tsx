@@ -436,19 +436,10 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
       {/* ── STEP 2: PLAY ──────────────────────────────────────────── */}
       {step === 'play' && (
         <div className="mx-auto flex w-full max-w-screen-sm flex-col gap-3 p-4 pt-3">
-          {/* System badge */}
-          <div className="flex items-center gap-2">
-            <span className="rounded-full border border-manises-blue/15 bg-manises-blue/6 px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-manises-blue">
-              {SYSTEM_LABEL[system]}
-            </span>
-            <span className="text-[10px] font-medium text-slate-400">
-              {selectedDrawDate.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }).replace('.', '')}
-            </span>
-          </div>
-
           {system === 'simple' && (
             <QuinielaSimpleSection
               fixtures={fixtures}
+              drawDate={selectedDrawDate}
               onSummaryChange={setSimpleSummary}
             />
           )}
@@ -456,6 +447,7 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
           {system === 'manises' && (
             <QuinielaManisesSection
               fixtures={fixtures}
+              drawDate={selectedDrawDate}
               onSummaryChange={setManisesSummary}
             />
           )}
@@ -463,6 +455,7 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
           {system === 'oficial' && (
             <QuinielaOficialSection
               fixtures={fixtures}
+              drawDate={selectedDrawDate}
               onSummaryChange={setOficialSummary}
             />
           )}
