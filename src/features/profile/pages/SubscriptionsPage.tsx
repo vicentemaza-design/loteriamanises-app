@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronRight, Check, Info, Sparkles, Ticket } from 'lucide-react';
+import { ChevronRight, Check, Info, Sparkles, Ticket, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
@@ -107,7 +107,7 @@ export function SubscriptionsPage() {
     <div className="flex min-h-full flex-col bg-background">
       <ProfileSubHeader title="Mis abonos de Lotería" subtitle="Reservas preferentes" backTo="/profile" />
 
-      <div className={cn('flex flex-col gap-4 p-4', selectedIds.length > 0 && tab === 'pending' && 'pb-[calc(var(--nav-height)+11rem)]')}>
+      <div className={cn('flex flex-col gap-4 p-4', selectedIds.length > 0 && tab === 'pending' && 'pb-20')}>
         <section className="overflow-hidden rounded-2xl border border-manises-blue/10 bg-manises-blue/5">
           <button
             type="button"
@@ -228,7 +228,7 @@ export function SubscriptionsPage() {
                           >
                             <ReservationCheckbox checked={checked} />
                             <div className="min-w-0 flex-1">
-                              <p className="font-mono text-[1.45rem] font-black tracking-[0.1em] text-manises-blue">{line.number}</p>
+                              <p className="font-mono text-[24px] font-black tracking-[0.1em] text-manises-blue leading-none">{line.number}</p>
                               <p className="text-[11px] font-semibold text-slate-400">
                                 {line.quantity} {line.quantity === 1 ? 'décimo' : 'décimos'}
                               </p>
@@ -277,6 +277,24 @@ export function SubscriptionsPage() {
               </div>
             </section>
 
+            {/* CTA: subscribe to a new number */}
+            <button
+              type="button"
+              onClick={() => navigate('/profile/subscriptions/setup')}
+              className="flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-dashed border-manises-blue/20 bg-manises-blue/[0.03] px-4 py-4 text-left transition-colors active:bg-manises-blue/[0.06]"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-manises-blue/10">
+                  <Plus className="h-4 w-4 text-manises-blue" />
+                </div>
+                <div>
+                  <p className="text-[12px] font-black text-manises-blue">Suscribirme a un número</p>
+                  <p className="text-[10px] font-medium text-slate-400 mt-0.5">Reserva un número para futuros sorteos</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-manises-blue/30" />
+            </button>
+
             {numbers.map((item) => {
               const nextReservation = reservations
                 .filter((reservation) => reservation.subscriptionId === item.id)
@@ -287,7 +305,7 @@ export function SubscriptionsPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-mono text-[1.45rem] font-black tracking-[0.1em] text-manises-blue">{item.number}</h3>
+                        <h3 className="font-mono text-[24px] font-black tracking-[0.1em] text-manises-blue leading-none">{item.number}</h3>
                         <span className={cn(
                           'rounded-full px-2 py-1 text-[8px] font-black uppercase tracking-wider',
                           item.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'

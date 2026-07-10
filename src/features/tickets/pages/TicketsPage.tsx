@@ -22,10 +22,11 @@ import { TicketCardSkeleton } from '@/shared/ui/Skeleton';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import { toast } from 'sonner';
 import type { Ticket } from '@/shared/types/domain';
 import { getGameIdentity } from '@/shared/lib/game-identity';
 import { TicketReceiptModal } from '../components/TicketReceiptModal';
+import { RepeatDrawSheet } from '../components/RepeatDrawSheet';
+import { AbonarseDrawSheet } from '../components/AbonarseDrawSheet';
 
 gsap.registerPlugin(useGSAP);
 
@@ -132,7 +133,9 @@ export function TicketsPage() {
   const [gameFilter, setGameFilter] = useState<string>('all');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [searchOpen, setSearchOpen] = useState(false);
-  const [receiptTicket, setReceiptTicket] = useState<Ticket | null>(null);
+  const [receiptTicket, setReceiptTicket]   = useState<Ticket | null>(null);
+  const [repeatTicket, setRepeatTicket]     = useState<Ticket | null>(null);
+  const [abonarseTicket, setAbonarseTicket] = useState<Ticket | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -401,8 +404,8 @@ export function TicketsPage() {
                         >
                           <div className="flex gap-1.5 border-t border-gray-50 px-4 py-2.5">
                             {([
-                              { icon: Repeat2,    label: 'Repetir',     action: () => navigate(`/play/${ticket.gameId}`) },
-                              { icon: Bell,       label: 'Abonarme',    action: () => toast.info('Abono pendiente de integración.') },
+                              { icon: Repeat2,    label: 'Repetir',     action: () => setRepeatTicket(ticket) },
+                              { icon: Bell,       label: 'Abonarme',    action: () => setAbonarseTicket(ticket) },
                               { icon: Eye,        label: 'Ver',         action: () => navigate(`/tickets/${ticket.id}`) },
                               { icon: ScrollText, label: 'Certificado', action: () => setReceiptTicket(ticket) },
                             ] as const).map(({ icon: Icon, label, action }) => (
@@ -440,6 +443,16 @@ export function TicketsPage() {
         ticketCode={receiptTicket ? getTicketCode(receiptTicket.id) : ''}
         orderDatesSummary={receiptTicket ? getOrderDatesSummary(receiptTicket) : ''}
         selectionSummary={receiptTicket ? getSelectionSummary(receiptTicket) : ''}
+      />
+
+      <RepeatDrawSheet
+        ticket={repeatTicket}
+        onClose={() => setRepeatTicket(null)}
+      />
+
+      <AbonarseDrawSheet
+        ticket={abonarseTicket}
+        onClose={() => setAbonarseTicket(null)}
       />
     </>
   );

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, CheckCircle2, Clock, Hash, User, CreditCard, ChevronDown, ChevronRight, Truck, Lock, Trophy } from 'lucide-react';
+import { Calendar, CheckCircle2, Clock, Hash, User, CreditCard, ChevronDown, ChevronRight, Truck, Lock, Trophy, Repeat2, Bell, ScrollText } from 'lucide-react';
 import { useTicket } from '../hooks/useTicket';
 import { useResults } from '@/features/results/hooks/useResults';
 import { ProfileSubHeader } from '@/features/profile/components/ProfileSubHeader';
@@ -7,6 +7,9 @@ import { TicketCardSkeleton } from '@/shared/ui/Skeleton';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { BallSelection } from '../components/BallSelection';
 import { NationalDetailContent } from '../components/NationalDetailContent';
+import { RepeatDrawSheet } from '../components/RepeatDrawSheet';
+import { AbonarseDrawSheet } from '../components/AbonarseDrawSheet';
+import { TicketReceiptModal } from '../components/TicketReceiptModal';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { getGameIdentity } from '@/shared/lib/game-identity';
 import { getBusinessDate } from '@/shared/lib/timezone';
@@ -1079,6 +1082,29 @@ function PedidoResumen({ ticket }: { ticket: Ticket }) {
   );
 }
 
+// ── Receipt helpers ────────────────────────────────────────────────────────
+
+function getReceiptCode(ticket: Ticket) { return ticket.id.slice(-8).toUpperCase(); }
+
+function getReceiptDatesSummary(ticket: Ticket) {
+  const dates = getOrderDrawDates(ticket);
+  if (dates.length === 1) return formatDate(dates[0]);
+  return `${formatCompact(dates[0])} → ${formatCompact(dates[dates.length - 1])}`;
+}
+
+function getReceiptSelectionSummary(ticket: Ticket): string {
+  if (isNationalTicket(ticket)) {
+    return (ticket.metadata?.nationalNumber ?? ticket.numbers.join('')).padStart(5, '0');
+  }
+  const starsLabel = ticket.stars && ticket.stars.length > 0
+    ? ` + ${ticket.stars.map(s => String(s).padStart(2, '0')).join(' ')}`
+    : '';
+  const reintegroLabel = ticket.betReintegros?.[0] != null
+    ? ` · R:${ticket.betReintegros[0]}`
+    : '';
+  return `${ticket.numbers.map(n => String(n).padStart(2, '0')).join(' ')}${starsLabel}${reintegroLabel}`;
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export function TicketDetailPage() {
@@ -1086,6 +1112,10 @@ export function TicketDetailPage() {
   const navigate = useNavigate();
   const { ticket, isLoading, error } = useTicket(ticketId);
   const { results } = useResults();
+
+  const [repeatTicket, setRepeatTicket]     = useState<Ticket | null>(null);
+  const [abonarseTicket, setAbonarseTicket] = useState<Ticket | null>(null);
+  const [receiptTicket, setReceiptTicket]   = useState<Ticket | null>(null);
 
   if (isLoading) {
     return (
@@ -1145,7 +1175,38 @@ export function TicketDetailPage() {
         <SingleDrawDetail ticket={ticket} result={dayResults[0]?.result ?? null} game={game} />
       )}
 
+      {/* Quick actions */}
+      <div className="mx-4 mt-2 mb-2 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="grid grid-cols-3 divide-x divide-slate-100">
+          {([
+            { icon: Repeat2,    label: 'Repetir',     action: () => setRepeatTicket(ticket) },
+            { icon: Bell,       label: 'Abonarme',    action: () => setAbonarseTicket(ticket) },
+            { icon: ScrollText, label: 'Certificado', action: () => setReceiptTicket(ticket) },
+          ] as const).map(({ icon: Icon, label, action }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={action}
+              className="flex flex-col items-center gap-1.5 py-3.5 text-center active:bg-slate-50"
+            >
+              <Icon className="h-4 w-4 text-manises-blue" />
+              <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {!isNational && <PedidoResumen ticket={ticket} />}
+
+      <RepeatDrawSheet   ticket={repeatTicket}   onClose={() => setRepeatTicket(null)} />
+      <AbonarseDrawSheet ticket={abonarseTicket} onClose={() => setAbonarseTicket(null)} />
+      <TicketReceiptModal
+        ticket={receiptTicket}
+        onClose={() => setReceiptTicket(null)}
+        ticketCode={receiptTicket ? getReceiptCode(receiptTicket) : ''}
+        orderDatesSummary={receiptTicket ? getReceiptDatesSummary(receiptTicket) : ''}
+        selectionSummary={receiptTicket ? getReceiptSelectionSummary(receiptTicket) : ''}
+      />
     </div>
   );
 }

@@ -175,6 +175,51 @@ export function useSubscriptions() {
     });
   };
 
+  /**
+   * Crea un nuevo abono de número.
+   * Cuando se integre el BE: POST /api/subscriptions
+   */
+  const addSubscription = (
+    number: string,
+    quantity: number,
+    drawTypes: SubscriptionDrawType[],
+  ) => {
+    setState((current) => {
+      // Si ya existe un abono para ese número, no duplicamos
+      if (current.numbers.some((n) => n.number === number)) return current;
+
+      const id = `sub-${number}`;
+      const newNumber: ReservedLotteryNumber = {
+        id,
+        number,
+        quantity,
+        drawTypes,
+        status: 'active',
+      };
+
+      let newReservations: SubscriptionReservation[] = [];
+      drawTypes.forEach((drawType) => {
+        const res = buildReservationFromTemplate(
+          id,
+          number,
+          quantity,
+          drawType,
+          [...current.reservations, ...newReservations],
+        );
+        if (res) newReservations = [...newReservations, res];
+      });
+
+      return {
+        numbers: [...current.numbers, newNumber],
+        reservations: [...current.reservations, ...newReservations],
+      };
+    });
+  };
+
+  /** Comprueba si un número ya tiene abono activo. */
+  const hasActiveSubscription = (number: string) =>
+    numbers.some((n) => n.number === number && n.status === 'active');
+
   return {
     numbers,
     reservations,
@@ -188,5 +233,7 @@ export function useSubscriptions() {
     cancelSubscription,
     reactivateSubscription,
     updateNumber,
+    addSubscription,
+    hasActiveSubscription,
   };
 }

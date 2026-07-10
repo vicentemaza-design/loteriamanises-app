@@ -38,6 +38,11 @@ export interface ResultDto {
   fifthPrizeNumbers?: string[];
   // El Niño: two 2nd prizes
   secondPrizeNumbers?: string[];
+  // Primitiva: Joker number (7 digits) + its own scrutiny
+  joker?: string;
+  jokerScrutiny?: ScrutinyCategory[];
+  // Euromillones: El Millón code (e.g. 'KQT27854')
+  elMillon?: string;
 }
 
 export type GetResultsResponseDto = ApiResponseDto<ResultDto[]>;

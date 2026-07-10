@@ -29,6 +29,8 @@ function getModalFullName(gameId: string, gameName: string): string {
   return MODAL_FULL_NAMES[gameId] ?? gameName;
 }
 
+function cap(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
 function formatFullDate(iso: string): string {
   const d = new Date(iso);
   const str = d.toLocaleDateString('es-ES', {
@@ -37,7 +39,20 @@ function formatFullDate(iso: string): string {
     month: 'long',
     year: 'numeric',
   });
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  return cap(str);
+}
+
+/** Returns two intentional lines for the "Próximo sorteo" card. */
+function formatNextDraw(iso: string): { top: string; bottom: string } {
+  const d = new Date(iso);
+  const weekday = d.toLocaleDateString('es-ES', { weekday: 'long' });
+  const day = d.getDate();
+  const month = d.toLocaleDateString('es-ES', { month: 'long' });
+  const year = d.getFullYear();
+  return {
+    top: `${cap(weekday)}, ${day}`,
+    bottom: `de ${month} de ${year}`,
+  };
 }
 
 interface NationalCheckerResult {
@@ -87,6 +102,14 @@ function parseCategory(category: string, gameType: string): { badge: string; lab
   const trimmed = category.trim();
   const matchRank = trimmed.match(/^(\d+ª)\s*(.*)$/);
   if (matchRank) return { badge: matchRank[1], label: matchRank[2] || trimmed };
+
+  if (gameType === 'joker') {
+    if (trimmed.toLowerCase().includes('joker') || trimmed.includes('7 cifras'))
+      return { badge: 'J', label: trimmed };
+    const mDigits = trimmed.match(/^(\d+)\s+p/i);
+    if (mDigits) return { badge: mDigits[1], label: trimmed };
+    return { badge: 'J', label: trimmed };
+  }
 
   if (gameType === 'bonoloto' || gameType === 'primitiva') {
     if (trimmed.toLowerCase().includes('6 acierto') || trimmed.toLowerCase().startsWith('6'))
@@ -242,19 +265,19 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                 </button>
                 <GameBadge game={game} size="sm" />
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-black text-manises-blue text-[14px] uppercase tracking-tight leading-none">
-                    {getModalFullName(game.id, game.name)}
-                  </h3>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-[9.5px] text-muted-foreground font-semibold">
-                      {formatFullDate(result.date)}
-                    </span>
-                    {(result.drawId) && (
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <h3 className="font-black text-manises-blue text-[14px] uppercase tracking-tight leading-none truncate">
+                      {getModalFullName(game.id, game.name)}
+                    </h3>
+                    {result.drawId && (
+                      <span className="shrink-0 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                         {result.drawId}
                       </span>
                     )}
                   </div>
+                  <p className="mt-1 text-[9.5px] text-muted-foreground font-semibold leading-none">
+                    {formatFullDate(result.date)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -315,10 +338,25 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                       {result.numbers.map((n, i) => (
                         <NumberBall key={i} number={n as number} variant="default" />
                       ))}
-                      {result.stars?.map((s, i) => (
-                        <StarNumberBall key={`s-${i}`} number={s} />
-                      ))}
                     </div>
+                    {/* Stars — separate row */}
+                    {result.stars && result.stars.length > 0 && (
+                      <div className="flex gap-2 justify-center border-t pt-3" style={{ borderColor: `${game.color}20` }}>
+                        {result.stars.map((s, i) => (
+                          <StarNumberBall key={`s-${i}`} number={s} />
+                        ))}
+                      </div>
+                    )}
+                    {/* El Millón (Euromillones only) */}
+                    {result.gameType === 'euromillones' && result.elMillon && (
+                      <div className="flex items-center justify-center gap-2.5 border-t pt-3" style={{ borderColor: `${game.color}20` }}>
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white">
+                          <span className="text-[8px] font-black leading-none">M</span>
+                        </div>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-amber-500">El Millón</p>
+                        <p className="font-mono text-[15px] font-black text-amber-700 leading-none tracking-wider uppercase">{result.elMillon}</p>
+                      </div>
+                    )}
                     {/* Complementario + Reintegro on separate row */}
                     {(result.complementario !== undefined || result.reintegro !== undefined) && (
                       <div className="flex justify-center gap-5 border-t pt-3" style={{ borderColor: `${game.color}20` }}>
@@ -328,6 +366,16 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                         {result.reintegro !== undefined && (
                           <NumberBallLabeled label="R" number={result.reintegro} variant="reintegro" />
                         )}
+                      </div>
+                    )}
+                    {/* Joker (Primitiva only) */}
+                    {result.gameType === 'primitiva' && result.joker && (
+                      <div className="flex items-center justify-center gap-2.5 border-t pt-3" style={{ borderColor: `${game.color}20` }}>
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-500 text-white">
+                          <span className="text-[8px] font-black leading-none">J</span>
+                        </div>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-purple-400">Joker</p>
+                        <p className="text-[18px] font-black text-purple-700 leading-none tracking-wider tabular-nums">{result.joker}</p>
                       </div>
                     )}
                   </div>
@@ -355,10 +403,16 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                       Próximo sorteo
                     </div>
                     <div className="mt-2.5">
-                      <span className="text-sm font-black text-manises-blue capitalize leading-none">
-                        {result.nextDrawDate ? formatFullDate(result.nextDrawDate) : '—'}
-                      </span>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mt-1">reserva tu apuesta</p>
+                      {result.nextDrawDate ? (() => {
+                        const { top, bottom } = formatNextDraw(result.nextDrawDate);
+                        return (
+                          <>
+                            <p className="text-[15px] font-black text-manises-blue leading-tight">{top}</p>
+                            <p className="text-[11px] font-bold text-manises-blue/60 leading-tight">{bottom}</p>
+                          </>
+                        );
+                      })() : <span className="text-sm font-black text-manises-blue">—</span>}
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mt-2">reserva tu apuesta</p>
                     </div>
                   </div>
                 </section>
@@ -373,6 +427,22 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                     color={game.color}
                   />
                   <ScrutinyTable scrutiny={result.scrutiny} gameColor={game.color} gameType={game.type} />
+                </section>
+              )}
+
+              {/* ── Escrutinio Joker (Primitiva only) ── */}
+              {result.gameType === 'primitiva' && result.jokerScrutiny && result.jokerScrutiny.length > 0 && (
+                <section>
+                  <SectionTitle
+                    icon={
+                      <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-purple-500 text-white shrink-0">
+                        <span className="text-[7px] font-black leading-none">J</span>
+                      </div>
+                    }
+                    label="Escrutinio Joker"
+                    color="#7c3aed"
+                  />
+                  <ScrutinyTable scrutiny={result.jokerScrutiny} gameColor="#7c3aed" gameType="joker" />
                 </section>
               )}
 

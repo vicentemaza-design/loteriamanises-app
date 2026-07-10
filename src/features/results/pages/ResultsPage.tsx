@@ -71,6 +71,7 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
     numbers, stars, complementario, reintegro, reintegros,
     firstPrizeNumber, secondPrizeNumber,
     thirdPrizeNumber, fourthPrizeNumbers, fifthPrizeNumbers, secondPrizeNumbers,
+    joker,
   } = result;
   const t = game.type;
   const isNational = t === 'loteria-nacional';
@@ -281,26 +282,37 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
   // Layout: balls on LEFT (flex-1) | C/R stacked as large text on RIGHT
   if (t === 'bonoloto' || t === 'primitiva') {
     return (
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-wrap gap-1 flex-1">
-          {numbers.map((n, i) => (
-            <NumberBall key={i} number={n as number} variant="default" size="sm" />
-          ))}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-wrap gap-1 flex-1">
+            {numbers.map((n, i) => (
+              <NumberBall key={i} number={n as number} variant="default" size="sm" />
+            ))}
+          </div>
+          {(complementario !== undefined || reintegro !== undefined) && (
+            <div className="flex flex-col gap-1.5 shrink-0 text-right">
+              {complementario !== undefined && (
+                <div>
+                  <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Complementario</p>
+                  <p className="text-[18px] font-black text-manises-blue leading-none mt-0.5">{complementario}</p>
+                </div>
+              )}
+              {reintegro !== undefined && (
+                <div className={complementario !== undefined ? 'border-t border-slate-100 pt-1.5' : ''}>
+                  <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Reintegro</p>
+                  <p className="text-[18px] font-black text-slate-500 leading-none mt-0.5">{reintegro}</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        {(complementario !== undefined || reintegro !== undefined) && (
-          <div className="flex flex-col gap-1.5 shrink-0 text-right">
-            {complementario !== undefined && (
-              <div>
-                <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Complementario</p>
-                <p className="text-[18px] font-black text-manises-blue leading-none mt-0.5">{complementario}</p>
-              </div>
-            )}
-            {reintegro !== undefined && (
-              <div className={complementario !== undefined ? 'border-t border-slate-100 pt-1.5' : ''}>
-                <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Reintegro</p>
-                <p className="text-[18px] font-black text-slate-500 leading-none mt-0.5">{reintegro}</p>
-              </div>
-            )}
+        {t === 'primitiva' && joker && (
+          <div className="flex items-center gap-2 rounded-xl border border-purple-100 bg-purple-50/60 px-2.5 py-1.5">
+            <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-purple-500 text-white">
+              <span className="text-[7px] font-black leading-none">J</span>
+            </div>
+            <p className="text-[7px] font-black uppercase tracking-widest text-purple-400 leading-none">Joker</p>
+            <p className="text-[13px] font-black text-purple-700 leading-none tracking-wider tabular-nums">{joker}</p>
           </div>
         )}
       </div>

@@ -570,13 +570,13 @@ export function HomePage() {
             badge="Número Fiel"
             title="Abónate a tu número"
             description="Convierte tu número favorito en un abono estable y olvídate de renovar cada semana."
-            cta="Ver abonos"
+            cta="Suscribirme"
             image={loteriaNacionalHero}
             imageAlt="Abonos a número de lotería"
             icon={Landmark}
             accent="gold"
             stats={['Persistente', 'Semanal']}
-            onClick={() => navigate('/profile/subscriptions')}
+            onClick={() => navigate('/profile/subscriptions/setup')}
           />
         </div>
       </section>

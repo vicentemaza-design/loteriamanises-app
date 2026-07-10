@@ -110,7 +110,7 @@ export function AccountPage() {
             {!emailsMatch && (
               <p className="px-1 text-[10px] font-black uppercase tracking-[0.16em] text-red-500">Los emails no coinciden</p>
             )}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 items-end">
               <AccountField label="Teléfono principal" value={formData.phone} onChange={(value) => updateField('phone', value)} />
               <AccountField label="Teléfono alternativo" value={formData.alternatePhone} onChange={(value) => updateField('alternatePhone', value)} />
             </div>

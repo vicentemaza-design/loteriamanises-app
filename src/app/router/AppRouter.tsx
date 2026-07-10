@@ -25,6 +25,7 @@ import { SubscriptionManagePage } from '@/features/profile/pages/SubscriptionMan
 import { SubscriptionEditPage } from '@/features/profile/pages/SubscriptionEditPage';
 import { SubscriptionCancelPage } from '@/features/profile/pages/SubscriptionCancelPage';
 import { SubscriptionCancelledPage } from '@/features/profile/pages/SubscriptionCancelledPage';
+import { AbonoSetupPage } from '@/features/profile/pages/AbonoSetupPage';
 import { GameSubscriptionsPage } from '@/features/profile/pages/GameSubscriptionsPage';
 import { GameSubscriptionDetailPage } from '@/features/profile/pages/GameSubscriptionDetailPage';
 import { MovementsPage } from '@/features/profile/pages/MovementsPage';
@@ -74,6 +75,7 @@ export function AppRouter() {
           <Route path="/profile/favorites" element={<FavoritesPage />} />
           <Route path="/profile/favorites/:favoriteId" element={<FavoriteDetailPage />} />
           <Route path="/profile/subscriptions" element={<SubscriptionsPage />} />
+          <Route path="/profile/subscriptions/setup" element={<AbonoSetupPage />} />
           <Route path="/profile/subscriptions/:subscriptionId" element={<SubscriptionManagePage />} />
           <Route path="/profile/subscriptions/:subscriptionId/edit" element={<SubscriptionEditPage />} />
           <Route path="/profile/subscriptions/:subscriptionId/cancel" element={<SubscriptionCancelPage />} />
