@@ -149,28 +149,26 @@ function StepSelectNumber({ onSelect }: { onSelect: (n: string, avail: Subscript
 
       {/* Filter chips + lupa */}
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <div className="flex flex-1 gap-1.5 overflow-x-auto pb-0.5">
-            {([null, 'JUE', 'SÁB', 'NAV', 'NIÑ'] as (SubscriptionDrawType | null)[]).map(dt => {
-              const active = filterDraw === dt;
-              const label = dt === null ? 'Todos' : DRAW_META[dt].label;
-              const color = dt ? DRAW_META[dt].color : '#0a4792';
-              return (
-                <button
-                  key={dt ?? 'all'}
-                  type="button"
-                  onClick={() => setFilterDraw(dt)}
-                  className={cn(
-                    'shrink-0 rounded-full px-3 py-1 text-[11px] font-black transition-all',
-                    active ? 'text-white shadow-sm' : 'border border-slate-200 bg-white text-slate-500',
-                  )}
-                  style={active ? { backgroundColor: color } : undefined}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5">
+          {([null, 'JUE', 'SÁB', 'NAV', 'NIÑ'] as (SubscriptionDrawType | null)[]).map(dt => {
+            const active = filterDraw === dt;
+            const label = dt === null ? 'Todos' : DRAW_META[dt].label;
+            const color = dt ? DRAW_META[dt].color : '#0a4792';
+            return (
+              <button
+                key={dt ?? 'all'}
+                type="button"
+                onClick={() => setFilterDraw(dt)}
+                className={cn(
+                  'shrink-0 rounded-full px-3 py-1 text-[11px] font-black transition-all',
+                  active ? 'text-white shadow-sm' : 'border border-slate-200 bg-white text-slate-500',
+                )}
+                style={active ? { backgroundColor: color } : undefined}
+              >
+                {label}
+              </button>
+            );
+          })}
           <button
             type="button"
             onClick={toggleSearch}
