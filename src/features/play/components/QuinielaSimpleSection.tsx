@@ -110,7 +110,7 @@ export function QuinielaSimpleSection({ fixtures, drawDate, onSummaryChange }: P
     <div className="space-y-2.5">
 
       {/* ── Fecha ──────────────────────────────────────────────────── */}
-      <h2 className="text-[18px] font-black text-manises-blue leading-tight">
+      <h2 className="text-[15px] font-black text-manises-blue leading-tight">
         {drawDateLabel}
       </h2>
 

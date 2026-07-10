@@ -259,7 +259,7 @@ export function QuinielaManisesSection({ fixtures, drawDate, onSummaryChange }: 
 
       {/* ── Fecha + Borrar boleto ───────────────────────────────────── */}
       <div className="flex items-center justify-between">
-        <h2 className="text-[18px] font-black text-manises-blue leading-tight">
+        <h2 className="text-[15px] font-black text-manises-blue leading-tight">
           {drawDateLabel}
         </h2>
         <button
