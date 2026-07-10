@@ -582,8 +582,6 @@ export function HomePage() {
       </section>
 
 {/* ── Responsible Gaming Footer ─────────────────────────── */}
-      <ResponsibleGamingFooter />
-
       {/* Pie legal */}
       <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-6 py-4 opacity-40">
         <button onClick={() => navigate('/legal/condiciones')} className="text-[9px] font-bold uppercase tracking-widest text-slate-500 transition-opacity hover:opacity-70">Condiciones generales</button>
@@ -592,6 +590,8 @@ export function HomePage() {
         <span className="text-[8px] text-slate-300">·</span>
         <button onClick={() => navigate('/legal/aviso')} className="text-[9px] font-bold uppercase tracking-widest text-slate-500 transition-opacity hover:opacity-70">Aviso legal</button>
       </div>
+
+      <ResponsibleGamingFooter />
 
       <ScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} />
     </div>
