@@ -33,15 +33,41 @@ interface AvailableNumber {
 }
 
 const MOCK_AVAILABLE: AvailableNumber[] = [
-  { number: '25874', availableDrawTypes: ['JUE', 'SÁB'],          maxQty: 10 },
-  { number: '05132', availableDrawTypes: ['JUE', 'SÁB', 'NAV'],   maxQty: 5  },
-  { number: '30718', availableDrawTypes: ['NAV', 'NIÑ'],           maxQty: 10 },
-  { number: '45670', availableDrawTypes: ['JUE', 'SÁB', 'NAV', 'NIÑ'], maxQty: 10 },
-  { number: '10295', availableDrawTypes: ['JUE'],                  maxQty: 3  },
-  { number: '89013', availableDrawTypes: ['NAV', 'NIÑ'],           maxQty: 8  },
-  { number: '72436', availableDrawTypes: ['JUE', 'SÁB'],          maxQty: 10 },
+  { number: '03421', availableDrawTypes: ['JUE', 'SÁB'],               maxQty: 10 },
+  { number: '05132', availableDrawTypes: ['JUE', 'SÁB', 'NAV'],        maxQty: 5  },
+  { number: '07865', availableDrawTypes: ['JUE'],                       maxQty: 8  },
+  { number: '10295', availableDrawTypes: ['JUE'],                       maxQty: 3  },
+  { number: '11480', availableDrawTypes: ['JUE', 'SÁB', 'NAV', 'NIÑ'], maxQty: 10 },
+  { number: '14037', availableDrawTypes: ['NAV', 'NIÑ'],                maxQty: 6  },
   { number: '18903', availableDrawTypes: ['JUE', 'SÁB', 'NAV', 'NIÑ'], maxQty: 5  },
-  { number: '67254', availableDrawTypes: ['SÁB', 'NAV'],           maxQty: 7  },
+  { number: '21566', availableDrawTypes: ['SÁB'],                       maxQty: 10 },
+  { number: '23190', availableDrawTypes: ['JUE', 'SÁB'],               maxQty: 7  },
+  { number: '25874', availableDrawTypes: ['JUE', 'SÁB'],               maxQty: 10 },
+  { number: '28341', availableDrawTypes: ['NAV'],                       maxQty: 5  },
+  { number: '30718', availableDrawTypes: ['NAV', 'NIÑ'],                maxQty: 10 },
+  { number: '33052', availableDrawTypes: ['JUE', 'SÁB'],               maxQty: 10 },
+  { number: '36489', availableDrawTypes: ['JUE', 'SÁB', 'NAV'],        maxQty: 4  },
+  { number: '40127', availableDrawTypes: ['SÁB', 'NAV'],                maxQty: 8  },
+  { number: '41893', availableDrawTypes: ['JUE'],                       maxQty: 10 },
+  { number: '45670', availableDrawTypes: ['JUE', 'SÁB', 'NAV', 'NIÑ'], maxQty: 10 },
+  { number: '48205', availableDrawTypes: ['NAV', 'NIÑ'],                maxQty: 7  },
+  { number: '51374', availableDrawTypes: ['JUE', 'SÁB'],               maxQty: 10 },
+  { number: '54918', availableDrawTypes: ['JUE', 'SÁB', 'NAV', 'NIÑ'], maxQty: 3  },
+  { number: '58630', availableDrawTypes: ['SÁB'],                       maxQty: 10 },
+  { number: '61742', availableDrawTypes: ['NAV'],                       maxQty: 5  },
+  { number: '63085', availableDrawTypes: ['JUE', 'SÁB'],               maxQty: 10 },
+  { number: '67254', availableDrawTypes: ['SÁB', 'NAV'],                maxQty: 7  },
+  { number: '70391', availableDrawTypes: ['JUE', 'SÁB', 'NAV'],        maxQty: 6  },
+  { number: '72436', availableDrawTypes: ['JUE', 'SÁB'],               maxQty: 10 },
+  { number: '75819', availableDrawTypes: ['NIÑ'],                       maxQty: 8  },
+  { number: '78264', availableDrawTypes: ['JUE', 'SÁB', 'NAV', 'NIÑ'], maxQty: 5  },
+  { number: '80543', availableDrawTypes: ['JUE'],                       maxQty: 10 },
+  { number: '82017', availableDrawTypes: ['SÁB', 'NAV'],                maxQty: 9  },
+  { number: '85362', availableDrawTypes: ['JUE', 'SÁB'],               maxQty: 10 },
+  { number: '89013', availableDrawTypes: ['NAV', 'NIÑ'],                maxQty: 8  },
+  { number: '91476', availableDrawTypes: ['JUE', 'SÁB', 'NAV'],        maxQty: 5  },
+  { number: '94728', availableDrawTypes: ['JUE'],                       maxQty: 10 },
+  { number: '97053', availableDrawTypes: ['NAV', 'NIÑ'],                maxQty: 6  },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -107,19 +133,19 @@ function StepSelectNumber({ onSelect }: { onSelect: (n: string, avail: Subscript
       </div>
 
       {/* Number list */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         {MOCK_AVAILABLE.map((item) => (
           <button
             key={item.number}
             type="button"
             onClick={() => onSelect(item.number, item.availableDrawTypes, item.maxQty)}
-            className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3.5 text-left shadow-[0_1px_4px_rgba(15,23,42,0.05)] transition-colors active:bg-slate-50/80"
+            className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-2 text-left shadow-[0_1px_4px_rgba(15,23,42,0.05)] transition-colors active:bg-slate-50/80"
           >
             <div className="flex-1 min-w-0">
               <p className="font-mono text-[22px] font-black text-manises-blue tracking-[0.1em] leading-none">
                 {item.number}
               </p>
-              <p className="mt-1.5 text-[9.5px] font-semibold text-slate-400 leading-none">
+              <p className="mt-0.5 text-[9.5px] font-semibold text-slate-400 leading-none">
                 {item.availableDrawTypes.map(dt => DRAW_META[dt].label).join(' · ')}
               </p>
             </div>
