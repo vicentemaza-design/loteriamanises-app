@@ -44,6 +44,7 @@ import { CompanyLandingPage } from '@/features/company/pages/CompanyLandingPage'
 import { CondicionesPage } from '@/features/legal/pages/CondicionesPage';
 import { PrivacidadPage } from '@/features/legal/pages/PrivacidadPage';
 import { AvisoLegalPage } from '@/features/legal/pages/AvisoLegalPage';
+import { CondicionesAbonosPage } from '@/features/legal/pages/CondicionesAbonosPage';
 
 export function AppRouter() {
   return (
@@ -65,6 +66,7 @@ export function AppRouter() {
         <Route path="/play/:gameId" element={<GamePlayPage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/legal/condiciones" element={<CondicionesPage />} />
+        <Route path="/legal/condiciones-abonos" element={<CondicionesAbonosPage />} />
         <Route path="/legal/privacidad" element={<PrivacidadPage />} />
         <Route path="/legal/aviso" element={<AvisoLegalPage />} />
 

@@ -97,7 +97,7 @@ export function AbonarseModal({ isOpen, onClose, decimalNumber }: AbonarseModalP
             <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)}
               className="h-4 w-4 rounded accent-manises-blue" />
             <span className="text-[12px] font-medium text-slate-600">
-              Acepto las <span onClick={() => navigate('/legal/condiciones')} className="text-manises-blue font-bold underline cursor-pointer">condiciones del abono</span>
+              Acepto las <span onClick={() => navigate('/legal/condiciones-abonos')} className="text-manises-blue font-bold underline cursor-pointer">condiciones del abono</span>
             </span>
           </label>
         </div>
