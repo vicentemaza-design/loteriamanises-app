@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Shield, Lock, Check,
-  Lightbulb, Minus, Plus, AlertCircle,
+  Lightbulb, Minus, Plus, AlertCircle, Search,
 } from 'lucide-react';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import { useSubscriptions } from '@/features/profile/hooks/useSubscriptions';
@@ -113,6 +113,21 @@ function DrawTypeBadge({ type, xs = false }: React.HTMLAttributes<HTMLSpanElemen
 // ── Step 1: Elige tu número ───────────────────────────────────────────────────
 
 function StepSelectNumber({ onSelect }: { onSelect: (n: string, avail: SubscriptionDrawType[], maxQty: number) => void }) {
+  const [search, setSearch] = useState('');
+  const [filterDraw, setFilterDraw] = useState<SubscriptionDrawType | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const filtered = MOCK_AVAILABLE.filter(item => {
+    const matchSearch = !search || item.number.includes(search.trim());
+    const matchDraw = !filterDraw || item.availableDrawTypes.includes(filterDraw);
+    return matchSearch && matchDraw;
+  });
+
+  function toggleSearch() {
+    if (searchOpen) setSearch('');
+    setSearchOpen(v => !v);
+  }
+
   return (
     <div className="flex flex-col gap-4">
 
@@ -125,16 +140,75 @@ function StepSelectNumber({ onSelect }: { onSelect: (n: string, avail: Subscript
           <p className="text-[9px] font-black uppercase tracking-[0.16em] text-manises-gold">Reserva preferente</p>
         </div>
         <p className="text-[17px] font-black leading-tight">
-          {MOCK_AVAILABLE.length} números disponibles
+          {filtered.length} número{filtered.length !== 1 ? 's' : ''} disponible{filtered.length !== 1 ? 's' : ''}
         </p>
         <p className="mt-1.5 text-[11px] font-medium leading-relaxed text-white/65">
           Elige el tuyo y configura los sorteos a los que deseas abonarte.
         </p>
       </div>
 
+      {/* Filter chips + lupa */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <div className="flex flex-1 gap-1.5 overflow-x-auto pb-0.5">
+            {([null, 'JUE', 'SÁB', 'NAV', 'NIÑ'] as (SubscriptionDrawType | null)[]).map(dt => {
+              const active = filterDraw === dt;
+              const label = dt === null ? 'Todos' : DRAW_META[dt].label;
+              const color = dt ? DRAW_META[dt].color : '#0a4792';
+              return (
+                <button
+                  key={dt ?? 'all'}
+                  type="button"
+                  onClick={() => setFilterDraw(dt)}
+                  className={cn(
+                    'shrink-0 rounded-full px-3 py-1 text-[11px] font-black transition-all',
+                    active ? 'text-white shadow-sm' : 'border border-slate-200 bg-white text-slate-500',
+                  )}
+                  style={active ? { backgroundColor: color } : undefined}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={toggleSearch}
+            className={cn(
+              'flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-all',
+              searchOpen || search
+                ? 'border-manises-blue bg-manises-blue text-white'
+                : 'border-slate-200 bg-white text-slate-400',
+            )}
+          >
+            <Search className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {/* Expandable search input */}
+        <div className={cn(
+          'overflow-hidden transition-all duration-200',
+          searchOpen ? 'max-h-12 opacity-100' : 'max-h-0 opacity-0 pointer-events-none',
+        )}>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={search}
+            onChange={e => setSearch(e.target.value.replace(/\D/g, '').slice(0, 5))}
+            placeholder="Escribe el número..."
+            autoFocus={searchOpen}
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] font-mono font-black text-manises-blue placeholder:font-sans placeholder:font-medium placeholder:text-slate-400 focus:border-manises-blue/40 focus:outline-none"
+          />
+        </div>
+      </div>
+
       {/* Number list */}
       <div className="flex flex-col gap-1.5">
-        {MOCK_AVAILABLE.map((item) => (
+        {filtered.length === 0 ? (
+          <p className="py-8 text-center text-[12px] font-medium text-slate-400">
+            No hay números con ese criterio.
+          </p>
+        ) : filtered.map((item) => (
           <button
             key={item.number}
             type="button"
