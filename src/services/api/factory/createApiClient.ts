@@ -19,8 +19,10 @@ export async function createApiClient(): Promise<IApiProvider> {
       return new FirebaseAdapter();
     }
     
-    case 'http':
-      throw new Error('HttpAdapter not yet implemented');
+    case 'http': {
+      const { HttpAdapter } = await import('../adapters/http/http.adapter');
+      return new HttpAdapter();
+    }
       
     default:
       throw new Error(`Unknown API Provider: ${providerType}`);

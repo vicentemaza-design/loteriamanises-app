@@ -3,6 +3,7 @@ import { getLatestResultsMock, getResultByIdMock } from './results.mock';
 import { getUserTicketsMock, getTicketByIdMock } from './tickets.mock';
 import { placeBetMock, submitPlaySessionMock } from './play.mock';
 import { getBalanceMock, getMovementsMock, topUpMock } from './wallet.mock';
+import { subscriptionsMock } from './subscriptions.mock';
 
 /**
  * MockAdapter
@@ -10,8 +11,8 @@ import { getBalanceMock, getMovementsMock, topUpMock } from './wallet.mock';
  */
 export class MockAdapter implements IApiProvider {
   auth = {
-    signInWithGoogle: async () => { console.log('Mock SignIn'); },
-    logout: async () => { console.log('Mock Logout'); },
+    signInWithGoogle: async () => {},
+    logout: async () => {},
     getCurrentUser: async () => null,
   };
 
@@ -28,7 +29,7 @@ export class MockAdapter implements IApiProvider {
   play = {
     placeBet: placeBetMock,
     submitPlaySession: submitPlaySessionMock,
-    calculatePrice: async () => 0, // Out of scope for this sprint's logic recalculation
+    calculatePrice: async () => 0,
   };
 
   wallet = {
@@ -36,4 +37,6 @@ export class MockAdapter implements IApiProvider {
     getMovements: getMovementsMock,
     topUp: topUpMock,
   };
+
+  subscriptions = subscriptionsMock;
 }

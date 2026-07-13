@@ -3,6 +3,19 @@ import type { ResultDto } from '../contracts/results.contracts';
 import type { CreateBetRequestDto, CreateBetResponseDto, SubmitPlaySessionRequestDto, SubmitPlaySessionResponseDto } from '../contracts/play.contracts';
 import type { TicketDto } from '../contracts/tickets.contracts';
 import type { WalletBalanceDto, WalletMovementDto } from '../contracts/wallet.contracts';
+import type {
+  CreateSubscriptionRequestDto,
+  CreateSubscriptionResponseDto,
+  UpdateSubscriptionRequestDto,
+  UpdateSubscriptionResponseDto,
+  GetSubscriptionsResponseDto,
+  GetReservationsResponseDto,
+  PayReservationsRequestDto,
+  PayReservationsResponseDto,
+  GetAvailableNumbersResponseDto,
+  ConfirmFirstDrawRequestDto,
+  ConfirmFirstDrawResponseDto,
+} from '../contracts/subscriptions.contracts';
 
 /**
  * IApiProvider
@@ -48,5 +61,18 @@ export interface IApiProvider {
     getBalance: (userId: string) => Promise<WalletBalanceDto>;
     getMovements: (userId: string) => Promise<WalletMovementDto[]>;
     topUp: (userId: string, amount: number) => Promise<{ success: boolean; newBalance: number }>;
+  };
+
+  // Subscriptions — abonos de Lotería Nacional
+  // Full endpoint spec: src/services/api/contracts/subscriptions.contracts.ts
+  subscriptions: {
+    getAvailableNumbers: () => Promise<GetAvailableNumbersResponseDto>;
+    create: (dto: CreateSubscriptionRequestDto) => Promise<CreateSubscriptionResponseDto>;
+    getAll: () => Promise<GetSubscriptionsResponseDto>;
+    update: (id: string, dto: UpdateSubscriptionRequestDto) => Promise<UpdateSubscriptionResponseDto>;
+    cancel: (id: string) => Promise<void>;
+    getReservations: () => Promise<GetReservationsResponseDto>;
+    payReservations: (dto: PayReservationsRequestDto) => Promise<PayReservationsResponseDto>;
+    confirmFirstDraw: (dto: ConfirmFirstDrawRequestDto) => Promise<ConfirmFirstDrawResponseDto>;
   };
 }

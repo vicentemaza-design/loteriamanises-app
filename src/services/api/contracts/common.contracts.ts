@@ -19,5 +19,5 @@ export interface PaginatedResponseDto<T> {
 
 export interface ApiResponseDto<T> {
   data: T;
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 }
