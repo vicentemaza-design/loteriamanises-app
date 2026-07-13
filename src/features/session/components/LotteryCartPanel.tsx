@@ -312,6 +312,8 @@ export function LotteryCartPanel() {
   const [inlineAmt, setInlineAmt] = useState(20);
   const [inlineMethod, setInlineMethod] = useState<'apple' | 'bizum' | 'card'>('apple');
   const [isRechargingInline, setIsRechargingInline] = useState(false);
+  const [isCustomAmt, setIsCustomAmt] = useState(false);
+  const [customAmt, setCustomAmt] = useState('');
   const [balanceBoost, setBalanceBoost] = useState(0);
   const [justRecharged, setJustRecharged] = useState(false);
 
@@ -346,7 +348,7 @@ export function LotteryCartPanel() {
     setIsRechargingInline(true);
     await new Promise(r => setTimeout(r, 1500));
     setIsRechargingInline(false);
-    setBalanceBoost(prev => prev + inlineAmt);
+    setBalanceBoost(prev => prev + (isCustomAmt ? (parseFloat(customAmt) || 0) : inlineAmt));
     setJustRecharged(true);
     setShowInsufficientBalance(false);
   };
@@ -355,6 +357,8 @@ export function LotteryCartPanel() {
     if (isOverBalance) {
       const shortfall = total - effectiveBalance;
       setInlineAmt(INLINE_AMOUNTS.find(a => a >= shortfall) ?? 20);
+      setIsCustomAmt(false);
+      setCustomAmt('');
       setInlineStep('warning');
       setShowInsufficientBalance(true);
       return;
@@ -613,14 +617,32 @@ export function LotteryCartPanel() {
                       <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Importe</p>
                       <div className="grid grid-cols-3 gap-2">
                         {INLINE_AMOUNTS.map(a => (
-                          <button key={a} type="button" onClick={() => setInlineAmt(a)}
+                          <button key={a} type="button" onClick={() => { setInlineAmt(a); setIsCustomAmt(false); }}
                             className={`rounded-xl border-2 py-2.5 text-sm font-black transition-all ${
-                              inlineAmt === a ? 'border-manises-blue bg-manises-blue text-white' : 'border-slate-200 bg-white text-manises-blue hover:border-manises-blue/30'
+                              !isCustomAmt && inlineAmt === a ? 'border-manises-blue bg-manises-blue text-white' : 'border-slate-200 bg-white text-manises-blue hover:border-manises-blue/30'
                             }`}>
                             {formatCurrency(a)}
                           </button>
                         ))}
                       </div>
+                      <button type="button" onClick={() => { setIsCustomAmt(true); setCustomAmt(''); }}
+                        className={`w-full rounded-xl border-2 py-2.5 text-sm font-black transition-all ${
+                          isCustomAmt ? 'border-manises-blue bg-manises-blue/5 text-manises-blue' : 'border-slate-200 bg-white text-slate-400'
+                        }`}>
+                        {isCustomAmt ? 'Importe personalizado' : 'Otro importe'}
+                      </button>
+                      {isCustomAmt && (
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-manises-blue font-black text-lg">€</span>
+                          <input
+                            type="number" inputMode="decimal" min="1" max="500" placeholder="0.00"
+                            value={customAmt}
+                            onChange={(e) => setCustomAmt(e.target.value)}
+                            className="w-full h-14 pl-9 pr-4 rounded-2xl border-2 border-manises-blue bg-manises-blue/5 text-manises-blue font-black text-xl outline-none focus:ring-2 focus:ring-manises-gold/50 tabular-nums"
+                            autoFocus
+                          />
+                        </div>
+                      )}
                     </div>
 
                     {/* Method */}
@@ -653,11 +675,12 @@ export function LotteryCartPanel() {
                     </div>
 
                     {/* CTA */}
-                    <button type="button" onClick={handleInlineRecharge} disabled={isRechargingInline}
+                    <button type="button" onClick={handleInlineRecharge}
+                      disabled={isRechargingInline || (isCustomAmt && (parseFloat(customAmt) || 0) <= 0)}
                       className="w-full rounded-2xl bg-manises-blue py-4 text-[13px] font-black uppercase tracking-widest text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-60">
                       {isRechargingInline
                         ? <span className="flex items-center justify-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Procesando…</span>
-                        : `Recargar ${formatCurrency(inlineAmt)} · demo`
+                        : `Recargar ${formatCurrency(isCustomAmt ? (parseFloat(customAmt) || 0) : inlineAmt)} · demo`
                       }
                     </button>
                     <p className="text-center text-[9px] font-medium text-slate-400">Simulación demo · sin cargo real</p>
