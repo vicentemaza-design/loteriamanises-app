@@ -434,7 +434,8 @@ export function GamesCartPanel() {
                       <div className="grid grid-cols-3 gap-2">
                         {INLINE_AMOUNTS.map(a => (
                           <button key={a} type="button" onClick={() => { setInlineAmt(a); setIsCustomAmt(false); }}
-                            className={`rounded-xl border-2 py-2.5 text-sm font-black transition-all ${
+                            disabled={isRechargingInline}
+                            className={`rounded-xl border-2 py-2.5 text-sm font-black transition-all disabled:opacity-40 ${
                               !isCustomAmt && inlineAmt === a ? 'border-manises-blue bg-manises-blue text-white' : 'border-slate-200 bg-white text-manises-blue hover:border-manises-blue/30'
                             }`}>
                             {formatCurrency(a)}
@@ -442,7 +443,8 @@ export function GamesCartPanel() {
                         ))}
                       </div>
                       <button type="button" onClick={() => { setIsCustomAmt(true); setCustomAmt(''); }}
-                        className={`w-full rounded-xl border-2 py-2.5 text-sm font-black transition-all ${
+                        disabled={isRechargingInline}
+                        className={`w-full rounded-xl border-2 py-2.5 text-sm font-black transition-all disabled:opacity-40 ${
                           isCustomAmt ? 'border-manises-blue bg-manises-blue/5 text-manises-blue' : 'border-slate-200 bg-white text-slate-400'
                         }`}>
                         {isCustomAmt ? 'Importe personalizado' : 'Otro importe'}

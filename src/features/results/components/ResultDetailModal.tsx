@@ -55,6 +55,12 @@ function formatNextDraw(iso: string): { top: string; bottom: string } {
   };
 }
 
+const NATIONAL_PRIZE_AMOUNTS: Record<string, { first: number; second: number }> = {
+  'loteria-nacional': { first: 30_000,   second: 6_000 },
+  'navidad':          { first: 400_000,  second: 125_000 },
+  'nino':             { first: 200_000,  second: 75_000 },
+};
+
 interface NationalCheckerResult {
   category: string;
   prize: number;
@@ -68,13 +74,14 @@ function checkNationalNumber(
   const first = result.firstPrizeNumber ?? '';
   const second = result.secondPrizeNumber ?? '';
   const decimoPrice = result.decimoPrice ?? 3;
+  const prizes = NATIONAL_PRIZE_AMOUNTS[result.gameType] ?? NATIONAL_PRIZE_AMOUNTS['loteria-nacional'];
   const last = inputNumber.slice(-1);
   const last2 = inputNumber.slice(-2);
   const last3 = inputNumber.slice(-3);
   const last4 = inputNumber.slice(-4);
 
-  if (inputNumber === first) return { category: '1er Premio', prize: 30000, isWinner: true };
-  if (inputNumber === second) return { category: '2º Premio', prize: 6000, isWinner: true };
+  if (inputNumber === first) return { category: '1er Premio', prize: prizes.first, isWinner: true };
+  if (inputNumber === second) return { category: '2º Premio', prize: prizes.second, isWinner: true };
 
   let totalPrize = 0;
   const wonCategories: string[] = [];
@@ -311,7 +318,7 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                         {firstPrize || '—'}
                       </p>
                       <p className="text-[8px] font-semibold text-slate-400 uppercase tracking-wider mt-2">
-                        30.000 € al décimo
+                        {formatCurrency((NATIONAL_PRIZE_AMOUNTS[result.gameType] ?? NATIONAL_PRIZE_AMOUNTS['loteria-nacional']).first)} al décimo
                       </p>
                     </div>
                     {/* 2º Premio */}
@@ -326,7 +333,7 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                         {result.secondPrizeNumber || '—'}
                       </p>
                       <p className="text-[8px] font-semibold text-slate-400 uppercase tracking-wider mt-2">
-                        6.000 € al décimo
+                        {formatCurrency((NATIONAL_PRIZE_AMOUNTS[result.gameType] ?? NATIONAL_PRIZE_AMOUNTS['loteria-nacional']).second)} al décimo
                       </p>
                     </div>
                   </div>
