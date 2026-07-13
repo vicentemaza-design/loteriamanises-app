@@ -110,7 +110,7 @@ const QUINIELA_CALENDAR: Record<string, QuinielaFixture[]> = {
     { id: 12, home: 'Eibar',           away: 'Sporting' },
     { id: 13, home: 'HamKam',          away: 'Sandefjord' },
     { id: 14, home: 'Brann',           away: 'Stabaek' },
-    { id: 15, home: 'HamKam',          away: 'Sandefjord' },
+    { id: 15, home: 'Rosenborg',       away: 'Molde' },
   ],
 
   // ── Añade aquí las siguientes jornadas ──

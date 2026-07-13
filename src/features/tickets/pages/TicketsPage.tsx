@@ -285,13 +285,13 @@ export function TicketsPage() {
               <EmptyState
                 icon={<TicketIcon className="h-10 w-10 text-manises-blue/20" />}
                 title={search ? 'Sin coincidencias' : `Sin jugadas ${tab}`}
-                description={search ? `No hemos encontrado apuestas para "${search}".` : tab === 'activos' ? 'Tus próximas apuestas aparecerán aquí en cuanto las realices.' : 'Todavía no tienes sorteos resueltos en tu historial.'}
-                action={!search && tab === 'activos' ? { label: 'Empezar a jugar', onClick: () => navigate('/games') } : undefined}
+                description={search ? `No hemos encontrado apuestas para "${search}".` : tab === 'activas' ? 'Tus próximas apuestas aparecerán aquí en cuanto las realices.' : 'Todavía no tienes sorteos resueltos en tu historial.'}
+                action={!search && tab === 'activas' ? { label: 'Empezar a jugar', onClick: () => navigate('/games') } : undefined}
               />
             </div>
           ) : (
             <div className="flex flex-col gap-1.5">
-              {tab === 'activos' && displayed.length > 0 && displayed.length < 4 && (
+              {tab === 'activas' && displayed.length > 0 && displayed.length < 4 && (
                 <div className="order-last mt-1 rounded-[1.5rem] border border-dashed border-manises-blue/15 bg-manises-blue/[0.02] p-4 text-center">
                   <p className="text-[12px] font-black text-manises-blue/50">¿Quieres añadir otra jugada?</p>
                   <button type="button" onClick={() => navigate('/games')} className="mt-2.5 inline-flex items-center gap-1.5 rounded-2xl bg-manises-blue px-5 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white">

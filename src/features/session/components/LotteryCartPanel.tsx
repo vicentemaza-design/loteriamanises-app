@@ -239,7 +239,7 @@ function LotteryDraftRow({ draft, color, deliveryMode, onDelete, onQty }: {
                 <Eye className="h-3 w-3" /> Ver décimo
               </button>
             ) : (
-              <button type="button" onClick={() => setCustodiaTicketOpen(true)}
+              <button type="button" onClick={() => setTicketMockupOpen(true)}
                 className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-black text-manises-blue transition-colors hover:bg-slate-100">
                 <Eye className="h-3 w-3" /> Ver ticket
               </button>
