@@ -137,11 +137,18 @@ function parseCategory(category: string, gameType: string): { badge: string; lab
   return { badge: '•', label: trimmed };
 }
 
-function formatJackpotDisplay(amount: number, gameId: string): string {
-  if (gameId === 'euromillones') {
-    return `${(amount / 1_000_000).toLocaleString('es-ES')} MILLONES €`;
+function formatJackpotDisplay(amount: number): { value: string; unit: string } {
+  if (amount >= 1_000_000) {
+    const m = amount / 1_000_000;
+    const formatted = Number.isInteger(m)
+      ? m.toLocaleString('es-ES')
+      : m.toLocaleString('es-ES', { maximumFractionDigits: 1 });
+    return { value: formatted, unit: 'MILLONES €' };
   }
-  return `${amount.toLocaleString('es-ES')} €`;
+  if (amount >= 1_000) {
+    return { value: amount.toLocaleString('es-ES'), unit: '€' };
+  }
+  return { value: amount.toLocaleString('es-ES'), unit: '€' };
 }
 
 // ── Scrutiny table ────────────────────────────────────────────────────────────
@@ -398,10 +405,16 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                       Bote Actual
                     </div>
                     <div className="mt-2.5">
-                      <span className="text-xl font-black text-emerald-600 leading-none">
-                        {formatJackpotDisplay(result.jackpotNext ?? 0, game.id)}
-                      </span>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mt-1">para el próximo sorteo</p>
+                      {(() => {
+                        const { value, unit } = formatJackpotDisplay(result.jackpotNext ?? 0);
+                        return (
+                          <>
+                            <p className="text-[26px] font-black text-emerald-600 leading-none tabular-nums">{value}</p>
+                            <p className="text-[11px] font-black text-emerald-600 leading-none mt-0.5 uppercase tracking-wide">{unit}</p>
+                          </>
+                        );
+                      })()}
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mt-2">para el próximo sorteo</p>
                     </div>
                   </div>
                   <div className="rounded-2xl border border-blue-500/10 bg-blue-500/[0.02] p-4 flex flex-col justify-between shadow-sm">
