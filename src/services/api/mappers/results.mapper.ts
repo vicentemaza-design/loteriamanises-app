@@ -27,10 +27,18 @@ export const resultsMapper = {
       drawId: dto.drawId,
       nextDrawDate: dto.nextDrawDate,
       scrutiny: dto.scrutiny,
+      selaeDrawId: dto.selaeDrawId,
+      thirdPrizeNumber: dto.thirdPrizeNumber,
+      fourthPrizeNumbers: dto.fourthPrizeNumbers,
+      fifthPrizeNumbers: dto.fifthPrizeNumbers,
+      secondPrizeNumbers: dto.secondPrizeNumbers,
       ultimas4cifras: dto.ultimas4cifras,
       ultimas3cifras: dto.ultimas3cifras,
       ultimas2cifras: dto.ultimas2cifras,
-      // Add any additional UI-specific computed fields here
+      joker: dto.joker,
+      jokerScrutiny: dto.jokerScrutiny,
+      elMillon: dto.elMillon,
+      elMillonScrutiny: dto.elMillonScrutiny,
     };
   },
 
