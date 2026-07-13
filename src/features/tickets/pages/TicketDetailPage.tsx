@@ -505,11 +505,11 @@ function QuinielaDetailView({
   const signColor = (s: string) =>
     s === '1' ? 'text-manises-blue' : s === 'X' ? 'text-slate-500' : 'text-violet-600';
 
-  // Anchos de columnas sticky (px)
-  const W_NUM     = 28;
-  const W_PARTIDO = 138;
-  const W_OFIC    = 52;
-  const W_COL     = 56;
+  // Anchos de columnas sticky (px) — orden: # | OFICIAL | PARTIDO | Cx...
+  const W_NUM     = 24;
+  const W_OFIC    = 44;
+  const W_PARTIDO = 130;
+  const W_COL     = 52;
 
   // Colores de fila alternos (necesitan ser sólidos para las celdas sticky)
   const rowBgClass = (idx: number) => idx % 2 === 0 ? 'bg-white' : 'bg-slate-50';
@@ -547,22 +547,22 @@ function QuinielaDetailView({
             <thead>
               <tr className="border-b-2 border-slate-100 bg-slate-50">
                 <th
-                  className="bg-slate-50 py-3 pl-3 text-center text-[8px] font-black uppercase tracking-wider text-slate-300"
+                  className="bg-slate-50 py-3 text-center text-[8px] font-black uppercase tracking-wider text-slate-300"
                   style={{ width: W_NUM, position: 'sticky', left: 0, zIndex: 20 }}
                 >
                   #
                 </th>
                 <th
-                  className="bg-slate-50 py-3 pl-2 text-left text-[8px] font-black uppercase tracking-wider text-slate-400"
-                  style={{ minWidth: W_PARTIDO, position: 'sticky', left: W_NUM, zIndex: 20 }}
+                  className="bg-slate-50 py-3 text-center text-[8px] font-black uppercase tracking-wider text-slate-400"
+                  style={{ width: W_OFIC, position: 'sticky', left: W_NUM, zIndex: 20 }}
                 >
-                  Partido
+                  Ofic.
                 </th>
                 <th
-                  className="bg-slate-50 py-3 text-center text-[8px] font-black uppercase tracking-wider text-slate-400"
-                  style={{ width: W_OFIC, position: 'sticky', left: W_NUM + W_PARTIDO, zIndex: 20 }}
+                  className="bg-slate-50 py-3 pl-2 text-left text-[8px] font-black uppercase tracking-wider text-slate-400"
+                  style={{ minWidth: W_PARTIDO, position: 'sticky', left: W_NUM + W_OFIC, zIndex: 20 }}
                 >
-                  Oficial
+                  Partido
                 </th>
                 {columns.map((_, ci) => {
                   const ac    = isScrutinized ? colAciertos[ci] : null;
@@ -599,29 +599,16 @@ function QuinielaDetailView({
                   <tr key={idx} className={bg}>
                     {/* Nº sticky */}
                     <td
-                      className={cn('py-2.5 pl-3 text-center text-[9px] font-bold text-slate-300 tabular-nums align-middle', bg)}
+                      className={cn('py-2.5 text-center text-[9px] font-bold text-slate-300 tabular-nums align-middle', bg)}
                       style={{ position: 'sticky', left: 0, zIndex: 10 }}
                     >
                       {idx + 1}
                     </td>
 
-                    {/* Partido sticky */}
-                    <td
-                      className={cn('py-2 pl-2 pr-2 align-middle', bg)}
-                      style={{ position: 'sticky', left: W_NUM, zIndex: 10 }}
-                    >
-                      <p className="text-[10px] font-semibold leading-snug text-slate-700">
-                        {fix?.home ?? `Partido ${idx + 1}`}
-                      </p>
-                      <p className="text-[10px] font-normal leading-snug text-slate-500">
-                        – {fix?.away ?? ''}
-                      </p>
-                    </td>
-
                     {/* Oficial sticky */}
                     <td
                       className={cn('py-2.5 text-center align-middle', bg)}
-                      style={{ position: 'sticky', left: W_NUM + W_PARTIDO, zIndex: 10 }}
+                      style={{ position: 'sticky', left: W_NUM, zIndex: 10 }}
                     >
                       {rSign ? (
                         <span className={cn('text-[14px] font-black', signColor(rSign))}>
@@ -630,6 +617,19 @@ function QuinielaDetailView({
                       ) : (
                         <span className="text-[12px] text-slate-200">·</span>
                       )}
+                    </td>
+
+                    {/* Partido sticky */}
+                    <td
+                      className={cn('py-2 pl-2 pr-2 align-middle', bg)}
+                      style={{ position: 'sticky', left: W_NUM + W_OFIC, zIndex: 10 }}
+                    >
+                      <p className="text-[10px] font-semibold leading-snug text-slate-700">
+                        {fix?.home ?? `Partido ${idx + 1}`}
+                      </p>
+                      <p className="text-[10px] font-normal leading-snug text-slate-500">
+                        – {fix?.away ?? ''}
+                      </p>
                     </td>
 
                     {/* Columnas de pronóstico */}
@@ -658,7 +658,7 @@ function QuinielaDetailView({
               {columns.some(col => col[14]) && (
                 <tr className="border-t-2 border-amber-200 bg-amber-50">
                   <td
-                    className="py-3 pl-3 align-middle bg-amber-50"
+                    className="py-3 text-center align-middle bg-amber-50"
                     style={{ position: 'sticky', left: 0, zIndex: 10 }}
                   >
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-[8px] font-black text-white mx-auto">
@@ -666,8 +666,18 @@ function QuinielaDetailView({
                     </span>
                   </td>
                   <td
-                    className="py-2.5 pl-2 pr-2 align-middle bg-amber-50"
+                    className="py-3 text-center align-middle bg-amber-50"
                     style={{ position: 'sticky', left: W_NUM, zIndex: 10 }}
+                  >
+                    {p15ResultRaw ? (
+                      <span className="text-[13px] font-black text-slate-700">{p15ResultRaw}</span>
+                    ) : (
+                      <span className="text-[12px] text-slate-200">·</span>
+                    )}
+                  </td>
+                  <td
+                    className="py-2.5 pl-2 pr-2 align-middle bg-amber-50"
+                    style={{ position: 'sticky', left: W_NUM + W_OFIC, zIndex: 10 }}
                   >
                     <p className="text-[10px] font-semibold leading-snug text-slate-700">
                       {p15Fixture?.home ?? 'Pleno al 15'}
@@ -675,16 +685,6 @@ function QuinielaDetailView({
                     <p className="text-[10px] font-normal leading-snug text-slate-500">
                       – {p15Fixture?.away ?? ''}
                     </p>
-                  </td>
-                  <td
-                    className="py-3 text-center align-middle bg-amber-50"
-                    style={{ position: 'sticky', left: W_NUM + W_PARTIDO, zIndex: 10 }}
-                  >
-                    {p15ResultRaw ? (
-                      <span className="text-[13px] font-black text-slate-700">{p15ResultRaw}</span>
-                    ) : (
-                      <span className="text-[12px] text-slate-200">·</span>
-                    )}
                   </td>
                   {columns.map((col, ci) => {
                     const p15Pick = col[14];
