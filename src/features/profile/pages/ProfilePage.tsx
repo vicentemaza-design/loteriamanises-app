@@ -20,6 +20,7 @@ import {
   Repeat,
   InfoCircle,
   Trophy,
+  Page,
 } from 'iconoir-react/regular';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useSubscriptions } from '@/features/profile/hooks/useSubscriptions';
@@ -142,6 +143,14 @@ export function ProfilePage() {
       items: [
         { icon: InfoCircle,  label: 'Quiénes somos',     detail: null, color: 'text-indigo-600',  bg: 'bg-indigo-50', onClick: () => navigate('/profile/about') },
         { icon: Trophy,      label: 'Premios entregados',detail: null, color: 'text-amber-600',   bg: 'bg-amber-50', onClick: () => navigate('/profile/delivered-prizes') },
+      ],
+    },
+    {
+      title: 'Legal',
+      items: [
+        { icon: Lock,        label: 'Política de privacidad',  detail: null, color: 'text-slate-600', bg: 'bg-slate-100', onClick: () => navigate('/legal/privacidad') },
+        { icon: Page,        label: 'Condiciones generales',   detail: null, color: 'text-slate-600', bg: 'bg-slate-100', onClick: () => navigate('/legal/condiciones') },
+        { icon: InfoCircle,  label: 'Aviso legal',             detail: null, color: 'text-slate-600', bg: 'bg-slate-100', onClick: () => navigate('/legal/aviso') },
       ],
     },
   ];
