@@ -1,4 +1,4 @@
-import type { GameType } from '@/shared/types/domain';
+import type { BetMode, GameType } from '@/shared/types/domain';
 import type { ScheduleMode } from '@/features/play/config/draw-schedule.config';
 import type { CreateBetRequestDto } from '../contracts/play.contracts';
 
@@ -14,7 +14,7 @@ export interface BuildBetDtoInput {
   stars?: number[];
   selections?: Array<{ id: number; val: string | null }>;
   systemId?: string;
-  mode: string;
+  mode: BetMode;
   price: number;
   drawDate: string;
   drawDates?: string[];

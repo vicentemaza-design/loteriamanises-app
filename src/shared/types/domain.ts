@@ -1,3 +1,5 @@
+export type BetMode = 'simple' | 'multiple' | 'reduced' | 'nacional' | 'multiple_direct' | 'reduced_official';
+
 export type GameType =
   | 'primitiva'
   | 'bonoloto'
@@ -57,7 +59,7 @@ export interface LotteryGame {
   isMonthly?: boolean; // For EuroDreams
   
   // Matriz Técnica (Fase 1)
-  technicalMode?: 'simple' | 'multiple' | 'reduced' | 'multiple_direct' | 'reduced_official';
+  technicalMode?: BetMode;
   systemFamily?: 'direct' | 'official' | 'manises';
   guaranteeType?: 'none' | 'direct_full_coverage' | 'conditional_minimum';
   guaranteeCondition?: string;

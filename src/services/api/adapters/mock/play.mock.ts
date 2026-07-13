@@ -6,23 +6,12 @@ import type {
   SubmitPlaySessionResponseDto,
 } from '../../contracts/play.contracts';
 import type { TicketDto } from '../../contracts/tickets.contracts';
+import { splitAmountAcrossDraws } from '../../shared/play.utils';
 import { appendMockTickets } from './tickets.mock';
 
 /**
  * Mock Play Adapter
  */
-
-function splitAmountAcrossDraws(totalAmount: number, drawsCount: number): number[] {
-  const totalCents = Math.round(totalAmount * 100);
-  const baseCents = Math.floor(totalCents / drawsCount);
-  let remainder = totalCents - (baseCents * drawsCount);
-
-  return Array.from({ length: drawsCount }, () => {
-    const cents = baseCents + (remainder > 0 ? 1 : 0);
-    remainder = Math.max(0, remainder - 1);
-    return cents / 100;
-  });
-}
 
 function buildTicketsForBet(dto: CreateBetRequestDto, userId: string, orderIdOverride?: string): TicketDto[] {
   const drawDates = dto.drawDates && dto.drawDates.length > 0 ? dto.drawDates : [dto.drawDate];

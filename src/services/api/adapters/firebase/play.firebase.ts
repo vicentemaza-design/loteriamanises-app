@@ -6,23 +6,16 @@ import type {
   SubmitPlaySessionRequestDto,
   SubmitPlaySessionResponseDto,
 } from '../../contracts/play.contracts';
+import { splitAmountAcrossDraws } from '../../shared/play.utils';
 
 /**
  * Firebase Play Adapter
  * Implements atomic transactional purchase logic.
+ *
+ * SECURITY NOTE: Balance is deducted client-side via Firestore transaction.
+ * Before go-live, move price validation to a Cloud Function or backend endpoint
+ * to prevent users from crafting requests with price = 0.
  */
-
-function splitAmountAcrossDraws(totalAmount: number, drawsCount: number): number[] {
-  const totalCents = Math.round(totalAmount * 100);
-  const baseCents = Math.floor(totalCents / drawsCount);
-  let remainder = totalCents - (baseCents * drawsCount);
-
-  return Array.from({ length: drawsCount }, () => {
-    const cents = baseCents + (remainder > 0 ? 1 : 0);
-    remainder = Math.max(0, remainder - 1);
-    return cents / 100;
-  });
-}
 
 export async function placeBetFirebase(dto: CreateBetRequestDto & { userId: string }): Promise<CreateBetResponseDto> {
   try {

@@ -8,9 +8,15 @@ import type { WalletBalanceDto, WalletMovementDto } from '../contracts/wallet.co
  * IApiProvider
  * The common interface for all data providers (Mock, Firebase, HTTP).
  * This ensures the UI remains agnostic to the data source.
+ *
+ * IMPORTANT — Auth is intentionally NOT routed through this interface.
+ * Firebase Auth (Google Sign-In) is handled directly by AuthProvider via
+ * the Firebase SDK, which manages token lifecycle automatically. When
+ * migrating to a custom HTTP backend, implement JWT attachment in the HTTP
+ * adapter's request layer and update AuthProvider accordingly.
  */
 export interface IApiProvider {
-  // Auth
+  // Auth — reserved for future HTTP adapter integration (see note above).
   auth: {
     signInWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
@@ -33,7 +39,8 @@ export interface IApiProvider {
   play: {
     placeBet: (betData: CreateBetRequestDto & { userId: string }) => Promise<CreateBetResponseDto>;
     submitPlaySession: (payload: SubmitPlaySessionRequestDto) => Promise<SubmitPlaySessionResponseDto>;
-    calculatePrice: (gameId: string, selection: Record<string, any>) => Promise<number>;
+    /** STUB — price calculation must be authoritative on the server before go-live. */
+    calculatePrice: (gameId: string, selection: Record<string, unknown>) => Promise<number>;
   };
 
   // Wallet

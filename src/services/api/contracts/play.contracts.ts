@@ -1,4 +1,4 @@
-import type { GameType } from '@/shared/types/domain';
+import type { BetMode, GameType } from '@/shared/types/domain';
 import type { ApiResponseDto } from './common.contracts';
 import type { ScheduleMode } from '@/features/play/config/draw-schedule.config';
 
@@ -15,7 +15,7 @@ export interface CreateBetRequestDto {
   selections?: Array<{ id: number; val: string | null }>;
   systemId?: string; // For reduced systems
   
-  mode: string; // 'simple' | 'multiple' | 'reduced' | 'nacional'
+  mode: BetMode;
   price: number;
   drawDate: string;
   drawDates?: string[];
@@ -67,7 +67,7 @@ export interface QuotePlayRequestDto {
     starsCount?: number;
     reducedSystemId?: string;
   };
-  mode: string;
+  mode: BetMode;
 }
 
 export interface QuotePlayResponseDto {
