@@ -226,10 +226,10 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
             </div>
           </div>
         )}
-        {result.drawId && (
+        {result.elMillon && (
           <div className="flex flex-col pl-2.5 border-l border-slate-200">
             <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">El Millón</span>
-            <span className="text-[11px] font-black text-amber-600 tracking-wider mt-1">{result.drawId}</span>
+            <span className="text-[11px] font-black text-amber-600 tracking-wider mt-1">{result.elMillon}</span>
           </div>
         )}
       </div>
