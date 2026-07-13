@@ -355,7 +355,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
     createdAt: new Date(Date.now() - 86400000 * 40).toISOString(),
   },
 
-  // ── Quiniela pendiente (Reducidas Manises al 13, 96 apuestas) ─────────────
+  // ── Quiniela escrutada (Reducidas Manises al 13, 96 apuestas, C2 premiada) ─
   {
     id: 'demo-quiniela-manises',
     userId: 'demo-user',
@@ -363,20 +363,29 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
     gameType: 'quiniela',
     numbers: [],
     drawDate: '2026-07-12',
-    status: 'pending',
-    prize: 0,
+    status: 'won',
+    prize: 148.00,
     price: 72.00,
     metadata: {
-      playStatus: 'confirmed',
-      confirmedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+      playStatus: 'scrutinized',
+      confirmedAt: new Date('2026-07-12T09:00:00.000Z').toISOString(),
       orderTotalPrice: 72.00,
       betsCount: 96,
       holderName: 'Rafael Sanchis Penadés',
       holderNif: '25252925Z',
       quinielaSystem: 'manises',
       quinielaModalidad: 'al_13',
-      // Pronóstico base con dobles y triples (genera las 96 apuestas reducidas)
       picks: ['1X', '2', '1', 'X2', '1X2', '1', '2', 'X', '1', 'X2', '1', '1X', 'X', '2', '1/M'],
+      // 6 columnas representativas de las 96 generadas por la reducción
+      generatedColumns: [
+        ['1','2','1','X','1','1','2','X','1','X','1','1','X','2','1/M'], // C1 — 13 ac
+        ['1','2','1','X','1','1','2','X','1','2','1','1','X','2','1/M'], // C2 — 14 ac 🏆
+        ['1','2','1','X','X','1','2','X','1','X','1','1','X','2','1/M'], // C3 — 12 ac
+        ['X','2','1','X','1','1','2','X','1','X','1','1','X','2','1/M'], // C4 — 12 ac
+        ['X','2','1','2','2','1','2','X','1','X','1','X','X','2','1/M'], // C5 —  9 ac
+        ['X','2','1','2','2','1','2','X','1','2','1','X','X','2','1/M'], // C6 — 10 ac
+      ],
+      columnPrizes: [0, 148, 0, 0, 0, 0],
       quinielaFixtures: [
         { id: 1,  home: 'Real Madrid',     away: 'FC Barcelona' },
         { id: 2,  home: 'Valencia',        away: 'Sevilla' },
@@ -395,7 +404,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
         { id: 15, home: 'Sandefjord Fotball', away: 'Hamkam IL' },
       ],
     },
-    createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
+    createdAt: new Date('2026-07-10T11:00:00.000Z').toISOString(),
   },
 
   // ── Lotería Jueves en trámite (mensajería, sin confirmar) ─────────────────

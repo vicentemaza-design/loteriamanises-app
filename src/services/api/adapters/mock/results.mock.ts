@@ -301,6 +301,22 @@ export const MOCK_RESULTS_DATA: ResultDto[] = [
       { category: 'Especial Pleno al 15', winners: 0, prizePerWinner: 45000 },
     ],
   },
+  // Quiniela Jornada 60 — 12 jul 2026 (demo-quiniela-manises)
+  {
+    gameId: 'quiniela',
+    gameType: 'quiniela',
+    date: '2026-07-12T18:00:00.000Z',
+    numbers: [1, 2, 1, 'X', 1, 1, 2, 'X', 1, 2, 1, 1, 'X', 2, '1-0'],
+    jackpotNext: 5200000,
+    nextDrawDate: '2026-07-19T18:00:00.000Z',
+    scrutiny: [
+      { category: '15 Resultados', winners: 0, prizePerWinner: 5200000 },
+      { category: '14 Resultados', winners: 3, prizePerWinner: 148 },
+      { category: '13 Resultados', winners: 156, prizePerWinner: 28 },
+      { category: '12 Resultados', winners: 4321, prizePerWinner: 8 },
+      { category: 'Especial Pleno al 15', winners: 0, prizePerWinner: 60000 },
+    ],
+  },
 
   // ── RESULTADOS PARA DEMO DE ACIERTOS ──────────────────────────────────────
 

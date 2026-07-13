@@ -73,6 +73,10 @@ export interface TicketMetadata {
   quinielaFixtures?: QuinielaFixtureItem[];
   quinielaSystem?: string;
   quinielaModalidad?: string;
+  /** Columnas expandidas por el sistema de reducción (una por apuesta). Cada array tiene 15 picks (14 partidos + P15). */
+  generatedColumns?: string[][];
+  /** Premio por columna (mismo índice que generatedColumns). 0 = sin premio. */
+  columnPrizes?: number[];
   // Primitiva — Joker side-bet
   jokerEnabled?: boolean;
   jokerBoletos?: Array<{ jokerNumber: string }>;

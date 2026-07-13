@@ -472,212 +472,307 @@ function QuinielaDetailView({
   const betsCount     = getBetsCount(ticket);
   const resultNums    = result?.numbers ?? [];
 
-  const regularPicks = picks.slice(0, 14);
-  const p15Pick      = picks[14] ?? null;
+  // Columnas expandidas (sistema de reducción) o columna única (simple)
+  const generatedColumns = ticket.metadata?.generatedColumns;
+  const columnPrizes     = ticket.metadata?.columnPrizes ?? [];
+  const columns: string[][] = generatedColumns ?? [picks];
+  const numCols = columns.length;
 
   function resultSign(idx: number): string | null {
     const r = resultNums[idx];
     return r != null ? String(r) : null;
   }
 
-  const [p15PickHome, p15PickAway] = p15Pick ? p15Pick.split('/') : [null, null];
+  // Aciertos en las 14 columnas regulares para cada columna de juego
+  const colAciertos = columns.map(col =>
+    col.slice(0, 14).filter((pick, i) => {
+      const r = resultSign(i);
+      return isScrutinized && r != null && pick === r;
+    }).length
+  );
+  const bestAciertos = colAciertos.length > 0 ? Math.max(...colAciertos) : 0;
+
   const p15Fixture   = fixtures.find(f => f.id === 15);
   const p15ResultRaw = result ? String(resultNums[14] ?? '') : '';
   const [p15ResHome, p15ResAway] = p15ResultRaw ? p15ResultRaw.split('-') : [null, null];
 
-  const hitCount = regularPicks.filter((p, i) => {
-    const r = resultSign(i);
-    return r && p === r;
-  }).length;
-
   const systemLabel = system === 'simple'
     ? 'Columna sencilla'
     : system === 'manises' && modalidad
-      ? `Reducción Manises · ${modalidad === 'al_13' ? 'Al 13' : modalidad === 'al_12' ? 'Al 12' : 'Al 11'}`
-      : system === 'oficial'
-        ? 'Reducción oficial'
-        : 'Múltiple';
+      ? `Reducción Manises ${modalidad === 'al_13' ? 'al 13' : modalidad === 'al_12' ? 'al 12' : 'al 11'}`
+      : system === 'oficial' ? 'Reducción oficial' : 'Múltiple';
 
-  const SIGN_COLORS: Record<string, string> = {
-    '1': 'bg-manises-blue text-white',
-    'X': 'bg-slate-500 text-white',
-    '2': 'bg-violet-600 text-white',
-  };
+  const signColor = (s: string) =>
+    s === '1' ? 'text-manises-blue' : s === 'X' ? 'text-slate-500' : 'text-violet-600';
+
+  // Anchos de columnas sticky (px)
+  const W_NUM     = 28;
+  const W_PARTIDO = 138;
+  const W_OFIC    = 52;
+  const W_COL     = 56;
+
+  // Colores de fila alternos (necesitan ser sólidos para las celdas sticky)
+  const rowBgClass = (idx: number) => idx % 2 === 0 ? 'bg-white' : 'bg-slate-50';
 
   return (
-    <div className="flex flex-col gap-3 px-4 pt-4">
+    <div className="flex flex-col gap-3 px-4 pt-4 pb-4">
 
-      {/* ── Cabecera de resumen ── */}
-      <div className="flex items-stretch gap-0 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm divide-x divide-slate-100">
-        <div className="flex flex-1 flex-col gap-0.5 px-3 py-2.5">
-          <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">{systemLabel}</span>
-          <span className="text-[11px] font-bold text-slate-600">
-            {betsCount} {betsCount === 1 ? 'columna' : 'columnas'}
-          </span>
+      {/* ── Resumen ── */}
+      <div className="flex divide-x divide-slate-100 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="flex-1 px-4 py-3">
+          <p className="text-[8.5px] font-black uppercase tracking-wider text-slate-400">{systemLabel}</p>
+          <p className="mt-0.5 text-[13px] font-bold text-manises-blue">
+            <span className="text-[20px] font-black">{betsCount}</span>{' '}
+            {betsCount === 1 ? 'columna' : 'columnas'}
+          </p>
         </div>
         {isScrutinized ? (
           <>
-            <div className="flex flex-col items-center justify-center gap-0.5 px-3 py-2.5">
-              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Aciertos</span>
-              <span className={cn('text-[17px] font-black leading-none', hitCount >= 10 ? 'text-emerald-600' : 'text-slate-700')}>
-                {hitCount}
-              </span>
+            <div className="px-4 py-3 text-center">
+              <p className="text-[8.5px] font-black uppercase tracking-wider text-slate-400">
+                {numCols > 1 ? 'Mejor res.' : 'Resultado'}
+              </p>
+              <p className={cn('mt-0.5 text-[20px] font-black leading-none', bestAciertos >= 10 ? 'text-emerald-600' : 'text-slate-700')}>
+                {bestAciertos}
+                <span className="text-[11px] font-bold text-slate-400 ml-0.5">ac.</span>
+              </p>
             </div>
-            <div className="flex flex-col items-center justify-center gap-0.5 px-3 py-2.5">
-              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Premio</span>
-              <span className={cn('text-[14px] font-black leading-none', prize > 0 ? 'text-emerald-600' : 'text-slate-300')}>
+            <div className="px-4 py-3 text-center">
+              <p className="text-[8.5px] font-black uppercase tracking-wider text-slate-400">
+                {numCols > 1 ? 'Premio total' : 'Premio'}
+              </p>
+              <p className={cn('mt-0.5 text-[16px] font-black leading-none', prize > 0 ? 'text-emerald-600' : 'text-slate-300')}>
                 {prize > 0 ? formatCurrency(prize) : '—'}
-              </span>
+              </p>
             </div>
           </>
         ) : (
-          <div className="flex items-center gap-1.5 px-3">
+          <div className="flex items-center gap-1.5 px-4">
             <Clock className="h-3 w-3 text-slate-300" />
             <span className="text-[9px] font-semibold text-slate-400">Pendiente</span>
           </div>
         )}
       </div>
 
-      {/* ── Tabla unificada partido / oficial / pronóstico ── */}
+      {/* Hint scroll */}
+      {numCols > 1 && (
+        <div className="flex items-center justify-center gap-2 text-[9px] font-semibold text-manises-blue/70">
+          <span>←</span>
+          <span>Desliza para ver todas tus columnas</span>
+          <span>→</span>
+        </div>
+      )}
+
+      {/* ── Tabla con scroll horizontal ── */}
       <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-
-        {/* Cabecera de columnas */}
-        <div className="grid border-b border-slate-100 bg-slate-50 px-2 py-2"
-          style={{ gridTemplateColumns: '22px 1fr 40px 56px' }}>
-          <span className="text-[8px] font-black uppercase text-slate-300 text-center">Nº</span>
-          <span className="text-[8px] font-black uppercase text-slate-400 pl-1">Partido</span>
-          <span className="text-[8px] font-black uppercase text-slate-400 text-center">Ofic.</span>
-          <span className="text-[8px] font-black uppercase text-manises-blue text-center">Pronóst.</span>
-        </div>
-
-        {/* Filas de partidos 1–14 */}
-        <div className="divide-y divide-slate-50">
-          {regularPicks.map((pick, idx) => {
-            const fix    = fixtures.find(f => f.id === idx + 1);
-            const rSign  = resultSign(idx);
-            const isMulti = pick.length > 1;
-            // Para simple: acierto si pick === resultado oficial
-            const rowHit = isScrutinized && rSign != null && pick === rSign;
-
-            return (
-              <div
-                key={idx}
-                className={cn(
-                  'grid items-center px-2 py-[5px]',
-                  rowHit ? 'bg-emerald-50/70' : ''
-                )}
-                style={{ gridTemplateColumns: '22px 1fr 40px 56px' }}
-              >
-                {/* Nº */}
-                <span className="text-[9px] font-black text-slate-300 text-center tabular-nums">{idx + 1}</span>
-
-                {/* Partido */}
-                <p className="pl-1 pr-1 text-[9.5px] font-semibold leading-tight text-slate-600">
-                  {fix ? fix.home : `Partido ${idx + 1}`}
-                  {fix && (
-                    <span className="block text-[8.5px] font-normal text-slate-400">{fix.away}</span>
-                  )}
-                </p>
-
-                {/* Resultado oficial */}
-                <div className="flex justify-center">
-                  {rSign ? (
-                    <span className={cn(
-                      'flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-black',
-                      SIGN_COLORS[rSign] ?? 'bg-slate-100 text-slate-400'
-                    )}>{rSign}</span>
-                  ) : (
-                    <span className="text-slate-200 text-[10px] font-black">—</span>
-                  )}
-                </div>
-
-                {/* Mi pronóstico */}
-                <div className="flex justify-center gap-[3px]">
-                  {isMulti ? (
-                    ['1', 'X', '2'].filter(s => pick.includes(s)).map(s => {
-                      const sHit  = isScrutinized && rSign === s;
-                      const sMiss = isScrutinized && rSign != null && rSign !== s;
-                      return (
-                        <span key={s} className={cn(
-                          'flex h-5 w-5 items-center justify-center rounded text-[8px] font-black',
-                          sHit  ? 'bg-emerald-500 text-white' :
-                          sMiss ? 'bg-slate-100 text-slate-400' :
-                                  SIGN_COLORS[s] ?? 'bg-slate-200 text-slate-600'
-                        )}>{s}</span>
-                      );
-                    })
-                  ) : (
-                    <span className={cn(
-                      'flex h-6 w-6 items-center justify-center rounded-md text-[10px] font-black',
-                      rowHit                             ? 'bg-emerald-500 text-white' :
-                      isScrutinized && rSign != null     ? 'bg-slate-100 text-slate-500' :
-                                                           SIGN_COLORS[pick] ?? 'bg-slate-200 text-slate-600'
-                    )}>{pick || '?'}</span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Pleno al 15 */}
-        {p15Pick && (
-          <div
-            className="grid items-center border-t-2 border-amber-100 bg-amber-50/40 px-2 py-2"
-            style={{ gridTemplateColumns: '22px 1fr 40px 56px' }}
+        <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' } as never}>
+          <table
+            className="border-collapse"
+            style={{ minWidth: W_NUM + W_PARTIDO + W_OFIC + numCols * W_COL }}
           >
-            <span className="flex justify-center">
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-white text-[7px] font-black leading-none">15</span>
-            </span>
-            <p className="pl-1 pr-1 text-[9.5px] font-semibold leading-tight text-slate-600">
-              {p15Fixture ? p15Fixture.home : 'Pleno al 15'}
-              {p15Fixture && (
-                <span className="block text-[8.5px] font-normal text-slate-400">{p15Fixture.away}</span>
+            {/* Cabecera */}
+            <thead>
+              <tr className="border-b-2 border-slate-100 bg-slate-50">
+                <th
+                  className="bg-slate-50 py-3 pl-3 text-center text-[8px] font-black uppercase tracking-wider text-slate-300"
+                  style={{ width: W_NUM, position: 'sticky', left: 0, zIndex: 20 }}
+                >
+                  #
+                </th>
+                <th
+                  className="bg-slate-50 py-3 pl-2 text-left text-[8px] font-black uppercase tracking-wider text-slate-400"
+                  style={{ minWidth: W_PARTIDO, position: 'sticky', left: W_NUM, zIndex: 20 }}
+                >
+                  Partido
+                </th>
+                <th
+                  className="bg-slate-50 py-3 text-center text-[8px] font-black uppercase tracking-wider text-slate-400"
+                  style={{ width: W_OFIC, position: 'sticky', left: W_NUM + W_PARTIDO, zIndex: 20 }}
+                >
+                  Oficial
+                </th>
+                {columns.map((_, ci) => {
+                  const ac    = isScrutinized ? colAciertos[ci] : null;
+                  const cpriz = columnPrizes[ci] ?? 0;
+                  const isWin = cpriz > 0;
+                  return (
+                    <th
+                      key={ci}
+                      className={cn('py-1.5 text-center', isWin ? 'bg-emerald-50 border-l-2 border-r-2 border-emerald-200' : 'bg-slate-50')}
+                      style={{ width: W_COL, minWidth: W_COL }}
+                    >
+                      <p className={cn('text-[9px] font-black', isWin ? 'text-emerald-700' : 'text-manises-blue')}>
+                        C{ci + 1}{isWin ? ' 🏆' : ''}
+                      </p>
+                      {ac != null && (
+                        <p className={cn('text-[7.5px] font-bold leading-tight mt-0.5', ac >= 10 ? 'text-emerald-600' : 'text-slate-400')}>
+                          {ac} aciertos
+                        </p>
+                      )}
+                      {isWin && (
+                        <p className="text-[7.5px] font-black text-emerald-600 leading-tight">
+                          {formatCurrency(cpriz)}
+                        </p>
+                      )}
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+
+            {/* Partidos 1–14 */}
+            <tbody>
+              {Array.from({ length: 14 }, (_, idx) => {
+                const fix   = fixtures.find(f => f.id === idx + 1);
+                const rSign = resultSign(idx);
+                const bg    = rowBgClass(idx);
+
+                return (
+                  <tr key={idx} className={bg}>
+                    {/* Nº sticky */}
+                    <td
+                      className={cn('py-2.5 pl-3 text-center text-[9px] font-bold text-slate-300 tabular-nums align-middle', bg)}
+                      style={{ position: 'sticky', left: 0, zIndex: 10 }}
+                    >
+                      {idx + 1}
+                    </td>
+
+                    {/* Partido sticky */}
+                    <td
+                      className={cn('py-2 pl-2 pr-2 align-middle', bg)}
+                      style={{ position: 'sticky', left: W_NUM, zIndex: 10 }}
+                    >
+                      <p className="text-[10px] font-semibold leading-snug text-slate-700">
+                        {fix?.home ?? `Partido ${idx + 1}`}
+                      </p>
+                      <p className="text-[10px] font-normal leading-snug text-slate-500">
+                        – {fix?.away ?? ''}
+                      </p>
+                    </td>
+
+                    {/* Oficial sticky */}
+                    <td
+                      className={cn('py-2.5 text-center align-middle', bg)}
+                      style={{ position: 'sticky', left: W_NUM + W_PARTIDO, zIndex: 10 }}
+                    >
+                      {rSign ? (
+                        <span className={cn('text-[14px] font-black', signColor(rSign))}>
+                          {rSign}
+                        </span>
+                      ) : (
+                        <span className="text-[12px] text-slate-200">·</span>
+                      )}
+                    </td>
+
+                    {/* Columnas de pronóstico */}
+                    {columns.map((col, ci) => {
+                      const pick = col[idx] ?? '?';
+                      const hit  = isScrutinized && rSign != null && pick === rSign;
+                      const miss = isScrutinized && rSign != null && !hit;
+                      const cpriz = columnPrizes[ci] ?? 0;
+                      return (
+                        <td
+                          key={ci}
+                          className={cn(
+                            'py-2.5 text-center align-middle text-[14px] font-black',
+                            hit  ? 'bg-emerald-100 text-emerald-700' :
+                            miss ? (idx % 2 === 0 ? 'text-slate-300' : 'text-slate-300') :
+                            cpriz > 0 ? 'bg-emerald-50' : '',
+                            miss && cpriz > 0 ? 'bg-emerald-50 text-slate-300' : ''
+                          )}
+                        >
+                          {miss ? (
+                            <span className={cn(signColor(pick), 'opacity-30')}>{pick}</span>
+                          ) : (
+                            <span className={hit ? '' : signColor(pick)}>{pick}</span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+
+              {/* Pleno al 15 */}
+              {columns.some(col => col[14]) && (
+                <tr className="border-t-2 border-amber-200 bg-amber-50">
+                  <td
+                    className="py-3 pl-3 align-middle bg-amber-50"
+                    style={{ position: 'sticky', left: 0, zIndex: 10 }}
+                  >
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-[8px] font-black text-white mx-auto">
+                      15
+                    </span>
+                  </td>
+                  <td
+                    className="py-2.5 pl-2 pr-2 align-middle bg-amber-50"
+                    style={{ position: 'sticky', left: W_NUM, zIndex: 10 }}
+                  >
+                    <p className="text-[10px] font-semibold leading-snug text-slate-700">
+                      {p15Fixture?.home ?? 'Pleno al 15'}
+                    </p>
+                    <p className="text-[10px] font-normal leading-snug text-slate-500">
+                      – {p15Fixture?.away ?? ''}
+                    </p>
+                  </td>
+                  <td
+                    className="py-3 text-center align-middle bg-amber-50"
+                    style={{ position: 'sticky', left: W_NUM + W_PARTIDO, zIndex: 10 }}
+                  >
+                    {p15ResultRaw ? (
+                      <span className="text-[13px] font-black text-slate-700">{p15ResultRaw}</span>
+                    ) : (
+                      <span className="text-[12px] text-slate-200">·</span>
+                    )}
+                  </td>
+                  {columns.map((col, ci) => {
+                    const p15Pick = col[14];
+                    if (!p15Pick) return <td key={ci} className="bg-amber-50" />;
+                    const [pickHome, pickAway] = p15Pick.split('/');
+                    const p15Hit = isScrutinized && pickHome === p15ResHome && pickAway === p15ResAway;
+                    const p15Miss = isScrutinized && p15ResultRaw && !p15Hit;
+                    const cpriz = columnPrizes[ci] ?? 0;
+                    return (
+                      <td
+                        key={ci}
+                        className={cn(
+                          'py-3 text-center align-middle text-[13px] font-black',
+                          p15Hit  ? 'bg-emerald-100 text-emerald-700' :
+                          p15Miss ? (cpriz > 0 ? 'bg-emerald-50 text-slate-400' : 'bg-amber-50 text-slate-400') :
+                          cpriz > 0 ? 'bg-emerald-50 text-amber-600' : 'bg-amber-50 text-amber-600'
+                        )}
+                      >
+                        {p15Pick.replace('/', '-')}
+                      </td>
+                    );
+                  })}
+                </tr>
               )}
-            </p>
-            {/* Resultado oficial P15 */}
-            <div className="flex justify-center">
-              {p15ResultRaw ? (
-                <span className="text-[9px] font-black text-slate-600">{p15ResultRaw}</span>
-              ) : (
-                <span className="text-slate-200 text-[10px]">—</span>
-              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Leyenda */}
+        {isScrutinized && (
+          <div className="flex items-center gap-5 border-t border-slate-100 bg-slate-50/60 px-4 py-2.5">
+            <div className="flex items-center gap-1.5">
+              <div className="h-3 w-6 rounded-sm bg-emerald-100 border border-emerald-300" />
+              <span className="text-[8.5px] font-semibold text-slate-500">Acierto</span>
             </div>
-            {/* Mi pronóstico P15 */}
-            <div className="flex flex-col items-center">
-              <span className="text-[9px] font-black text-amber-600">
-                {p15Pick.replace('/', '-')}
-              </span>
-              {isScrutinized && p15ResultRaw && (
-                <span className={cn(
-                  'text-[7px] font-bold mt-0.5',
-                  p15PickHome === p15ResHome && p15PickAway === p15ResAway ? 'text-emerald-500' : 'text-slate-400'
-                )}>
-                  {p15PickHome === p15ResHome && p15PickAway === p15ResAway ? 'Acertado' : 'Fallado'}
+            <div className="flex items-center gap-1.5">
+              <div className="h-3 w-6 rounded-sm bg-white border border-slate-200" />
+              <span className="text-[8.5px] font-semibold text-slate-500">No acierto</span>
+            </div>
+            {numCols > 1 && (
+              <div className="flex items-center gap-1.5 ml-auto">
+                <span className="text-[8.5px] font-semibold text-slate-400">
+                  {numCols} de {betsCount} col. mostradas
                 </span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      {/* Leyenda */}
-      {isScrutinized && (
-        <div className="flex items-center gap-4 px-1">
-          <div className="flex items-center gap-1.5">
-            <div className="h-3 w-3 rounded-sm bg-emerald-500" />
-            <span className="text-[9px] font-semibold text-slate-500">Acierto</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="h-3 w-3 rounded-sm bg-slate-100 border border-slate-200" />
-            <span className="text-[9px] font-semibold text-slate-500">No acierto</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-slate-300 text-[10px] font-black">—</span>
-            <span className="text-[9px] font-semibold text-slate-500">Sin escrutar</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
