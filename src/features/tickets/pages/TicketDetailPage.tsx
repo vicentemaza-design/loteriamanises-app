@@ -517,40 +517,13 @@ function QuinielaDetailView({
   return (
     <div className="flex flex-col gap-3 px-4 pt-4 pb-4">
 
-      {/* ── Resumen ── */}
-      <div className="flex divide-x divide-slate-100 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-        <div className="flex-1 px-4 py-3">
-          <p className="text-[8.5px] font-black uppercase tracking-wider text-slate-400">{systemLabel}</p>
-          <p className="mt-0.5 text-[13px] font-bold text-manises-blue">
-            <span className="text-[20px] font-black">{betsCount}</span>{' '}
-            {betsCount === 1 ? 'columna' : 'columnas'}
+      {/* ── Etiqueta de sistema + mejor resultado ── */}
+      <div className="flex items-center justify-between px-1">
+        <p className="text-[10px] font-semibold text-slate-500">{systemLabel}</p>
+        {isScrutinized && (
+          <p className={cn('text-[10px] font-bold', bestAciertos >= 10 ? 'text-emerald-600' : 'text-slate-500')}>
+            Mejor resultado: <span className="font-black">{bestAciertos} aciertos</span>
           </p>
-        </div>
-        {isScrutinized ? (
-          <>
-            <div className="px-4 py-3 text-center">
-              <p className="text-[8.5px] font-black uppercase tracking-wider text-slate-400">
-                {numCols > 1 ? 'Mejor res.' : 'Resultado'}
-              </p>
-              <p className={cn('mt-0.5 text-[20px] font-black leading-none', bestAciertos >= 10 ? 'text-emerald-600' : 'text-slate-700')}>
-                {bestAciertos}
-                <span className="text-[11px] font-bold text-slate-400 ml-0.5">ac.</span>
-              </p>
-            </div>
-            <div className="px-4 py-3 text-center">
-              <p className="text-[8.5px] font-black uppercase tracking-wider text-slate-400">
-                {numCols > 1 ? 'Premio total' : 'Premio'}
-              </p>
-              <p className={cn('mt-0.5 text-[16px] font-black leading-none', prize > 0 ? 'text-emerald-600' : 'text-slate-300')}>
-                {prize > 0 ? formatCurrency(prize) : '—'}
-              </p>
-            </div>
-          </>
-        ) : (
-          <div className="flex items-center gap-1.5 px-4">
-            <Clock className="h-3 w-3 text-slate-300" />
-            <span className="text-[9px] font-semibold text-slate-400">Pendiente</span>
-          </div>
         )}
       </div>
 
