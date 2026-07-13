@@ -60,7 +60,7 @@ export function GameReceiptVisual({ ticket, selectionSummary }: GameReceiptVisua
       // Si numbers tiene longitud > 0, asumimos que son los resultados mapeados (1, 0->X, 2).
       const picks = numbers.length > 0 
         ? numbers.map(n => n === 0 ? 'X' : n.toString())
-        : (ticket.metadata?.picks as string[]) || [];
+        : ticket.metadata?.picks ?? [];
 
       return (
         <div className="py-4">
@@ -79,7 +79,7 @@ export function GameReceiptVisual({ ticket, selectionSummary }: GameReceiptVisua
     case 'loteria-nacional':
     case 'navidad':
     case 'nino': {
-      const displayNumber = (ticket.metadata?.nationalNumber as string) || numbers.join('');
+      const displayNumber = ticket.metadata?.nationalNumber || numbers.join('');
       return (
         <div className="py-4">
           <NationalDecimoCard ticket={ticket} displayNumber={displayNumber} />

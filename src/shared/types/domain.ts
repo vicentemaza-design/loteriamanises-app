@@ -27,6 +27,12 @@ export type GameType =
   | 'eurodreams'
   | 'quiniela';
 
+export interface QuinielaFixtureItem {
+  id: number;
+  home: string;
+  away: string;
+}
+
 export interface TicketMetadata {
   technicalMode?: string;
   systemFamily?: string;
@@ -39,9 +45,15 @@ export interface TicketMetadata {
   nationalNumber?: string;
   nationalQuantity?: number;
   nationalDrawLabel?: string;
+  /** Serie del décimo — needed for CRAPI transmission to SELAE (Nacional). */
+  nationalSerie?: string;
+  /** Fracción del décimo — needed for CRAPI transmission to SELAE (Nacional). */
+  nationalFraccion?: string;
   playStatus?: 'pending' | 'processing' | 'confirmed' | 'scrutinized' | 'rejected';
+  rejectionReason?: string;
   confirmedAt?: string;
   holderName?: string;
+  holderNif?: string;
   deliveryMode?: 'custody' | 'shipping';
   shippingAddress?: {
     name: string;
@@ -54,10 +66,18 @@ export interface TicketMetadata {
   };
   shippingStatus?: string;
   seriesFractions?: Array<{ serie: string; fraccion: string }>;
-  holderNif?: string;
   betsCount?: number;
   dayPrizes?: Record<string, number>;
-  [key: string]: unknown;
+  // Quiniela
+  picks?: string[];
+  quinielaFixtures?: QuinielaFixtureItem[];
+  quinielaSystem?: string;
+  quinielaModalidad?: string;
+  // Primitiva — Joker side-bet
+  jokerEnabled?: boolean;
+  jokerBoletos?: Array<{ jokerNumber: string }>;
+  // Euromillones — El Millón code ranges
+  millonBoletos?: Array<{ codeFrom: string; codeTo: string }>;
 }
 
 export interface LotteryGame {

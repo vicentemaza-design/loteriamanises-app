@@ -530,7 +530,7 @@ export function NationalDetailContent({ ticket }: { ticket: Ticket }) {
     <div className="mx-4 mt-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3">
       <p className="text-[11px] font-black text-red-700">Pedido rechazado</p>
       <p className="text-[10px] font-semibold text-red-600">
-        {(ticket.metadata?.rejectionReason as string | undefined) ?? 'El pedido no pudo tramitarse.'}
+        {ticket.metadata?.rejectionReason ?? 'El pedido no pudo tramitarse.'}
       </p>
     </div>
   );

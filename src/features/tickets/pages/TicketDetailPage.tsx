@@ -14,7 +14,7 @@ import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { getGameIdentity } from '@/shared/lib/game-identity';
 import { getBusinessDate } from '@/shared/lib/timezone';
 import { formatDate, formatCurrency, cn } from '@/shared/lib/utils';
-import type { Ticket } from '@/shared/types/domain';
+import type { Ticket, QuinielaFixtureItem } from '@/shared/types/domain';
 import { useState } from 'react';
 
 // ── Boleto grouping constants ──────────────────────────────────────────────
@@ -172,7 +172,7 @@ function DetailHeader({ ticket, game }: { ticket: Ticket; game: (typeof LOTTERY_
       {(() => {
         const isEuro = ticket.gameType === 'euromillones';
         const isPrim = ticket.gameType === 'primitiva';
-        const jokerBoletos = (ticket.metadata?.jokerBoletos as Array<{ jokerNumber: string }> | undefined) ?? [];
+        const jokerBoletos = ticket.metadata?.jokerBoletos ?? [];
         const hasJoker = jokerBoletos.length > 0;
         const fourCols = isEuro || (isPrim && hasJoker);
         const prizeCell = (
@@ -362,8 +362,8 @@ function BoletoGroupsView({
   const prize = ticket.prize ?? 0;
 
   const boletosSize = BOLETO_SIZE[ticket.gameType] ?? bets.length;
-  const millonBoletos = (ticket.metadata?.millonBoletos as Array<{ codeFrom: string; codeTo: string }> | undefined) ?? [];
-  const jokerBoletos = (ticket.metadata?.jokerBoletos as Array<{ jokerNumber: string }> | undefined) ?? [];
+  const millonBoletos = ticket.metadata?.millonBoletos ?? [];
+  const jokerBoletos = ticket.metadata?.jokerBoletos ?? [];
   const hasJoker = jokerBoletos.length > 0;
 
   return (
@@ -455,8 +455,6 @@ function BoletoGroupsView({
 
 // ── Quiniela detail ────────────────────────────────────────────────────────
 
-type QuinielaFixtureItem = { id: number; home: string; away: string };
-
 function QuinielaDetailView({
   ticket,
   result,
@@ -467,10 +465,10 @@ function QuinielaDetailView({
   const status      = getPlayStatus(ticket);
   const isScrutinized = status === 'scrutinized';
   const prize       = ticket.prize ?? 0;
-  const picks       = (ticket.metadata?.picks as string[]) ?? [];
-  const fixtures    = (ticket.metadata?.quinielaFixtures as QuinielaFixtureItem[]) ?? [];
-  const system      = (ticket.metadata?.quinielaSystem as string) ?? 'simple';
-  const modalidad   = ticket.metadata?.quinielaModalidad as string | undefined;
+  const picks       = ticket.metadata?.picks ?? [];
+  const fixtures    = ticket.metadata?.quinielaFixtures ?? [];
+  const system      = ticket.metadata?.quinielaSystem ?? 'simple';
+  const modalidad   = ticket.metadata?.quinielaModalidad;
   const betsCount   = getBetsCount(ticket);
 
   const regularPicks = picks.slice(0, 14);
@@ -843,8 +841,8 @@ function SemanalDetail({
   const bets = getBets(ticket);
   const totalPrize = ticket.prize ?? 0;
   const boletosSize = BOLETO_SIZE[ticket.gameType];
-  const millonBoletos = (ticket.metadata?.millonBoletos as Array<{ codeFrom: string; codeTo: string }> | undefined) ?? [];
-  const jokerBoletos = (ticket.metadata?.jokerBoletos as Array<{ jokerNumber: string }> | undefined) ?? [];
+  const millonBoletos = ticket.metadata?.millonBoletos ?? [];
+  const jokerBoletos = ticket.metadata?.jokerBoletos ?? [];
 
   // First draw open by default
   const [openDays, setOpenDays] = useState<string[]>([dayResults[0]?.date ?? '']);
