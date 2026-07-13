@@ -44,8 +44,9 @@ export interface ResultDto {
   // Primitiva: Joker number (7 digits) + its own scrutiny
   joker?: string;
   jokerScrutiny?: ScrutinyCategory[];
-  // Euromillones: El Millón code (e.g. 'KQT27854')
+  // Euromillones: El Millón code (e.g. 'KQT27854') + its own scrutiny
   elMillon?: string;
+  elMillonScrutiny?: ScrutinyCategory[];
 }
 
 export type GetResultsResponseDto = ApiResponseDto<ResultDto[]>;

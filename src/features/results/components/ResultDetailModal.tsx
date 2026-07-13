@@ -453,6 +453,22 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                 </section>
               )}
 
+              {/* ── Escrutinio El Millón (Euromillones only) ── */}
+              {result.gameType === 'euromillones' && result.elMillonScrutiny && result.elMillonScrutiny.length > 0 && (
+                <section>
+                  <SectionTitle
+                    icon={
+                      <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-white shrink-0">
+                        <span className="text-[7px] font-black leading-none">M</span>
+                      </div>
+                    }
+                    label="El Millón"
+                    color="#f59e0b"
+                  />
+                  <ScrutinyTable scrutiny={result.elMillonScrutiny} gameColor="#f59e0b" gameType="euromillones" />
+                </section>
+              )}
+
               {/* ── Comprobador + Listado de premios (national) ── */}
               {isNational && (
                 <section className="flex flex-col gap-6">

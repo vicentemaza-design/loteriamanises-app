@@ -60,6 +60,9 @@ export const MOCK_RESULTS_DATA: ResultDto[] = [
       { category: '12ª (2 + 1)', winners: 450453, prizePerWinner: 6.75 },
       { category: '13ª (2 + 0)', winners: 945158, prizePerWinner: 4.61 },
     ],
+    elMillonScrutiny: [
+      { category: 'Ganador', winners: 1, prizePerWinner: 1000000 },
+    ],
   },
 
   // 3. BONOLOTO (Martes, 9 de junio de 2026)
@@ -177,6 +180,7 @@ export const MOCK_RESULTS_DATA: ResultDto[] = [
     date: '2026-06-05T21:00:00.000Z',
     numbers: [5, 10, 18, 26, 33],
     stars: [1, 11],
+    elMillon: 'PPT54812',
     drawId: 'Sorteo 1788',
     jackpotNext: 85000000,
     nextDrawDate: '2026-06-09T21:00:00.000Z',
@@ -194,6 +198,9 @@ export const MOCK_RESULTS_DATA: ResultDto[] = [
       { category: '11ª (1 + 2)', winners: 11234, prizePerWinner: 9 },
       { category: '12ª (2 + 1)', winners: 61234, prizePerWinner: 6 },
       { category: '13ª (2 + 0)', winners: 167890, prizePerWinner: 4 },
+    ],
+    elMillonScrutiny: [
+      { category: 'Ganador', winners: 0, prizePerWinner: 1000000 },
     ],
   },
 
@@ -499,6 +506,9 @@ export const MOCK_RESULTS_DATA: ResultDto[] = [
       { category: '9ª (3 + 1)', winners: 24100, prizePerWinner: 11.20 },
       { category: '12ª (2 + 1)', winners: 380200, prizePerWinner: 5.80 },
     ],
+    elMillonScrutiny: [
+      { category: 'Ganador', winners: 1, prizePerWinner: 1000000 },
+    ],
   },
 
   // EUROMILLONES — 15 Abr 2026 (sorteo 2 de demo-euro-subscription)
@@ -521,6 +531,9 @@ export const MOCK_RESULTS_DATA: ResultDto[] = [
       { category: '5ª (4 + 1)', winners: 612, prizePerWinner: 104.20 },
       { category: '9ª (3 + 1)', winners: 26800, prizePerWinner: 12.50 },
       { category: '12ª (2 + 1)', winners: 412000, prizePerWinner: 6.20 },
+    ],
+    elMillonScrutiny: [
+      { category: 'Ganador', winners: 1, prizePerWinner: 1000000 },
     ],
   },
 ];
