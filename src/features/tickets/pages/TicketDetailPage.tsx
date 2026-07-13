@@ -609,11 +609,6 @@ function QuinielaDetailView({
                           {ac} aciertos
                         </p>
                       )}
-                      {isWin && (
-                        <p className="text-[7.5px] font-black text-emerald-600 leading-tight">
-                          {formatCurrency(cpriz)}
-                        </p>
-                      )}
                     </th>
                   );
                 })}
