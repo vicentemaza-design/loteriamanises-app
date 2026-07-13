@@ -90,6 +90,8 @@ export interface Ticket {
   orderId?: string;
   metadata?: TicketMetadata;
   createdAt: string;
+  /** ID oficial SELAE — CRAPI transmission ID (Nacional) o resguardo ID (otros juegos). */
+  selaeTicketId?: string;
 }
 
 export interface UserProfile {

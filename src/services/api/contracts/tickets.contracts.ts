@@ -24,6 +24,13 @@ export interface TicketDto {
   orderId?: string;
   metadata?: TicketMetadata;
   createdAt: string;
+  /**
+   * ID oficial de SELAE para este ticket.
+   * - Lotería Nacional: ID de transmisión CRAPI registrado en el sistema central de SELAE.
+   * - Otros juegos (Primitiva, Euromillones…): ID del resguardo emitido por SELAE al registrar la apuesta.
+   * Sin este campo, el ticket NO tiene validez legal ante SELAE.
+   */
+  selaeTicketId?: string;
 }
 
 export type GetTicketsResponseDto = ApiResponseDto<TicketDto[]>;

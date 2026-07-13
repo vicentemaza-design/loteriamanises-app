@@ -47,7 +47,9 @@ export interface SubmitPlaySessionItemDto extends CreateBetRequestDto {
 export interface SubmitPlaySessionRequestDto {
   sessionId: string;
   userId: string;
-  paymentMethod: 'wallet';
+  paymentMethod: 'wallet' | 'card';
+  /** COF card token (Redsys Ds_Merchant_Identifier) — required when paymentMethod = 'card'. */
+  cardToken?: string;
   totalAmount: number;
   items: SubmitPlaySessionItemDto[];
 }
@@ -58,6 +60,18 @@ export interface SubmitPlaySessionResponseDto {
   ticketIds?: string[];
   failures?: Array<{ draftId: string; reason: string }>;
   error?: string;
+  /**
+   * SELAE CRAPI confirmation ID for Lotería Nacional transmissions.
+   * Returned by SELAE when the sale is successfully registered in their central system.
+   * Required for legal traceability of preprinted décimos.
+   */
+  selaeTransmissionId?: string;
+  /**
+   * SELAE resguardo ID for non-Nacional bets (Primitiva, Euromillones, Quiniela…).
+   * Issued by SELAE when the bet is officially registered.
+   * This is the legally valid proof of participation.
+   */
+  selaeResguardoId?: string;
 }
 
 export interface QuotePlayRequestDto {
