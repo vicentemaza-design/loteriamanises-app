@@ -666,26 +666,19 @@ function QuinielaDetailView({
 
                     {/* Columnas de pronóstico */}
                     {columns.map((col, ci) => {
-                      const pick = col[idx] ?? '?';
-                      const hit  = isScrutinized && rSign != null && pick === rSign;
-                      const miss = isScrutinized && rSign != null && !hit;
+                      const pick  = col[idx] ?? '?';
+                      const hit   = isScrutinized && rSign != null && pick === rSign;
                       const cpriz = columnPrizes[ci] ?? 0;
                       return (
                         <td
                           key={ci}
                           className={cn(
                             'py-2.5 text-center align-middle text-[14px] font-black',
-                            hit  ? 'bg-emerald-100 text-emerald-700' :
-                            miss ? (idx % 2 === 0 ? 'text-slate-300' : 'text-slate-300') :
-                            cpriz > 0 ? 'bg-emerald-50' : '',
-                            miss && cpriz > 0 ? 'bg-emerald-50 text-slate-300' : ''
+                            hit    ? 'bg-emerald-100 text-emerald-700' :
+                            cpriz > 0 ? 'bg-emerald-50' : ''
                           )}
                         >
-                          {miss ? (
-                            <span className={cn(signColor(pick), 'opacity-30')}>{pick}</span>
-                          ) : (
-                            <span className={hit ? '' : signColor(pick)}>{pick}</span>
-                          )}
+                          <span className={hit ? '' : signColor(pick)}>{pick}</span>
                         </td>
                       );
                     })}
