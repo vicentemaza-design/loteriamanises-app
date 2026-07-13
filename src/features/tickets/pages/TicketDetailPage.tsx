@@ -601,8 +601,8 @@ function QuinielaDetailView({
                       className={cn('py-1.5 text-center', isWin ? 'bg-emerald-50 border-l-2 border-r-2 border-emerald-200' : 'bg-slate-50')}
                       style={{ width: W_COL, minWidth: W_COL }}
                     >
-                      <p className={cn('text-[9px] font-black', isWin ? 'text-emerald-700' : 'text-manises-blue')}>
-                        C{ci + 1}{isWin ? ' 🏆' : ''}
+                      <p className={cn('flex items-center justify-center gap-0.5 text-[9px] font-black', isWin ? 'text-emerald-700' : 'text-manises-blue')}>
+                        C{ci + 1}{isWin && <Trophy className="h-3 w-3 text-emerald-600 ml-0.5" />}
                       </p>
                       {ac != null && (
                         <p className={cn('text-[7.5px] font-bold leading-tight mt-0.5', ac >= 10 ? 'text-emerald-600' : 'text-slate-400')}>
