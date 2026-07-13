@@ -26,7 +26,10 @@ export interface ResultDto {
   reintegros?: number[];
   decimoPrice?: number;
   jackpotNext?: number;
+  /** Internal app draw identifier. */
   drawId?: string;
+  /** SELAE's official draw identifier — used to cross-reference with SELAE systems and CRAPI. */
+  selaeDrawId?: string;
   scrutiny?: ScrutinyCategory[];
   nextDrawDate?: string;
   ultimas4cifras?: string[];

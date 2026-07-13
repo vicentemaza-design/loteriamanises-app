@@ -63,6 +63,7 @@ function mapSessionItemToBetDto(item: SubmitPlaySessionItemDto): CreateBetReques
   return {
     gameId: item.gameId,
     gameType: item.gameType,
+    selaeGameCode: item.selaeGameCode,
     numbers: item.numbers,
     stars: item.stars,
     selections: item.selections,

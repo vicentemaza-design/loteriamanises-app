@@ -120,10 +120,75 @@ Los modelos de dominio principales están en `src/shared/types/domain.ts`:
 
 - `GameType` — tipos de juego soportados
 - `BetMode` — modos de apuesta (`simple | multiple | reduced | nacional | ...`)
-- `Ticket` — ticket de compra
+- `SelaeGameCode` — códigos internos de SELAE (`LNAC | LNNA | PRIM | EURO | ...`)
+- `Ticket` — ticket de compra (incluye `selaeTicketId`)
 - `UserProfile` — perfil de usuario con saldo
 - `WalletMovement` — movimiento de cartera
 - `LotteryGame` — configuración de un juego (catálogo)
+
+---
+
+## Integración con SELAE
+
+SELAE (Sociedad Estatal Loterías y Apuestas del Estado) es el organismo oficial que gestiona todos los sorteos. La integración tiene **dos flujos distintos** según el tipo de juego.
+
+### Flujo A — Lotería Nacional (décimos preimpresos)
+
+```
+Usuario compra → Backend (MySQL) → CRAPI → SELAE Sistema Central
+```
+
+La administración tiene décimos físicos. Al vender uno online:
+
+1. El backend registra la venta en MySQL
+2. Transmite la operación a SELAE vía **CRAPI** (protocolo propietario, credenciales facilitadas por SELAE al dar de alta el punto de venta)
+3. SELAE devuelve un `selaeTransmissionId` que confirma el registro
+
+El frontend envía `serie` y `fraccion` en `SubmitPlaySessionItemDto` — son los identificadores físicos del décimo que CRAPI necesita.
+
+### Flujo B — Otros juegos (Primitiva, Euromillones, Quiniela…)
+
+```
+Usuario apuesta → Backend → SELAE (API revendedor autorizado) → MySQL
+```
+
+La apuesta debe registrarse en SELAE primero para ser válida. SELAE devuelve un **resguardo** (`selaeResguardoId`) que es la prueba legal de participación.
+
+> Requiere autorización de SELAE para venta online — licencia independiente de la administración física.
+
+### Campos SELAE en los contratos
+
+| Campo | DTO | Descripción |
+|-------|-----|-------------|
+| `selaeGameCode` | `CreateBetRequestDto` | Código SELAE del juego (`LNAC`, `PRIM`…) para enrutar al subsistema correcto |
+| `selaeTransmissionId` | `SubmitPlaySessionResponseDto` | Confirmación CRAPI para décimos Nacional |
+| `selaeResguardoId` | `SubmitPlaySessionResponseDto` | ID de apuesta registrada en SELAE (otros juegos) |
+| `selaeTicketId` | `TicketDto` | ID oficial SELAE almacenado en MySQL para trazabilidad |
+| `selaeDrawId` | `ResultDto` | ID de sorteo SELAE para cruzar resultados con su sistema |
+
+### Códigos de juego SELAE
+
+| `SelaeGameCode` | Juego |
+|----------------|-------|
+| `LNAC` | Lotería Nacional (Jueves + Sábado) |
+| `LNNA` | Sorteo de Navidad |
+| `LNNI` | Sorteo del Niño |
+| `PRIM` | La Primitiva |
+| `ELGR` | El Gordo de la Primitiva |
+| `BONO` | Bonoloto |
+| `EURO` | Euromillones |
+| `QUNI` | La Quiniela |
+| `EDRE` | EuroDreams |
+
+### Obtención de resultados
+
+SELAE no tiene API pública documentada. Opciones para el backend:
+
+| Opción | Fiabilidad | Coste |
+|--------|-----------|-------|
+| [loteriasapi.com](https://loteriasapi.com) | Alta — tercero dedicado | ~€30/mes |
+| Scraping loteriasyapuestas.es | Media — puede cambiar sin aviso | Gratis |
+| RSS oficial | Baja — cobertura parcial | Gratis |
 
 ---
 

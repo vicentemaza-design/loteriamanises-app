@@ -1,4 +1,4 @@
-import type { BetMode, GameType } from '@/shared/types/domain';
+import type { BetMode, GameType, SelaeGameCode } from '@/shared/types/domain';
 import type { ScheduleMode } from '@/features/play/config/draw-schedule.config';
 import type { CreateBetRequestDto } from '../contracts/play.contracts';
 
@@ -10,6 +10,7 @@ import type { CreateBetRequestDto } from '../contracts/play.contracts';
 export interface BuildBetDtoInput {
   gameId: string;
   gameType: GameType;
+  selaeGameCode: SelaeGameCode;
   numbers?: number[];
   stars?: number[];
   selections?: Array<{ id: number; val: string | null }>;
@@ -31,6 +32,7 @@ export const playMapper = {
     return {
       gameId: params.gameId,
       gameType: params.gameType,
+      selaeGameCode: params.selaeGameCode,
       numbers: params.numbers,
       stars: params.stars,
       selections: params.selections,

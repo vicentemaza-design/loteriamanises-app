@@ -1,4 +1,4 @@
-import type { BetMode, GameType } from '@/shared/types/domain';
+import type { BetMode, GameType, SelaeGameCode } from '@/shared/types/domain';
 import type { ApiResponseDto } from './common.contracts';
 import type { ScheduleMode } from '@/features/play/config/draw-schedule.config';
 
@@ -9,6 +9,12 @@ import type { ScheduleMode } from '@/features/play/config/draw-schedule.config';
 export interface CreateBetRequestDto {
   gameId: string;
   gameType: GameType;
+  /**
+   * SELAE internal game code — required for the backend to route the bet to the
+   * correct SELAE subsystem (CRAPI for Nacional, authorized API for other games).
+   * See SelaeGameCode in domain.ts for the full mapping.
+   */
+  selaeGameCode: SelaeGameCode;
   numbers?: number[];
   stars?: number[];
   // For special games like Quiniela

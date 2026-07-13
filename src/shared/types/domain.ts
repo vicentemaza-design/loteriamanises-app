@@ -1,5 +1,21 @@
 export type BetMode = 'simple' | 'multiple' | 'reduced' | 'nacional' | 'multiple_direct' | 'reduced_official';
 
+/**
+ * SELAE internal game codes — used to route bets and transmissions to the correct
+ * SELAE subsystem (terminal, CRAPI, or authorized reseller API).
+ * Must be included in every bet request so the backend does not need to derive it.
+ */
+export type SelaeGameCode =
+  | 'LNAC'  // Lotería Nacional (Jueves + Sábado)
+  | 'LNNA'  // Lotería de Navidad
+  | 'LNNI'  // Lotería del Niño
+  | 'PRIM'  // La Primitiva
+  | 'ELGR'  // El Gordo de la Primitiva
+  | 'BONO'  // Bonoloto
+  | 'EURO'  // Euromillones
+  | 'QUNI'  // La Quiniela
+  | 'EDRE'; // EuroDreams
+
 export type GameType =
   | 'primitiva'
   | 'bonoloto'
