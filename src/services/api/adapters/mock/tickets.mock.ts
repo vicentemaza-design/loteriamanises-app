@@ -312,6 +312,52 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
     createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
   },
 
+  // ── EuroDreams escrutado — 5ª categoría (3 aciertos, sin sueño) — 10 € ───
+  {
+    id: 'demo-eurodreams-won',
+    userId: 'demo-user',
+    gameId: 'eurodreams',
+    gameType: 'eurodreams',
+    numbers: [3, 15, 23, 31, 38, 40],
+    stars: [3],
+    drawDate: '2026-07-13',
+    status: 'won',
+    prize: 10.00,
+    price: 2.00,
+    metadata: {
+      playStatus: 'scrutinized',
+      confirmedAt: new Date('2026-07-12T10:00:00.000Z').toISOString(),
+      orderTotalPrice: 2.00,
+      betsCount: 1,
+      holderName: 'Rafael Sanchis Penadés',
+      holderNif: '25252925Z',
+    },
+    createdAt: new Date('2026-07-12T10:00:00.000Z').toISOString(),
+  },
+
+  // ── EuroDreams pendiente — próximo sorteo jue 17 jul 2026 ─────────────────
+  {
+    id: 'demo-eurodreams-pending',
+    userId: 'demo-user',
+    gameId: 'eurodreams',
+    gameType: 'eurodreams',
+    numbers: [7, 19, 24, 33, 36, 40],
+    stars: [4],
+    drawDate: '2026-07-17',
+    status: 'pending',
+    prize: 0,
+    price: 2.00,
+    metadata: {
+      playStatus: 'confirmed',
+      confirmedAt: new Date('2026-07-16T09:15:00.000Z').toISOString(),
+      orderTotalPrice: 2.00,
+      betsCount: 1,
+      holderName: 'Rafael Sanchis Penadés',
+      holderNif: '25252925Z',
+    },
+    createdAt: new Date('2026-07-16T09:15:00.000Z').toISOString(),
+  },
+
   // ── Quiniela escrutada (columna sencilla) ─────────────────────────────────
   {
     id: 'demo-quiniela-sencilla',

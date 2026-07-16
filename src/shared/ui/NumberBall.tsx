@@ -101,3 +101,34 @@ export const StarNumberBall = React.forwardRef<HTMLDivElement, StarNumberBallPro
   }
 );
 StarNumberBall.displayName = 'StarNumberBall';
+
+// ── DreamNumberBall — EuroDreams "número sueño" (violeta, sin forma de estrella) ──
+export interface DreamNumberBallProps extends React.HTMLAttributes<HTMLDivElement> {
+  number: number;
+  size?: NumberSize;
+}
+
+export const DreamNumberBall = React.forwardRef<HTMLDivElement, DreamNumberBallProps>(
+  ({ number, size = 'md', className, ...rest }, ref) => {
+    const sizeClasses = size === 'sm' ? 'w-8 h-8 text-[11px]' : 'w-10 h-10 text-[13px]';
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'relative flex items-center justify-center shrink-0 select-none rounded-full font-black text-white',
+          'bg-violet-600 shadow-[0_2px_10px_rgba(124,58,237,0.45)]',
+          sizeClasses,
+          className
+        )}
+        {...rest}
+      >
+        {/* Nube sutil de fondo */}
+        <svg viewBox="0 0 24 24" className="absolute inset-0 w-full h-full opacity-[0.15]" aria-hidden="true">
+          <path fill="white" d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
+        </svg>
+        <span className="relative z-10 font-black">{number}</span>
+      </div>
+    );
+  }
+);
+DreamNumberBall.displayName = 'DreamNumberBall';

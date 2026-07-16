@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trophy, TrendingUp, Calendar, Search, ChevronLeft } from 'lucide-react';
+import { X, Trophy, TrendingUp, Calendar, Search, ChevronLeft, Sparkles } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
-import { NumberBall, NumberBallLabeled, StarNumberBall } from '@/shared/ui/NumberBall';
+import { NumberBall, NumberBallLabeled, StarNumberBall, DreamNumberBall } from '@/shared/ui/NumberBall';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { formatCurrency } from '@/shared/lib/utils';
@@ -350,12 +350,22 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                         <NumberBall key={i} number={n as number} variant="default" />
                       ))}
                     </div>
-                    {/* Stars — separate row */}
+                    {/* Stars / Sueño — separate row */}
                     {result.stars && result.stars.length > 0 && (
-                      <div className="flex gap-2 justify-center border-t pt-3" style={{ borderColor: `${game.color}20` }}>
-                        {result.stars.map((s, i) => (
-                          <StarNumberBall key={`s-${i}`} number={s} />
-                        ))}
+                      <div className="flex gap-2 justify-center items-center border-t pt-3" style={{ borderColor: `${game.color}20` }}>
+                        {result.gameType === 'eurodreams' ? (
+                          <>
+                            <Sparkles className="h-3.5 w-3.5 text-violet-400 shrink-0" />
+                            {result.stars.map((s, i) => (
+                              <DreamNumberBall key={`s-${i}`} number={s} />
+                            ))}
+                            <span className="text-[9px] font-black uppercase tracking-widest text-violet-500">Sueño</span>
+                          </>
+                        ) : (
+                          result.stars.map((s, i) => (
+                            <StarNumberBall key={`s-${i}`} number={s} />
+                          ))
+                        )}
                       </div>
                     )}
                     {/* El Millón (Euromillones only) */}
@@ -407,7 +417,12 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                         return (
                           <>
                             <p className="text-[26px] font-black text-emerald-600 leading-none tabular-nums">{value}</p>
-                            <p className="text-[11px] font-black text-emerald-600 leading-none mt-0.5 uppercase tracking-wide">{unit}</p>
+                            <p className="text-[11px] font-black text-emerald-600 leading-none mt-0.5 uppercase tracking-wide">
+                              {game.isMonthly ? `${unit}/MES` : unit}
+                            </p>
+                            {game.isMonthly && (
+                              <p className="text-[8.5px] font-bold text-emerald-500/70 leading-none mt-0.5">durante 30 años</p>
+                            )}
                           </>
                         );
                       })()}

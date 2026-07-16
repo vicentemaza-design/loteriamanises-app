@@ -21,7 +21,8 @@ export function BallSelection({
   medium = false,
   compact = false,
 }: BallSelectionProps) {
-  const isGordo = type === 'gordo';
+  const isGordo  = type === 'gordo';
+  const isDream  = type === 'eurodreams';
   const ballSize  = large ? 'h-9 w-9' : medium ? 'h-8 w-8' : compact ? 'h-[22px] w-[22px]' : 'h-7 w-7';
   const ballText  = large ? 'text-[13px] font-black' : medium ? 'text-[12px] font-bold' : compact ? 'text-[9px] font-bold' : 'text-[11px] font-bold';
   const gap       = large ? 'gap-2' : medium ? 'gap-1.5' : compact ? 'gap-1' : 'gap-1.5';
@@ -45,10 +46,10 @@ export function BallSelection({
         </div>
       ))}
 
-      {/* ── Separador + estrellas (Euromillones / El Gordo) ─────── */}
+      {/* ── Separador + número especial (Euromillones estrellas / EuroDreams sueño / El Gordo) ── */}
       {stars && stars.length > 0 && (
         <>
-          {/* Icono estrella separador */}
+          {/* Icono separador según juego */}
           <div className="flex shrink-0 items-center justify-center">
             {isGordo ? (
               <div className={cn(
@@ -56,33 +57,27 @@ export function BallSelection({
                 large ? 'h-9 w-9' : medium ? 'h-7 w-7' : compact ? 'h-[18px] w-[18px]' : 'h-6 w-6',
                 'border-amber-200 bg-amber-50',
               )}>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#d97706"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={large ? 'h-5 w-5' : medium ? 'h-4 w-4' : compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5'}
-                >
+                <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  className={large ? 'h-5 w-5' : medium ? 'h-4 w-4' : compact ? 'h-2.5 w-2.5' : 'h-3.5 w-3.5'}>
                   <rect x="3" y="3" width="18" height="18" rx="2" />
                 </svg>
               </div>
+            ) : isDream ? (
+              /* Nube violeta para EuroDreams */
+              <svg viewBox="0 0 24 24" fill="#7c3aed" opacity="0.25"
+                className={large ? 'h-8 w-8' : medium ? 'h-7 w-7' : compact ? 'h-4 w-4' : 'h-6 w-6'}>
+                <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
+              </svg>
             ) : (
-              <svg
-                viewBox="0 0 24 24"
-                fill="#fef3c7"
-                stroke="#d97706"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-                className={large ? 'h-8 w-8' : medium ? 'h-7 w-7' : compact ? 'h-4 w-4' : 'h-6 w-6'}
-              >
+              /* Estrella dorada para Euromillones */
+              <svg viewBox="0 0 24 24" fill="#fef3c7" stroke="#d97706" strokeWidth="1.5" strokeLinejoin="round"
+                className={large ? 'h-8 w-8' : medium ? 'h-7 w-7' : compact ? 'h-4 w-4' : 'h-6 w-6'}>
                 <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
               </svg>
             )}
           </div>
 
-          {/* Números de estrellas — círculos ámbar */}
+          {/* Bola del número especial */}
           {stars.map((s) => (
             <div
               key={s}
@@ -90,9 +85,13 @@ export function BallSelection({
                 'flex shrink-0 items-center justify-center rounded-full border transition-all',
                 ballSize,
                 ballText,
-                matchedStars.includes(s)
-                  ? 'border-amber-500 bg-amber-500 text-white shadow-[0_0_12px_rgba(245,158,11,0.35)]'
-                  : 'border-amber-300 bg-amber-50 text-amber-700'
+                isDream
+                  ? matchedStars.includes(s)
+                    ? 'border-violet-600 bg-violet-600 text-white shadow-[0_0_12px_rgba(124,58,237,0.4)]'
+                    : 'border-violet-300 bg-violet-50 text-violet-700'
+                  : matchedStars.includes(s)
+                    ? 'border-amber-500 bg-amber-500 text-white shadow-[0_0_12px_rgba(245,158,11,0.35)]'
+                    : 'border-amber-300 bg-amber-50 text-amber-700'
               )}
             >
               {s}

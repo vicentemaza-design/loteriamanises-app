@@ -112,7 +112,8 @@ export const LOTTERY_GAMES: LotteryGame[] = [
     description: '20.000 € al mes de por vida',
     frequency: 'Lun y Jue',
     isMonthly: true,
-    productionPhase1: false,
+    selectionRange: { numbers: { min: 6, max: 6, total: 40 }, stars: { min: 1, max: 1, total: 5 } },
+    productionPhase1: true,
   },
   {
     id: 'quiniela',
