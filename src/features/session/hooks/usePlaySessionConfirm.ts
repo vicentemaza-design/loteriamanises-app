@@ -5,13 +5,27 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePlaySession } from './usePlaySession';
 import { usePlaySessionSummary } from './usePlaySessionSummary';
 import { notifyPurchaseConfirmed } from '../lib/cart-toast';
+import type { GameType, SelaeGameCode } from '@/shared/types/domain';
 import type { PlayDraft } from '../types/session.types';
+
+const GAME_TYPE_TO_SELAE: Record<GameType, SelaeGameCode> = {
+  'primitiva':       'PRIM',
+  'bonoloto':        'BONO',
+  'euromillones':    'EURO',
+  'gordo':           'ELGR',
+  'loteria-nacional':'LNAC',
+  'navidad':         'LNNA',
+  'nino':            'LNNI',
+  'eurodreams':      'EDRE',
+  'quiniela':        'QUNI',
+};
 
 function mapDraftToDto(draft: PlayDraft) {
   const base = {
     draftId: draft.id,
     gameId: draft.gameId,
     gameType: draft.gameType,
+    selaeGameCode: GAME_TYPE_TO_SELAE[draft.gameType],
     mode: draft.mode,
     price: draft.totalPrice,
     drawDate: draft.drawDate,

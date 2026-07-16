@@ -63,15 +63,38 @@ La autenticación (Google OAuth) va por Firebase SDK directamente. No hay endpoi
   gameId: string           // 'euromillones' | 'primitiva' | 'bonoloto' | 'gordo' | 'eurodreams' | ...
   gameType: GameType
   date: string             // ISO 8601
-  numbers: number[]        // bolas principales
+  numbers: Array<number | string>  // bolas principales (string para Quiniela: '1','X','2')
   stars?: number[]         // estrellas / clave / sueño (Euromillones, Gordo, EuroDreams)
   complementario?: number  // Primitiva / Bonoloto
   reintegro?: number       // Primitiva / Bonoloto
-  firstPrizeNumber?: string   // Lotería Nacional: número completo 1er premio
-  secondPrizeNumber?: string
-  reintegros?: number[]    // Lotería Nacional: array de dígitos
-  decimoPrice?: number     // 3 (jueves) | 6 (sábado)
+  drawId?: string          // identificador interno del sorteo
+  selaeDrawId?: string     // identificador oficial SELAE (para CRAPI y trazabilidad)
   jackpotNext?: number     // bote próximo sorteo en EUR
+  nextDrawDate?: string    // ISO 8601 — fecha del próximo sorteo
+  scrutiny?: ScrutinyCategory[]  // { category, winners, prizePerWinner, isMonthly? }
+
+  // Lotería Nacional (jueves / sábado)
+  firstPrizeNumber?: string
+  secondPrizeNumber?: string
+  reintegros?: number[]
+  decimoPrice?: number     // 3 (jueves) | 6 (sábado)
+  ultimas4cifras?: string[]
+  ultimas3cifras?: string[]
+  ultimas2cifras?: string[]
+
+  // Navidad / El Niño — premios extendidos (el FE los renderiza si están presentes)
+  thirdPrizeNumber?: string
+  fourthPrizeNumbers?: string[]
+  fifthPrizeNumbers?: string[]
+  secondPrizeNumbers?: string[]  // El Niño: dos segundos premios
+
+  // Primitiva — Joker
+  joker?: string           // número Joker (7 dígitos), ej: '1234567'
+  jokerScrutiny?: ScrutinyCategory[]
+
+  // Euromillones — El Millón
+  elMillon?: string        // código El Millón (8 chars), ej: 'KQT27854'
+  elMillonScrutiny?: ScrutinyCategory[]
 }
 ```
 

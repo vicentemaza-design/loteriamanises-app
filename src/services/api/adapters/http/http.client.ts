@@ -2,6 +2,10 @@ import type { ApiErrorDto } from '../../contracts/common.contracts';
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
 
+if (!BASE_URL && import.meta.env.VITE_API_PROVIDER === 'http') {
+  throw new Error('[HttpAdapter] VITE_API_BASE_URL is required when VITE_API_PROVIDER=http. Set it in .env.local.');
+}
+
 /**
  * Returns the Bearer token for authenticated requests.
  *
