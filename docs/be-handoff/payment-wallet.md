@@ -11,7 +11,7 @@
 ```
 Usuario confirma sesión
   → usePlaySessionConfirm.confirm()
-  → POST /api/play/session (SubmitPlaySessionRequestDto)
+  → POST /play-sessions (SubmitPlaySessionRequestDto)
   → BE valida saldo, recalcula importe, confirma jugadas
   → Responde SubmitPlaySessionResponseDto
   → FE muestra éxito / error / confirmación parcial
@@ -24,7 +24,7 @@ El FE **no descuenta saldo localmente**. Espera que BE devuelva `success: true` 
 ```
 Usuario introduce importe
   → useWallet.topUp(amount)
-  → POST /api/wallet/topup { userId, amount }
+  → POST /users/{userId}/wallet/top-up { amount }
   → BE procesa el cargo (pasarela externa)
   → Responde { success: boolean, newBalance: number }
   → FE llama refreshProfile() si success
@@ -47,8 +47,6 @@ El contrato define `paymentMethod: 'wallet'` como único valor. No hay tarjeta d
 
 ## Pendiente de integración BE
 
-- **Favoritos** (`FavoritesPage`): usa datos hardcodeados en `premium-demo.ts`. Requiere `GET /api/favorites?userId={uid}` y hook dedicado.
-- **Abonos** (`SubscriptionsPage`): mismo caso. Requiere `GET /api/subscriptions?userId={uid}`.
+- **Favoritos** (`FavoritesPage`): usa datos hardcodeados en `premium-demo.ts`. Requiere `GET /favorites?userId={uid}` y hook dedicado. Sin adaptador HTTP todavía.
+- **Abonos** (`SubscriptionsPage`): el `HttpAdapter` tiene los endpoints de subscriptions implementados (`GET /subscriptions`, `POST /subscriptions`, etc. — ver `api-endpoints.md`). Pendiente de conectar el hook de UI.
 - **Cobro de premios** (`WithdrawalsPage`): página existente, sin hook real. Requiere flujo IBAN + validación documental.
-
-Estas tres áreas **no tienen adaptador HTTP ni Firebase implementado** en el FE. Son pantallas de placeholder. El FE deberá crear hooks cuando BE defina los contratos.

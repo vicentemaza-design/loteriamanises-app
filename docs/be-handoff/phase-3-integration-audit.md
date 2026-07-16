@@ -4,6 +4,8 @@
 **Fecha:** 2026-04-29  
 **Tipo:** Documento de handoff técnico. Solo lectura. Sin cambios de código.
 
+> **⚠️ Rutas canónicas:** Las URLs definitivas que usa el `HttpAdapter` están en [`api-endpoints.md`](api-endpoints.md). Este documento usa algunas rutas de una arquitectura anterior (`/api/me/...`) en sus secciones 5, 7 y 9 con fines ilustrativos del flujo — consulta siempre `api-endpoints.md` para las rutas reales.
+
 > Este documento complementa los contratos ya publicados en `docs/be-handoff/`.  
 > Puede entregarse directamente al equipo backend como punto de entrada unificado para la fase 3.
 
@@ -60,13 +62,11 @@ Todos los contratos están en `src/services/api/contracts/`. Cambiar su forma re
 ### HttpAdapter — estado actual
 
 ```
-src/services/api/adapters/http/play.http.ts   → stub, devuelve error fijo
-src/services/api/adapters/http/wallet.http.ts → stub vacío
-src/services/api/adapters/http/tickets.http.ts → stub vacío
-src/services/api/adapters/http/results.http.ts → stub vacío
+src/services/api/adapters/http/http.adapter.ts → implementado
+src/services/api/adapters/http/http.client.ts  → cliente HTTP base (fetch + headers)
 ```
 
-La implementación del `HttpAdapter` es la única tarea FE bloqueante para conectar backend REST.
+El `HttpAdapter` está implementado y cubre todos los endpoints de Fase 1: results, tickets, play-sessions, wallet y subscriptions. Para activarlo: `VITE_API_PROVIDER=http` en `.env.local`. Ver rutas exactas en `api-endpoints.md`.
 
 ---
 
@@ -173,9 +173,7 @@ src/services/api/contracts/wallet.contracts.ts
 | Contrato | Campos |
 |----------|--------|
 | `WalletBalanceDto` | `{ balance: number; userId: string }` |
-| `WalletMovementDto` | `{ id, userId, type: 'deposit'\|'bet'\|'prize', amount, description, createdAt }` |
-
-**Nota:** El tipo `'withdrawal'` está en el dominio FE (`src/shared/types/domain.ts`) pero el DTO solo tiene `'deposit' \| 'bet' \| 'prize'`. Hay que añadir `'withdrawal'` al DTO cuando se active el flujo de retirada. Coordinar con FE antes.
+| `WalletMovementDto` | `{ id, userId, type: 'deposit'\|'bet'\|'prize'\|'withdrawal'\|'adjustment'\|'cancellation', amount, description, createdAt, orderId?, balanceAfter?, details? }` |
 
 ### 4.3 Tickets
 
@@ -245,7 +243,7 @@ Todos los endpoints protegidos usan `Authorization: Bearer <firebase_id_token>` 
 ### 5.1 Perfil y Auth
 
 ```
-GET  /api/me/profile
+GET  /auth/me
 ```
 Respuesta: `UserProfileDto`  
 Acción BE: Leer documento de usuario desde la base de datos interna. El perfil demo tiene `balance: 47.50`.
@@ -253,7 +251,7 @@ Acción BE: Leer documento de usuario desde la base de datos interna. El perfil 
 ### 5.2 Play Session
 
 ```
-POST /api/sessions/submit
+POST /play-sessions
 ```
 Body: `SubmitPlaySessionRequestDto`  
 Respuesta: `SubmitPlaySessionResponseDto`
@@ -269,27 +267,27 @@ Acciones obligatorias del BE:
 ### 5.3 Tickets
 
 ```
-GET /api/me/tickets?status=pending|won|lost&page=0&limit=20
-GET /api/me/tickets/:ticketId
+GET /users/{userId}/tickets
+GET /tickets/:id
 ```
-Respuesta: `GetTicketsResponseDto` / `GetTicketByIdResponseDto`
+Respuesta: `TicketDto[]` / `TicketDto`
 
 ### 5.4 Wallet
 
 ```
-GET  /api/me/wallet/balance
+GET  /users/{userId}/wallet/balance
 ```
-Respuesta: `GetBalanceResponseDto`  
+Respuesta: `WalletBalanceDto`  
 Nota: En demo el balance es simulado. En producción debe reflejar el saldo real con validación de saldo mínimo operativo.
 
 ```
-GET  /api/me/wallet/movements?page=0&limit=20&type=deposit|bet|prize
+GET  /users/{userId}/wallet/movements
 ```
-Respuesta: `GetMovementsResponseDto`  
-Nota: Paginación obligatoria. El FE actualmente no la tiene implementada — coordinar antes de activar.
+Respuesta: `WalletMovementDto[]`  
+Nota: El FE actualmente no tiene paginación implementada — coordinar antes de activar.
 
 ```
-POST /api/me/wallet/topup
+POST /users/{userId}/wallet/top-up
 ```
 Body: `{ amount: number }`  
 Respuesta: `{ success: boolean; newBalance: number }`  
@@ -298,8 +296,8 @@ Respuesta: `{ success: boolean; newBalance: number }`
 ### 5.5 Resultados
 
 ```
-GET /api/results/latest
-GET /api/results/:drawId
+GET /results
+GET /results/:id
 ```
 Respuesta: `ResultDto[]` / `ResultDto`  
 Nota: La fuente de datos de resultados oficiales requiere acuerdo con el proveedor de datos. En demo, el backend puede servir datos de ejemplo con el mismo formato.
@@ -315,11 +313,11 @@ Estos endpoints **no deben implementarse** hasta que el cliente y el equipo lega
 El frontend tiene un mock de 600 ítems hardcoded (`national-showcase.mock.ts`). La integración real requiere acceso al catálogo de disponibilidad de décimos, cuya fuente y condiciones de acceso deben definirse con el proveedor de servicios de administración de lotería.
 
 ```
-GET /api/national/draws          — Sorteos disponibles y configuración
-GET /api/national/showcase       — Disponibilidad por sorteo (paginado, con stock)
-POST /api/national/reserve       — Reserva temporal de número (requiere acuerdo proveedor)
-POST /api/national/checkout      — Confirmación de compra de Nacional
-POST /api/national/shipping      — Preferencia de entrega — sujeto a operativa mensajería
+GET /national/draws          — Sorteos disponibles y configuración
+GET /national/showcase       — Disponibilidad por sorteo (paginado, con stock)
+POST /national/reserve       — Reserva temporal de número (requiere acuerdo proveedor)
+POST /national/checkout      — Confirmación de compra de Nacional
+POST /national/shipping      — Preferencia de entrega — sujeto a operativa mensajería
 ```
 
 Campos de disponibilidad Nacional que el backend debe servir (basado en `NationalShowcaseItem`):
@@ -337,7 +335,7 @@ badge        string?   'ultimo' | 'destacado' | 'agotandose'
 ### 6.2 Retirada de Fondos
 
 ```
-POST /api/me/wallet/withdrawal
+POST /users/{userId}/wallet/withdrawal
 ```
 Body: `{ amount: number; iban: string }`  
 **Estado: No implementar. Requiere verificación KYC, validación de IBAN con proveedor bancario, y cumplimiento de normativa de juego responsable.**
@@ -345,9 +343,9 @@ Body: `{ amount: number; iban: string }`
 ### 6.3 KYC y Límites de Juego Responsable
 
 ```
-POST /api/me/kyc/initiate
-GET  /api/me/limits
-PUT  /api/me/limits
+POST /kyc/initiate
+GET  /users/{userId}/limits
+PUT  /users/{userId}/limits
 ```
 **Estado: No implementar. Requiere proveedor de verificación de identidad aprobado y diseño del flujo regulatorio.**
 
@@ -363,16 +361,16 @@ Estas validaciones deben existir en el servidor. No pueden delegarse al cliente.
 
 | Validación | Endpoint | Descripción |
 |-----------|---------|-------------|
-| Precio recalculado | `POST /sessions/submit` | Recalcular desde `gameId` + selección + tablas internas. Rechazar si difiere. |
-| Saldo suficiente | `POST /sessions/submit` | Leer balance antes de procesar. No confiar en el balance que el FE muestra. |
-| Sorteo abierto | `POST /sessions/submit` | Cada `drawDate` debe ser futura y el sorteo en estado `'open'`. Zona horaria `Europe/Madrid`. |
-| JWT válido | Todos los endpoints `/me/*` | Verificar firma del token Firebase. Extraer `uid` del claim, no del body. |
-| `userId` del payload coincide con JWT | `POST /sessions/submit` | Si difieren, rechazar con `403`. |
-| `betsCount` coherente con selección | `POST /sessions/submit` | Recalcular desde modo + longitud de arrays. Ver `docs/be-handoff/pricing-validation.md`. |
-| `decimoPrice` de Nacional validado | `POST /sessions/submit` (Nacional) | El precio del décimo lo define el catálogo interno del BE, no el payload del FE. |
+| Precio recalculado | `POST /play-sessions` | Recalcular desde `gameId` + selección + tablas internas. Rechazar si difiere. |
+| Saldo suficiente | `POST /play-sessions` | Leer balance antes de procesar. No confiar en el balance que el FE muestra. |
+| Sorteo abierto | `POST /play-sessions` | Cada `drawDate` debe ser futura y el sorteo en estado `'open'`. Zona horaria `Europe/Madrid`. |
+| JWT válido | Todos los endpoints | Verificar firma del token Firebase. Extraer `uid` del claim, no del body. |
+| `userId` del payload coincide con JWT | `POST /play-sessions` | Si difieren, rechazar con `403`. |
+| `betsCount` coherente con selección | `POST /play-sessions` | Recalcular desde modo + longitud de arrays. Ver `docs/be-handoff/pricing-validation.md`. |
+| `decimoPrice` de Nacional validado | `POST /play-sessions` (Nacional) | El precio del décimo lo define el catálogo interno del BE, no el payload del FE. |
 | Stock disponible en Nacional | `POST /national/checkout` | Verificar disponibilidad en el momento de confirmar, no en el de browsing. |
-| `sessionId` idempotente | `POST /sessions/submit` | Si se recibe el mismo `sessionId` dos veces, devolver la respuesta original sin duplicar tickets. |
-| Código de colectivo válido y vigente | `GET /api/company/resolve/:code` | Validar expiración y cupo. No devolver datos de colectivo expirado. |
+| `sessionId` idempotente | `POST /play-sessions` | Si se recibe el mismo `sessionId` dos veces, devolver la respuesta original sin duplicar tickets. |
+| Código de colectivo válido y vigente | `GET /company/resolve/:code` | Validar expiración y cupo. No devolver datos de colectivo expirado. |
 
 ---
 
@@ -382,9 +380,9 @@ Estas validaciones deben existir en el servidor. No pueden delegarse al cliente.
 
 El FE calcula el precio con `quotePlay()` en `src/features/play/lib/play-matrix.ts`. Si el backend implementa su lógica de pricing de forma independiente sin paridad de pruebas, los precios diferirán. **Acción:** Acordar un conjunto de casos de prueba de paridad antes de Sprint 2. El FE ya tiene la lógica documentada en `docs/be-handoff/pricing-validation.md`.
 
-### R2 — HttpAdapter vacío puede romper silenciosamente (riesgo alto)
+### R2 — HttpAdapter activo pero BE no implementado (riesgo alto)
 
-Cambiar `apiProvider` a `'http'` en `runtime.ts` antes de implementar el `HttpAdapter` provoca que `createApiClient()` lance excepción y toda la app quede inoperativa. El cambio de adaptador debe hacerse solo cuando el `HttpAdapter` tenga implementados al menos los métodos del Sprint 1.
+El `HttpAdapter` está implementado en el FE. Cambiar a `VITE_API_PROVIDER=http` sin tener el BE listo provocará errores de red en toda la app. El cambio de adaptador debe hacerse solo cuando el BE tenga operativos al menos los endpoints del Sprint 1 (results, tickets, wallet/balance, play-sessions).
 
 ### R3 — WalletMovementDto sin tipo 'withdrawal' (riesgo medio)
 
@@ -415,13 +413,13 @@ El documento `README.md` del handoff menciona que la Fase 2 requiere soportar ar
 Objetivo: sustituir `MockAdapter` por `HttpAdapter` con datos persistidos. Sin dinero real.
 
 ```
-A-01  Implementar HttpAdapter en FE (src/services/api/adapters/http/)
-A-02  GET  /api/me/profile            — perfil y balance demo
-A-03  GET  /api/me/wallet/balance     — saldo en tiempo real
-A-04  GET  /api/me/wallet/movements   — histórico paginado (page, limit, type)
-A-05  GET  /api/me/tickets            — listado de tickets persistidos
-A-06  GET  /api/me/tickets/:ticketId  — detalle de ticket
-A-07  GET  /api/results/latest        — resultados de ejemplo (formato oficial)
+A-01  HttpAdapter FE ya implementado (src/services/api/adapters/http/http.adapter.ts)
+A-02  GET  /auth/me                          — perfil y balance demo
+A-03  GET  /users/{userId}/wallet/balance    — saldo en tiempo real
+A-04  GET  /users/{userId}/wallet/movements  — histórico de movimientos
+A-05  GET  /users/{userId}/tickets           — listado de tickets persistidos
+A-06  GET  /tickets/:id                      — detalle de ticket
+A-07  GET  /results                          — resultados de ejemplo (formato oficial)
 ```
 
 ### Fase B — Persistencia de Jugadas
@@ -429,7 +427,7 @@ A-07  GET  /api/results/latest        — resultados de ejemplo (formato oficial
 Objetivo: el flujo de confirmación de jugada escribe en base de datos real.
 
 ```
-B-01  POST /api/sessions/submit       — confirmar sesión, descontar saldo demo, crear tickets
+B-01  POST /play-sessions             — confirmar sesión, descontar saldo demo, crear tickets
 B-02  Recálculo de precio server-side — paridad de pruebas con FE validada
 B-03  Validación de sorteo abierto    — tabla de sorteos en BD interna
 B-04  Idempotencia por sessionId      — evitar tickets duplicados
@@ -440,9 +438,9 @@ B-04  Idempotencia por sessionId      — evitar tickets duplicados
 Objetivo: saldo y movimientos gestionados por el backend con historial real.
 
 ```
-C-01  POST /api/me/wallet/topup       — recarga demo (sin pasarela externa)
-C-02  Creación de movimiento 'bet'    — al confirmar jugada
-C-03  Creación de movimiento 'deposit'— al recargar
+C-01  POST /users/{userId}/wallet/top-up  — recarga demo (sin pasarela externa)
+C-02  Creación de movimiento 'bet'        — al confirmar jugada
+C-03  Creación de movimiento 'deposit'    — al recargar
 C-04  Transacción atómica saldo + movimiento
 ```
 
@@ -451,11 +449,11 @@ C-04  Transacción atómica saldo + movimiento
 Objetivo: el escaparate de Nacional muestra disponibilidad gestionada por backend interno.
 
 ```
-D-01  GET  /api/national/draws        — sorteos disponibles y config
-D-02  GET  /api/national/showcase     — disponibilidad paginada por sorteo
+D-01  GET  /national/draws        — sorteos disponibles y config
+D-02  GET  /national/showcase     — disponibilidad paginada por sorteo
 D-03  Añadir paginación al hook FE useNationalShowcase() — coordinar con FE
-D-04  POST /api/national/reserve      — sujeto a acuerdo con proveedor
-D-05  POST /api/national/checkout     — integrado en B-01 si es via submitPlaySession
+D-04  POST /national/reserve      — sujeto a acuerdo con proveedor
+D-05  POST /national/checkout     — integrado en B-01 si es via submitPlaySession
 ```
 
 ### Fase E — Flujos sujetos a validación legal y proveedor
@@ -564,7 +562,7 @@ Estas decisiones **no tienen respuesta técnica**. Deben resolverse antes de pla
 Basado en `src/features/company/data/company-demo.mock.ts`. Este contrato es una propuesta — requiere validación con cliente antes de implementar.
 
 ```
-GET /api/company/resolve/:code
+GET /company/resolve/:code
 
 Respuesta propuesta:
 {

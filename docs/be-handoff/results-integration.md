@@ -6,7 +6,7 @@
 - Hook: `src/features/results/hooks/useResults.ts` → `createApiClient()` → `client.results.getLatest()`
 - Render: `src/features/results/pages/ResultsPage.tsx`
 
-El FE está preparado para recibir datos reales. Solo requiere que BE implemente `GET /api/results/latest`.
+El FE está preparado para recibir datos reales. Solo requiere que BE implemente `GET /results`.
 
 ## Campos renderizados por el FE
 
