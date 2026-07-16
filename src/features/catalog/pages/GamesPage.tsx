@@ -146,6 +146,79 @@ function ChristmasCard({ onClick }: { onClick: () => void }) {
   );
 }
 
+// ─── Sub-component: El Niño Featured Card ─────────────────────────────────────
+function NinoCard({ onClick }: { onClick: () => void }) {
+  const year = (() => {
+    const now = new Date();
+    return now.getMonth() === 0 && now.getDate() <= 6 ? now.getFullYear() : now.getFullYear() + 1;
+  })();
+  return (
+    <motion.div
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
+      onClick={onClick}
+      className="relative overflow-hidden rounded-[2.2rem] bg-gradient-to-br from-[#0d1b3e] via-[#1e3a8a] to-[#0c1a35] border border-blue-400/15 p-6 flex justify-between items-center cursor-pointer shadow-xl h-44 group"
+    >
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0d1b3e] via-[#0d1b3e]/60 to-transparent" />
+      <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-8 w-28 h-28 bg-indigo-400/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Stars decoration */}
+      <div className="absolute inset-0 opacity-25 pointer-events-none overflow-hidden">
+        <div className="absolute top-3 left-1/3 w-1 h-1 bg-yellow-300 rounded-full animate-pulse" />
+        <div className="absolute top-10 left-1/2 w-1.5 h-1.5 bg-white rounded-full" />
+        <div className="absolute top-5 right-1/3 w-1 h-1 bg-yellow-200 rounded-full animate-ping [animation-duration:3.5s]" />
+        <div className="absolute bottom-10 left-12 w-1 h-1 bg-white rounded-full" />
+        <div className="absolute bottom-6 right-1/4 w-1.5 h-1.5 bg-yellow-300 rounded-full animate-bounce [animation-duration:4.5s]" />
+        <div className="absolute top-8 right-12 w-1 h-1 bg-white rounded-full" />
+      </div>
+
+      <div className="relative flex flex-col justify-between h-full z-10">
+        <div>
+          <div className="flex items-center gap-1.5 mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-blue-300 fill-current" />
+            <span className="text-[9px] font-black text-blue-300 tracking-[0.2em] uppercase">Lotería de</span>
+          </div>
+          <h3 className="text-2xl font-black text-white leading-none tracking-tight mb-2">
+            EL NIÑO
+          </h3>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-white text-sm font-extrabold tracking-tight">200.000 € <span className="text-slate-400 text-xs font-normal">al décimo</span></span>
+            <span className="text-blue-300/90 text-[10px] font-bold uppercase tracking-wider">Ya disponible</span>
+          </div>
+        </div>
+
+        <button className="flex items-center justify-center gap-1 bg-gradient-to-r from-blue-500 to-indigo-400 text-[11px] font-black text-white px-4 py-2 rounded-xl mt-3 w-fit shadow-[0_4px_12px_rgba(59,130,246,0.25)] border border-blue-300/20 group-hover:scale-[1.03] duration-200">
+          COMPRAR
+          <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
+        </button>
+      </div>
+
+      {/* Crown + date ball */}
+      <div className="relative flex items-center justify-center h-full w-24 shrink-0 z-10 select-none">
+        <div className="flex flex-col items-center group-hover:scale-105 group-hover:rotate-6 transition-all duration-300">
+          {/* Crown */}
+          <div className="flex items-end justify-center gap-[2px] mb-0.5">
+            <div className="w-1.5 h-3 bg-gradient-to-t from-yellow-600 to-yellow-400 rounded-t-sm" />
+            <div className="w-1.5 h-4 bg-gradient-to-t from-yellow-600 to-yellow-300 rounded-t-sm" />
+            <div className="w-1.5 h-3 bg-gradient-to-t from-yellow-600 to-yellow-400 rounded-t-sm" />
+          </div>
+          {/* Date ball */}
+          <div
+            className="w-14 h-14 rounded-full shadow-xl flex flex-col items-center justify-center p-1 text-center relative overflow-hidden border border-blue-300/60"
+            style={{ background: 'radial-gradient(circle at 35% 28%, #dbeafe, #3b82f6 48%, #1e3a8a 100%)' }}
+          >
+            <div className="absolute top-1.5 left-2.5 w-4 h-2 rounded-full bg-white/40 rotate-[-20deg]" />
+            <span className="text-[15px] font-black text-white leading-none relative z-10">6</span>
+            <span className="text-[8px] font-black text-blue-100 uppercase tracking-tight leading-none mt-0.5 relative z-10">ENE</span>
+            <span className="text-[7.5px] font-bold text-blue-200 leading-none mt-0.5 relative z-10">{year}</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // ─── Sub-component: Euromillions Featured Card ────────────────────────────────
 function EuromillionsCard({ jackpot, nextDraw, onClick }: { jackpot: number; nextDraw: string; onClick: () => void }) {
   const formatMillions = (value: number) => {
@@ -359,7 +432,12 @@ export function GamesPage() {
           <ChristmasCard onClick={() => navigate('/play/loteria-navidad')} />
         </motion.div>
 
-        {/* 3. Euromillions Featured Banner */}
+        {/* 3. El Niño Featured Banner */}
+        <motion.div variants={itemAnimation}>
+          <NinoCard onClick={() => navigate('/play/loteria-nino')} />
+        </motion.div>
+
+        {/* 4. Euromillions Featured Banner */}
         {euromillonesGame && (
           <motion.div variants={itemAnimation}>
             <EuromillionsCard
@@ -370,7 +448,7 @@ export function GamesPage() {
           </motion.div>
         )}
 
-        {/* 4. Todos los sorteos Title & Separator */}
+        {/* 5. Todos los sorteos Title & Separator */}
         <motion.div variants={itemAnimation} className="mt-2">
           <div className="flex items-center gap-3">
             <span className="text-[10px] font-black text-manises-blue/40 tracking-[0.25em] uppercase whitespace-nowrap">
@@ -380,7 +458,7 @@ export function GamesPage() {
           </div>
         </motion.div>
 
-        {/* 5. Todos los sorteos List (Original Card Grid style) */}
+        {/* 6. Todos los sorteos List (Original Card Grid style) */}
         <motion.div
           variants={listAnimation}
           className="grid grid-cols-1 gap-2"

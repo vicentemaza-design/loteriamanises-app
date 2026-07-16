@@ -23,16 +23,17 @@ interface CartItem {
 interface NavidadCheckoutFlowProps {
   showcaseItems: NationalShowcaseItem[];
   initialDeliveryMode?: DeliveryMode;
+  drawId?: string;
   onConfirm: (items: Array<{ number: string; quantity: number; deliveryMode: DeliveryMode }>) => void;
 }
 
 // ─── Navidad décimo mini-card ─────────────────────────────────────────────────
 
-function NavidadDecimoCard({ number, compact }: { number: string; active?: boolean; compact?: boolean }) {
+function NavidadDecimoCard({ number, compact, drawId }: { number: string; active?: boolean; compact?: boolean; drawId?: string }) {
   return (
     <div className="relative shrink-0">
       <NationalTicketThumbnail
-        drawId="navidad"
+        drawId={drawId ?? 'navidad'}
         number={number}
         className={compact ? 'w-14 shadow-sm' : 'w-[88px] shadow-sm'}
       />
@@ -52,6 +53,7 @@ function NavidadDecimoCard({ number, compact }: { number: string; active?: boole
 export function NavidadCheckoutFlow({
   showcaseItems,
   initialDeliveryMode = 'custody',
+  drawId = 'navidad',
   onConfirm,
 }: NavidadCheckoutFlowProps) {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -230,7 +232,7 @@ export function NavidadCheckoutFlow({
                     : 'border-slate-100 bg-white'
                 )}
               >
-                <NavidadDecimoCard number={item.number} active={isInCart} compact />
+                <NavidadDecimoCard number={item.number} active={isInCart} compact drawId={drawId} />
 
                 <div className="min-w-0 flex-1">
                   <p className="text-[1.1rem] font-black leading-none tracking-widest text-manises-blue tabular-nums">
@@ -318,7 +320,7 @@ export function NavidadCheckoutFlow({
                         onClick={() => handleTicketTap(item.number)}
                       >
                         <NationalTicketThumbnail
-                          drawId="navidad"
+                          drawId={drawId}
                           className="w-[100px] rounded-sm shadow-md"
                         />
 

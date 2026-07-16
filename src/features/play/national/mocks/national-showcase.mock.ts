@@ -69,6 +69,18 @@ export const NATIONAL_SPECIAL_SHOWCASE_ITEMS: NationalShowcaseItem[] = BASE_NATI
   badge: item.badge,
 }));
 
+export const NATIONAL_NINO_SHOWCASE_ITEMS: NationalShowcaseItem[] = BASE_NATIONAL_NUMBERS.map((item) => ({
+  number: item.number,
+  serie: item.serie,
+  fraccion: item.fraccion,
+  available: item.available,
+  drawId: 'nino' as const,
+  drawLabel: 'El Niño',
+  decimoPrice: 20,
+  stockLabel: resolveStockLabel(item.available),
+  badge: item.badge,
+}));
+
 export const DEFAULT_NATIONAL_SEARCH_STATE: NationalSearchState = {
   query: '',
   sortBy: 'featured',
@@ -77,9 +89,7 @@ export const DEFAULT_NATIONAL_SEARCH_STATE: NationalSearchState = {
 };
 
 export function getNationalShowcaseItems(drawId: NationalDrawId): NationalShowcaseItem[] {
-  if (drawId === 'especial') {
-    return NATIONAL_SPECIAL_SHOWCASE_ITEMS;
-  }
-
+  if (drawId === 'especial') return NATIONAL_SPECIAL_SHOWCASE_ITEMS;
+  if (drawId === 'nino') return NATIONAL_NINO_SHOWCASE_ITEMS;
   return NATIONAL_SHOWCASE_ITEMS.filter((item) => item.drawId === drawId);
 }

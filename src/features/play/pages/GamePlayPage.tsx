@@ -3,6 +3,7 @@ import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { Button } from '@/shared/ui/Button';
 import { NationalPlayPage } from './NationalPlayPage';
 import { NavidadPlayPage } from './NavidadPlayPage';
+import { NinoPlayPage } from './NinoPlayPage';
 import { QuinielaPlayPage } from './QuinielaPlayPage';
 import { NumericGamePlayPage } from './NumericGamePlayPage';
 
@@ -53,7 +54,8 @@ export function GamePlayPage() {
   }
 
   if (game.type === 'navidad') return <NavidadPlayPage game={game} />;
-  if (game.type === 'loteria-nacional' || game.type === 'nino') return <NationalPlayPage game={game} />;
+  if (game.type === 'nino') return <NinoPlayPage game={game} />;
+  if (game.type === 'loteria-nacional') return <NationalPlayPage game={game} />;
   if (game.id === 'quiniela') return <QuinielaPlayPage game={game} />;
   return <NumericGamePlayPage game={game} />;
 }

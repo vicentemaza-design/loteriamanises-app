@@ -1,6 +1,6 @@
 import type { GameType } from '@/shared/types/domain';
 
-export type NationalDrawId = 'jueves' | 'sabado' | 'especial';
+export type NationalDrawId = 'jueves' | 'sabado' | 'especial' | 'nino';
 
 export interface NationalDrawConfig {
   id: NationalDrawId;
