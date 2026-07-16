@@ -52,6 +52,14 @@ export const DRAW_SCHEDULE_CONFIG: Partial<Record<GameType, DrawScheduleConfig>>
     supportsMultipleDrawSelection: true,
     supportsSubscription: false,
   },
+  eurodreams: {
+    drawWeekdays: [1, 4], // Lunes y Jueves
+    drawHour: 21,
+    drawMinute: 0,
+    maxWeeksSelectable: DEFAULT_MAX_WEEKS_SELECTABLE,
+    supportsMultipleDrawSelection: true,
+    supportsSubscription: false,
+  },
   'loteria-nacional': {
     drawWeekdays: [4, 6],
     drawHour: 12,
