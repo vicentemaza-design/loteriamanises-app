@@ -178,8 +178,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   const starValues = startsAtZero
     ? Array.from({ length: totalStars }, (_, i) => i)
     : Array.from({ length: totalStars }, (_, i) => i + 1);
-  const secondarySelectionLabel = game.type === 'gordo' ? 'Clave' : game.type === 'primitiva' ? 'Reintegro' : 'Estrellas';
-  const secondarySelectionPrefix = game.type === 'gordo' ? 'Clave' : game.type === 'primitiva' ? 'Reintegro' : 'Estrella';
+  const secondarySelectionLabel = game.type === 'gordo' ? 'Clave' : game.type === 'primitiva' ? 'Reintegro' : game.type === 'eurodreams' ? 'Sueño' : 'Estrellas';
+  const secondarySelectionPrefix = game.type === 'gordo' ? 'Clave' : game.type === 'primitiva' ? 'Reintegro' : game.type === 'eurodreams' ? 'Sueño' : 'Estrella';
   const supportedReducedNumbers = currentReductionSystem?.supportedNumbers ?? [];
   const isSupportedReducedSelection = mode !== 'reduced' || supportedReducedNumbers.length === 0 || supportedReducedNumbers.includes(selectedNumbers.length);
 
@@ -424,7 +424,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
         ? prev.filter((x) => x !== n)
         : prev.length < maxStars
           ? [...prev, n].sort((a, b) => a - b)
-          : (toast.error(`Máximo ${maxStars} estrellas`), prev)
+          : (toast.error(`Máximo ${maxStars} ${game.type === 'eurodreams' ? 'sueño' : 'estrellas'}`), prev)
     );
   };
 
@@ -548,7 +548,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
 
   const handlePlayReduced = (systemId: string) => {
     if (!selectedNumbers.length || !hasValidStarSelection) {
-      toast.error('Completa tu selección de números y estrellas');
+      toast.error(`Completa tu selección de números y ${game.type === 'eurodreams' ? 'sueño' : 'estrellas'}`);
       return;
     }
 
@@ -710,9 +710,10 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     if (mode === 'reduced' && !isSupportedReducedSelection) return 'Completa la reducida';
     const numsLeft = minNums - selectedNumbers.length;
     const starsLeft = minStars - selectedStars.length;
-    if (numsLeft > 0 && starsLeft > 0) return `Elige ${numsLeft} números y ${starsLeft} ${starsLeft === 1 ? 'estrella' : 'estrellas'}`;
+    const starWord = game.type === 'eurodreams' ? 'sueño' : starsLeft === 1 ? 'estrella' : 'estrellas';
+    if (numsLeft > 0 && starsLeft > 0) return `Elige ${numsLeft} números y ${starsLeft} ${starWord}`;
     if (numsLeft > 0) return `Elige ${numsLeft} ${numsLeft === 1 ? 'número' : 'números'}`;
-    if (starsLeft > 0) return `Elige ${starsLeft} ${starsLeft === 1 ? 'estrella' : 'estrellas'}`;
+    if (starsLeft > 0) return `Elige ${starsLeft} ${starWord}`;
     return 'Completa la jugada';
   })();
 
@@ -720,7 +721,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     ? 'Elige cómo quieres jugar arriba'
     : isMulticolumnMode
       ? 'Completa al menos una apuesta'
-      : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' números' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' estrellas' : ''}`.trim();
+      : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' números' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' ' + (game.type === 'eurodreams' ? 'sueño' : 'estrellas') : ''}`.trim();
 
   return (
     <div
