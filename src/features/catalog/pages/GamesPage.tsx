@@ -322,7 +322,7 @@ function GameCardRow({ game, onClick }: { key?: Key; game: LotteryGame; onClick:
     'loteria-nacional-jueves': loteriaJuevesLuck,
     'loteria-nacional-sabado': loteriaNacionalHero,
     'loteria-navidad': loteriaNavidadHero,
-    'loteria-nino': primitivaJoyV2,
+    'loteria-nino': loteriaNavidadHero,
   };
   const image = imageMap[game.id] ?? joySecondary;
   const isNationalGame = game.id === 'loteria-nacional-jueves' || game.id === 'loteria-nacional-sabado';
@@ -394,8 +394,18 @@ export function GamesPage() {
   const { games } = useLotteryGames();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Filter Christmas/Niño out of the main list as they are highlighted/seasonal
-  const listGames = games.filter(g => g.id !== 'loteria-navidad' && g.id !== 'loteria-nino');
+  // Between Dec 23 (day after Navidad draw) and Jan 6 (El Niño draw), El Niño takes the featured spot
+  const isNinoPeriod = (() => {
+    const now = new Date();
+    const m = now.getMonth();
+    const d = now.getDate();
+    return (m === 11 && d >= 23) || (m === 0 && d <= 6);
+  })();
+
+  // Navidad always in the featured banner; El Niño also when it's the featured seasonal game
+  const listGames = games.filter(g =>
+    g.id !== 'loteria-navidad' && !(isNinoPeriod && g.id === 'loteria-nino')
+  );
 
   // Hardcoded ordering corresponding to the mockup hierarchy
   const gameOrder = [
@@ -406,7 +416,8 @@ export function GamesPage() {
     'gordo',
     'quiniela',
     'loteria-nacional-jueves',
-    'loteria-nacional-sabado'
+    'loteria-nacional-sabado',
+    'loteria-nino',
   ];
 
   const sortedListGames = [...listGames].sort((a, b) => {
@@ -427,14 +438,12 @@ export function GamesPage() {
         animate="show"
         className="px-5 pt-4 flex flex-col gap-5"
       >
-        {/* 2. Christmas Featured Banner */}
+        {/* 2. Seasonal Featured Banner: Navidad until Dec 22, El Niño Dec 23–Jan 6 */}
         <motion.div variants={itemAnimation}>
-          <ChristmasCard onClick={() => navigate('/play/loteria-navidad')} />
-        </motion.div>
-
-        {/* 3. El Niño Featured Banner */}
-        <motion.div variants={itemAnimation}>
-          <NinoCard onClick={() => navigate('/play/loteria-nino')} />
+          {isNinoPeriod
+            ? <NinoCard onClick={() => navigate('/play/loteria-nino')} />
+            : <ChristmasCard onClick={() => navigate('/play/loteria-navidad')} />
+          }
         </motion.div>
 
         {/* 4. Euromillions Featured Banner */}
