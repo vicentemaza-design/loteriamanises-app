@@ -175,6 +175,36 @@ export function TicketsPage() {
 
   const displayed = gameFilter === 'all' ? tabTickets : tabTickets.filter((t) => t.gameId === gameFilter);
 
+  // Agrupa tickets del mismo pedido y juego en una sola tarjeta
+  interface TicketGroup {
+    key: string;
+    representative: Ticket;
+    tickets: Ticket[];
+    uniqueCombinations: number;
+    totalPrice: number;
+    totalPrize: number;
+  }
+
+  const groupedDisplayed = useMemo((): TicketGroup[] => {
+    const groups = new Map<string, Ticket[]>();
+    for (const ticket of displayed) {
+      const key = (ticket.orderId ?? ticket.id) + '::' + ticket.gameId;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(ticket);
+    }
+    return Array.from(groups.entries()).map(([key, grpTickets]) => {
+      const numberSets = new Set(grpTickets.map(t => t.numbers.join(',')));
+      return {
+        key,
+        representative: grpTickets[0],
+        tickets: grpTickets,
+        uniqueCombinations: numberSets.size,
+        totalPrice: grpTickets.reduce((s, t) => s + t.price, 0),
+        totalPrize: grpTickets.reduce((s, t) => s + (t.prize ?? 0), 0),
+      };
+    });
+  }, [displayed]);
+
   function toggleExpand(id: string) {
     setExpandedIds((prev) => {
       const next = new Set(prev);
@@ -191,7 +221,7 @@ export function TicketsPage() {
     if (cards.length > 0) {
       gsap.fromTo(cards, { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.06, duration: 0.55, ease: 'power2.out', clearProps: 'all' });
     }
-  }, { scope: containerRef, dependencies: [tab, isLoading, displayed.length] });
+  }, { scope: containerRef, dependencies: [tab, isLoading, groupedDisplayed.length] });
 
   return (
     <>
@@ -280,7 +310,7 @@ export function TicketsPage() {
             <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
               <p className="text-xs font-bold text-red-600">{error}</p>
             </div>
-          ) : displayed.length === 0 ? (
+          ) : groupedDisplayed.length === 0 ? (
             <div className="pt-12">
               <EmptyState
                 icon={<TicketIcon className="h-10 w-10 text-manises-blue/20" />}
@@ -291,7 +321,7 @@ export function TicketsPage() {
             </div>
           ) : (
             <div className="flex flex-col gap-1.5">
-              {tab === 'activas' && displayed.length > 0 && displayed.length < 4 && (
+              {tab === 'activas' && groupedDisplayed.length > 0 && groupedDisplayed.length < 4 && (
                 <div className="order-last mt-1 rounded-[1.5rem] border border-dashed border-manises-blue/15 bg-manises-blue/[0.02] p-4 text-center">
                   <p className="text-[12px] font-black text-manises-blue/50">¿Quieres añadir otra jugada?</p>
                   <button type="button" onClick={() => navigate('/games')} className="mt-2.5 inline-flex items-center gap-1.5 rounded-2xl bg-manises-blue px-5 py-2 text-[10px] font-black uppercase tracking-[0.14em] text-white">
@@ -300,25 +330,42 @@ export function TicketsPage() {
                 </div>
               )}
 
-              {displayed.map((ticket) => {
+              {groupedDisplayed.map(({ key, representative: ticket, tickets: grpTickets, uniqueCombinations, totalPrice, totalPrize }) => {
                 const game = LOTTERY_GAMES.find((g) => g.id === ticket.gameId);
                 if (!game) return null;
 
-                const isExpanded = expandedIds.has(ticket.id);
+                const isExpanded = expandedIds.has(key);
                 const national = isNationalTicket(ticket);
                 const playStatus = getPlayStatus(ticket);
                 const identity = getGameIdentity(game);
-                const orderTotal = getOrderTotal(ticket);
                 const orderDatesSummary = getOrderDatesSummary(ticket);
-                const quantityLabel = getQuantityLabel(ticket);
-                const selectionSummary = getSelectionSummary(ticket);
-                const prize = getPrizeLabel(ticket);
                 const hasMessaging = national && ticket.metadata?.deliveryMode === 'shipping';
-                const hasPrize = ticket.prize != null && ticket.prize > 0;
+                const hasPrize = totalPrize > 0;
+
+                const selectionSummary = uniqueCombinations > 1
+                  ? `${uniqueCombinations} combinaciones`
+                  : getSelectionSummary(ticket);
+
+                const quantityLabel = (() => {
+                  if (national) {
+                    const qty = grpTickets.reduce((s, t) => s + (getNationalQuantity(t) ?? 1), 0);
+                    return `${qty} ${qty === 1 ? 'décimo' : 'décimos'}`;
+                  }
+                  const repDates = getOrderDrawDates(ticket);
+                  const multiDraw = repDates.length > 1;
+                  if (uniqueCombinations > 1 && multiDraw) return `${uniqueCombinations} comb. · ${repDates.length} sorteos`;
+                  if (uniqueCombinations > 1) return `${uniqueCombinations} apuestas`;
+                  if (multiDraw) return `${repDates.length} sorteos`;
+                  const bets = typeof ticket.metadata?.betsCount === 'number' ? ticket.metadata.betsCount : 1;
+                  return `${bets} ${bets === 1 ? 'apuesta' : 'apuestas'}`;
+                })();
+
+                const orderTotal = totalPrice;
+                const prize = hasPrize ? formatCurrency(totalPrize) : (playStatus === 'scrutinized' ? '0,00 €' : '—');
 
                 return (
                   <div
-                    key={ticket.id}
+                    key={key}
                     className="ticket-card relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_1px_6px_rgba(15,23,42,0.05)]"
                   >
                     {/* Left color accent */}
@@ -379,7 +426,7 @@ export function TicketsPage() {
                       {/* Col 4 — Context menu */}
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); toggleExpand(ticket.id); }}
+                        onClick={(e) => { e.stopPropagation(); toggleExpand(key); }}
                         className={cn(
                           'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors',
                           isExpanded
