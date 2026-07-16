@@ -10,4 +10,5 @@ export interface AuthContextType {
   signInDemo: () => void;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }

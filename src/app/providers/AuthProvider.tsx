@@ -1,10 +1,11 @@
-import React, { createContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useRef, useState } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { auth, db } from '@/shared/config/firebase';
 import type { UserProfile } from '@/shared/types/domain';
 import type { AuthContextType } from '@/features/auth/types/auth.types';
+import { createApiClient } from '@/services/api/factory/createApiClient';
 import {
   enableAuthPersistence,
   getFirebaseAuthMessage,
@@ -161,8 +162,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const refreshProfile = useCallback(async () => {
+    if (isDemo) {
+      const client = await createApiClient();
+      const { balance } = await client.wallet.getBalance('demo-user');
+      setProfile((prev: UserProfile | null) => prev ? { ...prev, balance } : null);
+      return;
+    }
+    if (user) {
+      const userDocRef = doc(db, 'users', user.uid);
+      try {
+        const snapshot = await getDoc(userDocRef);
+        if (snapshot.exists()) setProfile(snapshot.data() as UserProfile);
+      } catch (err) {
+        console.error('Error refreshing profile:', err);
+      }
+    }
+  }, [isDemo, user]);
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isDemo, signInWithGoogle, signInDemo, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, isDemo, signInWithGoogle, signInDemo, logout, updateProfile, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
