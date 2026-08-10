@@ -9,6 +9,7 @@ import { Button } from '@/shared/ui/Button';
 import { formatCurrency } from '@/shared/lib/utils';
 import { toast } from 'sonner';
 import { RedsysGateway, type SavedCardData } from './RedsysGateway';
+import { AddCardFlow } from './AddCardFlow';
 
 interface TopUpModalProps {
   isOpen: boolean;
@@ -81,6 +82,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
   const [recentCard, setRecentCard] = useState<SavedCardData | null>(null);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [showTokenizeRedsys, setShowTokenizeRedsys] = useState(false);
+  const [showAddCardFlow, setShowAddCardFlow] = useState(false);
 
   const primaryCard = savedCards[0] ?? null;
   const hasSavedCard = primaryCard !== null;
@@ -104,6 +106,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       setRecentCard(null);
       setShowSavePrompt(false);
       setShowTokenizeRedsys(false);
+      setShowAddCardFlow(false);
     }
   }, [isOpen]);
 
@@ -120,7 +123,11 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       toast.error('El importe máximo de recarga es 500 €.');
       return;
     }
-    if (isNewCard || isRedsysCard) {
+    if (isNewCard) {
+      setShowAddCardFlow(true);
+      return;
+    }
+    if (isRedsysCard) {
       setShowRedsys(true);
       return;
     }
@@ -154,6 +161,27 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
         setShowSavePrompt(true);
       } else {
         // Pago puntual sin guardar ("Pagar con tarjeta" / "Pagar con otra tarjeta")
+        setIsSuccess(true);
+        setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
+      }
+    } catch {
+      toast.error('No se ha podido completar el pago.');
+      setIsProcessing(false);
+    }
+  };
+
+  const handleAddCardFlowSuccess = async (amount: number, savedCard: boolean, cardData: SavedCardData) => {
+    setShowAddCardFlow(false);
+    setIsProcessing(true);
+    await new Promise(r => setTimeout(r, 600));
+    try {
+      await onSuccess(amount);
+      if (savedCard) {
+        persistCard(cardData);
+        setSavedCards(readSavedCards());
+        setIsSuccess(true);
+        setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
+      } else {
         setIsSuccess(true);
         setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
       }
@@ -203,6 +231,12 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
               />
             )}
           </AnimatePresence>
+
+          <AddCardFlow
+            isOpen={showAddCardFlow}
+            onClose={() => setShowAddCardFlow(false)}
+            onSuccess={handleAddCardFlowSuccess}
+          />
 
           <motion.div
             initial={{ opacity: 0 }}
@@ -479,7 +513,9 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                         <><Loader2 className="w-6 h-6 mr-2 animate-spin" /> Verificando...</>
                       ) : isTransfer ? (
                         <>Ver datos de transferencia <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
-                      ) : (isNewCard || isRedsysCard) ? (
+                      ) : isNewCard ? (
+                        <>Añadir tarjeta <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
+                      ) : isRedsysCard ? (
                         <>Ir a Redsys <Lock className="w-5 h-5 ml-2 opacity-70" /></>
                       ) : effectiveAmount > 0 ? (
                         <>Recargar {formatCurrency(effectiveAmount)} demo <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
