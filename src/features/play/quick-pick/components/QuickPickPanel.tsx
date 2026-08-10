@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { RefreshCircle, NavArrowDown, NavArrowUp, HelpCircle, CheckCircle } from 'lucide-react';
+import { RefreshCcw, ChevronDown, ChevronUp, HelpCircle, CheckCircle } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
 import type { GamePlayBottomMenuItem } from '@/features/play/components/GamePlayBottomMenu';
@@ -181,7 +181,7 @@ export function QuickPickPanel({
             )}
             aria-label="Regenerar todas las apuestas"
           >
-            <RefreshCircle className={cn('w-3.5 h-3.5', isRegenerating && 'animate-spin')} />
+            <RefreshCcw className={cn('w-3.5 h-3.5', isRegenerating && 'animate-spin')} />
             Regenerar todas
           </button>
         </div>
@@ -225,7 +225,7 @@ export function QuickPickPanel({
                 aria-label={`Regenerar Ap. ${idx + 1}`}
                 title="Regenerar apuesta"
               >
-                <RefreshCircle className="w-3.5 h-3.5" />
+                <RefreshCcw className="w-3.5 h-3.5" />
               </button>
             </motion.div>
           ))}
@@ -240,8 +240,8 @@ export function QuickPickPanel({
               {isExpanded ? 'Ocultar' : `Ver ${hiddenCount} combinaciones más`}
             </span>
             {isExpanded
-              ? <NavArrowUp className="w-3.5 h-3.5 text-slate-400" />
-              : <NavArrowDown className="w-3.5 h-3.5 text-slate-400" />
+              ? <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+              : <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             }
           </button>
         )}
