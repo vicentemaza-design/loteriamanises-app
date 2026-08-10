@@ -11,6 +11,7 @@ import {
   EditPencil,
   DiceFive,
 } from 'iconoir-react/regular';
+import { HelpCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { notifyAddedToCart } from '@/features/session/lib/cart-toast';
 import { generateRandomPlay } from '@/features/play/services/play.service';
@@ -89,6 +90,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   const [selectedWeeksCount, setSelectedWeeksCount] = useState(DEFAULT_CUSTOM_WEEKS);
   const [selectedDrawDates, setSelectedDrawDates] = useState<string[]>([]);
   const [isSubscription, setIsSubscription] = useState(false);
+  const [jokerEnabled, setJokerEnabled] = useState(false);
+  const [showJokerTip, setShowJokerTip] = useState(false);
   const [betMethod, setBetMethod] = useState<'random' | 'manual' | null>(null);
   const manualBetCount = 1;
   // Paso 1→2 del flujo progresivo (sin método/tipo resuelto): fecha confirmada antes de mostrar tipo/método.
@@ -143,6 +146,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   useEffect(() => {
     setTimeMode('next_draw');
     setSelectedWeeksCount(Math.min(DEFAULT_CUSTOM_WEEKS, maxWeeksSelectable));
+    setJokerEnabled(false);
+    setShowJokerTip(false);
   }, [game.id, maxWeeksSelectable]);
 
   useEffect(() => {
@@ -235,6 +240,16 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     selectedNationalDraw: {},
     drawsCount,
   });
+
+  const supportsJoker = game.type === 'primitiva';
+  const jokerCostPerDraw = jokerEnabled && supportsJoker ? betsCount * 1.0 : 0;
+  const jokerTotalCost = jokerCostPerDraw * (drawsCount || 1);
+  const finalTotalPrice = totalPrice + jokerTotalCost;
+
+  const quickPickJokerCost = jokerEnabled && supportsJoker
+    ? quickPick.count * (effectiveSelectedDrawDates.length || 1) * 1.0
+    : 0;
+  const quickPickFinalPrice = quickPickTotalPrice + quickPickJokerCost;
 
   const availableBalance = profile?.balance ?? 0;
 
@@ -467,6 +482,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       combinations: quickPick.combinations,
       drawDates: effectiveSelectedDrawDates,
       isSubscription,
+      jokerEnabled: jokerEnabled && supportsJoker,
     });
     const result = addDrafts(quickDrafts);
     if (result.addedCount > 0) {
@@ -660,7 +676,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       game,
       selection: draftSelection,
       drawDates,
-      totalPrice,
+      totalPrice: finalTotalPrice,
       unitPrice: drawPrice,
       quantity: 1,
       mode,
@@ -673,6 +689,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       selectedNationalQuantity: 0,
       selectedNationalDraw: { label: '' },
       selectedReductionSystemId,
+      jokerEnabled: jokerEnabled && supportsJoker,
       editingDraft: editingDraft
         ? { id: editingDraft.id, addedAt: editingDraft.addedAt }
         : undefined,
@@ -1023,13 +1040,15 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                 isRegenerating={quickPick.isRegenerating}
                 regenerate={quickPick.regenerate}
                 regenerateAt={quickPick.regenerateAt}
-                totalPrice={quickPickTotalPrice}
+                totalPrice={quickPickFinalPrice}
                 availableBalance={profile?.balance ?? 0}
                 drawsCount={effectiveSelectedDrawDates.length || 1}
                 activeColor={game.color}
                 onAdd={handlePersistQuickPick}
                 isSubscription={isSubscription}
                 onSubscriptionChange={setIsSubscription}
+                jokerEnabled={jokerEnabled}
+                onJokerChange={supportsJoker ? setJokerEnabled : undefined}
                 menuItems={gameBottomMenuItems}
               />
             ) : isMulticolumnMode ? (
@@ -1244,6 +1263,65 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
         {/* Abono semanal — solo en modo manual clásico (no quick pick ni multicolumn que tienen su propio toggle, ni reducida donde casi nadie se abona) */}
         {(!supportsQuickPick || betMethod !== null) && !isMulticolumnMode && !isQuickPickMode && mode !== 'reduced' && (
           <div className="mt-2 space-y-3">
+
+            {/* Toggle Joker — solo Primitiva */}
+            {supportsJoker && (
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => setJokerEnabled(v => !v)}
+                onKeyDown={(e) => e.key === 'Enter' && setJokerEnabled(v => !v)}
+                className={cn(
+                  'rounded-[1.2rem] border px-4 py-3 cursor-pointer shadow-sm transition-all select-none',
+                  jokerEnabled
+                    ? 'border-emerald-200/80 bg-emerald-50/40'
+                    : 'border-slate-100 bg-white hover:border-slate-200'
+                )}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 flex-1">
+                    <p className="text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue">
+                      Jugar Joker
+                    </p>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setShowJokerTip(v => !v); }}
+                      className="w-4 h-4 rounded-full border border-slate-200 text-slate-400 flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors"
+                      aria-label="Información sobre el Joker"
+                    >
+                      <HelpCircle className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className={cn(
+                    'relative flex h-5 w-9 shrink-0 rounded-full transition-colors',
+                    jokerEnabled ? 'bg-manises-blue' : 'bg-slate-200'
+                  )}>
+                    <motion.div
+                      animate={{ x: jokerEnabled ? 16 : 2 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                      className="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm"
+                    />
+                  </div>
+                </div>
+                <p className="mt-1 text-[10px] font-medium text-slate-400">
+                  Añade el juego Joker por 1,00 € por apuesta.
+                </p>
+                {showJokerTip && (
+                  <p className="mt-2 rounded-xl bg-slate-50 border border-slate-100 px-3 py-2 text-[10px] font-medium text-slate-500 leading-relaxed">
+                    El Joker es un juego adicional. Se genera un número extra (0–9) para cada apuesta. Cuesta 1,00 € por apuesta.
+                  </p>
+                )}
+                {jokerEnabled && (
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                    <span className="text-[10px] font-semibold text-emerald-600">
+                      Joker activado · +{jokerCostPerDraw.toFixed(2).replace('.', ',')} € por sorteo
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
             <motion.div
               variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
               initial="hidden"
@@ -1293,7 +1371,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       {shouldShowStickyCta && (
         <PurchaseBottomBar
           availableBalance={availableBalance}
-          totalPrice={totalPrice}
+          totalPrice={finalTotalPrice}
           canContinue={canPlay}
           ctaLabel={ctaLabel}
           onContinue={handlePlay}

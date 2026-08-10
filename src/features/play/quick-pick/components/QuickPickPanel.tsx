@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { RefreshCircle, NavArrowDown, NavArrowUp } from 'iconoir-react/regular';
+import { RefreshCircle, NavArrowDown, NavArrowUp, HelpCircle, CheckCircle } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { PurchaseBottomBar } from '@/features/play/components/PurchaseBottomBar';
 import type { GamePlayBottomMenuItem } from '@/features/play/components/GamePlayBottomMenu';
@@ -21,6 +21,8 @@ interface QuickPickPanelProps {
   isAdding?: boolean;
   isSubscription?: boolean;
   onSubscriptionChange?: (val: boolean) => void;
+  jokerEnabled?: boolean;
+  onJokerChange?: (val: boolean) => void;
   menuItems?: GamePlayBottomMenuItem[];
 }
 
@@ -42,15 +44,77 @@ export function QuickPickPanel({
   isAdding,
   isSubscription = false,
   onSubscriptionChange,
+  jokerEnabled = false,
+  onJokerChange,
   menuItems,
 }: QuickPickPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showJokerTip, setShowJokerTip] = useState(false);
 
   const visibleCombos = isExpanded ? combinations : combinations.slice(0, VISIBLE_THRESHOLD);
   const hiddenCount = combinations.length - VISIBLE_THRESHOLD;
 
   return (
     <div className="space-y-3 pb-40">
+
+      {/* Toggle Joker */}
+      {onJokerChange && (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onJokerChange(!jokerEnabled)}
+          onKeyDown={(e) => e.key === 'Enter' && onJokerChange(!jokerEnabled)}
+          className={cn(
+            'rounded-[1.2rem] border px-4 py-3 cursor-pointer shadow-sm transition-all select-none',
+            jokerEnabled
+              ? 'border-emerald-200/80 bg-emerald-50/40'
+              : 'border-slate-100 bg-white hover:border-slate-200'
+          )}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 flex-1">
+              <p className="text-[11px] font-black uppercase tracking-[0.12em] text-manises-blue">
+                Jugar Joker
+              </p>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setShowJokerTip(v => !v); }}
+                className="w-4 h-4 rounded-full border border-slate-200 text-slate-400 flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors"
+                aria-label="Información sobre el Joker"
+              >
+                <HelpCircle className="w-3 h-3" />
+              </button>
+            </div>
+            <div className={cn(
+              'relative flex h-5 w-9 shrink-0 rounded-full transition-colors',
+              jokerEnabled ? 'bg-manises-blue' : 'bg-slate-200'
+            )}>
+              <motion.div
+                animate={{ x: jokerEnabled ? 16 : 2 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                className="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm"
+              />
+            </div>
+          </div>
+          <p className="mt-1 text-[10px] font-medium text-slate-400">
+            Añade el juego Joker por 1,00 € por apuesta.
+          </p>
+          {showJokerTip && (
+            <p className="mt-2 rounded-xl bg-slate-50 border border-slate-100 px-3 py-2 text-[10px] font-medium text-slate-500 leading-relaxed">
+              El Joker es un juego adicional. Se genera un número extra (0–9) para cada apuesta. Cuesta 1,00 € por apuesta.
+            </p>
+          )}
+          {jokerEnabled && (
+            <div className="mt-2 flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              <span className="text-[10px] font-semibold text-emerald-600">
+                Joker activado · +{count},00 € por sorteo
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
       <section className="rounded-[1.6rem] border border-slate-100 bg-white p-4 shadow-sm">
         <p className="mb-3 px-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">Número de apuestas</p>
         <div className="flex items-center justify-between gap-2">

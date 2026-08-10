@@ -19,4 +19,5 @@ export interface QuickPickDraftIntent {
   combinations: QuickPickCombination[];
   drawDates: string[];
   isSubscription: boolean;
+  jokerEnabled?: boolean;
 }

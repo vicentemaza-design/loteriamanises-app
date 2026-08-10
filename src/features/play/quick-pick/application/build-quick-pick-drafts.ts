@@ -4,7 +4,7 @@ import { buildPlayDrafts } from '@/features/play/application/build-play-drafts';
 import { resolvePlayPricing } from '@/features/play/application/resolve-play-pricing';
 
 export function buildQuickPickDrafts(intent: QuickPickDraftIntent): PlayDraft[] {
-  const { game, combinations, drawDates, isSubscription } = intent;
+  const { game, combinations, drawDates, isSubscription, jokerEnabled } = intent;
   const allDrafts: PlayDraft[] = [];
 
   combinations.forEach((combo) => {
@@ -22,11 +22,12 @@ export function buildQuickPickDrafts(intent: QuickPickDraftIntent): PlayDraft[] 
       drawsCount: drawDates.length,
     });
 
+    const jokerCost = jokerEnabled ? drawDates.length * 1.0 : 0;
     const drafts = buildPlayDrafts({
       game,
       selection: combo.selection,
       drawDates,
-      totalPrice: pricing.totalPrice,
+      totalPrice: pricing.totalPrice + jokerCost,
       unitPrice: pricing.drawPrice,
       quantity: 1,
       mode: 'simple',
@@ -38,6 +39,7 @@ export function buildQuickPickDrafts(intent: QuickPickDraftIntent): PlayDraft[] 
       selectedNationalNumber: null,
       selectedNationalQuantity: 1,
       selectedNationalDraw: { label: '' },
+      jokerEnabled,
     });
 
     allDrafts.push(...drafts);
