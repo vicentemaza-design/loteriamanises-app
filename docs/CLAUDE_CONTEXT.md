@@ -209,20 +209,40 @@ Una vez hecha esa limpieza mínima, entrar al diseño con este criterio:
 - `npx tsc --noEmit`: OK (sin errores, junio 2026)
 - login Firebase local: OK tras autorizar `localhost` en Firebase Auth
 
-## Componentes nuevos incorporados (junio 2026)
+## Componentes nuevos incorporados (junio–agosto 2026)
+
+### Junio 2026
 - `src/features/play/national/components/NationalCheckoutReview.tsx` — revisión previa a pago de Nacional
-- `src/features/play/national/components/NavidadCheckoutFlow.tsx` — flujo completo selección→cesta→checkout Navidad
+- `src/features/play/national/components/NavidadCheckoutFlow.tsx` — flujo completo selección→cesta→checkout Navidad (acepta prop `drawId` para El Niño)
 - `src/features/play/components/PurchaseBottomBar.tsx` — barra inferior compartida de importe y CTA
 - `src/features/tickets/pages/TicketDetailPage.tsx` — detalle de jugada con certificado
 - `src/features/tickets/components/NationalDetailContent.tsx` — detalle específico Nacional
 - `src/features/results/components/ResultDetailModal.tsx` — modal de escrutinio completo
 - `src/features/profile/pages/SubscriptionsPage.tsx` — reescrita como bandeja de abonos
-- Múltiples páginas de perfil nuevas: BiometricsPage, FavoritesPage, GameSubscriptionsPage, etc.
+- Múltiples páginas de perfil: `BiometricsPage`, `FavoritesPage`, `GameSubscriptionsPage`, etc.
 
-## Deuda técnica prioritaria (junio 2026)
-1. **GamePlayPage.tsx** (1883 líneas) — dividir en páginas por familia de juego. Ver propuesta en `docs/CAMBIOS_HOY.md`.
-2. La lógica de negocio de `play` sigue en la página en lugar de en servicios puros.
+### Julio–Agosto 2026
+- `src/features/play/pages/NinoPlayPage.tsx` — flujo completo El Niño (sorteo 6 enero, mismo flow que Navidad)
+- `src/features/wallet/components/AddCardFlow.tsx` — overlay vinculación de nueva tarjeta (UI lista, BE pendiente)
+- `src/features/play/pages/NumericGamePlayPage.tsx` — toggle Joker inline para Primitiva (propagado al draft)
+
+### Cambios en componentes existentes (agosto 2026)
+- `TicketsPage.tsx`: agrupación por `orderId`, botón FAVORITA para juegos no-nacionales, toggle Joker en tarjeta
+- `useFavoritePlays.ts`: añadido `addFavorite()` con guard de duplicados
+- `QuickPickPanel.tsx`: toggle Joker para Primitiva con coste en tiempo real
+- `GamesPage.tsx`: `NinoCard` + banner estacional dinámico (El Niño / Navidad)
+
+## Estado de compilación (agosto 2026)
+- `npm run lint`: OK
+- `npm run build`: OK
+- `npx tsc --noEmit`: OK
+
+## Deuda técnica prioritaria (agosto 2026)
+1. **GamePlayPage.tsx** — sigue siendo el dispatcher; `NumericGamePlayPage` ya extraído. Falta `QuinielaPlayPage`.
+2. La lógica de negocio de `play` sigue parcialmente en páginas en lugar de en servicios puros.
 3. `tickets` y `results` usan datos mock; pendiente conectar con HttpAdapter real.
+4. **Favoritos**: actualmente en `localStorage`; migración a BE requiere `GET/POST /favorites`.
+5. **Vinculación de tarjeta**: `AddCardFlow` UI lista; requiere tokenización Redsys (Fase 3).
 
 ## Mensaje para Claude
 Si retomas este proyecto:

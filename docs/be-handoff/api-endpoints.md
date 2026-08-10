@@ -136,6 +136,9 @@ La autenticación (Google OAuth) va por Firebase SDK directamente. No hay endpoi
     orderTotalPrice?: number
     scheduleMode?: string
     weeksCount?: number
+    jokerEnabled?: boolean  // Primitiva: true si se jugó Joker
+    joker?: string          // Primitiva: número Joker generado por BE (7 dígitos), ej: '1234567'
+    betsCount?: number      // total de apuestas/columnas del pedido
   }
   createdAt: string        // ISO 8601
 }

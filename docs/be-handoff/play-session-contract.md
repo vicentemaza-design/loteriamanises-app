@@ -21,7 +21,9 @@ Es la representación de una línea de apuesta en el carrito.
 - `mode`: Modo de juego (`simple`, `multiple`, `reduced`).
 - `hasInsurance`: Flag de protección de premios (LaGuinda style).
 - `isSubscription`: Flag de apuesta recurrente.
-- `metadata`: Objeto flexible para datos adicionales (ej: `orderDrawDates` para multi-draw).
+- `metadata`: Objeto flexible para datos adicionales. Campos actualmente en uso:
+  - `orderDrawDates?: string[]` — fechas de sorteo en compras multi-draw.
+  - `jokerEnabled?: boolean` — `true` si el usuario activó el Joker en Primitiva. Cuando está presente y es `true`, el BE debe generar un número Joker (7 dígitos) por apuesta y sumar 1,00 €/apuesta al recálculo de precio.
 
 ## Estructura de GameSelection
 Unión discriminada por el campo `type`:

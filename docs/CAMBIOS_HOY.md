@@ -334,6 +334,113 @@ Commit en rama `feature/euromillones-boleto-layout`, mergeado a `main` y despleg
 
 ---
 
+## Fase 8: El Niño como juego completo (julio 2026)
+
+Alcance:
+- Lotería El Niño como juego independiente con el mismo flow que Navidad.
+- No se tocó ningún otro juego ni flow existente.
+
+Cambios:
+- `NationalDrawId` añade `'nino'` como valor válido.
+- `NavidadCheckoutFlow` acepta prop `drawId` (default `'navidad'`) — las miniaturas de décimo usan el tipo correcto.
+- `NinoPlayPage`: flow idéntico a `NavidadPlayPage`, sorteo fijo 6 de enero, textos "El Niño".
+- `GamePlayPage`: rutea `game.type === 'nino'` a `NinoPlayPage` en lugar de `NationalPlayPage`.
+- `GamesPage`: `NinoCard` con diseño azul/dorado entre `ChristmasCard` y `EuromillionsCard`; `loteria-nino` filtrado de la lista genérica.
+- Mock showcase con 12 décimos de El Niño.
+- Banner estacional en lista general: lógica dinámica que muestra el banner El Niño en enero y Navidad en diciembre.
+
+Archivos principales:
+- `src/features/play/pages/NinoPlayPage.tsx` (nuevo)
+- `src/features/play/pages/GamePlayPage.tsx`
+- `src/features/play/national/components/NavidadCheckoutFlow.tsx`
+- `src/features/play/national/contracts/national-play.contract.ts`
+- `src/features/play/national/mocks/national-showcase.mock.ts`
+- `src/features/catalog/pages/GamesPage.tsx`
+
+---
+
+## Fase 9: Mejoras Wallet — Google Pay, Apple Pay y Vincula Tarjeta (agosto 2026)
+
+Alcance:
+- Pantallas de recarga y vinculación de tarjeta.
+- Solo UI/FE; integración BE pendiente.
+
+Cambios:
+- `TopUpModal`: logo Apple Pay con SVG oficial; Google Pay con estado de tarjeta guardada y labels actualizados.
+- `AddCardFlow` (nuevo): overlay full-screen con slide desde la derecha. Aparece al pulsar "Añadir tarjeta para próximas recargas". Incluye ilustración, selección de importe y toggle "Guardar esta tarjeta".
+- Accesible desde el modal de recarga de saldo.
+
+Archivos principales:
+- `src/features/wallet/components/TopUpModal.tsx`
+- `src/features/wallet/components/AddCardFlow.tsx` (nuevo)
+
+Pendiente BE:
+- Endpoint de vinculación de tarjeta (tokenización Redsys — ver `docs/be-handoff/payment-wallet.md`).
+
+---
+
+## Fase 10: Mis Jugadas — Agrupación por pedido y Joker toggle en detalle (agosto 2026)
+
+Alcance:
+- `TicketsPage` y `TicketDetailPage`.
+- No se tocaron flujos de compra.
+
+Cambios:
+- Los tickets del mismo `orderId` y juego se agrupan en una sola tarjeta con todos los boletos visibles.
+- `TicketDetailPage`: toggle inline "Incluye Joker" visible cuando `ticket.metadata.jokerEnabled === true`.
+- Columnas de boleto: se muestran todas (números, estrellas, complementario, reintegro, Joker) según el juego.
+
+Archivos principales:
+- `src/features/tickets/pages/TicketsPage.tsx`
+- `src/features/tickets/pages/TicketDetailPage.tsx`
+
+---
+
+## Fase 11: Selector Joker en formulario de Primitiva (agosto 2026)
+
+Alcance:
+- Solo `Primitiva`. Otros juegos no tienen Joker.
+- Afecta flujo manual (`NumericGamePlayPage`) y aleatorio (`QuickPickPanel`).
+
+Cambios:
+- Toggle "Jugar Joker" con tooltip "?" desplegable.
+- Al activar: precio total del CTA se actualiza en tiempo real (`betsCount × 1,00 € × sorteos`).
+- `jokerEnabled` persiste durante la sesión de juego; se reinicia al cambiar de juego.
+- `jokerEnabled` propagado al `PlayDraft.metadata.jokerEnabled` para que el BE lo reciba en el pedido.
+- Coste Joker: 1,00 € por apuesta por sorteo. Ya incluido en `totalPrice` enviado al BE.
+
+Archivos principales:
+- `src/features/play/pages/NumericGamePlayPage.tsx`
+- `src/features/play/quick-pick/components/QuickPickPanel.tsx`
+- `src/features/play/application/build-play-drafts.ts`
+- `src/features/play/quick-pick/application/build-quick-pick-drafts.ts`
+- `src/features/play/quick-pick/contracts/quick-pick.contract.ts`
+
+**Impacto BE**: el campo `metadata.jokerEnabled: boolean` llega en el draft. Si `true`, el BE debe generar un número Joker (7 dígitos) por apuesta y añadir 1,00 €/apuesta al recálculo de precio.
+
+---
+
+## Fase 12: Acción FAVORITA en Mis Jugadas (agosto 2026)
+
+Alcance:
+- Solo el listado de "Mis Jugadas" (`TicketsPage`). No afecta detalle de jugada ni compra.
+
+Cambios:
+- **Juegos no-nacionales** (Primitiva, Bonoloto, Euromillones, Gordo, EuroDreams…): acciones → `REPETIR | ABONARME | FAVORITA | VER`. CERTIFICADO eliminado del listado (sigue disponible en el detalle via VER).
+- **Lotería Nacional** (jueves, sábado, Navidad, Niño): sin cambios → `REPETIR | ABONARME | VER | CERTIFICADO`.
+- Icono estrella: outline gris (inactiva) → fill amber + fondo amber-50 (guardada).
+- Tap en inactiva: llama `addFavorite()` con la combinación del ticket → persiste en `Jugadas Favoritas` (`/profile/favorites`).
+- Tap en activa: llama `removeFavorite()` → elimina de favoritos.
+- `useFavoritePlays` añade `addFavorite()` con guard de duplicados.
+- `buildFavoriteFromTicket()`: convierte un `Ticket` en `FavoritePlay` compatible con la pantalla de Jugadas Favoritas.
+- Sin impacto BE: favoritas se almacenan en `localStorage` (`manises_profile_favorite_plays_v1`).
+
+Archivos principales:
+- `src/features/tickets/pages/TicketsPage.tsx`
+- `src/features/profile/hooks/useFavoritePlays.ts`
+
+---
+
 ## Deuda técnica detectada
 
 ### GamePlayPage monolito

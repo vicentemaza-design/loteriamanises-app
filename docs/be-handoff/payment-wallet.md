@@ -45,8 +45,32 @@ El contrato define `paymentMethod: 'wallet'` como único valor. No hay tarjeta d
 | Sorteo abierto | `items[].drawDate` | Verificar que no ha pasado la hora de cierre |
 | Usuario autenticado | `userId` | Verificar token Firebase en header |
 
+## Vinculación de tarjeta (UI disponible — BE pendiente)
+
+El FE muestra la pantalla "Vincula tu nueva tarjeta" (`AddCardFlow`). Es un overlay con selección de importe y toggle "Guardar esta tarjeta". Actualmente no llama a ningún endpoint real.
+
+Cuando BE implemente la tokenización de tarjeta (Redsys COF — ver `project_be_redsys_cards.md` en los apuntes del proyecto), el FE esperará:
+
+```ts
+// POST /users/{userId}/payment-methods/cards
+{
+  redsysToken: string     // Ds_Merchant_Identifier devuelto por Redsys
+  last4: string
+  brand: 'visa' | 'mastercard' | 'amex'
+  expiryMonth: number
+  expiryYear: number
+  saveForFuture: boolean
+}
+
+// Respuesta
+{ success: boolean; cardId: string }
+```
+
+Apple Pay y Google Pay se muestran como opciones en la pantalla de recarga pero sin integración BE activa todavía.
+
 ## Pendiente de integración BE
 
-- **Favoritos** (`FavoritesPage`): usa datos hardcodeados en `premium-demo.ts`. Requiere `GET /favorites?userId={uid}` y hook dedicado. Sin adaptador HTTP todavía.
+- **Favoritos** (`FavoritesPage`): usa `localStorage`. Requiere `GET /favorites?userId={uid}` y hook dedicado cuando se migre al servidor.
 - **Abonos** (`SubscriptionsPage`): el `HttpAdapter` tiene los endpoints de subscriptions implementados (`GET /subscriptions`, `POST /subscriptions`, etc. — ver `api-endpoints.md`). Pendiente de conectar el hook de UI.
 - **Cobro de premios** (`WithdrawalsPage`): página existente, sin hook real. Requiere flujo IBAN + validación documental.
+- **Vinculación de tarjeta** (`AddCardFlow`): UI lista. Requiere tokenización Redsys (Fase 3).
