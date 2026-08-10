@@ -157,6 +157,46 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
     createdAt: new Date(Date.now() - 3600000).toISOString(),
   },
 
+  // ── Primitiva pendiente (12 columnas · 2 boletos · con Joker) ─────────────
+  {
+    id: 'demo-primitiva-12',
+    userId: 'demo-user',
+    gameId: 'primitiva',
+    gameType: 'primitiva',
+    numbers: [10, 12, 15, 23, 34, 41],
+    bets: [
+      [10, 12, 15, 23, 34, 41],
+      [ 5, 11, 19, 27, 36, 45],
+      [ 8, 14, 21, 29, 38, 49],
+      [ 3,  9, 18, 26, 35, 48],
+      [ 7, 13, 20, 28, 37, 47],
+      [ 2,  8, 17, 25, 33, 46],
+      [ 6, 12, 16, 24, 32, 44],
+      [ 1, 10, 18, 27, 40, 43],
+      [ 4, 11, 22, 30, 39, 48],
+      [ 9, 15, 23, 31, 42, 49],
+      [ 3, 13, 19, 29, 36, 45],
+      [ 7, 14, 24, 32, 41, 47],
+    ],
+    betReintegros: [2, 6, 4, 1, 7, 5, 3, 8, 0, 9, 2, 4],
+    drawDate: '2026-08-18',
+    status: 'pending',
+    price: 12.00,
+    metadata: {
+      playStatus: 'pending',
+      orderTotalPrice: 14.00,
+      betsCount: 12,
+      holderName: 'Rafael Sanchis Penadés',
+      holderNif: '25252925Z',
+      jokerEnabled: true,
+      jokerBoletos: [
+        { jokerNumber: '5832473' },
+        { jokerNumber: '9183641' },
+      ],
+    },
+    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+  },
+
   // ── Primitiva sistema — 11 números en 1 columna (jugada múltiple) ─────────
   {
     id: 'demo-primitiva-sistema',

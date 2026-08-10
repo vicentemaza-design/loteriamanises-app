@@ -266,16 +266,23 @@ function BoletosGrid({
         return (
           <div key={boletoIdx} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
             {/* Cabecera del boleto */}
-            <div className="flex items-center justify-between border-b border-slate-50 bg-manises-blue/[0.035] px-3 py-2">
-              <p className="text-[9px] font-black uppercase tracking-[0.06em] text-manises-blue">
-                Boleto {boletoIdx + 1}
-                <span className="ml-1.5 font-semibold normal-case text-slate-400">
-                  (Columnas {colFrom}{colTo > colFrom ? ` - ${colTo}` : ''})
-                </span>
-              </p>
+            <div className="flex items-center justify-between gap-2 border-b border-slate-50 bg-manises-blue/[0.035] px-3 py-2">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
+                <p className="text-[9px] font-black uppercase tracking-[0.06em] text-manises-blue whitespace-nowrap">
+                  Boleto {boletoIdx + 1}
+                  <span className="ml-1 font-semibold normal-case text-slate-400">
+                    {' · '}Columnas {colFrom}–{colTo}
+                  </span>
+                </p>
+                {hasJoker && jokerData && (
+                  <span className="rounded-full bg-emerald-100 text-emerald-700 text-[7.5px] font-black px-2 py-0.5 uppercase tracking-wide shrink-0">
+                    Con Joker
+                  </span>
+                )}
+              </div>
               {hasJoker && jokerData && (
-                <span className="flex items-center gap-1 text-[10px] font-black text-emerald-600">
-                  🍀 {jokerData.jokerNumber}
+                <span className="shrink-0 text-[9px] font-semibold text-slate-400 whitespace-nowrap">
+                  Joker: <span className="font-black text-manises-blue">{jokerData.jokerNumber}</span>
                 </span>
               )}
             </div>
@@ -310,12 +317,15 @@ function BoletosGrid({
                             large={largeBalls}
                           />
                           {isLast && bet.reintegro != null && (
-                            <span className={cn(
-                              'ml-auto shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-black',
-                              reintegroMatch ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
-                            )}>
-                              R:{bet.reintegro}
-                            </span>
+                            <div className="ml-auto shrink-0 flex items-center gap-0.5">
+                              <span className={cn('text-[11px] leading-none', reintegroMatch ? 'text-emerald-400' : 'text-amber-400')}>★</span>
+                              <span className={cn(
+                                'w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black',
+                                reintegroMatch ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-50 text-amber-600 border border-amber-200'
+                              )}>
+                                {bet.reintegro}
+                              </span>
+                            </div>
                           )}
                         </div>
                       );
@@ -365,6 +375,10 @@ function BoletoGroupsView({
   const millonBoletos = ticket.metadata?.millonBoletos ?? [];
   const jokerBoletos = ticket.metadata?.jokerBoletos ?? [];
   const hasJoker = jokerBoletos.length > 0;
+  const [showJoker, setShowJoker] = useState(hasJoker);
+
+  const jokerCost = jokerBoletos.length * 1.0;
+  const baseCost = ticket.price;
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-4">
@@ -407,19 +421,64 @@ function BoletoGroupsView({
         <p className="mb-3 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
           Mis jugadas
         </p>
+
+        {/* Toggle Joker */}
+        {hasJoker && (
+          <div className="mb-3 space-y-2">
+            <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-black text-slate-700">Joker</span>
+                {showJoker && (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="text-[9px] font-semibold text-slate-400">+1,00 €/boleto</span>
+                  </>
+                )}
+              </div>
+              <button
+                onClick={() => setShowJoker(v => !v)}
+                role="switch"
+                aria-checked={showJoker}
+                className={cn(
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none',
+                  showJoker ? 'bg-manises-blue' : 'bg-slate-200'
+                )}
+              >
+                <span className={cn(
+                  'pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-md transform transition-transform duration-200',
+                  showJoker ? 'translate-x-4' : 'translate-x-0'
+                )} />
+              </button>
+            </div>
+            {showJoker && (
+              <div className="flex items-center justify-between rounded-xl bg-emerald-50 border border-emerald-100 px-3 py-2">
+                <p className="text-[9px] font-semibold text-slate-500">
+                  Base{' '}
+                  <span className="font-black text-manises-blue">{formatCurrency(baseCost)}</span>
+                  {' + '}Joker{' '}
+                  <span className="font-black text-emerald-600">{formatCurrency(jokerCost)}</span>
+                </p>
+                <p className="text-[11px] font-black text-slate-700">
+                  = {formatCurrency(baseCost + jokerCost)}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         <BoletosGrid
           bets={bets}
           boletosSize={boletosSize}
           result={result}
           game={game}
           millonBoletos={millonBoletos}
-          jokerBoletos={jokerBoletos}
+          jokerBoletos={showJoker ? jokerBoletos : []}
           largeBalls
         />
       </div>
 
       {/* Nota Joker (solo Primitiva) */}
-      {hasJoker && ticket.gameType === 'primitiva' && (
+      {hasJoker && showJoker && ticket.gameType === 'primitiva' && (
         <div className="flex items-start gap-2.5 rounded-2xl border border-emerald-100 bg-emerald-50/50 px-4 py-3">
           <span className="text-base leading-tight">🍀</span>
           <p className="text-[10px] font-medium leading-relaxed text-slate-500">
