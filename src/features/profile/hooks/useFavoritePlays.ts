@@ -32,6 +32,9 @@ export function useFavoritePlays() {
   const favoriteCount = favorites.length;
 
   const actions = useMemo(() => ({
+    addFavorite: (fav: FavoritePlay) => {
+      setFavorites((current) => current.some((f) => f.id === fav.id) ? current : [...current, fav]);
+    },
     renameFavorite: (favoriteId: string, title: string) => {
       setFavorites((current) => current.map((item) => (
         item.id === favoriteId ? { ...item, title } : item

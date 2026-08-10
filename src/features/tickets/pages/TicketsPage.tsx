@@ -15,7 +15,10 @@ import {
   ScrollText,
   Eye,
   Bell,
+  Star,
 } from 'lucide-react';
+import { useFavoritePlays } from '@/features/profile/hooks/useFavoritePlays';
+import type { FavoritePlay } from '@/features/profile/types/profile.types';
 import { useNavigate } from 'react-router-dom';
 import { useTickets } from '../hooks/useTickets';
 import { TicketCardSkeleton } from '@/shared/ui/Skeleton';
@@ -125,6 +128,23 @@ function getSelectionSummary(ticket: Ticket): string {
   return `${ticket.numbers.map(n => String(n).padStart(2, '0')).join(' ')}${starsLabel}${reintegroLabel}`;
 }
 
+function buildFavoriteFromTicket(ticket: Ticket, game: { id: string; name: string }): FavoritePlay {
+  const combinations = ticket.bets?.map((nums, i) => ({
+    numbers: nums,
+    ...(ticket.betStars?.[i]?.length ? { stars: ticket.betStars![i] } : {}),
+  })) ?? [{ numbers: ticket.numbers, ...(ticket.stars?.length ? { stars: ticket.stars } : {}) }];
+  return {
+    id: ticket.id,
+    gameId: game.id,
+    title: `Mis números · ${game.name}`,
+    numbersLabel: getSelectionSummary(ticket),
+    frequency: 'Esporádico',
+    budgetLabel: formatCurrency(ticket.price),
+    betsCount: ticket.metadata?.betsCount ?? combinations.length,
+    combinations,
+  };
+}
+
 export function TicketsPage() {
   const navigate = useNavigate();
   const { tickets, isLoading, error } = useTickets();
@@ -136,6 +156,9 @@ export function TicketsPage() {
   const [receiptTicket, setReceiptTicket]   = useState<Ticket | null>(null);
   const [repeatTicket, setRepeatTicket]     = useState<Ticket | null>(null);
   const [abonarseTicket, setAbonarseTicket] = useState<Ticket | null>(null);
+
+  const { favorites, addFavorite, removeFavorite } = useFavoritePlays();
+  const favoriteIds = useMemo(() => new Set(favorites.map((f) => f.id)), [favorites]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -341,6 +364,7 @@ export function TicketsPage() {
                 const orderDatesSummary = getOrderDatesSummary(ticket);
                 const hasMessaging = national && ticket.metadata?.deliveryMode === 'shipping';
                 const hasPrize = totalPrize > 0;
+                const isFavorite = favoriteIds.has(ticket.id);
 
                 const selectionSummary = uniqueCombinations > 1
                   ? `${uniqueCombinations} combinaciones`
@@ -450,22 +474,40 @@ export function TicketsPage() {
                           className="overflow-hidden"
                         >
                           <div className="flex gap-1.5 border-t border-gray-50 px-4 py-2.5">
-                            {([
-                              { icon: Repeat2,    label: 'Repetir',     action: () => setRepeatTicket(ticket) },
-                              { icon: Bell,       label: 'Abonarme',    action: () => setAbonarseTicket(ticket) },
-                              { icon: Eye,        label: 'Ver',         action: () => navigate(`/tickets/${ticket.id}`) },
-                              { icon: ScrollText, label: 'Certificado', action: () => setReceiptTicket(ticket) },
-                            ] as const).map(({ icon: Icon, label, action }) => (
-                              <button
-                                key={label}
-                                type="button"
-                                onClick={action}
-                                className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-gray-100 bg-white py-2 text-[8px] font-black uppercase tracking-wider text-manises-blue transition-colors hover:border-manises-blue/20 hover:bg-manises-blue/[0.04] active:scale-[0.97]"
-                              >
+                            {[
+                              { icon: Repeat2, label: 'Repetir',  action: () => setRepeatTicket(ticket) },
+                              { icon: Bell,    label: 'Abonarme', action: () => setAbonarseTicket(ticket) },
+                            ].map(({ icon: Icon, label, action }) => (
+                              <button key={label} type="button" onClick={action}
+                                className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-gray-100 bg-white py-2 text-[8px] font-black uppercase tracking-wider text-manises-blue transition-colors hover:border-manises-blue/20 hover:bg-manises-blue/[0.04] active:scale-[0.97]">
                                 <Icon className="h-3.5 w-3.5" />
                                 {label}
                               </button>
                             ))}
+                            {national ? (
+                              <button type="button" onClick={() => setReceiptTicket(ticket)}
+                                className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-gray-100 bg-white py-2 text-[8px] font-black uppercase tracking-wider text-manises-blue transition-colors hover:border-manises-blue/20 hover:bg-manises-blue/[0.04] active:scale-[0.97]">
+                                <ScrollText className="h-3.5 w-3.5" />
+                                Certificado
+                              </button>
+                            ) : (
+                              <button type="button"
+                                onClick={() => isFavorite ? removeFavorite(ticket.id) : addFavorite(buildFavoriteFromTicket(ticket, game))}
+                                className={cn(
+                                  'flex flex-1 flex-col items-center gap-1 rounded-xl border py-2 text-[8px] font-black uppercase tracking-wider transition-colors active:scale-[0.97]',
+                                  isFavorite
+                                    ? 'border-amber-200/70 bg-amber-50/60 text-amber-500'
+                                    : 'border-gray-100 bg-white text-slate-300 hover:border-amber-200/50 hover:text-amber-400'
+                                )}>
+                                <Star className={cn('h-3.5 w-3.5', isFavorite ? 'fill-amber-400 text-amber-400' : '')} />
+                                Favorita
+                              </button>
+                            )}
+                            <button type="button" onClick={() => navigate(`/tickets/${ticket.id}`)}
+                              className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-gray-100 bg-white py-2 text-[8px] font-black uppercase tracking-wider text-manises-blue transition-colors hover:border-manises-blue/20 hover:bg-manises-blue/[0.04] active:scale-[0.97]">
+                              <Eye className="h-3.5 w-3.5" />
+                              Ver
+                            </button>
                           </div>
                         </motion.div>
                       )}
