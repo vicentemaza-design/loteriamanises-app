@@ -18,7 +18,27 @@ interface TopUpModalProps {
 }
 
 const AMOUNTS = [5, 10, 20, 50, 100, 200];
-type PaymentMethod = 'card' | 'apple' | 'bizum' | 'transfer' | 'new-card';
+type PaymentMethod = 'card' | 'other-card' | 'apple' | 'google' | 'bizum' | 'transfer' | 'new-card';
+
+interface StoredCard { id: string; brand: string; last4: string; expires: string; isDefault: boolean; }
+
+function readSavedCards(): StoredCard[] {
+  try {
+    const stored = localStorage.getItem('manises_payment_cards');
+    return stored ? (JSON.parse(stored) as StoredCard[]) : [];
+  } catch { return []; }
+}
+
+function GooglePayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+      <path d="M12.24 10.285V14.4h5.92c-.24 1.44-1.44 4.2-5.92 4.2-3.56 0-6.46-2.94-6.46-6.6s2.9-6.6 6.46-6.6c2.02 0 3.38.86 4.16 1.6l2.84-2.74C17.42 2.74 15.06 1.8 12.24 1.8 6.54 1.8 2 6.34 2 12s4.54 10.2 10.24 10.2c5.9 0 9.82-4.14 9.82-9.98 0-.68-.08-1.2-.18-1.72H12.24z" fill="#4285F4"/>
+      <path d="M2 12c0-1.86.5-3.6 1.36-5.1L6.22 9.76A6.58 6.58 0 0 0 5.54 12c0 .8.14 1.56.38 2.28l-2.88 2.24A10.17 10.17 0 0 1 2 12z" fill="#34A853"/>
+      <path d="M12.24 22.2c2.64 0 4.86-.86 6.48-2.34l-3.08-2.38c-.86.58-1.96.92-3.4.92-2.6 0-4.82-1.76-5.6-4.12L3.04 16.7A10.2 10.2 0 0 0 12.24 22.2z" fill="#FBBC05"/>
+      <path d="M22.06 12.02c0-.68-.08-1.2-.18-1.74H12.24V14.4h5.92c-.26 1.26-.96 2.32-2 3.04l3.08 2.38C20.9 18.22 22.06 15.42 22.06 12.02z" fill="#EA4335"/>
+    </svg>
+  );
+}
 
 const BANK_TRANSFER_INFO = {
   IBAN: 'ES91 2100 0418 4502 0005 1332',
@@ -42,28 +62,34 @@ function persistCard(cardData: SavedCardData) {
 }
 
 export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUpModalProps) {
+  const [savedCards, setSavedCards] = useState<StoredCard[]>([]);
   const [selectedAmount, setSelectedAmount] = useState<number>(10);
   const [isCustom, setIsCustom] = useState(false);
   const [customValue, setCustomValue] = useState('');
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('apple');
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('card');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showRedsys, setShowRedsys] = useState(false);
-  // Datos de la tarjeta usada para pagar (sin guardar) — para ofrecer guardarla post-pago
   const [recentCard, setRecentCard] = useState<SavedCardData | null>(null);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [showTokenizeRedsys, setShowTokenizeRedsys] = useState(false);
 
+  const primaryCard = savedCards[0] ?? null;
+  const hasSavedCard = primaryCard !== null;
+
   const effectiveAmount = isCustom ? (parseFloat(customValue) || 0) : selectedAmount;
   const isTransfer = selectedMethod === 'transfer';
   const isNewCard = selectedMethod === 'new-card';
+  const isRedsysCard = selectedMethod === 'other-card' || (!hasSavedCard && selectedMethod === 'card');
 
   useEffect(() => {
     if (isOpen) {
+      const cards = readSavedCards();
+      setSavedCards(cards);
       setSelectedAmount(10);
       setIsCustom(false);
       setCustomValue('');
-      setSelectedMethod('apple');
+      setSelectedMethod('card');
       setIsProcessing(false);
       setIsSuccess(false);
       setShowRedsys(false);
@@ -86,7 +112,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       toast.error('El importe máximo de recarga es 500 €.');
       return;
     }
-    if (isNewCard) {
+    if (isNewCard || isRedsysCard) {
       setShowRedsys(true);
       return;
     }
@@ -110,13 +136,18 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       await onSuccess(effectiveAmount);
       if (savedCard) {
         persistCard(cardData);
+        setSavedCards(readSavedCards());
         setIsSuccess(true);
         setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
-      } else {
-        // Pago ok pero no guardó — ofrecer guardar post-pago
+      } else if (isNewCard) {
+        // "Añadir tarjeta para próximas recargas" sin guardar — ofrecer guardar post-pago
         setRecentCard(cardData);
         setIsProcessing(false);
         setShowSavePrompt(true);
+      } else {
+        // Pago puntual sin guardar ("Pagar con tarjeta" / "Pagar con otra tarjeta")
+        setIsSuccess(true);
+        setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
       }
     } catch {
       toast.error('No se ha podido completar el pago.');
@@ -323,15 +354,34 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                   <div className="space-y-3">
                     <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest pl-1">Método de pago</p>
                     <div className="space-y-2">
+                      {/* Estado 2: tarjeta guardada como opción rápida */}
+                      {hasSavedCard && primaryCard && (
+                        <MethodRow
+                          id="card" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
+                          iconEl={<CreditCard className="w-5 h-5" />}
+                          label={`${primaryCard.brand} **** ${primaryCard.last4}`}
+                          sub={`Exp: ${primaryCard.expires}`}
+                          selBg="bg-manises-blue" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
+                        />
+                      )}
+                      {/* Estado 2: pagar con otra tarjeta / Estado 1: pagar con tarjeta */}
                       <MethodRow
-                        id="card" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
-                        iconEl={<CreditCard className="w-5 h-5" />} label="Visa **** 4452" sub="Exp: 09/27"
+                        id={hasSavedCard ? 'other-card' : 'card'}
+                        selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
+                        iconEl={<CreditCard className="w-5 h-5" />}
+                        label={hasSavedCard ? 'Pagar con otra tarjeta' : 'Pagar con tarjeta'}
+                        sub="Pago seguro"
                         selBg="bg-manises-blue" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
                       />
                       <MethodRow
                         id="apple" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
                         iconEl={<Smartphone className="w-5 h-5" />} label="Apple Pay" sub="Pago instantáneo"
                         selBg="bg-black" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
+                      />
+                      <MethodRow
+                        id="google" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
+                        iconEl={<GooglePayIcon />} label="Google Pay" sub="Pago instantáneo"
+                        selBg="bg-white" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
                       />
                       <MethodRow
                         id="bizum" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
@@ -357,7 +407,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                         </div>
                         <div className="text-left flex-1">
                           <p className={`text-sm font-bold ${isNewCard ? 'text-manises-blue' : 'text-slate-500'}`}>
-                            Añadir nueva tarjeta
+                            Añadir tarjeta para próximas recargas
                           </p>
                           {isNewCard && (
                             <p className="text-[9px] text-manises-blue/60 font-medium flex items-center gap-1 mt-0.5">
@@ -421,7 +471,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                         <><Loader2 className="w-6 h-6 mr-2 animate-spin" /> Verificando...</>
                       ) : isTransfer ? (
                         <>Ver datos de transferencia <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
-                      ) : isNewCard ? (
+                      ) : (isNewCard || isRedsysCard) ? (
                         <>Ir a Redsys <Lock className="w-5 h-5 ml-2 opacity-70" /></>
                       ) : effectiveAmount > 0 ? (
                         <>Recargar {formatCurrency(effectiveAmount)} demo <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
