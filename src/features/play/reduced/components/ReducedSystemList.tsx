@@ -355,14 +355,14 @@ export function ReducedSystemList({
                         key={globalIdx}
                         className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm"
                       >
-                        <span className="w-16 shrink-0 text-[9px] font-black uppercase tracking-wider text-slate-400">
+                        <span className="w-20 shrink-0 whitespace-nowrap text-[9px] font-black uppercase tracking-wider text-slate-400">
                           Columna {globalIdx + 1}
                         </span>
                         <div className="flex flex-1 flex-wrap items-center gap-1">
                           {combo.numbers.map((n) => (
                             <span
                               key={n}
-                              className="flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black text-white"
+                              className="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-black text-white"
                               style={{ backgroundColor: game.color }}
                             >
                               {n}
@@ -374,7 +374,7 @@ export function ReducedSystemList({
                               {combo.stars.map((s) => (
                                 <span
                                   key={s}
-                                  className="flex h-5 w-5 items-center justify-center rounded-full bg-manises-gold text-[9px] font-black text-white"
+                                  className="flex h-7 w-7 items-center justify-center rounded-full bg-manises-gold text-[11px] font-black text-white"
                                 >
                                   {s}
                                 </span>

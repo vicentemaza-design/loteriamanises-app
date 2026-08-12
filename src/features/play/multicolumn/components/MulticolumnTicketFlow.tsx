@@ -199,7 +199,7 @@ export function MulticolumnTicketFlow({
                   {column.numbers.map(n => (
                     <span
                       key={n}
-                      className="flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-black text-white"
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-black text-white"
                       style={{ backgroundColor: game.color }}
                     >
                       {n}
@@ -211,7 +211,7 @@ export function MulticolumnTicketFlow({
                   {column.stars.map(s => (
                     <span
                       key={s}
-                      className="flex h-5 w-5 items-center justify-center rounded-full bg-manises-gold text-[9px] font-black text-white"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-manises-gold text-[11px] font-black text-white"
                     >
                       {s}
                     </span>
