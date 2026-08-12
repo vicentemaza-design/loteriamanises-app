@@ -79,10 +79,10 @@ export function QuickPickPanel({
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); setShowJokerTip(v => !v); }}
-                className="w-4 h-4 rounded-full border border-slate-200 text-slate-400 flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors"
+                className="w-8 h-8 rounded-full border border-slate-200 text-slate-400 flex items-center justify-center shrink-0 hover:border-slate-300 transition-colors"
                 aria-label="Información sobre el Joker"
               >
-                <HelpCircle className="w-3 h-3" />
+                <HelpCircle className="w-4 h-4" />
               </button>
             </div>
             <div className={cn(

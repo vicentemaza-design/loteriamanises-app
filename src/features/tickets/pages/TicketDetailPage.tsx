@@ -177,7 +177,7 @@ function DetailHeader({ ticket, game }: { ticket: Ticket; game: (typeof LOTTERY_
         const fourCols = isEuro || (isPrim && hasJoker);
         const prizeCell = (
           <div className={cn('flex flex-col items-center py-3 px-1', isScrutinized && prize > 0 ? 'bg-emerald-50' : '')}>
-            <p className="text-[7px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Premio total</p>
+            <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Premio total</p>
             <p className={cn('mt-1 font-black leading-none', fourCols ? 'text-[15px]' : 'text-[18px]', isScrutinized && prize > 0 ? 'text-emerald-600' : 'text-slate-300')}>
               {isScrutinized ? formatCurrency(prize) : '—'}
             </p>
@@ -187,22 +187,22 @@ function DetailHeader({ ticket, game }: { ticket: Ticket; game: (typeof LOTTERY_
           return (
             <div className="grid grid-cols-4 divide-x divide-slate-100 border-y border-slate-100 bg-white">
               <div className="flex flex-col items-center py-3 px-1">
-                <p className="text-[7px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Importe jugada</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Importe jugada</p>
                 <p className="mt-1 text-[15px] font-black text-manises-blue leading-none">{formatCurrency(orderTotal)}</p>
               </div>
               <div className="flex flex-col items-center py-3 px-1">
-                <p className="text-[7px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Nº columnas</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Nº columnas</p>
                 <p className="mt-1 text-[15px] font-black text-manises-blue leading-none">{betsCount}</p>
               </div>
               {isEuro && (
                 <div className="flex flex-col items-center py-3 px-1">
-                  <p className="text-[7px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Sorteos</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Sorteos</p>
                   <p className="mt-1 text-[15px] font-black text-manises-blue leading-none">{isSemanal ? dates.length : 1}</p>
                 </div>
               )}
               {isPrim && hasJoker && (
                 <div className="flex flex-col items-center py-3 px-1">
-                  <p className="text-[7px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Joker</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.12em] text-slate-400 text-center leading-tight">Joker</p>
                   <p className="mt-1 text-[15px] font-black text-emerald-600 leading-none">🍀 {jokerBoletos.length}</p>
                 </div>
               )}
@@ -338,7 +338,7 @@ function BoletosGrid({
             {/* Códigos de El Millón (Euromillones) — al final de cada boleto */}
             {millonData && (
               <div className="border-t border-amber-100/60 bg-amber-50/40 px-3 py-2">
-                <p className="text-[7px] font-black uppercase tracking-[0.18em] text-slate-400">
+                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">
                   Códigos de El Millón (asignados)
                 </p>
                 <p className="mt-0.5 font-mono text-[12px] font-black tracking-[0.05em] text-manises-blue">

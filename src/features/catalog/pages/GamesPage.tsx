@@ -43,6 +43,8 @@ function NoticeTicker() {
     const track = trackRef.current;
     if (!track) return;
 
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const step = () => {
       posRef.current -= 1;
       // Reset when we've scrolled exactly one copy's width

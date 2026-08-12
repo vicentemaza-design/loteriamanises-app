@@ -355,7 +355,7 @@ export function GamesCartPanel() {
             <motion.div
               initial={{ y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: '100%', opacity: 0 }}
               transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-              className="fixed bottom-0 left-0 right-0 z-[310] mx-auto max-w-screen-sm rounded-t-[2rem] bg-white px-5 pb-8 pt-4 shadow-2xl"
+              className="fixed bottom-0 left-0 right-0 z-[310] mx-auto max-w-screen-sm rounded-t-[2rem] bg-white px-5 pb-8 pt-4 shadow-2xl max-h-[90dvh] overflow-y-auto"
               onClick={e => e.stopPropagation()}
             >
               <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-slate-200" />

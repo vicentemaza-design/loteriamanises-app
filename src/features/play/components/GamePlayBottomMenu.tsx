@@ -65,7 +65,7 @@ export function GamePlayBottomMenu({
             {balance.euros}
             <sup className="ml-0.5 align-super text-[0.5rem] font-black">,{balance.cents}</sup>
           </p>
-          <p className="relative mt-1 text-[0.5rem] font-bold uppercase tracking-[0.08em] leading-none text-white/58">Saldo €</p>
+          <p className="relative mt-1 text-[0.6rem] font-bold uppercase tracking-[0.08em] leading-none text-white/58">Saldo €</p>
         </div>
 
         <div className="relative flex min-w-0 flex-col items-center justify-center border-r border-white/12 px-1">
@@ -74,7 +74,7 @@ export function GamePlayBottomMenu({
             {total.euros}
             <sup className="ml-0.5 align-super text-[0.5rem] font-black">,{total.cents}</sup>
           </p>
-          <p className={cn('relative mt-1 text-[0.5rem] font-bold uppercase tracking-[0.08em] leading-none', isOverBalance ? 'text-red-300' : 'text-white/58')}>
+          <p className={cn('relative mt-1 text-[0.6rem] font-bold uppercase tracking-[0.08em] leading-none', isOverBalance ? 'text-red-300' : 'text-white/58')}>
             {isOverBalance ? `Faltan ${formatCurrency(totalPrice - availableBalance)}` : 'Importe €'}
           </p>
         </div>

@@ -86,20 +86,20 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
         <div className="px-2 py-2 text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
             <Trophy className="h-3 w-3 text-amber-400 shrink-0" />
-            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400">1º Premio</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">1º Premio</span>
           </div>
           <p className="text-[14px] font-black text-manises-blue tracking-wider leading-none">
             {firstPrizeNumber ?? '—'}
           </p>
         </div>
         <div className="px-2 py-2 text-center">
-          <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-1">2º Premio</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">2º Premio</p>
           <p className="text-[14px] font-black text-manises-blue tracking-wider leading-none">
             {secondPrizeNumber ?? '—'}
           </p>
         </div>
         <div className="px-2 py-2 text-center">
-          <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 mb-1">Reintegros</p>
+          <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1">Reintegros</p>
           <p className="text-[12px] font-black text-purple-600 tracking-wide leading-none">
             {reintegros ? reintegros.join(' · ') : '—'}
           </p>
@@ -120,14 +120,14 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
           <div className="px-2.5 py-2 flex items-center gap-2">
             <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-400" />
             <div>
-              <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">1º Premio (Gordo)</p>
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">1º Premio (Gordo)</p>
               <p className="text-[17px] font-black text-manises-blue tracking-wider leading-none mt-0.5">
                 {firstPrizeNumber ?? '—'}
               </p>
             </div>
           </div>
           <div className="px-2.5 py-2">
-            <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Reintegro</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Reintegro</p>
             <p className="text-[13px] font-black text-purple-600 tracking-wide mt-0.5 leading-none">
               {reintegro ?? reintegros?.[0] ?? '—'}
             </p>
@@ -172,14 +172,14 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
           <div className="px-2.5 py-2 flex items-center gap-2">
             <Trophy className="h-3.5 w-3.5 shrink-0 text-amber-400" />
             <div>
-              <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">1º Premio</p>
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">1º Premio</p>
               <p className="text-[17px] font-black text-manises-blue tracking-wider leading-none mt-0.5">
                 {firstPrizeNumber ?? '—'}
               </p>
             </div>
           </div>
           <div className="px-2.5 py-2">
-            <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Reintegros</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Reintegros</p>
             <p className="text-[13px] font-black text-purple-600 tracking-wide mt-0.5 leading-none">
               {reintegros ? reintegros.join(' · ') : '—'}
             </p>
@@ -218,7 +218,7 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
         </div>
         {stars && stars.length > 0 && (
           <div className="flex flex-col gap-1 pl-2.5 border-l border-slate-200">
-            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Estrellas</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Estrellas</span>
             <div className="flex gap-1">
               {stars.map((s, i) => (
                 <StarNumberBall key={i} number={s} size="sm" />
@@ -228,7 +228,7 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
         )}
         {result.elMillon && (
           <div className="flex flex-col pl-2.5 border-l border-slate-200">
-            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">El Millón</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">El Millón</span>
             <span className="text-[11px] font-black text-amber-600 tracking-wider mt-1">{result.elMillon}</span>
           </div>
         )}
@@ -247,7 +247,7 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
         </div>
         {stars && stars.length > 0 && (
           <div className="flex flex-col pl-2.5 border-l border-slate-200">
-            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Núm. Clave</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Núm. Clave</span>
             <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-amber-200 bg-amber-50 text-[12px] font-black text-amber-700 mt-1">
               {stars[0]}
             </div>
@@ -268,7 +268,7 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
         </div>
         {stars && stars.length > 0 && (
           <div className="flex flex-col pl-2.5 border-l border-slate-200">
-            <span className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Núm. Sueño</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Núm. Sueño</span>
             <div className="flex h-8 w-8 items-center justify-center rounded-full border border-purple-200 bg-purple-50 text-[12px] font-black text-purple-700 mt-1">
               {stars[0]}
             </div>
@@ -293,13 +293,13 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
             <div className="flex flex-col gap-1.5 shrink-0 text-right">
               {complementario !== undefined && (
                 <div>
-                  <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Complementario</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Complementario</p>
                   <p className="text-[18px] font-black text-manises-blue leading-none mt-0.5">{complementario}</p>
                 </div>
               )}
               {reintegro !== undefined && (
                 <div className={complementario !== undefined ? 'border-t border-slate-100 pt-1.5' : ''}>
-                  <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">Reintegro</p>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Reintegro</p>
                   <p className="text-[18px] font-black text-slate-500 leading-none mt-0.5">{reintegro}</p>
                 </div>
               )}
@@ -309,9 +309,9 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
         {t === 'primitiva' && joker && (
           <div className="flex items-center gap-2 rounded-xl border border-purple-100 bg-purple-50/60 px-2.5 py-1.5">
             <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-purple-500 text-white">
-              <span className="text-[7px] font-black leading-none">J</span>
+              <span className="text-[9px] font-black leading-none">J</span>
             </div>
-            <p className="text-[7px] font-black uppercase tracking-widest text-purple-400 leading-none">Joker</p>
+            <p className="text-[9px] font-black uppercase tracking-widest text-purple-400 leading-none">Joker</p>
             <p className="text-[13px] font-black text-purple-700 leading-none tracking-wider tabular-nums">{joker}</p>
           </div>
         )}
@@ -343,7 +343,7 @@ function ResultCardBody({ result, game }: { result: ResultDto; game: LotteryGame
         </div>
         {complementario !== undefined && (
           <div className="shrink-0 text-right">
-            <p className="text-[7px] font-black uppercase tracking-widest text-slate-400 leading-none">
+            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">
               {game.id === 'quinigol' ? 'Pleno al 7' : 'Pleno al 15'}
             </p>
             <p className="text-[18px] font-black text-manises-blue leading-none mt-0.5">{complementario}</p>
