@@ -1,0 +1,637 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:v="urn:schemas-microsoft-com:vml"
+      xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no" />
+  <!--
+    ================================================================
+    EMAIL 03 · Pedido cancelado — Lotería Nacional
+    Variables: {{NUMERO_SOLICITUD}} {{NOMBRE_JUEGO}} {{MODALIDAD_LABEL}} {{FECHA_SOLICITUD}} {{FECHA_HORA_SOLICITUD}}
+               {{MOTIVO_CANCELACION}} — texto del motivo específico
+               {{BLOQUE_NUMEROS}} — BE renderiza filas de la tabla de números
+               {{IMPORTE_DECIMOS}} {{TOTAL_PEDIDO}}
+               SOLO MENSAJERÍA: {{GASTOS_MENSAJERIA}} {{DIRECCION_NOMBRE}} {{DIRECCION_LINEA1}} {{DIRECCION_LINEA2}} {{DIRECCION_TELEFONO}}
+               {{URL_COMPRA_CERTIFICADA}} {{URL_VERSION_WEB}}
+               {{URL_APP_STORE}} {{URL_GOOGLE_PLAY}} {{URL_FACEBOOK}} {{URL_INSTAGRAM}} {{URL_X_TWITTER}}
+    BE: activar la variante correcta (CUSTODIA o MENSAJERÍA) descomentando los bloques correspondientes
+    ================================================================
+  -->
+  <title>Tu pedido ha sido cancelado &middot; Loter&iacute;a Manises</title>
+  <!--[if mso]><noscript><xml><o:OfficeDocumentSettings>
+    <o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings>
+  </xml></noscript><![endif]-->
+  <style type="text/css">
+    * { box-sizing:border-box; }
+    body,table,td,a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+    table,td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
+    img { -ms-interpolation-mode:bicubic; border:0; display:block; height:auto; line-height:100%; outline:none; text-decoration:none; }
+    body { margin:0 !important; padding:0 !important; width:100% !important; background-color:#EEF2FF; }
+    table { border-collapse:collapse !important; }
+    a { color:#1565C0; }
+    a[x-apple-data-detectors],u + #body a,#MessageViewBody a {
+      color:inherit !important; text-decoration:none !important;
+      font-size:inherit !important; font-family:inherit !important;
+      font-weight:inherit !important; line-height:inherit !important;
+    }
+    @media only screen and (max-width:620px) {
+      .email-container { width:100% !important; border-radius:0 !important; }
+      .hero-icon { display:block !important; width:100% !important; padding-right:0 !important; padding-bottom:14px !important; text-align:center !important; }
+      .mobile-stack { display:block !important; width:100% !important; padding-right:0 !important; padding-left:0 !important; padding-bottom:16px !important; }
+      .num-col { display:block !important; width:50% !important; float:left !important; }
+      .footer-col { display:block !important; width:100% !important; text-align:center !important; padding:0 0 24px 0 !important; }
+      .footer-col-last { display:block !important; width:100% !important; text-align:center !important; padding:16px 0 0 0 !important; }
+      .footer-icon { margin:0 auto 10px !important; }
+      .footer-address { text-align:center !important; }
+    }
+  </style>
+</head>
+<body id="body" style="margin:0;padding:0;background-color:#EEF2FF;">
+
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+       style="background-color:#EEF2FF;">
+  <tr>
+    <td align="center" valign="top" style="padding:24px 0 32px;">
+      <!--[if mso | IE]><table border="0" cellpadding="0" cellspacing="0" width="600"><tr><td><![endif]-->
+      <table class="email-container" role="presentation" border="0" cellpadding="0"
+             cellspacing="0" width="600"
+             style="max-width:600px;width:100%;margin:0 auto;background-color:#FFFFFF;
+                    box-shadow:0 4px 20px rgba(21,101,192,0.10);border-radius:14px;overflow:hidden;">
+
+        <!-- 1. PREHEADER OCULTO -->
+        <tr>
+          <td style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;
+                     opacity:0;overflow:hidden;mso-hide:all;">
+            Tu pedido de Loter&iacute;a Nacional no ha podido ser confirmado y ha sido cancelado. Consulta los detalles.
+            &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+          </td>
+        </tr>
+
+        <!-- 2. BARRA NAVEGADOR -->
+        <tr>
+          <td bgcolor="#FFFFFF"
+              style="background-color:#FFFFFF;padding:9px 24px;
+                     text-align:center;border-bottom:1px solid #F0F4FF;">
+            <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                       font-size:11px;line-height:1.5;color:#9CA3AF;">
+              Si no puedes ver bien este correo,
+              <a href="{{URL_VERSION_WEB}}"
+                 style="color:#1565C0;text-decoration:underline;">&aacute;brelo en tu navegador</a>
+            </p>
+          </td>
+        </tr>
+
+        <!-- 3. CABECERA VARIANTE B — Logo color sobre blanco -->
+        <tr>
+          <td bgcolor="#FFFFFF"
+              style="background-color:#FFFFFF;padding:20px 24px 16px;text-align:center;border-bottom:1px solid #F0F4FF;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <!-- Left: green / red / blue diamonds -->
+                <td width="60" valign="middle"
+                    style="width:60px;vertical-align:middle;">
+                  <span style="display:block;font-family:Arial,Helvetica,sans-serif;
+                               font-size:10px;color:#16A34A;line-height:1.3;">&#9670;</span>
+                  <span style="display:block;font-family:Arial,Helvetica,sans-serif;
+                               font-size:8px;color:#DC2626;line-height:1.3;">&#9670;</span>
+                  <span style="display:block;font-family:Arial,Helvetica,sans-serif;
+                               font-size:7px;color:#1565C0;line-height:1.3;">&#9670;</span>
+                </td>
+                <!-- Center: color logo -->
+                <td valign="middle" style="text-align:center;vertical-align:middle;">
+                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-color.png"
+                       width="190" alt="Loter&iacute;a Manises"
+                       style="display:block;margin:0 auto;width:190px;height:auto;border:0;" />
+                </td>
+                <!-- Right: orange / pink / blue diamonds -->
+                <td width="60" valign="middle"
+                    style="width:60px;vertical-align:middle;text-align:right;">
+                  <span style="display:block;font-family:Arial,Helvetica,sans-serif;
+                               font-size:8px;color:#F59E0B;line-height:1.3;text-align:right;">&#9670;</span>
+                  <span style="display:block;font-family:Arial,Helvetica,sans-serif;
+                               font-size:9px;color:#EC4899;line-height:1.3;text-align:right;">&#9670;</span>
+                  <span style="display:block;font-family:Arial,Helvetica,sans-serif;
+                               font-size:7px;color:#1565C0;line-height:1.3;text-align:right;">&#9670;</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- 4. HERO — Pedido cancelado -->
+        <tr>
+          <td bgcolor="#FFFFFF"
+              style="background-color:#FFFFFF;padding:32px 24px 28px;text-align:center;">
+
+            <!-- Red circle icon 72x72 -->
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                   style="margin:0 auto 20px;border-collapse:separate !important;">
+              <tr>
+                <td width="72" height="72" bgcolor="#DC2626"
+                    style="background-color:#DC2626;border-radius:50%;width:72px;height:72px;
+                           text-align:center;vertical-align:middle;line-height:72px;mso-line-height-rule:exactly;">
+                  <span style="font-family:Arial,Helvetica,sans-serif;font-size:32px;font-weight:700;
+                                color:#FFFFFF;line-height:72px;mso-line-height-rule:exactly;">&#10007;</span>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Multi-size typographic heading -->
+            <p style="margin:0 0 12px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                       line-height:1.15;text-align:center;">
+              <span style="display:block;font-size:16px;font-weight:500;color:#4B5563;">Tu pedido</span>
+              <span style="display:block;font-size:16px;font-weight:500;color:#4B5563;margin-top:2px;">ha sido</span>
+              <span style="display:block;font-size:38px;font-weight:800;color:#DC2626;
+                           letter-spacing:-0.02em;mso-line-height-rule:exactly;
+                           line-height:1.1;margin-top:2px;">cancelado</span>
+            </p>
+
+            <!-- Body text -->
+            <p style="margin:0 auto;max-width:420px;font-family:'Inter',Arial,Helvetica,sans-serif;
+                       font-size:14px;color:#4B5563;line-height:1.65;text-align:center;">
+              No hemos podido confirmar tu compra.<br />
+              Se ha cancelado la solicitud y no participar&aacute;s en los sorteos.
+            </p>
+
+          </td>
+        </tr>
+
+        <!-- 5. CHIPS DE INFORMACIÓN DE LA SOLICITUD -->
+        <tr>
+          <td bgcolor="#FFFFFF"
+              style="background-color:#FFFFFF;padding:0 24px 24px;text-align:center;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                   style="margin:0 auto;">
+              <tr>
+                <td style="padding:0 3px;">
+                  <span style="display:inline-block;background-color:#F1F5F9;border-radius:16px;
+                               padding:4px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;
+                               font-size:11px;color:#334155;">
+                    <span style="display:block;color:#64748B;font-size:10px;">Tipo de juego</span>
+                    <strong>{{NOMBRE_JUEGO}}</strong>
+                  </span>
+                </td>
+                <td style="padding:0 3px;">
+                  <span style="display:inline-block;background-color:#F1F5F9;border-radius:16px;
+                               padding:4px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;
+                               font-size:11px;color:#334155;">
+                    <span style="display:block;color:#64748B;font-size:10px;">Modalidad</span>
+                    <strong>{{MODALIDAD_LABEL}}</strong>
+                  </span>
+                </td>
+                <td style="padding:0 3px;">
+                  <span style="display:inline-block;background-color:#F1F5F9;border-radius:16px;
+                               padding:4px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;
+                               font-size:11px;color:#334155;">
+                    <span style="display:block;color:#64748B;font-size:10px;">Fecha de solicitud</span>
+                    <strong>{{FECHA_HORA_SOLICITUD}}</strong>
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- 6 + 7. DETALLE DE LA SOLICITUD CANCELADA + RESUMEN ECONÓMICO -->
+        <tr>
+          <td bgcolor="#EEF2FF" style="background-color:#EEF2FF;padding:0 24px 0;">
+
+            <!-- Eyebrow -->
+            <p style="margin:24px 0 12px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                       font-size:10px;font-weight:700;color:#1565C0;
+                       text-transform:uppercase;letter-spacing:0.1em;">
+              Detalle de la solicitud cancelada
+            </p>
+
+            <!-- White card -->
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                   style="background-color:#FFFFFF;border:1px solid #E5E7EB;
+                          border-radius:12px;overflow:hidden;">
+
+              <!-- Table header row -->
+              <tr bgcolor="#F8FAFC" style="background-color:#F8FAFC;">
+                <td style="padding:10px 12px 10px 16px;font-family:'Inter',Arial,Helvetica,sans-serif;
+                           font-size:11px;font-weight:600;color:#596175;text-transform:uppercase;
+                           letter-spacing:0.08em;border-bottom:1px solid #E5E7EB;width:35%;">
+                  Sorteo
+                </td>
+                <td style="padding:10px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;
+                           font-size:11px;font-weight:600;color:#596175;text-transform:uppercase;
+                           letter-spacing:0.08em;border-bottom:1px solid #E5E7EB;
+                           width:20%;text-align:center;">
+                  N&uacute;mero
+                </td>
+                <td style="padding:10px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;
+                           font-size:11px;font-weight:600;color:#596175;text-transform:uppercase;
+                           letter-spacing:0.08em;border-bottom:1px solid #E5E7EB;
+                           width:20%;text-align:center;">
+                  Cantidad
+                </td>
+                <td style="padding:10px 16px 10px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;
+                           font-size:11px;font-weight:600;color:#596175;text-transform:uppercase;
+                           letter-spacing:0.08em;border-bottom:1px solid #E5E7EB;
+                           width:25%;text-align:right;">
+                  Importe
+                </td>
+              </tr>
+
+              <!--
+                BE: renderizar una <tr> por décimo con el siguiente formato:
+                <tr style="border-bottom:1px solid #F3F4F6;">
+                  <td style="padding:11px 12px 11px 16px;vertical-align:top;">
+                    <span style="display:block;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#64748B;">22/12/2026</span>
+                    <span style="display:block;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;font-weight:600;color:#0D1B3D;">Loter&iacute;a de Navidad</span>
+                  </td>
+                  <td style="padding:11px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;color:#1E3A5F;text-align:center;vertical-align:middle;letter-spacing:0.02em;">12345</td>
+                  <td style="padding:11px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:500;color:#334155;text-align:center;vertical-align:middle;">4 d&eacute;cimos</td>
+                  <td style="padding:11px 16px 11px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;color:#0D1B3D;text-align:right;vertical-align:middle;">80,00&nbsp;&euro;</td>
+                </tr>
+              -->
+              {{BLOQUE_NUMEROS}}
+
+              <!-- [RESUMEN CUSTODIA] BE: activo por defecto para custodia digital -->
+              <tr bgcolor="#F8FAFC" style="background-color:#F8FAFC;">
+                <td colspan="4" style="padding:12px 16px;border-top:1px solid #E5E7EB;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td style="font-family:'Inter',Arial,Helvetica,sans-serif;
+                                 font-size:13px;font-weight:600;color:#596175;">
+                        Total de d&eacute;cimos
+                      </td>
+                      <td style="text-align:right;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                 font-size:13px;font-weight:700;color:#1E3A5F;">
+                        {{IMPORTE_DECIMOS}}&nbsp;&euro;
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr bgcolor="#FEF2F2" style="background-color:#FEF2F2;">
+                <td colspan="4" style="padding:12px 16px;border-top:1px solid #FECACA;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td style="font-family:'Inter',Arial,Helvetica,sans-serif;
+                                 font-size:14px;font-weight:700;color:#DC2626;
+                                 text-transform:uppercase;letter-spacing:0.04em;">
+                        Total del pedido
+                      </td>
+                      <td style="text-align:right;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                 font-size:14px;font-weight:700;color:#DC2626;">
+                        {{TOTAL_PEDIDO}}&nbsp;&euro;
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <!-- [/RESUMEN CUSTODIA] -->
+
+              <!-- [RESUMEN MENSAJERÍA] BE: descomentar para mensajería; eliminar el bloque CUSTODIA de arriba
+              <tr bgcolor="#F8FAFC" style="background-color:#F8FAFC;">
+                <td colspan="4" style="padding:12px 16px;border-top:1px solid #E5E7EB;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;color:#596175;">Total de d&eacute;cimos</td>
+                      <td style="text-align:right;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1E3A5F;">{{IMPORTE_DECIMOS}}&nbsp;&euro;</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr bgcolor="#F8FAFC" style="background-color:#F8FAFC;">
+                <td colspan="4" style="padding:8px 16px;border-top:1px solid #F3F4F6;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;color:#596175;">Gastos de mensajer&iacute;a</td>
+                      <td style="text-align:right;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#1E3A5F;">{{GASTOS_MENSAJERIA}}&nbsp;&euro;</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr bgcolor="#FEF2F2" style="background-color:#FEF2F2;">
+                <td colspan="4" style="padding:12px 16px;border-top:1px solid #FECACA;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#DC2626;text-transform:uppercase;letter-spacing:0.04em;">Total del pedido</td>
+                      <td style="text-align:right;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#DC2626;">{{TOTAL_PEDIDO}}&nbsp;&euro;</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              [/RESUMEN MENSAJERÍA] -->
+
+            </table>
+          </td>
+        </tr>
+
+        <!-- 8. MOTIVO DE LA CANCELACIÓN -->
+        <tr>
+          <td bgcolor="#EEF2FF" style="background-color:#EEF2FF;padding:16px 24px 0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                   style="background-color:#FEF2F2;border:1px solid #FECACA;
+                          border-left:4px solid #EA580C;border-radius:0 10px 10px 0;">
+              <tr>
+                <td style="padding:14px 18px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <!-- Orange circle with ! -->
+                      <td width="42" valign="top"
+                          style="vertical-align:top;padding-right:14px;padding-top:2px;width:42px;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                               width="28" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="28" height="28" bgcolor="#EA580C"
+                                style="background-color:#EA580C;border-radius:50%;
+                                       width:28px;height:28px;text-align:center;
+                                       vertical-align:middle;line-height:28px;
+                                       mso-line-height-rule:exactly;">
+                              <span style="font-family:Arial,Helvetica,sans-serif;font-size:16px;
+                                           font-weight:700;color:#FFFFFF;line-height:28px;
+                                           mso-line-height-rule:exactly;">!</span>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <!-- Text -->
+                      <td valign="top" style="vertical-align:top;">
+                        <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:13px;font-weight:700;color:#7C2D12;">
+                          Motivo de la cancelaci&oacute;n
+                        </p>
+                        <p style="margin:0 0 8px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:12px;color:#334155;line-height:1.6;">
+                          {{MOTIVO_CANCELACION}}
+                        </p>
+                        <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:12px;color:#4B5563;line-height:1.6;">
+                          Si lo deseas, puedes realizar una nueva solicitud desde tu cuenta
+                          o elegir otros n&uacute;meros disponibles.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- 9. DIRECCIÓN DE ENVÍO — solo MENSAJERÍA (comentado por defecto) -->
+        <!-- [DIRECCIÓN DE ENVÍO — solo MENSAJERÍA] BE: descomentar para mensajería
+        <tr>
+          <td bgcolor="#EEF2FF" style="background-color:#EEF2FF;padding:16px 24px 0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                   style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
+              <tr>
+                <td style="padding:16px 18px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td width="62" valign="top" style="vertical-align:top;padding-right:16px;width:62px;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                               width="48" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="48" height="48" bgcolor="#16A34A"
+                                style="background-color:#16A34A;border-radius:50%;width:48px;height:48px;
+                                       text-align:center;vertical-align:middle;line-height:48px;
+                                       mso-line-height-rule:exactly;">
+                              <span style="font-family:Arial,Helvetica,sans-serif;font-size:22px;
+                                           line-height:48px;mso-line-height-rule:exactly;">&#128666;</span>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="top" style="vertical-align:top;">
+                        <p style="margin:0 0 6px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:11px;font-weight:700;color:#1565C0;
+                                   text-transform:uppercase;letter-spacing:0.08em;">
+                          Direcci&oacute;n de env&iacute;o
+                        </p>
+                        <p style="margin:0 0 3px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:14px;font-weight:600;color:#1E3A5F;">
+                          {{DIRECCION_NOMBRE}}
+                        </p>
+                        <p style="margin:0 0 5px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:13px;color:#4B5563;line-height:1.65;">
+                          {{DIRECCION_LINEA1}}<br />{{DIRECCION_LINEA2}}
+                        </p>
+                        <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:12px;color:#64748B;">
+                          Tel&eacute;fono: {{DIRECCION_TELEFONO}}
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        [/DIRECCIÓN DE ENVÍO] -->
+
+        <!-- 10. CTA — Acceder a Compra Certificada -->
+        <tr>
+          <td bgcolor="#EEF2FF" style="background-color:#EEF2FF;padding:16px 24px 24px;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td style="text-align:center;">
+                  <!--[if mso]>
+                  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml"
+                               xmlns:w="urn:schemas-microsoft-com:office:word"
+                               href="{{URL_COMPRA_CERTIFICADA}}"
+                               style="height:48px;v-text-anchor:middle;width:460px;"
+                               arcsize="8%"
+                               strokecolor="#0D1B3D"
+                               fillcolor="#0D1B3D">
+                    <w:anchorlock/>
+                    <center style="color:#FFFFFF;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:15px;font-weight:bold;letter-spacing:0.03em;">
+                      Acceder a mi Compra Certificada &rarr;
+                    </center>
+                  </v:roundrect>
+                  <![endif]-->
+                  <!--[if !mso]><!-->
+                  <a href="{{URL_COMPRA_CERTIFICADA}}"
+                     style="display:block;padding:14px 28px;background-color:#0D1B3D;
+                            border-radius:12px;font-family:'Inter',Arial,Helvetica,sans-serif;
+                            font-size:15px;font-weight:700;color:#FFFFFF;text-decoration:none;
+                            text-align:center;letter-spacing:0.03em;mso-hide:all;">
+                    Acceder a mi Compra Certificada &rarr;
+                  </a>
+                  <!--<![endif]-->
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- 11. MÓDULO APP -->
+        <tr>
+          <td bgcolor="#FFFFFF"
+              style="background-color:#FFFFFF;padding:20px 24px 24px;border-top:1px solid #F3F4F6;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td class="mobile-stack" width="120" valign="middle"
+                    style="vertical-align:middle;padding-right:18px;width:120px;">
+                  <img src="https://cdn.loteriamanises.com/emails/app-mockup.png"
+                       width="100" alt="App"
+                       style="display:block;margin:0 auto;width:100px;height:auto;border:0;" />
+                </td>
+                <td class="mobile-stack" valign="middle" style="vertical-align:middle;">
+                  <h3 style="margin:0 0 5px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                              font-size:15px;font-weight:700;color:#0D1B3D;line-height:1.3;">
+                    Lleva tus jugadas siempre contigo
+                  </h3>
+                  <p style="margin:0 0 12px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                             font-size:12px;color:#64748B;line-height:1.6;">
+                    Consulta tus compras, resultados y saldo desde la app de Loter&iacute;a Manises.
+                  </p>
+                  <a href="{{URL_APP_STORE}}"
+                     style="display:inline-block;margin-right:6px;margin-bottom:4px;text-decoration:none;">
+                    <img src="https://cdn.loteriamanises.com/emails/badge-appstore.png"
+                         width="116" alt="App Store"
+                         style="display:inline-block;width:116px;height:auto;border:0;" />
+                  </a>
+                  <a href="{{URL_GOOGLE_PLAY}}"
+                     style="display:inline-block;text-decoration:none;">
+                    <img src="https://cdn.loteriamanises.com/emails/badge-googleplay.png"
+                         width="116" alt="Google Play"
+                         style="display:inline-block;width:116px;height:auto;border:0;" />
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- 12. AVISO LEGAL -->
+        <tr>
+          <td bgcolor="#F8FAFC"
+              style="background-color:#F8FAFC;border-top:1px solid #E5E7EB;padding:16px 28px 18px;">
+            <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                       font-size:11px;color:#94A3B8;text-align:center;line-height:1.75;">
+              Este correo es autom&aacute;tico e informativo. La informaci&oacute;n oficial de la
+              compra y el Certificado de Propiedad est&aacute;n disponibles en tu
+              <a href="{{URL_COMPRA_CERTIFICADA}}"
+                 style="color:#1565C0;text-decoration:underline;">Compra Certificada</a>.
+            </p>
+          </td>
+        </tr>
+
+        <!-- 13. SEPARATOR + FOOTER -->
+        <tr>
+          <td bgcolor="#1565C0"
+              style="background-color:#1565C0;height:2px;font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
+
+        <!-- Footer contact (3 columnas) -->
+        <tr>
+          <td bgcolor="#0d1f40" style="background-color:#0d1f40;padding:32px 24px 28px;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <!-- Col 1: Teléfono y contacto -->
+                <td class="footer-col" width="184" valign="top"
+                    style="vertical-align:top;padding-right:10px;width:184px;">
+                  <img src="https://cdn.loteriamanises.com/emails/icon-phone-hdr.png"
+                       width="36" alt="" class="footer-icon"
+                       style="display:block;width:36px;height:auto;border:0;margin:0 0 12px 0;" />
+                  <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                             font-size:11px;font-weight:600;color:#94A3B8;
+                             text-transform:uppercase;letter-spacing:0.07em;">
+                    &iquest;Necesitas ayuda?
+                  </p>
+                  <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                             font-size:16px;font-weight:700;color:#FFFFFF;letter-spacing:0.02em;">
+                    96&nbsp;154&nbsp;03&nbsp;17
+                  </p>
+                  <p style="margin:0 0 12px 0;">
+                    <a href="mailto:info@loteriamanises.es"
+                       style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;
+                              color:#60A5FA;text-decoration:none;">
+                      info@loteriamanises.es
+                    </a>
+                  </p>
+                  <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                             font-size:11px;color:#64748B;line-height:1.7;">
+                    Lunes a viernes &middot; 9:00&ndash;20:00h<br />
+                    S&aacute;bados &middot; 9:00&ndash;13:00h
+                  </p>
+                </td>
+
+                <!-- Col 2: Redes sociales -->
+                <td class="footer-col" width="184" valign="top"
+                    style="vertical-align:top;text-align:center;padding:0 8px;width:184px;">
+                  <p style="margin:0 0 16px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                             font-size:11px;font-weight:600;color:#94A3B8;
+                             text-transform:uppercase;letter-spacing:0.08em;">
+                    S&iacute;guenos
+                  </p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                         style="margin:0 auto;">
+                    <tr>
+                      <td style="padding:0 6px;">
+                        <a href="{{URL_FACEBOOK}}" style="text-decoration:none;">
+                          <img src="https://cdn.loteriamanises.com/emails/icon-facebook.png"
+                               width="36" alt="Facebook"
+                               style="display:block;width:36px;height:auto;border:0;" />
+                        </a>
+                      </td>
+                      <td style="padding:0 6px;">
+                        <a href="{{URL_INSTAGRAM}}" style="text-decoration:none;">
+                          <img src="https://cdn.loteriamanises.com/emails/icon-instagram.png"
+                               width="36" alt="Instagram"
+                               style="display:block;width:36px;height:auto;border:0;" />
+                        </a>
+                      </td>
+                      <td style="padding:0 6px;">
+                        <a href="{{URL_X_TWITTER}}" style="text-decoration:none;">
+                          <img src="https://cdn.loteriamanises.com/emails/icon-x.png"
+                               width="36" alt="X"
+                               style="display:block;width:36px;height:auto;border:0;" />
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+
+                <!-- Col 3: Logo + Dirección -->
+                <td class="footer-col footer-col-last" width="184" valign="top"
+                    style="vertical-align:top;text-align:right;padding-left:10px;width:184px;">
+                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-white.png"
+                       width="118" alt="Loter&iacute;a Manises" class="footer-icon"
+                       style="display:block;margin:0 0 12px auto;width:118px;height:auto;border:0;" />
+                  <p class="footer-address"
+                     style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                            font-size:11px;color:#64748B;line-height:1.7;">
+                    Av. Generalitat Valenciana, 23<br />
+                    46940 Manises &middot; Valencia<br />
+                    Adm&oacute;n. de Loter&iacute;as n&ordm;&nbsp;6
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Footer legal -->
+        <tr>
+          <td bgcolor="#091730"
+              style="background-color:#091730;padding:12px 24px 16px;
+                     border-top:1px solid rgba(255,255,255,0.06);">
+            <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                       font-size:11px;color:#94A3B8;text-align:center;line-height:1.65;">
+              Este mensaje se env&iacute;a autom&aacute;ticamente &middot; Por favor no respondas a este correo
+            </p>
+          </td>
+        </tr>
+
+      </table>
+      <!--[if mso | IE]></td></tr></table><![endif]-->
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
