@@ -106,16 +106,24 @@
         display: block !important;
         width: 100% !important;
         text-align: center !important;
-        padding: 0 0 24px 0 !important;
+        padding: 0 0 28px 0 !important;
+        border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+        margin-bottom: 4px !important;
       }
       .footer-col-last {
         display: block !important;
         width: 100% !important;
         text-align: center !important;
-        padding: 0 !important;
+        padding: 20px 0 0 0 !important;
       }
       .footer-logo {
         margin: 0 auto 10px !important;
+      }
+      .footer-icon {
+        margin: 0 auto 10px !important;
+      }
+      .footer-address {
+        text-align: center !important;
       }
       .store-badge {
         display: inline-block !important;
@@ -192,115 +200,107 @@
 
         <!-- Preheader bar -->
         <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:11px 24px;
-                     text-align:center;border-bottom:1px solid #F3F4F6;">
+          <td bgcolor="#052a5a"
+              style="background-color:#052a5a;padding:9px 24px;
+                     text-align:center;border-bottom:1px solid #083a7a;">
             <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                       font-size:12px;line-height:1.5;color:#9CA3AF;">
+                       font-size:11px;line-height:1.5;color:rgba(255,255,255,0.6);">
               Si no puedes ver bien este correo,
               <a href="{{URL_VERSION_WEB}}"
-                 style="color:#1565C0;text-decoration:underline;">
+                 style="color:rgba(255,255,255,0.85);text-decoration:underline;">
                 &aacute;brelo en tu navegador
               </a>
             </p>
           </td>
         </tr>
 
-        <!-- Logo con diamantes decorativos -->
+        <!-- ============================================= -->
+        <!--  == CABECERA + HERO INTEGRADO (un solo bloque) == -->
+        <!-- ============================================= -->
         <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:26px 24px 22px;
-                     border-bottom:3px solid #EEF2FF;">
-            <table role="presentation" border="0" cellpadding="0"
-                   cellspacing="0" width="100%">
+          <td bgcolor="#052a5a"
+              style="background-color:#052a5a;
+                     background-image:linear-gradient(180deg,rgba(5,42,90,0.80) 0%,rgba(10,71,146,0.84) 50%,rgba(5,42,90,0.90) 100%),url(https://cdn.loteriamanises.com/emails/hero-bg.jpg);
+                     background-size:cover;background-position:center top;padding:0;">
+            <!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:0;background-color:#052a5a;"><![endif]-->
+
+            <!-- Logo centrado -->
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <!-- Diamantes izquierda -->
-                <td width="58" valign="middle"
-                    style="vertical-align:middle;text-align:right;padding-right:10px;">
-                  <span style="display:block;color:#E84D5F;font-size:8px;
-                               line-height:1.5;text-align:right;">&#9670;</span>
-                  <span style="display:block;color:#1565C0;font-size:15px;
-                               line-height:1.2;text-align:right;">&#9670;</span>
-                  <span style="display:block;color:#93C5FD;font-size:6px;
-                               line-height:1.5;text-align:right;">&#9670;</span>
+                <td style="padding:28px 24px 22px;text-align:center;">
+                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-white.png"
+                       width="190" alt="Loter&iacute;a Manises"
+                       style="display:block;margin:0 auto;width:190px;
+                              max-width:190px;height:auto;border:0;" />
                 </td>
-                <!-- Logo -->
-                <td valign="middle" style="vertical-align:middle;text-align:center;">
-                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-full.png"
-                       width="200" alt="Loter&iacute;a Manises &middot; Desde 2000"
-                       style="display:block;margin:0 auto;width:200px;
-                              max-width:200px;height:auto;border:0;" />
-                </td>
-                <!-- Diamantes derecha -->
-                <td width="58" valign="middle"
-                    style="vertical-align:middle;text-align:left;padding-left:10px;">
-                  <span style="display:block;color:#22C55E;font-size:6px;
-                               line-height:1.5;text-align:left;">&#9670;</span>
-                  <span style="display:block;color:#1565C0;font-size:15px;
-                               line-height:1.2;text-align:left;">&#9670;</span>
-                  <span style="display:block;color:#F59E0B;font-size:8px;
-                               line-height:1.5;text-align:left;">&#9670;</span>
+              </tr>
+              <!-- Separador sutil -->
+              <tr>
+                <td style="padding:0 40px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td style="border-top:1px solid rgba(255,255,255,0.22);
+                                 font-size:1px;line-height:1px;">&nbsp;</td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
+
+            <!-- Hero: icono + título + intro -->
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td style="padding:28px 24px 38px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <!-- Icono banco -->
+                      <td class="hero-icon mobile-stack" width="110" valign="top"
+                          style="vertical-align:top;padding-right:20px;width:110px;">
+                        <img src="https://cdn.loteriamanises.com/emails/icon-transferencia.png"
+                             width="90" alt=""
+                             style="display:block;width:90px;height:auto;border:0;" />
+                      </td>
+                      <!-- Texto hero -->
+                      <td class="mobile-stack" valign="top"
+                          style="vertical-align:top;">
+                        <h1 style="margin:0 0 14px 0;
+                                   font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:22px;font-weight:700;color:#FFFFFF;
+                                   line-height:1.3;mso-line-height-rule:exactly;">
+                          Realiza la transferencia para a&ntilde;adir saldo
+                        </h1>
+                        <p style="margin:0 0 10px 0;
+                                   font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:15px;font-weight:600;color:#FFFFFF;
+                                   line-height:1.4;">
+                          Hola, {{NOMBRE_USUARIO}}:
+                        </p>
+                        <p style="margin:0 0 10px 0;
+                                   font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:14px;color:rgba(255,255,255,0.82);line-height:1.65;">
+                          Hemos recibido tu solicitud de recarga de saldo
+                          mediante transferencia bancaria.
+                        </p>
+                        <p style="margin:0;
+                                   font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:14px;color:rgba(255,255,255,0.82);line-height:1.65;">
+                          Para completar la recarga, realiza la transferencia
+                          utilizando los siguientes datos.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <!--[if mso]></td></tr></table><![endif]-->
           </td>
         </tr>
-
-        <!-- ============================================= -->
-        <!--  == CABECERA COMPARTIDA (END) ==              -->
-        <!-- ============================================= -->
-
 
         <!-- ============================================= -->
         <!--  == CONTENIDO ESPECÍFICO (START) ==           -->
         <!-- ============================================= -->
-
-        <!-- ---- HERO: icono + título + intro ---- -->
-        <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:32px 24px 24px;">
-            <table role="presentation" border="0" cellpadding="0"
-                   cellspacing="0" width="100%">
-              <tr>
-                <!-- Icono banco/transferencia -->
-                <td class="hero-icon mobile-stack" width="110" valign="top"
-                    style="vertical-align:top;padding-right:20px;width:110px;">
-                  <img src="https://cdn.loteriamanises.com/emails/icon-transferencia.png"
-                       width="90" alt=""
-                       style="display:block;width:90px;height:auto;border:0;" />
-                </td>
-                <!-- Texto hero -->
-                <td class="mobile-stack" valign="top"
-                    style="vertical-align:top;">
-                  <h1 style="margin:0 0 14px 0;
-                             font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:22px;font-weight:700;color:#1E3A5F;
-                             line-height:1.3;mso-line-height-rule:exactly;">
-                    Realiza la transferencia para a&ntilde;adir saldo
-                  </h1>
-                  <p style="margin:0 0 10px 0;
-                             font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:15px;font-weight:600;color:#1E3A5F;
-                             line-height:1.4;">
-                    Hola, {{NOMBRE_USUARIO}}:
-                  </p>
-                  <p style="margin:0 0 10px 0;
-                             font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:14px;color:#4B5563;line-height:1.65;">
-                    Hemos recibido tu solicitud de recarga de saldo
-                    mediante transferencia bancaria.
-                  </p>
-                  <p style="margin:0;
-                             font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:14px;color:#4B5563;line-height:1.65;">
-                    Para completar la recarga, realiza la transferencia
-                    utilizando los siguientes datos.
-                  </p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
 
         <!-- ---- DATOS DE TU SOLICITUD (3 tarjetas) ---- -->
         <tr>
@@ -327,9 +327,9 @@
                           style="background-color:#FFFFFF;border-radius:10px;
                                  padding:14px 10px;text-align:center;">
                         <img src="https://cdn.loteriamanises.com/emails/icon-solicitud.png"
-                             width="24" alt=""
-                             style="display:block;margin:0 auto 8px;
-                                    width:24px;height:auto;border:0;" />
+                             width="36" alt=""
+                             style="display:block;margin:0 auto 10px;
+                                    width:36px;height:auto;border:0;" />
                         <p style="margin:0 0 3px 0;
                                    font-family:'Inter',Arial,Helvetica,sans-serif;
                                    font-size:10px;color:#6B7280;line-height:1.4;">
@@ -356,9 +356,9 @@
                           style="background-color:#FFFFFF;border-radius:10px;
                                  padding:14px 10px;text-align:center;">
                         <img src="https://cdn.loteriamanises.com/emails/icon-importe.png"
-                             width="24" alt=""
-                             style="display:block;margin:0 auto 8px;
-                                    width:24px;height:auto;border:0;" />
+                             width="36" alt=""
+                             style="display:block;margin:0 auto 10px;
+                                    width:36px;height:auto;border:0;" />
                         <p style="margin:0 0 3px 0;
                                    font-family:'Inter',Arial,Helvetica,sans-serif;
                                    font-size:10px;color:#6B7280;line-height:1.4;">
@@ -385,9 +385,9 @@
                           style="background-color:#FFFFFF;border-radius:10px;
                                  padding:14px 10px;text-align:center;">
                         <img src="https://cdn.loteriamanises.com/emails/icon-metodo.png"
-                             width="24" alt=""
-                             style="display:block;margin:0 auto 8px;
-                                    width:24px;height:auto;border:0;" />
+                             width="36" alt=""
+                             style="display:block;margin:0 auto 10px;
+                                    width:36px;height:auto;border:0;" />
                         <p style="margin:0 0 3px 0;
                                    font-family:'Inter',Arial,Helvetica,sans-serif;
                                    font-size:10px;color:#6B7280;line-height:1.4;">
@@ -395,9 +395,9 @@
                         </p>
                         <p style="margin:0;
                                    font-family:'Inter',Arial,Helvetica,sans-serif;
-                                   font-size:14px;font-weight:700;color:#1E3A5F;
+                                   font-size:12px;font-weight:700;color:#1E3A5F;
                                    line-height:1.35;">
-                          Transferencia<br />bancaria
+                          Transferencia bancaria
                         </p>
                       </td>
                     </tr>
@@ -528,7 +528,7 @@
                             font-size:13px;font-weight:600;color:#1565C0;
                             text-decoration:none;background-color:#FFFFFF;
                             line-height:normal;mso-hide:all;">
-                    &#128203;&nbsp;Copiar IBAN
+                    Copiar IBAN
                   </a>
                   <!--<![endif]-->
                 </td>
@@ -538,71 +538,91 @@
           </td>
         </tr>
 
-        <!-- ---- MUY IMPORTANTE ---- -->
+        <!-- ---- IDENTIFICA TU TRANSFERENCIA ---- -->
         <tr>
           <td bgcolor="#FFFFFF"
               style="background-color:#FFFFFF;padding:0 24px 24px;">
             <table role="presentation" border="0" cellpadding="0"
                    cellspacing="0" width="100%">
               <tr>
-                <!-- Borde izquierdo amber -->
-                <td width="4" bgcolor="#F59E0B"
-                    style="background-color:#F59E0B;border-radius:4px 0 0 4px;">
-                  &nbsp;
-                </td>
-                <!-- Contenido del bloque -->
-                <td bgcolor="#FFFBEB"
-                    style="background-color:#FFFBEB;
-                           padding:18px 18px 18px 16px;
+                <!-- Acento izquierdo azul -->
+                <td width="3" bgcolor="#1565C0"
+                    style="background-color:#1565C0;border-radius:4px 0 0 4px;
+                           font-size:0;line-height:0;">&nbsp;</td>
+                <!-- Contenido -->
+                <td bgcolor="#EEF2FF"
+                    style="background-color:#EEF2FF;
+                           padding:18px 20px 18px 18px;
                            border-radius:0 10px 10px 0;
-                           border-top:1px solid #FDE68A;
-                           border-right:1px solid #FDE68A;
-                           border-bottom:1px solid #FDE68A;">
+                           border-top:1px solid #C7D7F9;
+                           border-right:1px solid #C7D7F9;
+                           border-bottom:1px solid #C7D7F9;">
                   <table role="presentation" border="0" cellpadding="0"
                          cellspacing="0" width="100%">
                     <tr>
-                      <!-- Icono círculo naranja -->
+                      <!-- Icono usuario -->
                       <td width="56" valign="top"
                           style="vertical-align:top;padding-right:14px;">
-                        <table role="presentation" border="0" cellpadding="0"
-                               cellspacing="0" width="46" height="46">
-                          <tr>
-                            <td bgcolor="#F59E0B" align="center" valign="middle"
-                                style="background-color:#F59E0B;border-radius:50%;
-                                       width:46px;height:46px;
-                                       text-align:center;vertical-align:middle;
-                                       font-size:20px;line-height:46px;">
-                              &#128100;
-                            </td>
-                          </tr>
-                        </table>
+                        <img src="https://cdn.loteriamanises.com/emails/icon-user.png"
+                             width="44" alt=""
+                             style="display:block;width:44px;height:auto;border:0;" />
                       </td>
                       <!-- Texto -->
                       <td valign="top" style="vertical-align:top;">
                         <p style="margin:0 0 3px 0;
                                    font-family:'Inter',Arial,Helvetica,sans-serif;
-                                   font-size:10px;font-weight:700;color:#D97706;
+                                   font-size:10px;font-weight:700;color:#1565C0;
                                    letter-spacing:0.1em;text-transform:uppercase;
                                    line-height:1.4;">
-                          MUY IMPORTANTE
+                          Imprescindible
                         </p>
                         <h2 style="margin:0 0 10px 0;
                                    font-family:'Inter',Arial,Helvetica,sans-serif;
-                                   font-size:17px;font-weight:700;color:#1E3A5F;
+                                   font-size:16px;font-weight:700;color:#0a4792;
                                    line-height:1.3;mso-line-height-rule:exactly;">
-                          Identifica tu transferencia
+                          Identifica tu transferencia bancaria
                         </h2>
-                        <p style="margin:0;
+                        <p style="margin:0 0 10px 0;
                                    font-family:'Inter',Arial,Helvetica,sans-serif;
-                                   font-size:13px;color:#4B5563;line-height:1.7;">
-                          Para que podamos localizar correctamente el ingreso,<br />
-                          <span style="background-color:#FEF08A;padding:0 2px;
-                                       font-weight:700;color:#1E3A5F;">
-                            indica tu NOMBRE, APELLIDOS y el EMAIL
-                          </span><br />
-                          con el que est&aacute;s registrado en Loter&iacute;a Manises<br />
-                          al realizar la transferencia.
+                                   font-size:13px;color:#334155;line-height:1.6;">
+                          Incluye en el campo&#32;<span style="background-color:#DBEAFE;
+                            color:#1565C0;font-weight:700;font-size:12px;
+                            padding:1px 7px;border-radius:4px;letter-spacing:0.04em;">CONCEPTO</span>&#32;de tu transferencia:
                         </p>
+                        <!-- Lista de campos -->
+                        <table role="presentation" border="0" cellpadding="0"
+                               cellspacing="0">
+                          <tr>
+                            <td width="14" valign="top"
+                                style="vertical-align:top;padding-right:6px;padding-top:1px;">
+                              <span style="font-family:'Inter',Arial,Helvetica,sans-serif;
+                                           font-size:17px;color:#1565C0;font-weight:900;
+                                           line-height:1.3;">&bull;</span>
+                            </td>
+                            <td style="vertical-align:top;padding-bottom:5px;">
+                              <p style="margin:0;
+                                         font-family:'Inter',Arial,Helvetica,sans-serif;
+                                         font-size:13px;color:#334155;line-height:1.6;">
+                                Tu <strong style="color:#0a4792;">nombre y apellidos</strong> completos
+                              </p>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td width="14" valign="top"
+                                style="vertical-align:top;padding-right:6px;padding-top:1px;">
+                              <span style="font-family:'Inter',Arial,Helvetica,sans-serif;
+                                           font-size:17px;color:#1565C0;font-weight:900;
+                                           line-height:1.3;">&bull;</span>
+                            </td>
+                            <td style="vertical-align:top;">
+                              <p style="margin:0;
+                                         font-family:'Inter',Arial,Helvetica,sans-serif;
+                                         font-size:13px;color:#334155;line-height:1.6;">
+                                El <strong style="color:#0a4792;">email</strong> registrado en Loter&iacute;a Manises
+                              </p>
+                            </td>
+                          </tr>
+                        </table>
                       </td>
                     </tr>
                   </table>
@@ -621,21 +641,12 @@
             <table role="presentation" border="0" cellpadding="0"
                    cellspacing="0" width="100%">
               <tr>
-                <!-- Icono círculo verde -->
+                <!-- Icono reloj -->
                 <td width="56" valign="top"
                     style="vertical-align:top;padding-right:14px;">
-                  <table role="presentation" border="0" cellpadding="0"
-                         cellspacing="0" width="44" height="44">
-                    <tr>
-                      <td bgcolor="#16A34A" align="center" valign="middle"
-                          style="background-color:#16A34A;border-radius:50%;
-                                 width:44px;height:44px;
-                                 text-align:center;vertical-align:middle;
-                                 font-size:20px;line-height:44px;">
-                        &#128336;
-                      </td>
-                    </tr>
-                  </table>
+                  <img src="https://cdn.loteriamanises.com/emails/icon-clock.png"
+                       width="44" alt=""
+                       style="display:block;width:44px;height:auto;border:0;" />
                 </td>
                 <!-- Texto disponibilidad -->
                 <td valign="top" style="vertical-align:top;">
@@ -645,7 +656,7 @@
                              line-height:1.3;mso-line-height-rule:exactly;">
                     &iquest;Cu&aacute;ndo estar&aacute; disponible mi saldo?
                   </h3>
-                  <p style="margin:0 0 6px 0;
+                  <p style="margin:0 0 8px 0;
                              font-family:'Inter',Arial,Helvetica,sans-serif;
                              font-size:13px;color:#4B5563;line-height:1.65;">
                     Una vez recibamos y confirmemos la transferencia,
@@ -674,9 +685,10 @@
                          cellspacing="0" width="100%">
                     <tr>
                       <td width="26" valign="top"
-                          style="vertical-align:top;padding-right:10px;
-                                 font-size:15px;line-height:1.65;">
-                        &#9989;
+                          style="vertical-align:top;padding-right:10px;padding-top:2px;">
+                        <img src="https://cdn.loteriamanises.com/emails/icon-check.png"
+                             width="20" alt=""
+                             style="display:block;width:20px;height:auto;border:0;" />
                       </td>
                       <td valign="top" style="vertical-align:top;">
                         <p style="margin:0;
@@ -698,51 +710,50 @@
         <!-- ---- MÓDULO APP ---- -->
         <tr>
           <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:20px 24px 28px;
+              style="background-color:#FFFFFF;padding:24px 24px 28px;
                      border-top:1px solid #F3F4F6;">
             <table role="presentation" border="0" cellpadding="0"
                    cellspacing="0" width="100%">
               <tr>
-                <!-- Imagen mockup app -->
-                <td class="mobile-stack" width="170" valign="middle"
-                    style="vertical-align:middle;padding-right:20px;width:170px;">
-                  <img src="https://cdn.loteriamanises.com/emails/app-mockup.png"
-                       width="150" alt="App Loter&iacute;a Manises"
-                       style="display:block;margin:0 auto;width:150px;
-                              height:auto;border:0;" />
+                <!-- App mockup image -->
+                <td width="212" valign="middle" class="mobile-stack"
+                    style="vertical-align:middle;padding-right:24px;width:212px;text-align:center;">
+                  <img src="../../assets/app-mockups-duo.png"
+                       width="196" alt="App Loter&iacute;a Manises en dos pantallas"
+                       style="display:block;margin:0 auto;width:196px;height:auto;border:0;" />
                 </td>
-                <!-- Texto + badges -->
-                <td class="mobile-stack" valign="middle"
+                <!-- App text + badges -->
+                <td valign="middle" class="mobile-stack"
                     style="vertical-align:middle;">
-                  <h3 style="margin:0 0 6px 0;
-                             font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:16px;font-weight:700;color:#1E3A5F;
-                             line-height:1.3;mso-line-height-rule:exactly;">
+                  <h3 style="margin:0 0 8px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                             font-size:22px;font-weight:800;color:#0B2B5C;line-height:1.2;
+                             mso-line-height-rule:exactly;">
                     Lleva tus jugadas siempre contigo
                   </h3>
-                  <p style="margin:0 0 16px 0;
-                             font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:13px;color:#4B5563;line-height:1.55;">
-                    Consulta tus compras, resultados y saldo desde la app
-                    de Loter&iacute;a Manises.
+                  <p style="margin:0 0 12px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                            font-size:15px;color:#5F6F89;line-height:1.5;">
+                    Compra, consulta resultados y controla tu saldo desde la app.
                   </p>
-                  <!-- App Store -->
-                  <a href="{{URL_APP_STORE}}"
-                     style="display:inline-block;margin-right:6px;margin-bottom:6px;
-                            text-decoration:none;">
-                    <img src="https://cdn.loteriamanises.com/emails/badge-appstore.png"
-                         width="128" alt="Cons&iacute;guelo en App Store"
-                         class="store-badge"
-                         style="display:inline-block;width:128px;height:auto;border:0;" />
-                  </a>
-                  <!-- Google Play -->
-                  <a href="{{URL_GOOGLE_PLAY}}"
-                     style="display:inline-block;text-decoration:none;">
-                    <img src="https://cdn.loteriamanises.com/emails/badge-googleplay.png"
-                         width="128" alt="Disponible en Google Play"
-                         class="store-badge"
-                         style="display:inline-block;width:128px;height:auto;border:0;" />
-                  </a>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="badge-stack" style="margin:0;">
+                    <tr>
+                      <td width="132" align="center" style="line-height:0;padding:0 0 7px 0;width:132px;text-align:center;">
+                        <a href="{{URL_APP_STORE}}" style="display:block;text-decoration:none;line-height:0;">
+                          <img src="https://cdn.loteriamanises.com/emails/badge-appstore.png"
+                               width="132" alt="App Store"
+                               style="display:block;width:132px;height:auto;border:0;margin:0 auto;" />
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td width="132" align="center" style="line-height:0;padding:0;width:132px;text-align:center;">
+                        <a href="{{URL_GOOGLE_PLAY}}" style="display:block;text-decoration:none;line-height:0;">
+                          <img src="https://cdn.loteriamanises.com/emails/badge-googleplay.png"
+                               width="130" alt="Google Play"
+                               style="display:block;width:130px;height:auto;border:0;margin:0 auto;" />
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
@@ -757,9 +768,14 @@
         <!-- ============================================= -->
         <!--  == FOOTER CONTACTO COMPARTIDO (START) ==     -->
         <!-- ============================================= -->
+        <!-- Línea de acento azul separadora -->
         <tr>
-          <td bgcolor="#002B3D"
-              style="background-color:#002B3D;padding:28px 24px 24px;">
+          <td bgcolor="#1565C0"
+              style="background-color:#1565C0;height:2px;font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
+        <tr>
+          <td bgcolor="#0d1f40"
+              style="background-color:#0d1f40;padding:32px 24px 28px;">
             <table role="presentation" border="0" cellpadding="0"
                    cellspacing="0" width="100%">
               <tr>
@@ -767,19 +783,25 @@
                 <!-- Col 1: Contacto y horario -->
                 <td class="footer-col" width="184" valign="top"
                     style="vertical-align:top;padding-right:10px;width:184px;">
-                  <p style="margin:0 0 5px 0;
+                  <img src="https://cdn.loteriamanises.com/emails/icon-phone-hdr.png"
+                       width="36" alt=""
+                       class="footer-icon"
+                       style="display:block;width:36px;height:auto;border:0;
+                              margin:0 0 12px 0;" />
+                  <p style="margin:0 0 4px 0;
                              font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:12px;font-weight:700;color:#FFFFFF;
+                             font-size:11px;font-weight:600;color:#94A3B8;
+                             text-transform:uppercase;letter-spacing:0.07em;
                              line-height:1.4;">
-                    &#128222;&nbsp;&iquest;Necesitas ayuda?
+                    &iquest;Necesitas ayuda?
                   </p>
-                  <p style="margin:0 0 2px 0;
+                  <p style="margin:0 0 4px 0;
                              font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:13px;font-weight:600;color:#FFFFFF;
-                             line-height:1.4;">
-                    96 154 03 17
+                             font-size:16px;font-weight:700;color:#FFFFFF;
+                             letter-spacing:0.02em;line-height:1.3;">
+                    96&nbsp;154&nbsp;03&nbsp;17
                   </p>
-                  <p style="margin:0 0 10px 0;">
+                  <p style="margin:0 0 12px 0;">
                     <a href="mailto:info@loteriamanises.es"
                        style="font-family:'Inter',Arial,Helvetica,sans-serif;
                               font-size:12px;color:#60A5FA;text-decoration:none;">
@@ -788,10 +810,9 @@
                   </p>
                   <p style="margin:0;
                              font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:11px;color:#94A3B8;line-height:1.65;">
-                    Lunes a viernes<br />
-                    9:00 a 20:00h<br />
-                    S&aacute;bados de 9:00 a 13:00 h
+                             font-size:11px;color:#64748B;line-height:1.7;">
+                    Lunes a viernes &middot; 9:00&ndash;20:00h<br />
+                    S&aacute;bados &middot; 9:00&ndash;13:00h
                   </p>
                 </td>
 
@@ -799,7 +820,7 @@
                 <td class="footer-col" width="184" valign="top"
                     style="vertical-align:top;text-align:center;
                            padding:0 8px;width:184px;">
-                  <p style="margin:0 0 14px 0;
+                  <p style="margin:0 0 16px 0;
                              font-family:'Inter',Arial,Helvetica,sans-serif;
                              font-size:11px;font-weight:600;color:#94A3B8;
                              text-transform:uppercase;letter-spacing:0.08em;
@@ -809,25 +830,25 @@
                   <table role="presentation" border="0" cellpadding="0"
                          cellspacing="0" style="margin:0 auto;">
                     <tr>
-                      <td style="padding:0 5px;">
+                      <td style="padding:0 6px;">
                         <a href="{{URL_FACEBOOK}}" style="text-decoration:none;">
                           <img src="https://cdn.loteriamanises.com/emails/icon-facebook.png"
-                               width="34" alt="Facebook"
-                               style="display:block;width:34px;height:auto;border:0;" />
+                               width="36" alt="Facebook"
+                               style="display:block;width:36px;height:auto;border:0;" />
                         </a>
                       </td>
-                      <td style="padding:0 5px;">
+                      <td style="padding:0 6px;">
                         <a href="{{URL_INSTAGRAM}}" style="text-decoration:none;">
                           <img src="https://cdn.loteriamanises.com/emails/icon-instagram.png"
-                               width="34" alt="Instagram"
-                               style="display:block;width:34px;height:auto;border:0;" />
+                               width="36" alt="Instagram"
+                               style="display:block;width:36px;height:auto;border:0;" />
                         </a>
                       </td>
-                      <td style="padding:0 5px;">
+                      <td style="padding:0 6px;">
                         <a href="{{URL_X_TWITTER}}" style="text-decoration:none;">
                           <img src="https://cdn.loteriamanises.com/emails/icon-x.png"
-                               width="34" alt="X (Twitter)"
-                               style="display:block;width:34px;height:auto;border:0;" />
+                               width="36" alt="X (Twitter)"
+                               style="display:block;width:36px;height:auto;border:0;" />
                         </a>
                       </td>
                     </tr>
@@ -841,17 +862,15 @@
                   <img src="https://cdn.loteriamanises.com/emails/logo-manises-white.png"
                        width="118" alt="Loter&iacute;a Manises"
                        class="footer-logo"
-                       style="display:block;margin:0 0 10px auto;
+                       style="display:block;margin:0 0 12px auto;
                               width:118px;height:auto;border:0;" />
-                  <p style="margin:0;
-                             font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:11px;color:#94A3B8;line-height:1.65;
-                             text-align:right;">
-                    Loter&iacute;a Manises<br />
+                  <p class="footer-address"
+                     style="margin:0;
+                            font-family:'Inter',Arial,Helvetica,sans-serif;
+                            font-size:11px;color:#64748B;line-height:1.7;">
                     Av. Generalitat Valenciana, 23<br />
-                    46940 Manises (Valencia)<br />
-                    Administraci&oacute;n de Loter&iacute;as
-                    n&ordm;&nbsp;6 de Manises
+                    46940 Manises &middot; Valencia<br />
+                    Adm&oacute;n. de Loter&iacute;as n&ordm;&nbsp;6
                   </p>
                 </td>
 
@@ -868,12 +887,12 @@
         <!--  == FOOTER LEGAL COMPARTIDO (START) ==        -->
         <!-- ============================================= -->
         <tr>
-          <td bgcolor="#001F2D"
-              style="background-color:#001F2D;padding:14px 24px 20px;
-                     border-top:1px solid #1E3A5F;">
+          <td bgcolor="#091730"
+              style="background-color:#091730;padding:14px 24px 20px;
+                     border-top:1px solid rgba(255,255,255,0.06);">
             <p style="margin:0;
                        font-family:'Inter',Arial,Helvetica,sans-serif;
-                       font-size:11px;color:#475569;
+                       font-size:11px;color:#334155;
                        text-align:center;line-height:1.65;">
               Este mensaje es una comunicaci&oacute;n informativa.<br />
               La informaci&oacute;n oficial est&aacute; disponible en tu cuenta

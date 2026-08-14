@@ -8,3 +8,13 @@ coverage/
 !.env.example
 # Firebase credentials — use VITE_FIREBASE_* env vars instead
 firebase-applet-config.json
+
+# Previews generados (artefactos de herramientas de diseño)
+emails/templates/transaccional/*-preview.html
+
+# Entregas empaquetadas
+emails/delivery/
+
+# Configuración local de herramientas
+.agents/
+.mcp.json

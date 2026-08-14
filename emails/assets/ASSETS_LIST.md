@@ -33,9 +33,12 @@ Todas las imágenes deben estar en formato PNG (fondo transparente donde aplique
 
 | Archivo | Uso | Tamaño render | Tamaño fuente |
 |---|---|---|---|
-| `app-mockup.png` | Módulo promo app | 150px ancho | 300×480px @2x |
-| `badge-appstore.png` | Badge App Store | 130px ancho | 260×78px @2x |
-| `badge-googleplay.png` | Badge Google Play | 130px ancho | 260×78px @2x |
+| `app-mockup.png` | Módulo promo app | 118px ancho | 236×567px @2x recomendado |
+| `app-mockup-jugadas.png` | Segundo móvil para módulo promo app | 165×360px | Optimizado desde captura Mis jugadas |
+| `app-mockups-duo.png` | Composición de dos móviles con carcasa para módulo promo app | 196px ancho | 250×384px con transparencia |
+| `mockup-movil-email.png` | Preview local del módulo app con captura real | 118px ancho | 236×567px @2x recomendado |
+| `badge-appstore.png` | Badge App Store | 132px ancho, altura automática | SVG/PNG oficial sin deformar |
+| `badge-googleplay.png` | Badge Google Play | 130px ancho, altura automática | PNG oficial sin deformar |
 
 > Los badges oficiales de App Store y Google Play están disponibles en:
 > - App Store: https://developer.apple.com/app-store/marketing/guidelines/
