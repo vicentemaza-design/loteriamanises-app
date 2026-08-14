@@ -2,13 +2,13 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X, CreditCard, ShieldCheck, ArrowRight,
-  CheckCircle2, Loader2, Plus, Landmark, Copy, AlertCircle, Lock, Sparkles,
+  CheckCircle2, Loader2, Plus, Landmark, Copy, AlertCircle, Lock,
 } from 'lucide-react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { Button } from '@/shared/ui/Button';
 import { formatCurrency } from '@/shared/lib/utils';
 import { toast } from 'sonner';
-import { RedsysGateway, type SavedCardData } from './RedsysGateway';
+import { RedsysGateway } from './RedsysGateway';
 import { AddCardFlow } from './AddCardFlow';
 
 interface TopUpModalProps {
@@ -56,20 +56,6 @@ const BANK_TRANSFER_INFO = {
   'Concepto/Ref.': 'REF-RECARGA-2026',
 } as const;
 
-function persistCard(cardData: SavedCardData) {
-  const stored = localStorage.getItem('manises_payment_cards');
-  const existing = stored ? JSON.parse(stored) : [];
-  const newCard = {
-    id: `card-${Date.now()}`,
-    brand: cardData.brand,
-    last4: cardData.last4,
-    expires: cardData.expires,
-    isDefault: existing.length === 0,
-  };
-  localStorage.setItem('manises_payment_cards', JSON.stringify([...existing, newCard]));
-  toast.success(`${cardData.brand} •••• ${cardData.last4} guardada para futuras compras`);
-}
-
 export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUpModalProps) {
   const [savedCards, setSavedCards] = useState<StoredCard[]>([]);
   const [selectedAmount, setSelectedAmount] = useState<number>(10);
@@ -79,8 +65,6 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showRedsys, setShowRedsys] = useState(false);
-  const [recentCard, setRecentCard] = useState<SavedCardData | null>(null);
-  const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [showTokenizeRedsys, setShowTokenizeRedsys] = useState(false);
   const [showAddCardFlow, setShowAddCardFlow] = useState(false);
 
@@ -103,8 +87,6 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       setIsProcessing(false);
       setIsSuccess(false);
       setShowRedsys(false);
-      setRecentCard(null);
-      setShowSavePrompt(false);
       setShowTokenizeRedsys(false);
       setShowAddCardFlow(false);
     }
@@ -143,64 +125,41 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
     }
   };
 
-  const handleRedsysAuthorize = async (savedCard: boolean, cardData: SavedCardData) => {
+  /**
+   * En producción: este handler se invoca desde la URL de retorno que el BE
+   * configura en Redsys (urlOK). El BE habrá procesado la notificación server-to-server
+   * y actualizado el saldo/tarjetas antes de redirigir aquí.
+   */
+  const handleRedsysAuthorize = async () => {
     setShowRedsys(false);
     setIsProcessing(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
     try {
       await onSuccess(effectiveAmount);
-      if (savedCard) {
-        persistCard(cardData);
-        setSavedCards(readSavedCards());
-        setIsSuccess(true);
-        setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
-      } else if (isNewCard) {
-        // "Añadir tarjeta para próximas recargas" sin guardar — ofrecer guardar post-pago
-        setRecentCard(cardData);
-        setIsProcessing(false);
-        setShowSavePrompt(true);
-      } else {
-        // Pago puntual sin guardar ("Pagar con tarjeta" / "Pagar con otra tarjeta")
-        setIsSuccess(true);
-        setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
-      }
+      setIsSuccess(true);
+      setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
     } catch {
       toast.error('No se ha podido completar el pago.');
       setIsProcessing(false);
     }
   };
 
-  const handleAddCardFlowSuccess = async (amount: number, savedCard: boolean, cardData: SavedCardData) => {
+  const handleAddCardFlowSuccess = async (amount: number) => {
     setShowAddCardFlow(false);
     setIsProcessing(true);
-    await new Promise(r => setTimeout(r, 600));
     try {
       await onSuccess(amount);
-      if (savedCard) {
-        persistCard(cardData);
-        setSavedCards(readSavedCards());
-        setIsSuccess(true);
-        setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
-      } else {
-        setIsSuccess(true);
-        setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
-      }
+      setSavedCards(readSavedCards());
+      setIsSuccess(true);
+      setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
     } catch {
       toast.error('No se ha podido completar el pago.');
       setIsProcessing(false);
     }
   };
 
-  const handleTokenizeAuthorize = (_save: boolean, cardData: SavedCardData) => {
+  const handleTokenizeAuthorize = () => {
     setShowTokenizeRedsys(false);
-    persistCard(cardData);
-    setShowSavePrompt(false);
-    setIsSuccess(true);
-    setTimeout(() => { onClose(); }, 1500);
-  };
-
-  const dismissSavePrompt = () => {
-    setShowSavePrompt(false);
+    setSavedCards(readSavedCards());
     setIsSuccess(true);
     setTimeout(() => { onClose(); }, 1500);
   };
@@ -256,55 +215,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
               <div className="w-12 h-1.5 rounded-full bg-gray-200" />
             </div>
 
-            {showSavePrompt && recentCard ? (
-              <motion.div
-                key="save-prompt"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col p-6 pb-8 gap-5"
-              >
-                {/* Éxito del pago */}
-                <div className="flex items-center gap-3 rounded-2xl bg-emerald-50 border border-emerald-100 px-4 py-3">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                  <p className="text-sm font-black text-emerald-700">
-                    ¡Recarga de {formatCurrency(effectiveAmount)} completada!
-                  </p>
-                </div>
-
-                {/* Oferta de guardar */}
-                <div className="flex flex-col items-center text-center gap-3 pt-2">
-                  <div className="w-16 h-16 rounded-2xl bg-manises-blue/10 flex items-center justify-center">
-                    <Sparkles className="w-8 h-8 text-manises-blue" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-manises-blue">¿Pagar más rápido la próxima vez?</h3>
-                    <p className="text-xs font-medium text-slate-500 mt-1 leading-relaxed">
-                      Guarda tu {recentCard.brand} •••• {recentCard.last4} para recargar sin introducir los datos de nuevo.
-                      Solo necesitas confirmar con tu banco.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-2 mt-1"
-                  style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
-                >
-                  <Button
-                    onClick={() => setShowTokenizeRedsys(true)}
-                    className="w-full h-14 rounded-2xl bg-manises-blue hover:bg-[#083d7d] text-white font-black text-base shadow-md"
-                  >
-                    <Lock className="w-4 h-4 mr-2" />
-                    Sí, guardar tarjeta en Redsys
-                  </Button>
-                  <button
-                    onClick={dismissSavePrompt}
-                    className="w-full h-11 rounded-2xl text-slate-400 text-sm font-semibold hover:bg-slate-50 transition-all"
-                  >
-                    No, gracias
-                  </button>
-                </div>
-              </motion.div>
-            ) : isSuccess ? (
+            {isSuccess ? (
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}

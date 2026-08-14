@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
-import { Plus, Shield, Trash2, Star, AlertTriangle, CreditCard, Info, CheckCircle2 } from 'lucide-react';
+import { Plus, Shield, Trash2, Star, AlertTriangle, CreditCard, Info } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { toast } from 'sonner';
 import { MOCK_PAYMENT_CARDS } from '../data/profile.mock';
 import type { PaymentCard } from '../types/profile.types';
-import { RedsysGateway, type SavedCardData } from '../components/RedsysGateway';
+import { RedsysGateway } from '../components/RedsysGateway';
 
 import visaLogo from '@/assets/games/visa.svg';
 import mastercardLogo from '@/assets/games/mastercard.svg';
@@ -21,7 +21,6 @@ export function PaymentsPage() {
 
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [showRedsys, setShowRedsys] = useState(false);
-  const [addedCard, setAddedCard] = useState<SavedCardData | null>(null);
 
   const saveCards = (next: PaymentCard[]) => {
     setCards(next);
@@ -44,19 +43,14 @@ export function PaymentsPage() {
     toast.success('Tarjeta eliminada con éxito.');
   };
 
-  const handleTokenizeAuthorize = (_saveCard: boolean, cardData: SavedCardData) => {
+  /**
+   * En producción: se invoca desde la URL de retorno (urlOK) que el BE configura
+   * en Redsys. El BE habrá actualizado la lista de tarjetas vía notificación
+   * server-to-server antes de redirigir aquí — recargar las tarjetas del servidor.
+   */
+  const handleTokenizeAuthorize = () => {
     setShowRedsys(false);
-    const newCard: PaymentCard = {
-      id: `card-${Date.now()}`,
-      brand: cardData.brand,
-      last4: cardData.last4,
-      expires: cardData.expires,
-      isDefault: cards.length === 0,
-    };
-    const next = [...cards, newCard];
-    saveCards(next);
-    setAddedCard(cardData);
-    setTimeout(() => setAddedCard(null), 3000);
+    toast.success('Tarjeta añadida correctamente.');
   };
 
   const getCardStyle = (brand: string) => {
@@ -80,23 +74,6 @@ export function PaymentsPage() {
       </AnimatePresence>
 
       <div className="flex flex-col gap-4 px-4 pt-5 pb-6">
-
-        {/* Tarjeta añadida — feedback visual */}
-        <AnimatePresence>
-          {addedCard && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="flex items-center gap-3 rounded-2xl bg-emerald-50 border border-emerald-200 px-4 py-3"
-            >
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-              <p className="text-xs font-bold text-emerald-700">
-                {addedCard.brand} •••• {addedCard.last4} guardada correctamente
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         {/* ── TARJETAS GUARDADAS ──────────────────────────────────── */}
         <section>

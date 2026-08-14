@@ -1,25 +1,25 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, CreditCard, Info, ArrowRight, Lock, Loader2 } from 'lucide-react';
+import { ArrowLeft, CreditCard, ArrowRight, Lock, Loader2, Info } from 'lucide-react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { Button } from '@/shared/ui/Button';
 import { formatCurrency } from '@/shared/lib/utils';
 import { toast } from 'sonner';
-import { RedsysGateway, type SavedCardData } from './RedsysGateway';
+import { RedsysGateway } from './RedsysGateway';
 
 const ADD_CARD_AMOUNTS = [1, 5, 10, 20, 50, 100];
 
 interface AddCardFlowProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (amount: number, savedCard: boolean, cardData: SavedCardData) => void;
+  /** Llamado cuando el BE confirma el pago y la tarjeta ha quedado guardada. */
+  onSuccess: (amount: number) => void;
 }
 
 export function AddCardFlow({ isOpen, onClose, onSuccess }: AddCardFlowProps) {
   const [selectedAmount, setSelectedAmount] = useState(10);
   const [isCustom, setIsCustom] = useState(false);
   const [customValue, setCustomValue] = useState('');
-  const [saveCard, setSaveCard] = useState(false);
   const [showRedsys, setShowRedsys] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -37,12 +37,14 @@ export function AddCardFlow({ isOpen, onClose, onSuccess }: AddCardFlowProps) {
     setShowRedsys(true);
   };
 
-  const handleRedsysAuthorize = async (redsysSave: boolean, cardData: SavedCardData) => {
+  /**
+   * En producción este handler no existe aquí: el resultado llega por redirect
+   * desde la URL de retorno que configura el BE en la sesión Redsys.
+   * onSuccess se llamará desde el handler de esa URL.
+   */
+  const handleRedsysCancel = () => {
     setShowRedsys(false);
-    setIsProcessing(true);
-    await new Promise(r => setTimeout(r, 600));
     setIsProcessing(false);
-    onSuccess(effectiveAmount, redsysSave || saveCard, cardData);
   };
 
   return (
@@ -54,8 +56,12 @@ export function AddCardFlow({ isOpen, onClose, onSuccess }: AddCardFlowProps) {
               <RedsysGateway
                 mode="payment"
                 amount={effectiveAmount}
-                onAuthorize={handleRedsysAuthorize}
-                onCancel={() => setShowRedsys(false)}
+                onAuthorize={() => {
+                  // En producción: resultado vía redirect BE → onSuccess(effectiveAmount)
+                  setShowRedsys(false);
+                  onSuccess(effectiveAmount);
+                }}
+                onCancel={handleRedsysCancel}
               />
             )}
           </AnimatePresence>
@@ -67,7 +73,7 @@ export function AddCardFlow({ isOpen, onClose, onSuccess }: AddCardFlowProps) {
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
             className="fixed inset-0 z-[150] bg-white flex flex-col"
           >
-            {/* Header */}
+            {/* Cabecera */}
             <div
               className="shrink-0 flex items-center gap-3 px-5 pb-4 border-b border-slate-100 bg-white"
               style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}
@@ -83,10 +89,10 @@ export function AddCardFlow({ isOpen, onClose, onSuccess }: AddCardFlowProps) {
               </h1>
             </div>
 
-            {/* Scrollable content */}
+            {/* Contenido */}
             <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-6 space-y-7">
 
-              {/* Illustration + title */}
+              {/* Ilustración + título */}
               <div className="flex flex-col items-center gap-4 pt-2">
                 <div className="relative">
                   <div className="w-24 h-24 rounded-full bg-manises-blue/10 flex items-center justify-center">
@@ -99,15 +105,16 @@ export function AddCardFlow({ isOpen, onClose, onSuccess }: AddCardFlowProps) {
                 <div className="text-center px-4">
                   <h2 className="text-2xl font-black text-manises-blue">Vincula tu nueva tarjeta</h2>
                   <p className="text-sm font-medium text-slate-500 mt-2 leading-relaxed">
-                    Para añadir una nueva tarjeta, realiza una recarga de saldo. El importe se añadirá a tu saldo y podrás usarlo en tus compras.
+                    Para añadir una nueva tarjeta realiza una recarga. Serás redirigido
+                    a la pasarela segura del banco para introducir los datos de tu tarjeta.
                   </p>
                 </div>
               </div>
 
-              {/* Section 1: Amount */}
+              {/* Importe */}
               <div className="space-y-3">
                 <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest pl-1">
-                  1. Selecciona importe a recargar
+                  Selecciona importe a recargar
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   {ADD_CARD_AMOUNTS.map(amount => (
@@ -158,59 +165,25 @@ export function AddCardFlow({ isOpen, onClose, onSuccess }: AddCardFlowProps) {
                 )}
               </div>
 
-              {/* Section 2: Save toggle */}
-              <div className="space-y-3">
-                <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest pl-1">
-                  2. Guardar para próximas recargas
+              {/* Aviso seguridad */}
+              <div className="flex items-start gap-3 p-4 rounded-2xl bg-manises-blue/5 border border-manises-blue/15">
+                <Info className="w-4 h-4 text-manises-blue shrink-0 mt-0.5" />
+                <p className="text-xs font-medium text-manises-blue/75 leading-relaxed">
+                  Los datos de tu tarjeta se introducen directamente en la pasarela
+                  del banco. Lotería Manises nunca almacena ni accede a los datos de tu tarjeta.
                 </p>
-
-                <div className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-slate-200 bg-white">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-manises-blue/10 flex items-center justify-center shrink-0">
-                      <CreditCard className="w-5 h-5 text-manises-blue" />
-                    </div>
-                    <p className="text-sm font-black text-slate-800 leading-tight">
-                      Guardar para<br />próximas recargas
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setSaveCard(v => !v)}
-                    role="switch"
-                    aria-checked={saveCard}
-                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-manises-blue/50 ${
-                      saveCard ? 'bg-manises-blue' : 'bg-slate-200'
-                    }`}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-6 w-6 rounded-full bg-white shadow-md transform transition-transform duration-200 ${
-                        saveCard ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                <p className="text-xs font-medium text-slate-500 leading-relaxed px-1">
-                  Si activas esta opción, podrás usar esta tarjeta en próximas recargas sin volver a introducir sus datos.
-                </p>
-
-                <div className="flex items-start gap-3 p-4 rounded-2xl bg-manises-blue/5 border border-manises-blue/15">
-                  <Info className="w-4 h-4 text-manises-blue shrink-0 mt-0.5" />
-                  <p className="text-xs font-medium text-manises-blue/75 leading-relaxed">
-                    Los datos de tu tarjeta se introducirán en la pasarela de pago de forma segura. Lotería Manises no almacena los datos de tu tarjeta.
-                  </p>
-                </div>
               </div>
 
             </div>
 
-            {/* Sticky bottom CTA */}
+            {/* CTA fijo */}
             <div
               className="shrink-0 px-5 pt-4 border-t border-slate-100 bg-white space-y-2.5"
               style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}
             >
               {effectiveAmount > 500 && (
                 <p className="text-[9px] font-black text-red-500 uppercase tracking-widest text-center animate-pulse">
-                  Límite de recarga demo: 500 €
+                  Límite máximo de recarga: 500 €
                 </p>
               )}
               <PremiumTouchInteraction scale={0.98} className="w-full">
@@ -222,7 +195,7 @@ export function AddCardFlow({ isOpen, onClose, onSuccess }: AddCardFlowProps) {
                   {isProcessing ? (
                     <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Procesando...</>
                   ) : effectiveAmount > 0 ? (
-                    <>Recargar {formatCurrency(effectiveAmount)} y continuar <ArrowRight className="w-5 h-5 ml-2" /></>
+                    <>Continuar al banco · {formatCurrency(effectiveAmount)} <ArrowRight className="w-5 h-5 ml-2" /></>
                   ) : (
                     <>Selecciona un importe <ArrowRight className="w-5 h-5 ml-2" /></>
                   )}

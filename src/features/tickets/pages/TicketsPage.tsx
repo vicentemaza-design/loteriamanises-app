@@ -366,9 +366,7 @@ export function TicketsPage() {
                 const hasPrize = totalPrize > 0;
                 const isFavorite = favoriteIds.has(ticket.id);
 
-                const selectionSummary = uniqueCombinations > 1
-                  ? `${uniqueCombinations} combinaciones`
-                  : getSelectionSummary(ticket);
+                const selectionSummary = getSelectionSummary(ticket);
 
                 const quantityLabel = (() => {
                   if (national) {

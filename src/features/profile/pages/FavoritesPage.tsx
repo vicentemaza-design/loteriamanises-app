@@ -26,8 +26,6 @@ export function FavoritesPage() {
         <div className="space-y-3">
           {favorites.map((favorite) => {
             const game = LOTTERY_GAMES.find((item) => item.id === favorite.gameId);
-            const firstBet = favorite.combinations[0];
-            const extraBets = favorite.combinations.length - 1;
             return (
               <PremiumSectionCard
                 key={favorite.id}
@@ -37,19 +35,23 @@ export function FavoritesPage() {
                 tone="blue"
               >
                 <div className="space-y-3">
-                  {/* Bolas de la primera apuesta */}
-                  {firstBet && (
-                    <div className="rounded-2xl bg-slate-50 px-3 py-3">
-                      <BallSelection
-                        numbers={firstBet.numbers}
-                        stars={firstBet.stars}
-                        type={favorite.gameId}
-                      />
-                      {extraBets > 0 && (
-                        <p className="mt-2 text-[10px] font-semibold text-slate-400">
-                          + {extraBets} {extraBets === 1 ? 'apuesta' : 'apuestas'} más
-                        </p>
-                      )}
+                  {/* Bolas de todas las apuestas */}
+                  {favorite.combinations.length > 0 && (
+                    <div className="space-y-2">
+                      {favorite.combinations.map((bet, i) => (
+                        <div key={i} className="rounded-2xl bg-slate-50 px-3 py-3">
+                          {favorite.combinations.length > 1 && (
+                            <p className="mb-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
+                              Apuesta {i + 1}
+                            </p>
+                          )}
+                          <BallSelection
+                            numbers={bet.numbers}
+                            stars={bet.stars}
+                            type={favorite.gameId}
+                          />
+                        </div>
+                      ))}
                     </div>
                   )}
 
