@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, CheckCircle2, Clock, Hash, User, CreditCard, ChevronDown, ChevronRight, Truck, Lock, Trophy, Repeat2, Bell, ScrollText } from 'lucide-react';
 import { useTicket } from '../hooks/useTicket';
 import { useResults } from '@/features/results/hooks/useResults';
@@ -118,6 +118,10 @@ function getBets(ticket: Ticket): Array<{ numbers: number[]; stars?: number[]; r
     }));
   }
   return [{ numbers: ticket.numbers, stars: ticket.stars }];
+}
+
+function getGroupBets(groupTickets: Ticket[]): Array<{ numbers: number[]; stars?: number[]; reintegro?: number }> {
+  return groupTickets.flatMap(t => getBets(t));
 }
 
 // ── Game detail header ─────────────────────────────────────────────────────
@@ -361,14 +365,16 @@ function BoletoGroupsView({
   ticket,
   result,
   game,
+  groupTickets,
 }: {
   ticket: Ticket;
   result: MatchResult;
   game: (typeof LOTTERY_GAMES)[number];
+  groupTickets?: Ticket[];
 }) {
   const status = getPlayStatus(ticket);
   const isScrutinized = status === 'scrutinized';
-  const bets = getBets(ticket);
+  const bets = groupTickets && groupTickets.length > 1 ? getGroupBets(groupTickets) : getBets(ticket);
   const prize = ticket.prize ?? 0;
 
   const boletosSize = BOLETO_SIZE[ticket.gameType] ?? bets.length;
@@ -803,19 +809,21 @@ function SingleDrawDetail({
   ticket,
   result,
   game,
+  groupTickets,
 }: {
   ticket: Ticket;
   result: MatchResult;
   game: (typeof LOTTERY_GAMES)[number];
+  groupTickets?: Ticket[];
 }) {
   // Euromillones and Primitiva use boleto-grouped display
   if (BOLETO_SIZE[ticket.gameType]) {
-    return <BoletoGroupsView ticket={ticket} result={result} game={game} />;
+    return <BoletoGroupsView ticket={ticket} result={result} game={game} groupTickets={groupTickets} />;
   }
 
   const status = getPlayStatus(ticket);
   const isScrutinized = status === 'scrutinized';
-  const bets = getBets(ticket);
+  const bets = groupTickets && groupTickets.length > 1 ? getGroupBets(groupTickets) : getBets(ticket);
   const prize = ticket.prize ?? 0;
 
   return (
@@ -1225,6 +1233,8 @@ function getReceiptSelectionSummary(ticket: Ticket): string {
 export function TicketDetailPage() {
   const { ticketId } = useParams<{ ticketId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const groupTickets = location.state?.groupTickets as Ticket[] | undefined;
   const { ticket, isLoading, error } = useTicket(ticketId);
   const { results } = useResults();
 
@@ -1287,7 +1297,7 @@ export function TicketDetailPage() {
       ) : isSemanal ? (
         <SemanalDetail ticket={ticket} dayResults={dayResults} game={game} />
       ) : (
-        <SingleDrawDetail ticket={ticket} result={dayResults[0]?.result ?? null} game={game} />
+        <SingleDrawDetail ticket={ticket} result={dayResults[0]?.result ?? null} game={game} groupTickets={groupTickets} />
       )}
 
       {/* Quick actions */}

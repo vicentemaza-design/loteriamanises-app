@@ -396,7 +396,7 @@ export function TicketsPage() {
                     {/* Main row */}
                     <div
                       className="relative flex cursor-pointer items-center gap-3 py-2 pl-4 pr-2 transition-colors active:bg-slate-50/60"
-                      onClick={() => navigate(`/tickets/${ticket.id}`)}
+                      onClick={() => navigate(`/tickets/${ticket.id}`, { state: { groupTickets: grpTickets } })}
                     >
                       {/* Col 1 — Icon */}
                       <div
@@ -501,7 +501,7 @@ export function TicketsPage() {
                                 Favorita
                               </button>
                             )}
-                            <button type="button" onClick={() => navigate(`/tickets/${ticket.id}`)}
+                            <button type="button" onClick={() => navigate(`/tickets/${ticket.id}`, { state: { groupTickets: grpTickets } })}
                               className="flex flex-1 flex-col items-center gap-1 rounded-xl border border-gray-100 bg-white py-2 text-[8px] font-black uppercase tracking-wider text-manises-blue transition-colors hover:border-manises-blue/20 hover:bg-manises-blue/[0.04] active:scale-[0.97]">
                               <Eye className="h-3.5 w-3.5" />
                               Ver
