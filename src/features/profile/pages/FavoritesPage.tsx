@@ -37,18 +37,19 @@ export function FavoritesPage() {
                 <div className="space-y-3">
                   {/* Bolas de todas las apuestas */}
                   {favorite.combinations.length > 0 && (
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       {favorite.combinations.map((bet, i) => (
-                        <div key={i} className="rounded-2xl bg-slate-50 px-3 py-3">
+                        <div key={i} className="flex items-center gap-2 rounded-xl bg-slate-50 px-2.5 py-1.5">
                           {favorite.combinations.length > 1 && (
-                            <p className="mb-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
-                              Apuesta {i + 1}
-                            </p>
+                            <span className="w-5 shrink-0 text-right text-[9px] font-black tabular-nums text-slate-300">
+                              {i + 1}
+                            </span>
                           )}
                           <BallSelection
                             numbers={bet.numbers}
                             stars={bet.stars}
                             type={favorite.gameId}
+                            compact
                           />
                         </div>
                       ))}
