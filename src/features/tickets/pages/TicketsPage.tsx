@@ -128,11 +128,17 @@ function getSelectionSummary(ticket: Ticket): string {
   return `${ticket.numbers.map(n => String(n).padStart(2, '0')).join(' ')}${starsLabel}${reintegroLabel}`;
 }
 
-function buildFavoriteFromTicket(ticket: Ticket, game: { id: string; name: string }): FavoritePlay {
-  const combinations = ticket.bets?.map((nums, i) => ({
+function ticketToCombinations(t: Ticket): Array<{ numbers: number[]; stars?: number[] }> {
+  return t.bets?.map((nums, i) => ({
     numbers: nums,
-    ...(ticket.betStars?.[i]?.length ? { stars: ticket.betStars![i] } : {}),
-  })) ?? [{ numbers: ticket.numbers, ...(ticket.stars?.length ? { stars: ticket.stars } : {}) }];
+    ...(t.betStars?.[i]?.length ? { stars: t.betStars![i] } : {}),
+  })) ?? [{ numbers: t.numbers, ...(t.stars?.length ? { stars: t.stars } : {}) }];
+}
+
+function buildFavoriteFromTicket(ticket: Ticket, game: { id: string; name: string }, grpTickets?: Ticket[]): FavoritePlay {
+  const combinations = grpTickets && grpTickets.length > 1
+    ? grpTickets.flatMap(t => ticketToCombinations(t))
+    : ticketToCombinations(ticket);
   return {
     id: ticket.id,
     gameId: game.id,
@@ -490,7 +496,7 @@ export function TicketsPage() {
                               </button>
                             ) : (
                               <button type="button"
-                                onClick={() => isFavorite ? removeFavorite(ticket.id) : addFavorite(buildFavoriteFromTicket(ticket, game))}
+                                onClick={() => isFavorite ? removeFavorite(ticket.id) : addFavorite(buildFavoriteFromTicket(ticket, game, grpTickets))}
                                 className={cn(
                                   'flex flex-1 flex-col items-center gap-1 rounded-xl border py-2 text-[8px] font-black uppercase tracking-wider transition-colors active:scale-[0.97]',
                                   isFavorite
