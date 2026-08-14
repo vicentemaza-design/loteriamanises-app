@@ -49,7 +49,6 @@ export function FavoritesPage() {
                             numbers={bet.numbers}
                             stars={bet.stars}
                             type={favorite.gameId}
-                            compact
                           />
                         </div>
                       ))}
