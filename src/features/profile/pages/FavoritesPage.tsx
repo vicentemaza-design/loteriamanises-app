@@ -39,9 +39,9 @@ export function FavoritesPage() {
                   {favorite.combinations.length > 0 && (
                     <div className="space-y-1">
                       {favorite.combinations.map((bet, i) => (
-                        <div key={i} className="flex items-center gap-2 rounded-xl bg-slate-50 px-2.5 py-1.5">
+                        <div key={i} className="flex items-center gap-2 rounded-xl bg-slate-50 px-2.5 py-2">
                           {favorite.combinations.length > 1 && (
-                            <span className="w-5 shrink-0 text-right text-[9px] font-black tabular-nums text-slate-300">
+                            <span className="w-5 shrink-0 text-right text-[11px] font-black tabular-nums text-slate-300">
                               {i + 1}
                             </span>
                           )}
@@ -49,6 +49,7 @@ export function FavoritesPage() {
                             numbers={bet.numbers}
                             stars={bet.stars}
                             type={favorite.gameId}
+                            medium
                           />
                         </div>
                       ))}
