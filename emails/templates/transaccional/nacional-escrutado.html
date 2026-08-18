@@ -16,7 +16,7 @@
                {{MODALIDAD_LABEL}} &mdash; "Custodia (d&eacute;cimo digital)" / "Mensajer&iacute;a (env&iacute;o domicilio)"
     CON PREMIO: {{IMPORTE_TOTAL}} {{PREMIO_POR_DECIMO}} {{NUMERO_PREMIADO}} {{SALDO_DISPONIBLE}}
                {{URL_COMPRA_CERTIFICADA}} {{URL_VOLVER_A_JUGAR}} {{URL_VERSION_WEB}}
-               {{URL_APP_STORE}} {{URL_GOOGLE_PLAY}} {{URL_FACEBOOK}} {{URL_INSTAGRAM}} {{URL_X_TWITTER}}
+               {{URL_APP_STORE}} {{URL_GOOGLE_PLAY}} https://www.facebook.com/LoteriaManises/ https://www.instagram.com/loteriamanises/ https://x.com/loteriamanises
     BE: activar el bloque hero correspondiente y los bloques de detalle seg&uacute;n modalidad:
       Variante 1 CON PREMIO + CUSTODIA    &rarr; [HERO CON PREMIO] + [DETALLE CON PREMIO] + [BLOQUE CON PREMIO - CUSTODIA]
       Variante 2 CON PREMIO + MENSAJER&Iacute;A &rarr; [HERO CON PREMIO] + [DETALLE CON PREMIO] + [BLOQUE CON PREMIO - MENSAJER&Iacute;A]
@@ -34,7 +34,7 @@
     body,table,td,a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
     table,td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
     img { -ms-interpolation-mode:bicubic; border:0; display:block; height:auto; line-height:100%; outline:none; text-decoration:none; }
-    body { margin:0 !important; padding:0 !important; width:100% !important; background-color:#EEF2FF; }
+    body { margin:0 !important; padding:0 !important; width:100% !important; background-color:#FFFFFF; }
     table { border-collapse:collapse !important; }
     a { color:#1565C0; }
     a[x-apple-data-detectors],u + #body a,#MessageViewBody a {
@@ -53,14 +53,14 @@
     }
   </style>
 </head>
-<body id="body" style="margin:0;padding:0;background-color:#EEF2FF;">
+<body id="body" style="margin:0;padding:0;background-color:#FFFFFF;">
 
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-       style="background-color:#EEF2FF;">
+<table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+       style="background-color:#FFFFFF;">
   <tr>
     <td align="center" valign="top" style="padding:24px 0 32px;">
       <!--[if mso | IE]><table border="0" cellpadding="0" cellspacing="0" width="600"><tr><td><![endif]-->
-      <table class="email-container" role="presentation" border="0" cellpadding="0"
+      <table bgcolor="#FFFFFF" class="email-container" role="presentation" border="0" cellpadding="0"
              cellspacing="0" width="600"
              style="max-width:600px;width:100%;margin:0 auto;background-color:#FFFFFF;
                     box-shadow:0 4px 20px rgba(21,101,192,0.10);border-radius:14px;overflow:hidden;">
@@ -81,132 +81,164 @@
              Hemos comprobado tus d&eacute;cimos. Esta vez no han resultado premiados. -->
 
         <!-- ═══════════════════════════════════════════ -->
-        <!-- 2. BARRA NAVEGADOR (blanca)                -->
+        <!-- 2. BARRA NAVEGADOR                          -->
         <!-- ═══════════════════════════════════════════ -->
         <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:9px 24px;
-                     text-align:center;border-bottom:1px solid #F0F4FF;">
+          <td bgcolor="#0B3320"
+              style="background-color:#0B3320;padding:9px 24px;
+                     text-align:center;border-bottom:1px solid rgba(255,255,255,0.10);">
             <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                       font-size:11px;line-height:1.5;color:#94A3B8;">
+                       font-size:11px;line-height:1.5;color:rgba(255,255,255,0.6);">
               Si no puedes ver bien este correo,
               <a href="{{URL_VERSION_WEB}}"
-                 style="color:#1565C0;text-decoration:underline;">
+                 style="color:rgba(255,255,255,0.85);text-decoration:underline;">
                 &aacute;brelo en tu navegador
               </a>
             </p>
           </td>
         </tr>
 
-        <!-- ═══════════════════════════════════════════════ -->
-        <!-- 3. CABECERA VARIANTE B — Logo color sobre blanco -->
-        <!-- ═══════════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- 3+4a. [CABECERA + HERO CON PREMIO] — BE: activo por defecto -->
+        <!--     Para variantes SIN PREMIO: comentar este bloque        -->
+        <!--     y descomentar [CABECERA + HERO SIN PREMIO]             -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
         <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:20px 24px 16px;text-align:center;border-bottom:1px solid #F0F4FF;">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                   style="margin:0 auto;">
+          <td bgcolor="#0B3320"
+              style="background-color:#0B3320;
+                     background-image:linear-gradient(135deg,rgba(11,51,32,0.88) 0%,rgba(20,83,45,0.88) 55%,rgba(30,122,69,0.88) 100%),
+                                      url(https://cdn.loteriamanises.com/emails/hero-bg.jpg);
+                     background-size:cover;background-position:center top;
+                     padding:0;text-align:center;">
+            <!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:0;background-color:#0B3320;"><![endif]-->
+
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <!-- Diamantes izquierda -->
-                <td width="40" valign="middle"
-                    style="vertical-align:middle;text-align:center;padding-right:10px;width:40px;">
-                  <span style="display:block;font-size:10px;line-height:1.4;color:#16A34A;">&#9670;</span>
-                  <span style="display:block;font-size:8px;line-height:1.4;color:#DC2626;">&#9670;</span>
-                  <span style="display:block;font-size:7px;line-height:1.4;color:#1565C0;">&#9670;</span>
-                </td>
-                <!-- Logo color -->
-                <td valign="middle" style="vertical-align:middle;">
-                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-color.png"
+                <td style="padding:28px 24px 20px;text-align:center;">
+                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-white.png"
                        width="190" alt="Loter&iacute;a Manises"
-                       style="display:block;width:190px;height:auto;border:0;" />
+                       style="display:block;margin:0 auto;width:190px;height:auto;border:0;" />
                 </td>
-                <!-- Diamantes derecha -->
-                <td width="40" valign="middle"
-                    style="vertical-align:middle;text-align:center;padding-left:10px;width:40px;">
-                  <span style="display:block;font-size:8px;line-height:1.4;color:#F59E0B;">&#9670;</span>
-                  <span style="display:block;font-size:10px;line-height:1.4;color:#EC4899;">&#9670;</span>
-                  <span style="display:block;font-size:7px;line-height:1.4;color:#1565C0;">&#9670;</span>
+              </tr>
+              <tr>
+                <td style="padding:0 40px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td style="border-top:1px solid rgba(255,255,255,0.22);
+                                 font-size:1px;line-height:1px;">&nbsp;</td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
-          </td>
-        </tr>
 
-        <!-- ═══════════════════════════════════════════════════════════ -->
-        <!-- 4a. [HERO CON PREMIO] — BE: activo por defecto             -->
-        <!--     Para variantes SIN PREMIO: comentar este bloque        -->
-        <!--     y descomentar [HERO SIN PREMIO]                        -->
-        <!-- ═══════════════════════════════════════════════════════════ -->
-        <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:32px 24px 24px;text-align:center;border-bottom:1px solid #F3F4F6;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td style="padding:24px 24px 32px;text-align:center;">
 
-            <!-- Icono trofeo verde 72x72 -->
+            <!-- Icono trofeo 90x90 -->
             <table role="presentation" border="0" cellpadding="0" cellspacing="0"
                    style="margin:0 auto 20px;border-collapse:separate !important;">
               <tr>
-                <td width="72" height="72" bgcolor="#16A34A"
-                    style="background-color:#16A34A;border-radius:50%;width:72px;height:72px;
-                           text-align:center;vertical-align:middle;line-height:72px;mso-line-height-rule:exactly;">
+                <td width="90" height="90" bgcolor="#1B6B3A"
+                    style="background-color:rgba(255,255,255,0.15);border-radius:20px;width:90px;height:90px;
+                           text-align:center;vertical-align:middle;line-height:90px;mso-line-height-rule:exactly;">
                   <img src="https://cdn.loteriamanises.com/emails/icon-trophy-white.png"
-                       width="34" alt=""
-                       style="display:block;margin:0 auto;width:34px;height:auto;border:0;" />
+                       width="40" alt=""
+                       style="display:block;margin:0 auto;width:40px;height:auto;border:0;" />
                 </td>
               </tr>
             </table>
 
             <!-- T&iacute;tulo multi-tama&ntilde;o CON PREMIO -->
             <p style="margin:0 0 8px 0;font-family:'Inter',Arial,Helvetica,sans-serif;line-height:1.1;text-align:center;">
-              <span style="display:block;font-size:22px;font-weight:700;color:#1E3A5F;">&iexcl;Enhorabuena!</span>
-              <span style="display:block;font-size:16px;font-weight:400;color:#4B5563;margin-top:4px;">Has obtenido</span>
-              <span style="display:block;font-size:52px;font-weight:800;color:#16A34A;letter-spacing:-0.03em;mso-line-height-rule:exactly;line-height:1.05;margin-top:2px;">{{IMPORTE_TOTAL}}&nbsp;&euro;</span>
+              <span style="display:block;font-size:22px;font-weight:700;color:#FFFFFF;">&iexcl;Enhorabuena!</span>
+              <span style="display:block;font-size:16px;font-weight:400;color:rgba(255,255,255,0.75);margin-top:4px;">Has obtenido</span>
+              <span style="display:block;font-size:52px;font-weight:800;color:#FFFFFF;letter-spacing:-0.03em;mso-line-height-rule:exactly;line-height:1.05;margin-top:2px;">{{IMPORTE_TOTAL}}&nbsp;&euro;</span>
             </p>
 
             <!-- Texto descriptivo -->
             <p style="margin:12px 0 0 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                       font-size:14px;color:#4B5563;line-height:1.65;text-align:center;">
+                       font-size:14px;color:rgba(255,255,255,0.82);line-height:1.65;text-align:center;">
               Uno de tus d&eacute;cimos de Loter&iacute;a Nacional<br />
               ha resultado premiado.
             </p>
 
+                </td>
+              </tr>
+            </table>
+
+            <!--[if mso]></td></tr></table><![endif]-->
           </td>
         </tr>
-        <!-- [/HERO CON PREMIO] -->
+        <!-- [/CABECERA + HERO CON PREMIO] -->
 
         <!--
         ═══════════════════════════════════════════════════════════════
-        [HERO SIN PREMIO] &mdash; BE: descomentar este bloque, eliminar [HERO CON PREMIO]
+        [CABECERA + HERO SIN PREMIO] &mdash; BE: descomentar este bloque, eliminar el de CON PREMIO
         ═══════════════════════════════════════════════════════════════
         <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:32px 24px 24px;text-align:center;border-bottom:1px solid #F3F4F6;">
+          <td bgcolor="#0B2145"
+              style="background-color:#0B2145;
+                     background-image:linear-gradient(135deg,rgba(11,33,69,0.88) 0%,rgba(18,59,122,0.88) 55%,rgba(21,101,192,0.88) 100%),
+                                      url(https://cdn.loteriamanises.com/emails/hero-bg.jpg);
+                     background-size:cover;background-position:center top;
+                     padding:0;text-align:center;">
+
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td style="padding:28px 24px 20px;text-align:center;">
+                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-white.png"
+                       width="190" alt="Loter&iacute;a Manises"
+                       style="display:block;margin:0 auto;width:190px;height:auto;border:0;" />
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:0 40px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td style="border-top:1px solid rgba(255,255,255,0.22);
+                                 font-size:1px;line-height:1px;">&nbsp;</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td style="padding:24px 24px 32px;text-align:center;">
 
             <table role="presentation" border="0" cellpadding="0" cellspacing="0"
                    style="margin:0 auto 20px;border-collapse:separate !important;">
               <tr>
-                <td width="72" height="72" bgcolor="#1E3A5F"
-                    style="background-color:#1E3A5F;border-radius:50%;width:72px;height:72px;
-                           text-align:center;vertical-align:middle;line-height:72px;mso-line-height-rule:exactly;">
-                  <img src="https://cdn.loteriamanises.com/emails/icon-x-white.png" width="40" height="40" style="display:block;margin:16px auto;border:0;" alt="">
+                <td width="90" height="90" bgcolor="#123B7A"
+                    style="background-color:rgba(255,255,255,0.15);border-radius:20px;width:90px;height:90px;
+                           text-align:center;vertical-align:middle;line-height:90px;mso-line-height-rule:exactly;">
+                  <img src="https://cdn.loteriamanises.com/emails/icon-x-white.png" width="46" height="46" style="display:block;margin:22px auto;border:0;" alt="">
                 </td>
               </tr>
             </table>
 
             <p style="margin:0 0 16px 0;font-family:'Inter',Arial,Helvetica,sans-serif;line-height:1.1;text-align:center;">
-              <span style="display:block;font-size:20px;font-weight:400;color:#4B5563;">Esta vez</span>
-              <span style="display:block;font-size:26px;font-weight:600;color:#1E3A5F;margin-top:2px;">no ha habido</span>
-              <span style="display:block;font-size:50px;font-weight:800;color:#1E3A5F;letter-spacing:-0.03em;mso-line-height-rule:exactly;line-height:1.05;margin-top:2px;">premio</span>
+              <span style="display:block;font-size:20px;font-weight:400;color:rgba(255,255,255,0.75);">Esta vez</span>
+              <span style="display:block;font-size:26px;font-weight:600;color:#FFFFFF;margin-top:2px;">no ha habido</span>
+              <span style="display:block;font-size:50px;font-weight:800;color:#FFFFFF;letter-spacing:-0.03em;mso-line-height-rule:exactly;line-height:1.05;margin-top:2px;">premio</span>
             </p>
 
             <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                       font-size:14px;color:#4B5563;line-height:1.65;text-align:center;">
+                       font-size:14px;color:rgba(255,255,255,0.82);line-height:1.65;text-align:center;">
               Hemos comprobado tus d&eacute;cimos<br />
               y no han resultado premiados en este sorteo.
             </p>
 
+                </td>
+              </tr>
+            </table>
+
           </td>
         </tr>
-        [/HERO SIN PREMIO]
+        [/CABECERA + HERO SIN PREMIO]
         -->
 
         <!-- ═══════════════════════════════════════════════════════════ -->
@@ -215,35 +247,17 @@
         <!--     [DETALLE SIN PREMIO]                                   -->
         <!-- ═══════════════════════════════════════════════════════════ -->
         <tr>
-          <td bgcolor="#EEF2FF" style="background-color:#EEF2FF;padding:24px 24px 0;">
+          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:24px 24px 0;">
             <p style="margin:0 0 10px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
                        font-size:10px;font-weight:700;color:#1565C0;text-transform:uppercase;
                        letter-spacing:0.1em;">DETALLE DEL PREMIO</p>
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+            <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                    style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
 
               <!-- Fila: Sorteo -->
               <tr>
-                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td width="24" valign="middle" style="vertical-align:middle;padding-right:10px;width:24px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="24" height="24" bgcolor="#1565C0"
-                                style="background-color:#1565C0;border-radius:50%;width:24px;height:24px;
-                                       text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
-                              &nbsp;
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="middle" style="vertical-align:middle;
-                                                 font-family:'Inter',Arial,Helvetica,sans-serif;
-                                                 font-size:12px;color:#64748B;">Sorteo</td>
-                    </tr>
-                  </table>
+                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;vertical-align:top;">
+                  Sorteo
                 </td>
                 <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;
                            font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;
@@ -255,26 +269,8 @@
 
               <!-- Fila: N&uacute;mero premiado -->
               <tr>
-                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td width="24" valign="middle" style="vertical-align:middle;padding-right:10px;width:24px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="24" height="24" bgcolor="#0D1B3D"
-                                style="background-color:#0D1B3D;border-radius:50%;width:24px;height:24px;
-                                       text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
-                              &nbsp;
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="middle" style="vertical-align:middle;
-                                                 font-family:'Inter',Arial,Helvetica,sans-serif;
-                                                 font-size:12px;color:#64748B;">N&uacute;mero premiado</td>
-                    </tr>
-                  </table>
+                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;vertical-align:top;">
+                  N&uacute;mero premiado
                 </td>
                 <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;
                            font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;
@@ -285,26 +281,8 @@
 
               <!-- Fila: Premio por d&eacute;cimo -->
               <tr>
-                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td width="24" valign="middle" style="vertical-align:middle;padding-right:10px;width:24px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="24" height="24" bgcolor="#16A34A"
-                                style="background-color:#16A34A;border-radius:50%;width:24px;height:24px;
-                                       text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
-                              &nbsp;
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="middle" style="vertical-align:middle;
-                                                 font-family:'Inter',Arial,Helvetica,sans-serif;
-                                                 font-size:12px;color:#64748B;">Premio por d&eacute;cimo</td>
-                    </tr>
-                  </table>
+                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;vertical-align:top;">
+                  Premio por d&eacute;cimo
                 </td>
                 <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;
                            font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;
@@ -315,26 +293,8 @@
 
               <!-- Fila: Cantidad de d&eacute;cimos -->
               <tr>
-                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td width="24" valign="middle" style="vertical-align:middle;padding-right:10px;width:24px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="24" height="24" bgcolor="#4F46E5"
-                                style="background-color:#4F46E5;border-radius:50%;width:24px;height:24px;
-                                       text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
-                              &nbsp;
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="middle" style="vertical-align:middle;
-                                                 font-family:'Inter',Arial,Helvetica,sans-serif;
-                                                 font-size:12px;color:#64748B;">Cantidad de d&eacute;cimos</td>
-                    </tr>
-                  </table>
+                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;vertical-align:top;">
+                  Cantidad de d&eacute;cimos
                 </td>
                 <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;
                            font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;
@@ -345,30 +305,11 @@
 
               <!-- Fila: Premio total (destacada) -->
               <tr>
-                <td bgcolor="#F0FDF4"
-                    style="background-color:#F0FDF4;padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td width="24" valign="middle" style="vertical-align:middle;padding-right:10px;width:24px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="24" height="24" bgcolor="#16A34A"
-                                style="background-color:#16A34A;border-radius:50%;width:24px;height:24px;
-                                       text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
-                              &nbsp;
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="middle" style="vertical-align:middle;
-                                                 font-family:'Inter',Arial,Helvetica,sans-serif;
-                                                 font-size:12px;font-weight:700;color:#14532D;">Premio total</td>
-                    </tr>
-                  </table>
+                <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;background-color:#FFFFFF;padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;color:#14532D;vertical-align:top;">
+                  Premio total
                 </td>
-                <td bgcolor="#F0FDF4"
-                    style="background-color:#F0FDF4;padding:14px 20px;border-bottom:1px solid #F3F4F6;
+                <td bgcolor="#FFFFFF"
+                    style="background-color:#FFFFFF;padding:14px 20px;border-bottom:1px solid #F3F4F6;
                            font-family:'Inter',Arial,Helvetica,sans-serif;font-size:24px;
                            font-weight:700;color:#16A34A;vertical-align:middle;">
                   {{IMPORTE_TOTAL}}&nbsp;&euro;
@@ -377,26 +318,8 @@
 
               <!-- Fila: Modalidad -->
               <tr>
-                <td style="padding:14px 20px;width:46%;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td width="24" valign="middle" style="vertical-align:middle;padding-right:10px;width:24px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="24" height="24" bgcolor="#64748B"
-                                style="background-color:#64748B;border-radius:50%;width:24px;height:24px;
-                                       text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
-                              &nbsp;
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="middle" style="vertical-align:middle;
-                                                 font-family:'Inter',Arial,Helvetica,sans-serif;
-                                                 font-size:12px;color:#64748B;">Modalidad</td>
-                    </tr>
-                  </table>
+                <td style="padding:14px 20px;width:46%;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;vertical-align:top;">
+                  Modalidad
                 </td>
                 <td style="padding:14px 20px;
                            font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;
@@ -419,34 +342,16 @@
         [DETALLE SIN PREMIO] &mdash; BE: descomentar, eliminar [DETALLE CON PREMIO]
         ═══════════════════════════════════════════════════════════════
         <tr>
-          <td bgcolor="#EEF2FF" style="background-color:#EEF2FF;padding:24px 24px 0;">
+          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:24px 24px 0;">
             <p style="margin:0 0 10px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
                        font-size:10px;font-weight:700;color:#1565C0;text-transform:uppercase;
                        letter-spacing:0.1em;">DETALLE DE TU COMPROBACI&Oacute;N</p>
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+            <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                    style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
 
               <tr>
-                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td width="24" valign="middle" style="vertical-align:middle;padding-right:10px;width:24px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="24" height="24" bgcolor="#1565C0"
-                                style="background-color:#1565C0;border-radius:50%;width:24px;height:24px;
-                                       text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
-                              &nbsp;
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="middle" style="vertical-align:middle;
-                                                 font-family:'Inter',Arial,Helvetica,sans-serif;
-                                                 font-size:12px;color:#64748B;">Sorteo</td>
-                    </tr>
-                  </table>
+                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;vertical-align:top;">
+                  Sorteo
                 </td>
                 <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;
                            font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;
@@ -457,26 +362,8 @@
               </tr>
 
               <tr>
-                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td width="24" valign="middle" style="vertical-align:middle;padding-right:10px;width:24px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="24" height="24" bgcolor="#0D1B3D"
-                                style="background-color:#0D1B3D;border-radius:50%;width:24px;height:24px;
-                                       text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
-                              &nbsp;
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="middle" style="vertical-align:middle;
-                                                 font-family:'Inter',Arial,Helvetica,sans-serif;
-                                                 font-size:12px;color:#64748B;">N&uacute;mero comprobado</td>
-                    </tr>
-                  </table>
+                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;vertical-align:top;">
+                  N&uacute;mero comprobado
                 </td>
                 <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;
                            font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;
@@ -486,26 +373,8 @@
               </tr>
 
               <tr>
-                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td width="24" valign="middle" style="vertical-align:middle;padding-right:10px;width:24px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="24" height="24" bgcolor="#4F46E5"
-                                style="background-color:#4F46E5;border-radius:50%;width:24px;height:24px;
-                                       text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
-                              &nbsp;
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="middle" style="vertical-align:middle;
-                                                 font-family:'Inter',Arial,Helvetica,sans-serif;
-                                                 font-size:12px;color:#64748B;">Cantidad de d&eacute;cimos</td>
-                    </tr>
-                  </table>
+                <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;width:46%;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;vertical-align:top;">
+                  Cantidad de d&eacute;cimos
                 </td>
                 <td style="padding:14px 20px;border-bottom:1px solid #F3F4F6;
                            font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;
@@ -515,26 +384,8 @@
               </tr>
 
               <tr>
-                <td style="padding:14px 20px;width:46%;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td width="24" valign="middle" style="vertical-align:middle;padding-right:10px;width:24px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="24" height="24" bgcolor="#64748B"
-                                style="background-color:#64748B;border-radius:50%;width:24px;height:24px;
-                                       text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
-                              &nbsp;
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="middle" style="vertical-align:middle;
-                                                 font-family:'Inter',Arial,Helvetica,sans-serif;
-                                                 font-size:12px;color:#64748B;">Modalidad</td>
-                    </tr>
-                  </table>
+                <td style="padding:14px 20px;width:46%;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;color:#64748B;vertical-align:top;">
+                  Modalidad
                 </td>
                 <td style="padding:14px 20px;
                            font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;
@@ -557,20 +408,20 @@
         <!--     BE: activo por defecto para variante CON PREMIO + CUSTODIA -->
         <!-- ═══════════════════════════════════════════════════════════════ -->
         <tr>
-          <td bgcolor="#EEF2FF" style="background-color:#EEF2FF;padding:16px 24px 0;">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:16px 24px 0;">
+            <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                    style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
               <tr>
                 <td style="padding:18px 20px;">
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
-                      <!-- &Iacute;cono cartera azul 48x48 -->
+                      <!-- &Iacute;cono cartera verde 48x48 -->
                       <td width="60" valign="top" style="vertical-align:top;padding-right:14px;width:60px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="48"
                                style="border-collapse:separate !important;">
                           <tr>
-                            <td width="48" height="48" bgcolor="#052a5a"
-                                style="background-color:#052a5a;border-radius:12px;width:48px;height:48px;
+                            <td width="48" height="48" bgcolor="#16A34A"
+                                style="background-color:#16A34A;border-radius:12px;width:48px;height:48px;
                                        text-align:center;vertical-align:middle;line-height:48px;mso-line-height-rule:exactly;">
                               <img src="https://cdn.loteriamanises.com/emails/icon-card-white.png"
                                    width="24" height="24" alt="premio"
@@ -579,10 +430,9 @@
                           </tr>
                         </table>
                       </td>
-                      <!-- Texto -->
                       <td valign="top" style="vertical-align:top;">
                         <p style="margin:0 0 8px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                                   font-size:14px;font-weight:700;color:#0a4792;">Tu premio</p>
+                                   font-size:14px;font-weight:700;color:#14532D;">Tu premio</p>
                         <p style="margin:0 0 10px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
                                    font-size:13px;color:#4B5563;line-height:1.6;">
                           El importe del premio se ha a&ntilde;adido a tu saldo disponible
@@ -605,15 +455,15 @@
         <!-- [BLOQUE CON PREMIO - MENSAJER&Iacute;A] BE: comentado, activar para mensajer&iacute;a + premio
         ═══════════════════════════════════════════════════════════════
         <tr>
-          <td bgcolor="#EEF2FF" style="background-color:#EEF2FF;padding:16px 24px 0;">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:16px 24px 0;">
+            <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                    style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
               <tr>
                 <td style="padding:18px 20px;">
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
                       <td width="60" valign="top" style="vertical-align:top;padding-right:14px;width:60px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="48"
                                style="border-collapse:separate !important;">
                           <tr>
                             <td width="48" height="48" bgcolor="#052a5a"
@@ -628,7 +478,7 @@
                       </td>
                       <td valign="top" style="vertical-align:top;">
                         <p style="margin:0 0 8px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                                   font-size:14px;font-weight:700;color:#7C2D12;">&iquest;C&oacute;mo cobrar tu premio?</p>
+                                   font-size:14px;font-weight:700;color:#1E3A5F;">&iquest;C&oacute;mo cobrar tu premio?</p>
                         <p style="margin:0 0 10px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
                                    font-size:13px;color:#4B5563;line-height:1.6;">
                           Al disponer del d&eacute;cimo f&iacute;sico, puedes cobrar tu premio present&aacute;ndolo
@@ -650,15 +500,15 @@
         <!-- [BLOQUE SIN PREMIO] BE: comentado, activar para sin premio (variantes 3 y 4)
         ═══════════════════════════════════════════════════════════════
         <tr>
-          <td bgcolor="#EEF2FF" style="background-color:#EEF2FF;padding:16px 24px 0;">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:16px 24px 0;">
+            <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                    style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
               <tr>
                 <td style="padding:18px 20px;">
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
                       <td width="60" valign="top" style="vertical-align:top;padding-right:14px;width:60px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="48"
                                style="border-collapse:separate !important;">
                           <tr>
                             <td width="48" height="48" bgcolor="#F59E0B"
@@ -706,31 +556,28 @@
         <!-- 7. CTA — Acceder a mi Compra Certificada   -->
         <!-- ═══════════════════════════════════════════ -->
         <tr>
-          <td bgcolor="#EEF2FF" style="background-color:#EEF2FF;padding:16px 24px 24px;">
+          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:16px 24px 24px;">
             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="border-radius:12px;background-color:#0D1B3D;
-                           text-align:center;box-shadow:0 2px 8px rgba(13,27,61,0.28);">
+                <td style="text-align:center;">
                   <!--[if mso]>
-                  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml"
-                               xmlns:w="urn:schemas-microsoft-com:office:word"
-                               href="{{URL_COMPRA_CERTIFICADA}}"
-                               style="height:52px;v-text-anchor:middle;width:552px;"
-                               arcsize="4%" strokecolor="#0D1B3D" fillcolor="#0D1B3D">
+                  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+                    href="{{URL_COMPRA_CERTIFICADA}}" style="height:38px;v-text-anchor:middle;width:220px;" arcsize="50%"
+                    strokecolor="#16A34A" strokeweight="1.5pt" fillcolor="#FFFFFF">
                     <w:anchorlock/>
-                    <center style="color:#FFFFFF;font-family:'Inter',Arial,Helvetica,sans-serif;
-                                   font-size:15px;font-weight:700;letter-spacing:0.03em;">
-                      Acceder a mi Compra Certificada &nbsp;&rarr;
+                    <center style="color:#16A34A;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;">
+                      Acceder a mi Compra Certificada
                     </center>
                   </v:roundrect>
                   <![endif]-->
                   <!--[if !mso]><!-->
                   <a href="{{URL_COMPRA_CERTIFICADA}}"
-                     style="display:block;padding:16px 28px;mso-hide:all;
+                     style="display:inline-block;padding:10px 28px;
+                            border:1.5px solid #16A34A;border-radius:20px;
                             font-family:'Inter',Arial,Helvetica,sans-serif;
-                            font-size:15px;font-weight:700;color:#FFFFFF;
-                            text-decoration:none;letter-spacing:0.03em;">
-                    Acceder a mi Compra Certificada &nbsp;&rarr;
+                            font-size:13px;font-weight:600;color:#16A34A;text-decoration:none;
+                            background-color:#FFFFFF;line-height:normal;mso-hide:all;">
+                    Acceder a mi Compra Certificada
                   </a>
                   <!--<![endif]-->
                 </td>
@@ -837,10 +684,10 @@
                     96&nbsp;154&nbsp;03&nbsp;17
                   </p>
                   <p style="margin:0 0 12px 0;">
-                    <a href="mailto:info@loteriamanises.es"
+                    <a href="mailto:info@loteriamanises.com"
                        style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;
                               color:#60A5FA;text-decoration:none;">
-                      info@loteriamanises.es
+                      info@loteriamanises.com
                     </a>
                   </p>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -862,21 +709,21 @@
                          style="margin:0 auto;">
                     <tr>
                       <td style="padding:0 6px;">
-                        <a href="{{URL_FACEBOOK}}" style="text-decoration:none;">
+                        <a href="https://www.facebook.com/LoteriaManises/" style="text-decoration:none;">
                           <img src="https://cdn.loteriamanises.com/emails/icon-facebook.png"
                                width="36" alt="Facebook"
                                style="display:block;width:36px;height:auto;border:0;" />
                         </a>
                       </td>
                       <td style="padding:0 6px;">
-                        <a href="{{URL_INSTAGRAM}}" style="text-decoration:none;">
+                        <a href="https://www.instagram.com/loteriamanises/" style="text-decoration:none;">
                           <img src="https://cdn.loteriamanises.com/emails/icon-instagram.png"
                                width="36" alt="Instagram"
                                style="display:block;width:36px;height:auto;border:0;" />
                         </a>
                       </td>
                       <td style="padding:0 6px;">
-                        <a href="{{URL_X_TWITTER}}" style="text-decoration:none;">
+                        <a href="https://x.com/loteriamanises" style="text-decoration:none;">
                           <img src="https://cdn.loteriamanises.com/emails/icon-x.png"
                                width="36" alt="X"
                                style="display:block;width:36px;height:auto;border:0;" />

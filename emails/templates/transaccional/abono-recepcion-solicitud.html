@@ -15,7 +15,7 @@
     Variables: {{NUMERO_SOLICITUD}} {{FECHA_SOLICITUD}} {{NUMERO}}
                {{BLOQUE_SORTEOS}}
                {{URL_VERSION_WEB}} {{URL_APP_STORE}} {{URL_GOOGLE_PLAY}}
-               {{URL_FACEBOOK}} {{URL_INSTAGRAM}} {{URL_X_TWITTER}}
+               https://www.facebook.com/LoteriaManises/ https://www.instagram.com/loteriamanises/ https://x.com/loteriamanises
     ================================================================
   -->
   <title>Hemos recibido tu solicitud de abono &middot; Loter&iacute;a Manises</title>
@@ -27,7 +27,7 @@
     body,table,td,a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
     table,td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
     img { -ms-interpolation-mode:bicubic; border:0; display:block; height:auto; line-height:100%; outline:none; text-decoration:none; }
-    body { margin:0 !important; padding:0 !important; width:100% !important; background-color:#EEF2FF; }
+    body { margin:0 !important; padding:0 !important; width:100% !important; background-color:#FFFFFF; }
     table { border-collapse:collapse !important; }
     a { color:#1565C0; }
     a[x-apple-data-detectors],u + #body a,#MessageViewBody a {
@@ -46,11 +46,11 @@
     }
   </style>
 </head>
-<body id="body" style="margin:0;padding:0;background-color:#EEF2FF;">
+<body id="body" style="margin:0;padding:0;background-color:#FFFFFF;">
 
 <!-- ============================================================ OUTER WRAPPER -->
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-       style="background-color:#EEF2FF;">
+<table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+       style="background-color:#FFFFFF;">
   <tr>
     <td align="center" valign="top" style="padding:24px 0 32px;">
 
@@ -74,14 +74,14 @@
 
         <!-- ======================================================= BLOCK 2: BARRA NAVEGADOR -->
         <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:9px 24px;
-                     text-align:center;border-bottom:1px solid #F0F4FF;">
+          <td bgcolor="#0B2145"
+              style="background-color:#0B2145;padding:9px 24px;
+                     text-align:center;border-bottom:1px solid rgba(255,255,255,0.10);">
             <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                      font-size:11px;color:#9CA3AF;line-height:1.5;">
+                      font-size:11px;color:rgba(255,255,255,0.6);line-height:1.5;">
               Si no puedes ver bien este correo,
               <a href="{{URL_VERSION_WEB}}"
-                 style="color:#1565C0;text-decoration:underline;
+                 style="color:rgba(255,255,255,0.85);text-decoration:underline;
                         font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;">
                 &aacute;brelo en tu navegador
               </a>
@@ -89,120 +89,95 @@
           </td>
         </tr>
 
-        <!-- ======================================================= BLOCK 3: CABECERA VARIANTE B -->
+        <!-- ======================================================= BLOCK 3: CABECERA + HERO -->
         <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:20px 24px 16px;
-                     text-align:center;border-bottom:1px solid #F0F4FF;">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                   style="margin:0 auto;">
+          <td bgcolor="#0B2145"
+              style="background-color:#0B2145;
+                     background-image:linear-gradient(135deg,rgba(11,33,69,0.88) 0%,rgba(18,59,122,0.88) 55%,rgba(21,101,192,0.88) 100%),
+                                      url(https://cdn.loteriamanises.com/emails/hero-bg.jpg);
+                     background-size:cover;background-position:center top;
+                     padding:0;text-align:center;">
+            <!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:0;background-color:#0B2145;"><![endif]-->
+
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <!-- Left diamond cluster -->
-                <td valign="middle" style="padding-right:14px;vertical-align:middle;">
-                  <span style="display:block;line-height:1.4;font-size:10px;color:#16A34A;">&#9670;</span>
-                  <span style="display:block;line-height:1.4;font-size:7px;color:#DC2626;">&#9670;</span>
-                  <span style="display:block;line-height:1.4;font-size:8px;color:#1565C0;">&#9670;</span>
-                </td>
-                <!-- Logo -->
-                <td valign="middle" style="vertical-align:middle;">
-                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-color.png"
+                <td style="padding:28px 24px 20px;text-align:center;">
+                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-white.png"
                        width="190" alt="Loter&iacute;a Manises"
-                       style="display:block;width:190px;height:auto;border:0;" />
-                </td>
-                <!-- Right diamond cluster -->
-                <td valign="middle" style="padding-left:14px;vertical-align:middle;">
-                  <span style="display:block;line-height:1.4;font-size:8px;color:#F59E0B;">&#9670;</span>
-                  <span style="display:block;line-height:1.4;font-size:10px;color:#EC4899;">&#9670;</span>
-                  <span style="display:block;line-height:1.4;font-size:7px;color:#1565C0;">&#9670;</span>
+                       style="display:block;margin:0 auto;width:190px;height:auto;border:0;" />
                 </td>
               </tr>
-            </table>
-          </td>
-        </tr>
-
-        <!-- ======================================================= BLOCK 4: HERO -->
-        <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:36px 24px 28px;text-align:center;">
-
-            <!-- 4a. Circular icon 72×72 — blue with envelope -->
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                   style="margin:0 auto 22px;border-collapse:separate !important;">
               <tr>
-                <td width="72" height="72" bgcolor="#1565C0"
-                    style="background-color:#1565C0;border-radius:50%;width:72px;height:72px;
-                           text-align:center;vertical-align:middle;line-height:72px;
-                           mso-line-height-rule:exactly;">
-                  <span style="font-family:Arial,Helvetica,sans-serif;font-size:32px;
-                               color:#FFFFFF;line-height:72px;mso-line-height-rule:exactly;">&#9993;</span>
-                </td>
-              </tr>
-            </table>
-
-            <!-- 4b. Multi-size typographic headline -->
-            <p style="margin:0 0 16px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                      line-height:1.2;text-align:center;mso-line-height-rule:exactly;">
-              <span style="display:block;font-size:17px;font-weight:400;color:#4B5563;">
-                Hemos recibido tu
-              </span>
-              <span style="display:block;font-size:28px;font-weight:700;color:#1E3A5F;
-                           margin-top:4px;">
-                solicitud de abono
-              </span>
-            </p>
-
-            <!-- 4c. Body text -->
-            <p style="margin:0 auto 16px;font-family:'Inter',Arial,Helvetica,sans-serif;
-                      font-size:14px;color:#4B5563;line-height:1.65;text-align:center;
-                      max-width:400px;">
-              Tu solicitud se ha registrado correctamente y estamos
-              comprobando la disponibilidad del n&uacute;mero solicitado.
-            </p>
-
-            <!-- 4d. Chip info azul -->
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                   style="margin:0 auto;">
-              <tr>
-                <td bgcolor="#EEF2FF"
-                    style="background-color:#EEF2FF;border:1px solid #C7D7F9;
-                           border-radius:10px;padding:12px 18px;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                         style="border-collapse:separate !important;">
+                <td style="padding:0 40px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
-                      <!-- Info icon circle 20×20 -->
-                      <td valign="middle" style="vertical-align:middle;padding-right:10px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="20" height="20"
-                                style="width:20px;height:20px;line-height:0;font-size:0;">
-                              <img src="https://cdn.loteriamanises.com/emails/icon-info-navy-circle.png"
-                                   width="20" height="20" alt="info"
-                                   style="display:block;width:20px;height:20px;border:0;" />
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <!-- Text -->
-                      <td valign="middle" style="vertical-align:middle;">
-                        <span style="font-family:'Inter',Arial,Helvetica,sans-serif;
-                                     font-size:13px;font-weight:700;color:#1E3A5F;">
-                          En breve recibir&aacute;s un nuevo email con el resultado de la solicitud.
-                        </span>
-                      </td>
+                      <td style="border-top:1px solid rgba(255,255,255,0.22);
+                                 font-size:1px;line-height:1px;">&nbsp;</td>
                     </tr>
                   </table>
                 </td>
               </tr>
             </table>
 
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td style="padding:24px 24px 40px;text-align:center;">
+
+            <!-- 4a. Icono principal — solicitud por email -->
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                   style="margin:0 auto 22px;border-collapse:separate !important;">
+              <tr>
+                <td width="90" height="90" style="width:90px;height:90px;line-height:0;font-size:0;text-align:center;">
+                  <img src="https://cdn.loteriamanises.com/emails/icon-hero-email-square.png"
+                       width="90" height="90" alt=""
+                       style="display:block;width:90px;height:90px;border:0;margin:0 auto;" />
+                </td>
+              </tr>
+            </table>
+
+            <!-- 4b. Heading -->
+            <h1 style="margin:0 0 16px 0;
+                       font-family:'Inter',Arial,Helvetica,sans-serif;
+                       font-size:26px;font-weight:700;color:#FFFFFF;
+                       line-height:1.3;mso-line-height-rule:exactly;text-align:center;">
+              Hemos recibido tu solicitud de abono
+            </h1>
+
+            <!-- 4c. Body text -->
+            <p style="margin:0 auto 16px;font-family:'Inter',Arial,Helvetica,sans-serif;
+                      font-size:14px;color:rgba(255,255,255,0.82);line-height:1.65;text-align:center;
+                      max-width:400px;">
+              Tu solicitud se ha registrado correctamente y estamos
+              comprobando la disponibilidad del n&uacute;mero solicitado.
+            </p>
+
+            <!-- 4d. Chip informativo sin icono -->
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                   style="margin:0 auto;">
+              <tr>
+                <td bgcolor="#123B7A"
+                    style="background-color:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.28);
+                           border-radius:10px;padding:12px 20px;text-align:center;">
+                  <span style="font-family:'Inter',Arial,Helvetica,sans-serif;
+                               font-size:13px;font-weight:700;color:#FFFFFF;line-height:1.5;">
+                    En breve recibir&aacute;s un nuevo email con el resultado de la solicitud.
+                  </span>
+                </td>
+              </tr>
+            </table>
+
+                </td>
+              </tr>
+            </table>
+
+            <!--[if mso]></td></tr></table><![endif]-->
           </td>
         </tr>
 
         <!-- ======================================================= BLOCK 5: DATOS DEL ABONO SOLICITADO -->
         <tr>
-          <td bgcolor="#EEF2FF"
-              style="background-color:#EEF2FF;padding:24px 24px 0;">
+          <td bgcolor="#FFFFFF"
+              style="background-color:#FFFFFF;padding:24px 24px 0;">
 
             <!-- Eyebrow -->
             <p style="margin:0 0 12px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -212,7 +187,7 @@
             </p>
 
             <!-- White card -->
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+            <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                    style="background-color:#FFFFFF;border:1px solid #E5E7EB;
                           border-radius:12px;overflow:hidden;">
 
@@ -271,8 +246,8 @@
 
         <!-- ======================================================= BLOCK 6: SORTEOS SOLICITADOS -->
         <tr>
-          <td bgcolor="#EEF2FF"
-              style="background-color:#EEF2FF;padding:16px 24px 0;">
+          <td bgcolor="#FFFFFF"
+              style="background-color:#FFFFFF;padding:16px 24px 0;">
 
             <!-- Eyebrow -->
             <p style="margin:0 0 8px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -288,7 +263,7 @@
             </p>
 
             <!-- White card -->
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+            <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                    style="background-color:#FFFFFF;border:1px solid #E5E7EB;
                           border-radius:12px;overflow:hidden;">
 
@@ -319,8 +294,8 @@
 
         <!-- ======================================================= BLOCK 7: ¿QUÉ OCURRE AHORA? -->
         <tr>
-          <td bgcolor="#EEF2FF"
-              style="background-color:#EEF2FF;padding:16px 24px 0;">
+          <td bgcolor="#FFFFFF"
+              style="background-color:#FFFFFF;padding:16px 24px 0;">
 
             <!-- Eyebrow -->
             <p style="margin:0 0 12px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -330,9 +305,9 @@
             </p>
 
             <!-- White card -->
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+            <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                    style="background-color:#FFFFFF;border:1px solid #E5E7EB;
-                          border-radius:12px;padding:20px;">
+                          border-radius:12px;overflow:hidden;padding:20px;">
               <tr>
                 <td style="padding:20px;">
 
@@ -340,19 +315,7 @@
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
                       <td valign="top" style="vertical-align:top;width:28px;padding-right:14px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="28" height="28" bgcolor="#1565C0"
-                                style="background-color:#1565C0;border-radius:50%;width:28px;height:28px;
-                                       text-align:center;vertical-align:middle;line-height:28px;
-                                       mso-line-height-rule:exactly;">
-                              <span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;
-                                           font-weight:700;color:#FFFFFF;line-height:28px;
-                                           mso-line-height-rule:exactly;">1</span>
-                            </td>
-                          </tr>
-                        </table>
+                        <img src="https://cdn.loteriamanises.com/emails/icon-step-1-navy.png" width="28" height="28" alt="1" style="display:block;width:28px;height:28px;border:0;" />
                       </td>
                       <td valign="top" style="vertical-align:top;">
                         <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -369,25 +332,13 @@
                          style="margin-top:14px;">
                     <tr>
                       <td valign="top" style="vertical-align:top;width:28px;padding-right:14px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="28" height="28" bgcolor="#1565C0"
-                                style="background-color:#1565C0;border-radius:50%;width:28px;height:28px;
-                                       text-align:center;vertical-align:middle;line-height:28px;
-                                       mso-line-height-rule:exactly;">
-                              <span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;
-                                           font-weight:700;color:#FFFFFF;line-height:28px;
-                                           mso-line-height-rule:exactly;">2</span>
-                            </td>
-                          </tr>
-                        </table>
+                        <img src="https://cdn.loteriamanises.com/emails/icon-step-2-navy.png" width="28" height="28" alt="2" style="display:block;width:28px;height:28px;border:0;" />
                       </td>
                       <td valign="top" style="vertical-align:top;">
                         <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
                                   font-size:13px;color:#1E3A5F;line-height:1.6;">
                           <strong>Si podemos aceptar el abono, recibir&aacute;s un email</strong>
-                          confirm&aacute;ndolo de su activaci&oacute;n.
+                          confirmando su activaci&oacute;n.
                         </p>
                       </td>
                     </tr>
@@ -398,19 +349,7 @@
                          style="margin-top:14px;">
                     <tr>
                       <td valign="top" style="vertical-align:top;width:28px;padding-right:14px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="28" height="28" bgcolor="#1565C0"
-                                style="background-color:#1565C0;border-radius:50%;width:28px;height:28px;
-                                       text-align:center;vertical-align:middle;line-height:28px;
-                                       mso-line-height-rule:exactly;">
-                              <span style="font-family:Arial,Helvetica,sans-serif;font-size:13px;
-                                           font-weight:700;color:#FFFFFF;line-height:28px;
-                                           mso-line-height-rule:exactly;">3</span>
-                            </td>
-                          </tr>
-                        </table>
+                        <img src="https://cdn.loteriamanises.com/emails/icon-step-3-navy.png" width="28" height="28" alt="3" style="display:block;width:28px;height:28px;border:0;" />
                       </td>
                       <td valign="top" style="vertical-align:top;">
                         <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -430,25 +369,25 @@
 
         <!-- ======================================================= BLOCK 8: AVISO IMPORTANTE -->
         <tr>
-          <td bgcolor="#EEF2FF"
-              style="background-color:#EEF2FF;padding:16px 24px 24px;">
+          <td bgcolor="#FFFFFF"
+              style="background-color:#FFFFFF;padding:16px 24px 24px;">
 
-            <!-- Amber warning card -->
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                   style="background-color:#FFFBEB;border:1px solid #FDE68A;
-                          border-left:4px solid #F59E0B;border-radius:0 10px 10px 0;">
+            <!-- Info card azul -->
+            <table bgcolor="#F8FAFC" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                   style="background-color:#F8FAFC;border:1px solid #E2E8F0;
+                          border-left:4px solid #64748B;border-radius:0 10px 10px 0;">
               <tr>
                 <td style="padding:14px 18px;">
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0"
                          style="border-collapse:separate !important;">
                     <tr>
-                      <!-- Warning icon circle 28×28 -->
+                      <!-- Info icon circle 28×28 -->
                       <td valign="top" style="vertical-align:top;padding-right:14px;padding-top:1px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28"
                                style="border-collapse:separate !important;">
                           <tr>
-                            <td width="28" height="28" bgcolor="#F59E0B"
-                                style="background-color:#F59E0B;border-radius:50%;width:28px;height:28px;
+                            <td width="28" height="28" bgcolor="#1565C0"
+                                style="background-color:#1565C0;border-radius:50%;width:28px;height:28px;
                                        text-align:center;vertical-align:middle;line-height:28px;
                                        mso-line-height-rule:exactly;">
                               <span style="font-family:Arial,Helvetica,sans-serif;font-size:15px;
@@ -458,14 +397,14 @@
                           </tr>
                         </table>
                       </td>
-                      <!-- Warning text -->
+                      <!-- Info text -->
                       <td valign="top" style="vertical-align:top;">
                         <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                                  font-size:13px;font-weight:700;color:#92400E;line-height:1.5;">
+                                  font-size:13px;font-weight:700;color:#1565C0;line-height:1.5;">
                           Este correo confirma &uacute;nicamente la recepci&oacute;n de tu solicitud.
                         </p>
                         <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                                  font-size:13px;color:#92400E;line-height:1.5;">
+                                  font-size:13px;color:#1E3A5F;line-height:1.5;">
                           El abono todav&iacute;a no est&aacute; activo.
                         </p>
                       </td>
@@ -562,10 +501,10 @@
                     96&nbsp;154&nbsp;03&nbsp;17
                   </p>
                   <p style="margin:0 0 12px 0;">
-                    <a href="mailto:info@loteriamanises.es"
+                    <a href="mailto:info@loteriamanises.com"
                        style="font-family:'Inter',Arial,Helvetica,sans-serif;
                               font-size:12px;color:#60A5FA;text-decoration:none;">
-                      info@loteriamanises.es
+                      info@loteriamanises.com
                     </a>
                   </p>
                   <p style="font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -588,21 +527,21 @@
                          style="margin:0 auto;">
                     <tr>
                       <td style="padding:0 6px;">
-                        <a href="{{URL_FACEBOOK}}" style="text-decoration:none;">
+                        <a href="https://www.facebook.com/LoteriaManises/" style="text-decoration:none;">
                           <img src="https://cdn.loteriamanises.com/emails/icon-facebook.png"
                                width="36" alt="Facebook"
                                style="display:block;width:36px;height:auto;border:0;" />
                         </a>
                       </td>
                       <td style="padding:0 6px;">
-                        <a href="{{URL_INSTAGRAM}}" style="text-decoration:none;">
+                        <a href="https://www.instagram.com/loteriamanises/" style="text-decoration:none;">
                           <img src="https://cdn.loteriamanises.com/emails/icon-instagram.png"
                                width="36" alt="Instagram"
                                style="display:block;width:36px;height:auto;border:0;" />
                         </a>
                       </td>
                       <td style="padding:0 6px;">
-                        <a href="{{URL_X_TWITTER}}" style="text-decoration:none;">
+                        <a href="https://x.com/loteriamanises" style="text-decoration:none;">
                           <img src="https://cdn.loteriamanises.com/emails/icon-x.png"
                                width="36" alt="X (Twitter)"
                                style="display:block;width:36px;height:auto;border:0;" />

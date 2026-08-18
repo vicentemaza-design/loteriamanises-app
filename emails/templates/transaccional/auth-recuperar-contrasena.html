@@ -16,7 +16,7 @@
     Variables: {{NOMBRE}} {{URL_CAMBIO_CONTRASENA}} {{FECHA_HORA}}
                {{URL_CONTACTO}} {{URL_VERSION_WEB}}
                {{URL_APP_STORE}} {{URL_GOOGLE_PLAY}}
-               {{URL_FACEBOOK}} {{URL_INSTAGRAM}} {{URL_X_TWITTER}}
+               https://www.facebook.com/LoteriaManises/ https://www.instagram.com/loteriamanises/ https://x.com/loteriamanises
     ================================================================
   -->
   <title>Crea una nueva contrase&ntilde;a &middot; Loter&iacute;a Manises</title>
@@ -28,7 +28,7 @@
     body,table,td,a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
     table,td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
     img { -ms-interpolation-mode:bicubic; border:0; display:block; height:auto; line-height:100%; outline:none; text-decoration:none; }
-    body { margin:0 !important; padding:0 !important; width:100% !important; background-color:#EEF2FF; }
+    body { margin:0 !important; padding:0 !important; width:100% !important; background-color:#FFFFFF; }
     table { border-collapse:collapse !important; }
     a { color:#1565C0; }
     a[x-apple-data-detectors],u + #body a,#MessageViewBody a {
@@ -39,8 +39,6 @@
     @media only screen and (max-width:620px) {
       .email-container { width:100% !important; border-radius:0 !important; }
       .mobile-stack { display:block !important; width:100% !important; padding-right:0 !important; padding-left:0 !important; padding-bottom:16px !important; }
-      .hero-left { display:block !important; width:100% !important; text-align:center !important; padding-bottom:16px !important; padding-left:0 !important; }
-      .hero-right { display:block !important; width:100% !important; padding-left:0 !important; }
       .footer-col { display:block !important; width:100% !important; text-align:center !important; padding:0 0 24px 0 !important; }
       .footer-col-last { display:block !important; width:100% !important; text-align:center !important; padding:16px 0 0 0 !important; }
       .footer-icon { margin:0 auto 10px !important; }
@@ -48,11 +46,11 @@
     }
   </style>
 </head>
-<body id="body" style="margin:0;padding:0;background-color:#EEF2FF;">
+<body id="body" style="margin:0;padding:0;background-color:#FFFFFF;">
 
 <!-- ============================================================ OUTER WRAPPER -->
-<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-       style="background-color:#EEF2FF;">
+<table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+       style="background-color:#FFFFFF;">
   <tr>
     <td align="center" valign="top" style="padding:24px 0 32px;">
 
@@ -76,14 +74,14 @@
 
         <!-- ======================================================= BLOCK 2: BARRA NAVEGADOR -->
         <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:9px 24px;
-                     text-align:center;border-bottom:1px solid #F0F4FF;">
+          <td bgcolor="#0B2145"
+              style="background-color:#0B2145;padding:9px 24px;
+                     text-align:center;border-bottom:1px solid rgba(255,255,255,0.10);">
             <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                      font-size:11px;color:#9CA3AF;line-height:1.5;">
+                      font-size:11px;color:rgba(255,255,255,0.6);line-height:1.5;">
               Si no puedes ver bien este correo,
               <a href="{{URL_VERSION_WEB}}"
-                 style="color:#1565C0;text-decoration:underline;
+                 style="color:rgba(255,255,255,0.85);text-decoration:underline;
                         font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;">
                 &aacute;brelo en tu navegador
               </a>
@@ -91,91 +89,82 @@
           </td>
         </tr>
 
-        <!-- ======================================================= BLOCK 3: CABECERA VARIANTE B -->
+        <!-- ======================================================= BLOCK 3: CABECERA + HERO — CREAR CONTRASEÑA -->
         <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:20px 24px 16px;
-                     text-align:center;border-bottom:1px solid #F0F4FF;">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                   style="margin:0 auto;">
+          <td bgcolor="#0B2145"
+              style="background-color:#0B2145;
+                     background-image:linear-gradient(135deg,rgba(11,33,69,0.88) 0%,rgba(18,59,122,0.88) 55%,rgba(21,101,192,0.88) 100%),
+                                      url(https://cdn.loteriamanises.com/emails/hero-bg.jpg);
+                     background-size:cover;background-position:center top;
+                     padding:0;text-align:center;">
+            <!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:0;background-color:#0B2145;"><![endif]-->
+
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <!-- Left diamond cluster -->
-                <td valign="middle" style="padding-right:14px;vertical-align:middle;">
-                  <span style="display:block;line-height:1.4;font-size:10px;color:#16A34A;">&#9670;</span>
-                  <span style="display:block;line-height:1.4;font-size:7px;color:#DC2626;">&#9670;</span>
-                  <span style="display:block;line-height:1.4;font-size:8px;color:#1565C0;">&#9670;</span>
-                </td>
-                <!-- Logo -->
-                <td valign="middle" style="vertical-align:middle;">
-                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-color.png"
+                <td style="padding:28px 24px 20px;text-align:center;">
+                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-white.png"
                        width="190" alt="Loter&iacute;a Manises"
-                       style="display:block;width:190px;height:auto;border:0;" />
+                       style="display:block;margin:0 auto;width:190px;height:auto;border:0;" />
                 </td>
-                <!-- Right diamond cluster -->
-                <td valign="middle" style="padding-left:14px;vertical-align:middle;">
-                  <span style="display:block;line-height:1.4;font-size:8px;color:#F59E0B;">&#9670;</span>
-                  <span style="display:block;line-height:1.4;font-size:10px;color:#EC4899;">&#9670;</span>
-                  <span style="display:block;line-height:1.4;font-size:7px;color:#1565C0;">&#9670;</span>
+              </tr>
+              <tr>
+                <td style="padding:0 40px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td style="border-top:1px solid rgba(255,255,255,0.22);
+                                 font-size:1px;line-height:1px;">&nbsp;</td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
-          </td>
-        </tr>
 
-        <!-- ======================================================= BLOCK 4: HERO — CREAR CONTRASEÑA -->
-        <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:28px 24px 24px;">
             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-
-                <!-- Col izquierda: ilustración candado -->
-                <td width="120" valign="middle" class="hero-left"
-                    style="vertical-align:middle;text-align:center;width:120px;">
+                <td align="center" style="padding:28px 24px 40px;text-align:center;">
                   <!--[if mso]>
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0"
                          style="border-collapse:separate !important;margin:0 auto;">
                     <tr>
-                      <td width="72" height="72" bgcolor="#16A34A"
-                          style="background-color:#16A34A;border-radius:50%;width:72px;height:72px;
-                                 text-align:center;vertical-align:middle;line-height:72px;
+                      <td width="90" height="90" bgcolor="#123B7A"
+                          style="background-color:rgba(255,255,255,0.15);border-radius:20px;width:90px;height:90px;
+                                 text-align:center;vertical-align:middle;line-height:90px;
                                  mso-line-height-rule:exactly;">
-                        <img src="https://cdn.loteriamanises.com/emails/icon-lock-white.png"
-                             width="40" height="40" alt=""
-                             style="display:block;width:40px;height:40px;border:0;margin:16px auto;" />
+                        <img src="https://cdn.loteriamanises.com/emails/icon-hero-lock-square.png"
+                             width="90" height="90" alt=""
+                             style="display:block;width:90px;height:90px;border:0;margin:0 auto;" />
                       </td>
                     </tr>
                   </table>
                   <![endif]-->
                   <!--[if !mso]><!-->
-                  <img src="https://cdn.loteriamanises.com/emails/ilustracion-candado-clave.png"
-                       width="100" alt=""
-                       style="display:block;margin:0 auto;width:100px;height:auto;border:0;" />
+                  <img src="https://cdn.loteriamanises.com/emails/icon-hero-lock-square.png"
+                       width="90" height="90" alt=""
+                       style="display:block;margin:0 auto 16px;width:90px;height:90px;border:0;" />
                   <!--<![endif]-->
-                </td>
 
-                <!-- Col derecha: título + texto -->
-                <td valign="middle" class="hero-right"
-                    style="vertical-align:middle;padding-left:18px;">
-                  <h2 style="font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:22px;font-weight:700;color:#14532D;
-                             margin:0 0 10px 0;">
+                  <h1 style="font-family:'Inter',Arial,Helvetica,sans-serif;
+                             font-size:26px;font-weight:700;color:#FFFFFF;
+                             margin:0 0 10px 0;text-align:center;line-height:1.3;mso-line-height-rule:exactly;">
                     Crea una nueva contrase&ntilde;a
-                  </h2>
+                  </h1>
                   <p style="font-family:'Inter',Arial,Helvetica,sans-serif;
-                            font-size:13px;color:#4B5563;line-height:1.65;margin:0 0 8px 0;">
+                            font-size:13px;color:rgba(255,255,255,0.82);line-height:1.65;margin:0 auto 8px auto;
+                            text-align:center;max-width:470px;">
                     Hemos recibido una solicitud para cambiar la contrase&ntilde;a de tu cuenta
                     de Loter&iacute;a Manises.
                   </p>
                   <p style="font-family:'Inter',Arial,Helvetica,sans-serif;
-                            font-size:13px;color:#4B5563;line-height:1.65;margin:0;">
+                            font-size:13px;color:rgba(255,255,255,0.82);line-height:1.65;margin:0 auto;
+                            text-align:center;max-width:470px;">
                     Pulsa el siguiente bot&oacute;n para crear una nueva contrase&ntilde;a
                     de forma segura.
                   </p>
                 </td>
-
               </tr>
             </table>
+
+            <!--[if mso]></td></tr></table><![endif]-->
           </td>
         </tr>
 
@@ -188,22 +177,19 @@
                 <td align="center">
                   <!--[if mso]>
                   <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-                    href="{{URL_CAMBIO_CONTRASENA}}" style="height:50px;v-text-anchor:middle;width:500px;"
-                    arcsize="8%" strokecolor="#14532D" fillcolor="#14532D">
+                    href="{{URL_CAMBIO_CONTRASENA}}" style="height:38px;v-text-anchor:middle;width:230px;"
+                    arcsize="50%" strokecolor="#1565C0" strokeweight="1.5pt" fillcolor="#FFFFFF">
                     <w:anchorlock/>
-                    <center style="color:#FFFFFF;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;
-                                   letter-spacing:0.04em;">
+                    <center style="color:#1565C0;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;">
                       CREAR NUEVA CONTRASE&Ntilde;A
                     </center>
                   </v:roundrect>
                   <![endif]-->
                   <!--[if !mso]><!-->
-                  <a href="{{URL_CAMBIO_CONTRASENA}}" style="display:block;padding:16px;background-color:#14532D;
-                     border-radius:10px;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;
-                     color:#FFFFFF;text-decoration:none;text-align:center;letter-spacing:0.04em;mso-hide:all;">
-                    <img src="https://cdn.loteriamanises.com/emails/icon-lock-gray-sm.png"
-                         width="14" height="14" alt=""
-                         style="display:inline-block;vertical-align:middle;margin-right:6px;border:0;" /> CREAR NUEVA CONTRASE&Ntilde;A
+                  <a href="{{URL_CAMBIO_CONTRASENA}}" style="display:inline-block;padding:10px 28px;
+                     border:1.5px solid #1565C0;border-radius:20px;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                     color:#1565C0;text-decoration:none;background-color:#FFFFFF;line-height:normal;mso-hide:all;">
+                    CREAR NUEVA CONTRASE&Ntilde;A
                   </a>
                   <!--<![endif]-->
                 </td>
@@ -227,24 +213,16 @@
 
         <!-- ======================================================= BLOCK 6: AVISOS DE SEGURIDAD -->
         <tr>
-          <td bgcolor="#EEF2FF"
-              style="background-color:#EEF2FF;padding:20px 24px 24px;">
+          <td bgcolor="#FFFFFF"
+              style="background-color:#FFFFFF;padding:20px 24px 24px;">
             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
 
               <!-- Item 1: ¿No has solicitado este cambio? -->
               <tr>
                 <td style="padding:0;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                  <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                          style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:10px;">
                     <tr>
-                      <!-- Col icono escudo -->
-                      <td width="44" valign="middle"
-                          style="vertical-align:middle;padding:16px 0 16px 18px;">
-                        <img src="https://cdn.loteriamanises.com/emails/icon-cta-check-circle.png"
-                             width="44" height="44" alt=""
-                             style="display:block;width:44px;height:44px;border:0;" />
-                      </td>
-                      <!-- Col texto -->
                       <td valign="middle"
                           style="vertical-align:middle;padding:16px 18px 16px 14px;">
                         <p style="font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -272,17 +250,9 @@
               <!-- Item 2: Enlace personal con caducidad -->
               <tr>
                 <td style="padding:0;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                  <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                          style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:10px;">
                     <tr>
-                      <!-- Col icono reloj -->
-                      <td width="44" valign="middle"
-                          style="vertical-align:middle;padding:16px 0 16px 18px;">
-                        <img src="https://cdn.loteriamanises.com/emails/icon-cta-check-circle.png"
-                             width="44" height="44" alt=""
-                             style="display:block;width:44px;height:44px;border:0;" />
-                      </td>
-                      <!-- Col texto -->
                       <td valign="middle"
                           style="vertical-align:middle;padding:16px 18px 16px 14px;">
                         <p style="font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -386,10 +356,10 @@
                     96&nbsp;154&nbsp;03&nbsp;17
                   </p>
                   <p style="margin:0 0 12px 0;">
-                    <a href="mailto:info@loteriamanises.es"
+                    <a href="mailto:info@loteriamanises.com"
                        style="font-family:'Inter',Arial,Helvetica,sans-serif;
                               font-size:12px;color:#60A5FA;text-decoration:none;">
-                      info@loteriamanises.es
+                      info@loteriamanises.com
                     </a>
                   </p>
                   <p style="font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -412,21 +382,21 @@
                          style="margin:0 auto;">
                     <tr>
                       <td style="padding:0 6px;">
-                        <a href="{{URL_FACEBOOK}}" style="text-decoration:none;">
+                        <a href="https://www.facebook.com/LoteriaManises/" style="text-decoration:none;">
                           <img src="https://cdn.loteriamanises.com/emails/icon-facebook.png"
                                width="36" alt="Facebook"
                                style="display:block;width:36px;height:auto;border:0;" />
                         </a>
                       </td>
                       <td style="padding:0 6px;">
-                        <a href="{{URL_INSTAGRAM}}" style="text-decoration:none;">
+                        <a href="https://www.instagram.com/loteriamanises/" style="text-decoration:none;">
                           <img src="https://cdn.loteriamanises.com/emails/icon-instagram.png"
                                width="36" alt="Instagram"
                                style="display:block;width:36px;height:auto;border:0;" />
                         </a>
                       </td>
                       <td style="padding:0 6px;">
-                        <a href="{{URL_X_TWITTER}}" style="text-decoration:none;">
+                        <a href="https://x.com/loteriamanises" style="text-decoration:none;">
                           <img src="https://cdn.loteriamanises.com/emails/icon-x.png"
                                width="36" alt="X (Twitter)"
                                style="display:block;width:36px;height:auto;border:0;" />

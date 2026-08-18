@@ -6,7 +6,7 @@
              {{PREMIO_POR_DECIMO}} {{IMPORTE_TOTAL}} {{SALDO_DISPONIBLE}}
              {{URL_COMPRA_CERTIFICADA}} {{URL_VERSION_WEB}}
              {{URL_APP_STORE}} {{URL_GOOGLE_PLAY}}
-             {{URL_FACEBOOK}} {{URL_INSTAGRAM}} {{URL_X_TWITTER}}
+             https://www.facebook.com/LoteriaManises/ https://www.instagram.com/loteriamanises/ https://x.com/loteriamanises
 -->
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -24,7 +24,7 @@
     /* Reset */
     * { box-sizing: border-box; }
     body, #bodyTable { margin: 0 !important; padding: 0 !important; width: 100% !important; }
-    body { background-color: #F0FDF4; font-family: 'Inter', Arial, Helvetica, sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    body { background-color: #FFFFFF; font-family: 'Inter', Arial, Helvetica, sans-serif; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
     table { border-collapse: collapse !important; }
     img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; display: block; }
     a { text-decoration: none; color: inherit; }
@@ -42,18 +42,12 @@
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#F0FDF4;font-family:'Inter',Arial,Helvetica,sans-serif;">
-
-<!-- Preheader oculto -->
-<div style="display:none;font-size:1px;color:#F0F4FF;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
-  &iexcl;Enhorabuena! Uno de tus d&eacute;cimos de Loter&iacute;a Nacional ha resultado premiado. El premio ya est&aacute; en tu cuenta.
-  &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
-</div>
+<body style="margin:0;padding:0;background-color:#FFFFFF;font-family:'Inter',Arial,Helvetica,sans-serif;">
 
 <!-- Outer wrapper -->
 <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" id="bodyTable">
   <tr>
-    <td align="center" style="padding:24px 12px;background-color:#F0FDF4;">
+    <td align="center" style="padding:24px 12px;background-color:#FFFFFF;">
       <!--[if mso | IE]><table border="0" cellpadding="0" cellspacing="0" width="600"><tr><td><![endif]-->
 
       <!-- EMAIL CONTAINER -->
@@ -61,85 +55,106 @@
              style="width:600px;max-width:600px;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(21,101,192,0.10);">
 
         <!-- ============================================================ -->
+        <!-- BLOQUE 1: PREHEADER OCULTO                                   -->
+        <!-- ============================================================ -->
+        <tr>
+          <td style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;
+                     opacity:0;overflow:hidden;mso-hide:all;">
+  &iexcl;Enhorabuena! Uno de tus d&eacute;cimos de Loter&iacute;a Nacional ha resultado premiado. El premio ya est&aacute; en tu cuenta.
+  &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+          </td>
+        </tr>
+
+        <!-- ============================================================ -->
         <!-- BLOQUE 2: BARRA NAVEGADOR                                    -->
         <!-- ============================================================ -->
         <tr>
-          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:9px 24px;text-align:center;border-bottom:1px solid #F0F4FF;">
-            <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#9CA3AF;">
+          <td bgcolor="#0B3320" style="background-color:#0B3320;padding:9px 24px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.10);">
+            <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:rgba(255,255,255,0.6);">
               Si no puedes ver bien este correo,
-              <a href="{{URL_VERSION_WEB}}" style="color:#1565C0;text-decoration:underline;">&#225;brelo en tu navegador</a>
+              <a href="{{URL_VERSION_WEB}}" style="color:rgba(255,255,255,0.85);text-decoration:underline;">&#225;brelo en tu navegador</a>
             </p>
           </td>
         </tr>
 
         <!-- ============================================================ -->
-        <!-- BLOQUE 3: CABECERA VARIANTE B                               -->
+        <!-- BLOQUE 3+4: CABECERA + HERO — CON PREMIO (CUSTODIA)         -->
         <!-- ============================================================ -->
         <tr>
-          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:20px 24px 16px;border-bottom:1px solid #F0F4FF;">
-            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation">
+          <td bgcolor="#0B3320"
+              style="background-color:#0B3320;
+                     background-image:linear-gradient(135deg,rgba(11,51,32,0.88) 0%,rgba(20,83,45,0.88) 55%,rgba(30,122,69,0.88) 100%),
+                                      url(https://cdn.loteriamanises.com/emails/hero-bg.jpg);
+                     background-size:cover;background-position:center top;
+                     padding:0;text-align:center;">
+            <!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:0;background-color:#0B3320;"><![endif]-->
+
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <!-- Diamantes izquierda -->
-                <td valign="middle" style="padding-right:14px;vertical-align:middle;">
-                  <span style="display:block;font-size:10px;color:#16A34A;line-height:1.3;">&#9670;</span>
-                  <span style="display:block;font-size:7px;color:#DC2626;line-height:1.3;">&#9670;</span>
-                  <span style="display:block;font-size:8px;color:#1565C0;line-height:1.3;">&#9670;</span>
-                </td>
-                <!-- Logo central -->
-                <td align="center" valign="middle" style="text-align:center;vertical-align:middle;">
-                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-color.png"
+                <td style="padding:28px 24px 20px;text-align:center;">
+                  <img src="https://cdn.loteriamanises.com/emails/logo-manises-white.png"
                        width="190" alt="Loter&iacute;a Manises"
-                       style="display:block;width:190px;height:auto;border:0;margin:0 auto;">
+                       style="display:block;margin:0 auto;width:190px;height:auto;border:0;">
                 </td>
-                <!-- Diamantes derecha -->
-                <td valign="middle" style="padding-left:14px;text-align:right;vertical-align:middle;">
-                  <span style="display:block;font-size:8px;color:#F59E0B;line-height:1.3;text-align:right;">&#9670;</span>
-                  <span style="display:block;font-size:10px;color:#EC4899;line-height:1.3;text-align:right;">&#9670;</span>
-                  <span style="display:block;font-size:7px;color:#1565C0;line-height:1.3;text-align:right;">&#9670;</span>
+              </tr>
+              <tr>
+                <td style="padding:0 40px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td style="border-top:1px solid rgba(255,255,255,0.22);
+                                 font-size:1px;line-height:1px;">&nbsp;</td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
-          </td>
-        </tr>
 
-        <!-- ============================================================ -->
-        <!-- BLOQUE 4: HERO — CON PREMIO (CUSTODIA)                      -->
-        <!-- ============================================================ -->
-        <tr>
-          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:36px 24px 28px;text-align:center;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td style="padding:24px 24px 40px;text-align:center;">
 
-            <!-- 4a. Trophy circle 72×72 verde -->
+            <!-- 4a. Trophy circle 90×90 -->
             <table role="presentation" border="0" cellpadding="0" cellspacing="0"
                    style="margin:0 auto 22px;border-collapse:separate !important;">
               <tr>
-                <td width="72" height="72" bgcolor="#16A34A"
-                    style="background-color:#16A34A;border-radius:50%;width:72px;height:72px;
-                           text-align:center;vertical-align:middle;line-height:72px;
+                <td width="90" height="90" bgcolor="#1B6B3A"
+                    style="background-color:rgba(255,255,255,0.15);border-radius:20px;width:90px;height:90px;
+                           text-align:center;vertical-align:middle;line-height:90px;
                            mso-line-height-rule:exactly;">
                   <img src="https://cdn.loteriamanises.com/emails/icon-trophy-white.png"
-                       width="34" alt=""
-                       style="display:block;margin:0 auto;width:34px;height:auto;border:0;">
+                       width="40" alt=""
+                       style="display:block;margin:0 auto;width:40px;height:auto;border:0;">
                 </td>
               </tr>
             </table>
 
-            <!-- 4b. Titular tipográfico multi-tamaño -->
+            <!-- 4b. Titular -->
+            <h1 style="margin:0 0 4px 0;
+                       font-family:'Inter',Arial,Helvetica,sans-serif;
+                       font-size:26px;font-weight:700;color:#FFFFFF;
+                       line-height:1.3;mso-line-height-rule:exactly;text-align:center;">
+              &iexcl;Enhorabuena!
+            </h1>
             <p style="margin:0 0 12px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
                        line-height:1.1;text-align:center;mso-line-height-rule:exactly;">
-              <span style="display:block;font-size:22px;font-weight:700;color:#1E3A5F;">&iexcl;Enhorabuena!</span>
-              <span style="display:block;font-size:16px;font-weight:400;color:#4B5563;margin-top:4px;">Has obtenido</span>
-              <span class="num-col" style="display:block;font-size:54px;font-weight:800;color:#16A34A;
+              <span style="display:block;font-size:16px;font-weight:400;color:rgba(255,255,255,0.75);">Has obtenido</span>
+              <span class="num-col" style="display:block;font-size:54px;font-weight:800;color:#FFFFFF;
                             letter-spacing:-0.03em;line-height:1.05;mso-line-height-rule:exactly;
                             margin-top:2px;">{{IMPORTE_TOTAL}}&nbsp;&euro;</span>
             </p>
 
             <!-- 4c. Texto cuerpo -->
             <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                       font-size:14px;color:#4B5563;line-height:1.65;text-align:center;">
+                       font-size:14px;color:rgba(255,255,255,0.82);line-height:1.65;text-align:center;">
               Uno de tus d&eacute;cimos de Loter&iacute;a Nacional<br/>
               ha resultado premiado.
             </p>
 
+                </td>
+              </tr>
+            </table>
+
+            <!--[if mso]></td></tr></table><![endif]-->
           </td>
         </tr>
 
@@ -147,7 +162,7 @@
         <!-- BLOQUE 5: DETALLE DEL PREMIO                                -->
         <!-- ============================================================ -->
         <tr>
-          <td bgcolor="#F0FDF4" style="background-color:#F0FDF4;padding:24px 24px 0;">
+          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:24px 24px 0;">
 
             <!-- Eyebrow -->
             <p style="margin:0 0 12px;font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -157,7 +172,7 @@
             </p>
 
             <!-- White card -->
-            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
+            <table bgcolor="#FFFFFF" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
                    style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
 
               <!-- Fila 1: Sorteo -->
@@ -220,14 +235,14 @@
 
               <!-- Fila 5: Premio total (destacada) -->
               <tr>
-                <td width="44%" bgcolor="#F0FDF4"
-                    style="background-color:#F0FDF4;padding:14px 20px;border-top:2px solid #BBF7D0;
+                <td width="44%" bgcolor="#F8FAFC"
+                    style="background-color:#F8FAFC;padding:14px 20px;border-top:2px solid #BBF7D0;
                            font-family:'Inter',Arial,Helvetica,sans-serif;
                            font-size:13px;font-weight:700;color:#14532D;vertical-align:middle;">
                   Premio total
                 </td>
-                <td width="56%" bgcolor="#F0FDF4"
-                    style="background-color:#F0FDF4;padding:14px 20px;border-top:2px solid #BBF7D0;
+                <td width="56%" bgcolor="#F8FAFC"
+                    style="background-color:#F8FAFC;padding:14px 20px;border-top:2px solid #BBF7D0;
                            font-family:'Inter',Arial,Helvetica,sans-serif;
                            font-size:22px;font-weight:800;color:#16A34A;
                            letter-spacing:-0.02em;vertical-align:middle;">
@@ -243,21 +258,21 @@
         <!-- BLOQUE 6: TU PREMIO — ABONADO EN SALDO (CUSTODIA)          -->
         <!-- ============================================================ -->
         <tr>
-          <td bgcolor="#F0FDF4" style="background-color:#F0FDF4;padding:16px 24px 0;">
+          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:16px 24px 0;">
 
-            <!-- White card con borde azul izquierdo -->
-            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
-                   style="background-color:#FFFFFF;border:1px solid #C7D7F9;
-                          border-left:4px solid #1565C0;border-radius:0 10px 10px 0;
+            <!-- White card con borde verde izquierdo -->
+            <table bgcolor="#FFFFFF" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
+                   style="background-color:#FFFFFF;border:1px solid #BBF7D0;
+                          border-left:4px solid #16A34A;border-radius:0 10px 10px 0;
                           overflow:hidden;">
               <tr>
-                <!-- Columna izquierda: círculo azul con emoji -->
+                <!-- Columna izquierda: círculo verde con emoji -->
                 <td valign="middle" style="padding:18px 16px 18px 20px;vertical-align:middle;width:68px;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="48"
                          style="border-collapse:separate !important;">
                     <tr>
-                      <td width="48" height="48" bgcolor="#1565C0"
-                          style="background-color:#1565C0;border-radius:50%;width:48px;height:48px;
+                      <td width="48" height="48" bgcolor="#16A34A"
+                          style="background-color:#16A34A;border-radius:50%;width:48px;height:48px;
                                  text-align:center;vertical-align:middle;line-height:48px;
                                  mso-line-height-rule:exactly;">
                         <span style="font-size:22px;font-weight:700;color:#FFFFFF;
@@ -270,7 +285,7 @@
                 <!-- Columna derecha: texto -->
                 <td valign="middle" style="padding:18px 20px 18px 4px;vertical-align:middle;">
                   <p style="margin:0 0 6px;font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:14px;font-weight:700;color:#0a4792;">
+                             font-size:14px;font-weight:700;color:#14532D;">
                     Tu premio
                   </p>
                   <p style="margin:0 0 10px;font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -280,7 +295,7 @@
                   <!-- Mini badge de saldo -->
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                     <tr>
-                      <td style="padding:6px 14px;background-color:#F0FDF4;border-radius:8px;border:1px solid #BBF7D0;">
+                      <td style="padding:6px 14px;background-color:#FFFFFF;border-radius:8px;border:1px solid #BBF7D0;">
                         <span style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;
                                      font-weight:600;color:#14532D;text-transform:uppercase;
                                      letter-spacing:0.08em;">Saldo disponible: </span>
@@ -300,27 +315,28 @@
         <!-- BLOQUE 7: CTA — Acceder a mi Compra Certificada            -->
         <!-- ============================================================ -->
         <tr>
-          <td bgcolor="#F0FDF4" style="background-color:#F0FDF4;padding:16px 24px 24px;">
+          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:16px 24px 24px;">
             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
               <tr>
-                <td style="border-radius:12px;background-color:#0D1B3D;text-align:center;
-                           box-shadow:0 2px 8px rgba(13,27,61,0.28);">
+                <td style="text-align:center;">
                   <!--[if mso]>
                   <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-                    href="{{URL_COMPRA_CERTIFICADA}}" style="height:48px;v-text-anchor:middle;width:460px;" arcsize="8%"
-                    strokecolor="#0D1B3D" fillcolor="#0D1B3D">
+                    href="{{URL_COMPRA_CERTIFICADA}}" style="height:38px;v-text-anchor:middle;width:220px;" arcsize="50%"
+                    strokecolor="#16A34A" strokeweight="1.5pt" fillcolor="#FFFFFF">
                     <w:anchorlock/>
-                    <center style="color:#FFFFFF;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;">
-                      Acceder a mi Compra Certificada &nbsp;&rarr;
+                    <center style="color:#16A34A;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;">
+                      Acceder a mi Compra Certificada
                     </center>
                   </v:roundrect>
                   <![endif]-->
                   <!--[if !mso]><!-->
                   <a href="{{URL_COMPRA_CERTIFICADA}}"
-                     style="display:block;padding:15px 28px;font-family:'Inter',Arial,Helvetica,sans-serif;
-                            font-size:15px;font-weight:700;color:#FFFFFF;text-decoration:none;
-                            letter-spacing:0.03em;mso-hide:all;">
-                    Acceder a mi Compra Certificada &nbsp;&rarr;
+                     style="display:inline-block;padding:10px 28px;
+                            border:1.5px solid #16A34A;border-radius:20px;
+                            font-family:'Inter',Arial,Helvetica,sans-serif;
+                            font-size:13px;font-weight:600;color:#16A34A;text-decoration:none;
+                            background-color:#FFFFFF;line-height:normal;mso-hide:all;">
+                    Acceder a mi Compra Certificada
                   </a>
                   <!--<![endif]-->
                 </td>
@@ -389,13 +405,10 @@
                                style="display:block;width:130px;height:auto;border:0;margin:0 auto;" />
                         </a>
                       </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-                  </table>
-                </td>
-              </tr>
+	              </tr>
+	            </table>
+	          </td>
+	        </tr>
             </table>
           </td>
         </tr>
@@ -431,10 +444,10 @@
                     96&nbsp;154&nbsp;03&nbsp;17
                   </p>
                   <p style="margin:0 0 6px;">
-                    <a href="mailto:info@loteriamanises.es"
+                    <a href="mailto:info@loteriamanises.com"
                        style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;
                               color:#60A5FA;text-decoration:none;">
-                      info@loteriamanises.es
+                      info@loteriamanises.com
                     </a>
                   </p>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -456,21 +469,21 @@
                          style="margin:0 auto;">
                     <tr>
                       <td style="padding:0 6px;">
-                        <a href="{{URL_FACEBOOK}}">
+                        <a href="https://www.facebook.com/LoteriaManises/">
                           <img src="https://cdn.loteriamanises.com/emails/icon-facebook-light.png"
                                width="36" alt="Facebook"
                                style="display:block;width:36px;height:auto;border:0;">
                         </a>
                       </td>
                       <td style="padding:0 6px;">
-                        <a href="{{URL_INSTAGRAM}}">
+                        <a href="https://www.instagram.com/loteriamanises/">
                           <img src="https://cdn.loteriamanises.com/emails/icon-instagram-light.png"
                                width="36" alt="Instagram"
                                style="display:block;width:36px;height:auto;border:0;">
                         </a>
                       </td>
                       <td style="padding:0 6px;">
-                        <a href="{{URL_X_TWITTER}}">
+                        <a href="https://x.com/loteriamanises">
                           <img src="https://cdn.loteriamanises.com/emails/icon-x-light.png"
                                width="36" alt="X (Twitter)"
                                style="display:block;width:36px;height:auto;border:0;">

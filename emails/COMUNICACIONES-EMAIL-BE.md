@@ -10,25 +10,51 @@ La URL base de assets CDN es `https://cdn.loteriamanises.com/emails/`.
 
 ## Índice
 
+> **Nota de estado (2026-08-18):** este índice y las secciones de detalle que
+> le siguen se escribieron cuando solo existía 1 de los 34 templates
+> transaccionales ya construidos hoy en `emails/templates/transaccional/`.
+> Los nombres de fichero de las filas 01–17 se han corregido para apuntar
+> al `.html` real que cubre cada evento, pero las secciones de detalle
+> (variables / contenido esperado / notas BE) de las filas marcadas
+> "🔲 revisar" **no se han vuelto a redactar** — describen el plan original,
+> no necesariamente la plantilla final. Los 17 templates adicionales que ya
+> existen y no tenían fila en este índice (`juegos-*`, `nacional-*`,
+> `abono-recepcion-solicitud`, `comunicacion-pedido`,
+> `cuenta-datos-actualizados`, `cuenta-cancelada`, etc.) tampoco están
+> documentados aquí todavía. Antes de que el backend implemente la
+> integración, alguien debe hacer una pasada completa de este documento
+> contra los 34 `.html` reales — no asumir que lo que sigue está al día.
+
 | # | Evento | Plantilla | Estado |
 |---|--------|-----------|--------|
-| 01 | Registro completado | `bienvenida.html` | 🔲 pendiente diseño |
-| 02 | Verificación de email | `verificacion-email.html` | 🔲 pendiente diseño |
-| 03 | Recuperación de contraseña | `recuperacion-contrasena.html` | 🔲 pendiente diseño |
-| 04 | Cambio de contraseña (aviso seguridad) | `cambio-contrasena.html` | 🔲 pendiente diseño |
+| 01 | Registro completado | `auth-bienvenida.html` | 🔲 revisar contra plantilla real |
+| 02 | Verificación de email | *(sin plantilla dedicada — no construida)* | 🔲 revisar contra plantilla real |
+| 03 | Recuperación de contraseña | `auth-recuperar-contrasena.html` | 🔲 revisar contra plantilla real |
+| 04 | Cambio de contraseña (aviso seguridad) | `cuenta-contrasena-modificada.html` | 🔲 revisar contra plantilla real |
 | 05 | Solicitud de recarga por transferencia | `recarga-transferencia.html` | ✅ listo |
-| 06 | Recarga por tarjeta confirmada | `recarga-tarjeta-confirmada.html` | 🔲 pendiente diseño |
-| 07 | Confirmación de compra (jugadas) | `confirmacion-compra.html` | 🔲 pendiente diseño |
-| 08 | Premio menor acreditado en saldo | `premio-saldo.html` | 🔲 pendiente diseño |
-| 09 | Premio mayor — inicio de proceso | `premio-mayor-validacion.html` | 🔲 pendiente diseño |
-| 10 | Solicitud de retirada de saldo | `solicitud-retirada.html` | 🔲 pendiente diseño |
-| 11 | Retirada de saldo completada | `retirada-confirmada.html` | 🔲 pendiente diseño |
-| 12 | Verificación KYC solicitada | `kyc-solicitada.html` | 🔲 pendiente diseño |
-| 13 | Verificación KYC aprobada | `kyc-aprobada.html` | 🔲 pendiente diseño |
-| 14 | Verificación KYC rechazada | `kyc-rechazada.html` | 🔲 pendiente diseño |
-| 15 | Abono (suscripción) activado | `abono-activado.html` | 🔲 pendiente diseño |
-| 16 | Abono (suscripción) cancelado | `abono-cancelado.html` | 🔲 pendiente diseño |
-| 17 | Abono — jugada procesada en sorteo | `abono-jugada-procesada.html` | 🔲 pendiente diseño |
+| 06 | Recarga por tarjeta confirmada | `recarga-confirmacion.html` | 🔲 revisar contra plantilla real |
+| 07 | Confirmación de compra (jugadas) | `juegos-confirmacion-pedido.html` | 🔲 revisar contra plantilla real |
+| 08 | Premio menor acreditado en saldo | `nacional-escrutado-con-premio-custodia.html` | 🔲 revisar contra plantilla real |
+| 09 | Premio mayor — inicio de proceso | `nacional-escrutado-con-premio-mensajeria.html` | 🔲 revisar contra plantilla real |
+| 10 | Solicitud de retirada de saldo | `wallet-retirada.html` | 🔲 revisar contra plantilla real |
+| 11 | Retirada de saldo completada | *(cubierta por `wallet-retirada.html`? revisar)* | 🔲 revisar contra plantilla real |
+| 12 | Verificación KYC solicitada | *(sin plantilla — no construida)* | 🔲 revisar contra plantilla real |
+| 13 | Verificación KYC aprobada | *(sin plantilla — no construida)* | 🔲 revisar contra plantilla real |
+| 14 | Verificación KYC rechazada | *(sin plantilla — no construida)* | 🔲 revisar contra plantilla real |
+| 15 | Abono (suscripción) activado | `juegos-abono-confirmacion.html` / `abono-confirmacion.html` | 🔲 revisar contra plantilla real |
+| 16 | Abono (suscripción) cancelado | `juegos-abono-cancelacion.html` / `nacional-abono-cancelacion.html` | 🔲 revisar contra plantilla real |
+| 17 | Abono — jugada procesada en sorteo | `juegos-abono-renovacion-fallida.html`? | 🔲 revisar contra plantilla real |
+
+**Templates ya construidos y sin fila en este índice todavía** (documentar en
+una futura pasada): `abono-recepcion-solicitud`, `abono-rechazo`,
+`auth-nuevo-acceso`, `comunicacion-pedido`, `cuenta-cancelada`,
+`cuenta-datos-actualizados`, `juegos-recepcion-pedido`, `juegos-escrutado`,
+`juegos-cancelacion-pedido`, `nacional-recepcion-solicitud`,
+`nacional-confirmacion-pedido`, `nacional-cancelacion-pedido`,
+`nacional-envio-pedido`, `nacional-escrutado-sin-premio-custodia`,
+`nacional-escrutado-sin-premio-mensajeria`, `nacional-escrutado`,
+`nacional-abono-recordatorio`, `nacional-solicitud-modificada`,
+`recarga-compra-no-completada`, `recarga-fallida`.
 
 ---
 
@@ -42,9 +68,13 @@ Presentes en **todos** los templates.
 | `{{URL_VERSION_WEB}}` | Enlace a versión web del email | `https://app.loteriamanises.com/emails/view/abc123` |
 | `{{URL_APP_STORE}}` | Enlace App Store | `https://apps.apple.com/es/app/loteria-manises/...` |
 | `{{URL_GOOGLE_PLAY}}` | Enlace Google Play | `https://play.google.com/store/apps/details?id=...` |
-| `{{URL_FACEBOOK}}` | Perfil Facebook | `https://facebook.com/loteriamanises` |
-| `{{URL_INSTAGRAM}}` | Perfil Instagram | `https://instagram.com/loteriamanises` |
-| `{{URL_X_TWITTER}}` | Perfil X (Twitter) | `https://x.com/loteriamanises` |
+
+### Enlaces fijos del footer
+| Red | URL |
+|---|---|
+| Facebook | `https://www.facebook.com/LoteriaManises/` |
+| Instagram | `https://www.instagram.com/loteriamanises/` |
+| X (Twitter) | `https://x.com/loteriamanises` |
 
 ---
 

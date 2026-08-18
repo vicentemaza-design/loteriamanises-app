@@ -44,16 +44,39 @@ DOCTYPE XHTML 1.0 Transitional
                     │   └── ... bloques según el tipo de email ...
                     │
                     ├── [SEPARADOR ACENTO] — línea #1565C0, height:2px
-                    ├── [FOOTER CONTACTO] — bgcolor:#0d1f40 (o #002B3D)
-                    └── [FOOTER LEGAL] — bgcolor:#091730 (o #001F2D)
+                    ├── [FOOTER CONTACTO] — bgcolor:#0d1f40
+                    └── [FOOTER LEGAL] — bgcolor:#091730
 ```
 
-### Dos variantes de cabecera
+### Cabecera: un único patrón, 3 colores de mensaje
 
-| Variante | Uso | Descripción |
+**Regla fija: la cabecera nunca lleva fondo blanco.** Cabecera y hero van
+integrados en un único `<td>` con `bgcolor` + `background-image` en
+degradado (135deg, 3 paradas), logo `logo-manises-white.png` centrado
+arriba, y el icono principal en una insignia cuadrada redondeada
+translúcida de 90×90px (`background-color:rgba(255,255,255,0.15)`,
+`border-radius:20px`). Esa insignia solo se ve bien sobre fondo de color:
+si el hero fuera blanco el icono queda "lavado" — es el motivo por el que
+existía antes una variante B de fondo blanco y se eliminó.
+
+El color se elige según el tipo de mensaje, no por template:
+
+| Color | Degradado (135deg) | Cuándo usarlo |
 |---|---|---|
-| **A — Logo blanco sobre hero oscuro** | `recarga-transferencia`, emails de wallet | Cabecera + hero integrados en un único `<td>` con `bgcolor:#052a5a` y `background-image` degradado. Logo blanco centrado arriba. |
-| **B — Logo color sobre fondo blanco** | `juegos-*`, `nacional-*` | Header `bgcolor:#FFFFFF` con logo a color (200px), diamantes decorativos a los lados. Hero dinámico debajo con `{{HERO_COLOR}}` e `{{HERO_IMAGE_URL}}`. |
+| Azul | `#0B2145 → #123B7A → #1565C0` | Informativo / transaccional rutinario (accesos, recargas, solicitudes, recordatorios, envíos) |
+| Verde | `#0B3320 → #14532D → #1E7A45` | Positivo / hito (bienvenida, confirmación de éxito, premio) |
+| Rojo | `#7A1620 → #A81F1F → #DC2626` | Cancelación / fallo / rechazo |
+
+Excepción: `juegos-*`, `nacional-recepcion-solicitud` y
+`nacional-confirmacion-pedido` no usan esta paleta — llevan
+`{{HERO_COLOR}}` e `{{HERO_IMAGE_URL}}`, el color e imagen de marca del
+juego concreto que resuelve el backend por catálogo. No mezclar los dos
+sistemas: un email de juego se tiñe del color del juego, todo lo demás
+usa uno de los 3 colores de mensaje.
+
+Ver `emails/templates/shared/_header.html` para el bloque copiar-y-pegar
+completo, y `ASSETS_LIST.md` → "Sistema de color de cabecera" para la
+tabla de referencia rápida.
 
 ---
 
@@ -544,9 +567,14 @@ grep -c '</td>' template.html
 {{URL_VERSION_WEB}}   — Enlace "ver en navegador"
 {{URL_APP_STORE}}     — Enlace App Store
 {{URL_GOOGLE_PLAY}}   — Enlace Google Play
-{{URL_FACEBOOK}}      — Perfil Facebook
-{{URL_INSTAGRAM}}     — Perfil Instagram
-{{URL_X_TWITTER}}     — Perfil X (Twitter)
+```
+
+Los enlaces sociales del footer son fijos:
+
+```
+Facebook   — https://www.facebook.com/LoteriaManises/
+Instagram  — https://www.instagram.com/loteriamanises/
+X          — https://x.com/loteriamanises
 ```
 
 ### juegos-recepcion-pedido
@@ -626,6 +654,18 @@ que `border-radius:50%` se aplique en `<td>`.
 **Fix**: La tabla que envuelve el `<td>` del círculo debe tener
 `style="border-collapse:separate !important;"` en su atributo inline.
 
+### Icono de cabecera "lavado" / apenas visible
+
+**Causa**: la insignia translúcida (`background-color:rgba(255,255,255,0.15)`)
+está pensada para leerse sobre un degradado de color. Si el `<td>` de la
+cabecera tiene `bgcolor:#FFFFFF` (o cualquier fondo claro), la insignia se
+vuelve casi invisible y el icono blanco interior queda sin contraste.
+
+**Fix**: la cabecera nunca lleva fondo blanco — usar siempre uno de los 3
+degradados de la paleta de mensaje (ver §2 "Cabecera: un único patrón, 3
+colores de mensaje"). No intentar arreglarlo oscureciendo solo la caja del
+icono; el problema es el fondo del `<td>` padre, no la insignia.
+
 ### Hero box / recuadro con borde visible no deseado
 
 **Causa**: Algún `border:1px solid rgba(...)` en la `<td>` del recuadro.
@@ -668,42 +708,60 @@ tiene `bgcolor="#EEF2FF"` para reducir el problema en la mayoría de clientes.
 
 ---
 
-## 8. Generar previews
+## 8. Generar previews y JPGs
 
-El script está en `/private/tmp/claude-501/.../scratchpad/gen_email_preview5.py`.
-Sustituye URLs de CDN por base64 data URIs y variables `{{VAR}}` por valores demo.
-
-```bash
-python3 gen_email_preview5.py
-```
-
-Genera un archivo `*-preview.html` junto a cada template en
-`emails/templates/transaccional/`. Abrir en el navegador con:
+Los scripts viven en `emails/scripts/` (Node + Playwright, requiere
+`npm install` una vez en la raíz del repo). A diferencia de versiones
+anteriores de esta guía, **no dependen de un script en `/tmp`** — son
+parte del repo y reproducibles por cualquiera.
 
 ```bash
-open emails/templates/transaccional/NOMBRE-preview.html
+# 1) (solo si se añaden filenames CDN nuevos que nunca se hayan usado)
+node emails/scripts/extract-assets.cjs
+
+# 2) Regenerar *-preview.html a partir del .html base — sobrescribe en sitio
+node emails/scripts/build-previews.cjs                      # los 34
+node emails/scripts/build-previews.cjs --only=nombre-template  # solo uno
+
+# 3) Renderizar los *-preview.html a JPG recortado — sobrescribe en sitio
+node emails/scripts/render-jpgs.cjs
+node emails/scripts/render-jpgs.cjs --only=nombre-template
 ```
+
+`build-previews.cjs` hace tres cosas con el `.html` base:
+1. Quita los bloques `<!--[if mso]>...<![endif]-->` (solo hacen falta en
+   Outlook, no en un JPG) y desenvuelve `<!--[if !mso]><!-->...<!--<![endif]-->`.
+2. Resuelve toda imagen CDN a un `data:` URI usando
+   `emails/scripts/asset-map.json` (o el archivo real en `emails/assets/`
+   cuando existe localmente); si un filename no está mapeado, genera un
+   icono de sustitución simple en vez de dejar la imagen rota.
+3. Sustituye `{{VARIABLE}}` por un valor de ejemplo (diccionario genérico
+   en el propio script, con overrides por template cuando un mismo
+   `{{TOKEN}}` debe repetirse con valores distintos en un email).
+
+Importante: `emails/templates/transaccional/*-preview.html` está en
+`.gitignore` — son artefactos generados, nunca la fuente de verdad. La
+fuente de verdad es siempre el `.html` base. Si algo se ve mal en un
+preview, el fix va en el `.html` base y se regenera el preview, nunca al
+revés.
+
+### `asset-map.json` — cuándo tocarlo
+
+Contiene el mapeo `filename-cdn.png → data URI` usado para los previews.
+Si añades un icono nuevo:
+- Si ya existe como archivo real en `emails/assets/`, no necesitas tocar
+  el mapa — `build-previews.cjs` lo detecta solo por nombre de archivo.
+- Si no existe como archivo real (solo se referencia por URL CDN),
+  añade una entrada manual en `asset-map.json` con un SVG simple en
+  base64 (ver las entradas existentes como plantilla), en vez de dejar
+  que caiga en el icono de sustitución genérico.
 
 ### Añadir una nueva variable demo
 
-En `gen_email_preview5.py`, localiza el dict del template:
-
-```python
-TEMPLATE_VARS = {
-    "nombre-template": {
-        "{{NOMBRE_USUARIO}}": "María García",
-        "{{NUEVA_VARIABLE}}": "valor demo aquí",   # ← añadir aquí
-    },
-    ...
-}
-```
-
-### Añadir un nuevo template al script
-
-1. Añadir el nombre del template a la lista que recorre el script
-2. Añadir un dict en `TEMPLATE_VARS` con todos sus `{{VARIABLE}}`
-3. Si tiene bloques dinámicos HTML (`{{BLOQUE_*}}`), construir el HTML demo
-   como string Python y asignarlo como valor
+Edita el diccionario `GENERIC` en `emails/scripts/build-previews.cjs`
+(un patrón de regex por familia de variable), o añade un override
+específico del template en el objeto `OVERRIDES` del mismo archivo
+cuando el valor por defecto no sea el adecuado.
 
 ---
 
@@ -711,21 +769,18 @@ TEMPLATE_VARS = {
 
 ```
 emails/
-├── assets/                     — Fuentes, imágenes locales de desarrollo
+├── assets/                       — Imágenes locales reales + ASSETS_LIST.md
+├── scripts/                      — build-previews.cjs, render-jpgs.cjs, extract-assets.cjs, asset-map.json
 ├── templates/
 │   ├── shared/
-│   │   ├── _header.html        — Cabecera variante B (logo color, fondo blanco)
-│   │   ├── _footer-contact.html — Footer contacto (3 columnas)
-│   │   └── _footer-legal.html  — Footer legal (1 línea)
-│   └── transaccional/
-│       ├── juegos-recepcion-pedido.html
-│       ├── juegos-confirmacion-pedido.html
-│       ├── juegos-escrutado.html
-│       ├── juegos-cancelacion-pedido.html
-│       ├── nacional-recepcion-solicitud.html
-│       ├── nacional-confirmacion-pedido.html
-│       └── recarga-transferencia.html
-├── COMUNICACIONES-EMAIL-BE.md  — Spec de integración con el backend
-├── README.md                   — Visión general del sistema de emails
-└── EMAIL-DESIGN-GUIDE.md       — ← ESTE ARCHIVO
+│   │   ├── _header.html          — Cabecera + hero, patrón único de color (referencia)
+│   │   ├── _footer-contact.html  — Footer contacto (3 columnas)
+│   │   └── _footer-legal.html    — Footer legal (1 línea)
+│   └── transaccional/            — 34 templates .html (fuente de verdad) + *-preview.html (generados, gitignored)
+├── delivery/                     — Carpeta de entrega para el cliente (gitignored, se regenera entera)
+│   ├── loteria-manises-email-templates-be-20260814/  — copia BE-ready de templates + previews + assets
+│   └── previews-jpg-cropped-20260817/                — 34 JPG, uno por template
+├── COMUNICACIONES-EMAIL-BE.md    — Spec de integración con el backend
+├── README.md                     — Visión general del sistema de emails
+└── EMAIL-DESIGN-GUIDE.md         — ← ESTE ARCHIVO
 ```

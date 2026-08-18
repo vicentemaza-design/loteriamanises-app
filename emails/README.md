@@ -9,17 +9,20 @@ Emails HTML transaccionales y de marketing compatibles con Microsoft Outlook, Gm
 ```
 emails/
   README.md                          ← Este archivo
+  EMAIL-DESIGN-GUIDE.md              ← Guía de diseño/construcción (leer antes de tocar un template)
+  COMUNICACIONES-EMAIL-BE.md         ← Spec completa de variables por email, de cara al backend
   assets/
     ASSETS_LIST.md                   ← Imágenes necesarias y especificaciones
+  scripts/                           ← build-previews.cjs, render-jpgs.cjs (Node + Playwright)
   templates/
     shared/
-      _header.html                   ← Cabecera compartida (preheader + logo)
+      _header.html                   ← Cabecera + hero compartida (patrón de color, ver EMAIL-DESIGN-GUIDE.md)
       _footer-contact.html           ← Footer oscuro con contacto y redes
       _footer-legal.html             ← Footer pie legal
-    transaccional/
-      recarga-transferencia.html     ← Solicitud de recarga por transferencia bancaria
+    transaccional/                   ← 34 templates .html (auth, cuenta, abonos, juegos, nacional, recarga, wallet)
     marketing/
       (vacío — futuros comunicados)
+  delivery/                          ← Carpeta de entrega para el cliente (regenerada, no editar a mano)
 ```
 
 ---
@@ -57,22 +60,20 @@ Las variables usan la sintaxis `{{VARIABLE}}` (compatible con Mustache, Handleba
 | `{{URL_VERSION_WEB}}` | Enlace a versión web del email | `https://app.loteriamanises.com/emails/...` |
 | `{{URL_APP_STORE}}` | Enlace App Store | `https://apps.apple.com/...` |
 | `{{URL_GOOGLE_PLAY}}` | Enlace Google Play | `https://play.google.com/...` |
-| `{{URL_FACEBOOK}}` | Perfil Facebook | `https://facebook.com/loteriamanises` |
-| `{{URL_INSTAGRAM}}` | Perfil Instagram | `https://instagram.com/loteriamanises` |
-| `{{URL_X_TWITTER}}` | Perfil X (Twitter) | `https://x.com/loteriamanises` |
+
+### Enlaces fijos del footer
+| Red | URL |
+|---|---|
+| Facebook | `https://www.facebook.com/LoteriaManises/` |
+| Instagram | `https://www.instagram.com/loteriamanises/` |
+| X (Twitter) | `https://x.com/loteriamanises` |
 
 ### Variables específicas por plantilla
 
-#### `recarga-transferencia.html`
-| Variable | Descripción | Ejemplo |
-|---|---|---|
-| `{{NUMERO_SOLICITUD}}` | ID de la solicitud de recarga | `4773337` |
-| `{{IMPORTE}}` | Importe solicitado formateado | `50,00 €` |
-| `{{BENEFICIARIO}}` | Nombre del beneficiario | `LOTERÍA MANISES, S.L.` |
-| `{{BANCO}}` | Nombre del banco | `Banco Sabadell` |
-| `{{IBAN}}` | IBAN con espacios para legibilidad | `ES96 0081 0271 80 0001345344` |
-| `{{URL_COPIAR_IBAN}}` | URL que copia el IBAN (opcional) | `https://app.loteriamanises.com/copy-iban/...` |
-| `{{PLAZO_ESTIMADO}}` | Horas hábiles estimadas | `72` |
+Ver `COMUNICACIONES-EMAIL-BE.md` — documenta, para cada uno de los 34
+templates, sus variables específicas, el contenido esperado y notas para
+el backend. Es la fuente de verdad; no se duplica aquí para evitar que
+ambos documentos queden desincronizados.
 
 ---
 
