@@ -57,7 +57,7 @@ const GENERIC = [
   [/^URL_/, '#'],
   [/^HERO_COLOR$/, '#14532D'],
   [/^HERO_GRADIENT$/, 'linear-gradient(135deg,rgba(11,51,32,0.88) 0%,rgba(20,83,45,0.88) 60%,rgba(30,122,69,0.88) 100%)'],
-  [/^HERO_IMAGE_URL$/, ''],
+  [/^HERO_IMAGE_URL$|^LOGO_TRANSPORTISTA_URL$/, ''],
   [/^HORA/, '14:20'],
   [/^FECHA_HORA/, '09/08/2026 &middot; 14:20'],
   [/^FECHA/, '09/08/2026'],
@@ -73,7 +73,8 @@ const GENERIC = [
   [/^BANCO$/, 'Banco Santander'],
   [/^BENEFICIARIO$/, 'Loter&iacute;a Manises, S.L.'],
   [/^MOTIVO/, 'Baja solicitada por el usuario'],
-  [/^IMPORTE|CANTIDAD|GASTOS|PREMIO_POR|SALDO/, '50,00'],
+  [/^CANTIDAD/, '2'], // discrete count (e.g. décimos), not a monetary amount — must stay ahead of the IMPORTE/money rule below
+  [/^(?:IMPORTE|GASTOS|PREMIO_POR|SALDO|TOTAL_PEDIDO)/, '50,00'],
   [/^NUMERO_PEDIDO|NUM_PEDIDO$/, 'J-20260809-001'],
   [/^NUMERO_SOLICITUD|NUM_SOLICITUD$/, 'AB-2026-0042'],
   [/^NUMERO_OPERACION$/, 'OP-2026-78432'],
@@ -85,30 +86,54 @@ const GENERIC = [
   [/^ESTADO|TIPO_ESTADO$/, 'Confirmado'],
   [/^JUEGO|NOMBRE_JUEGO|NOMBRE_SORTEO/, 'La Primitiva'],
   [/^SORTEO$/, 'La Primitiva'],
+  [/^SORTEOS$/, 'La Primitiva &middot; Bonoloto &middot; Euromillones'],
   [/^TRANSPORTISTA$/, 'SEUR'],
   [/^PLAZO_ESTIMADO$/, '24&ndash;48h'],
   [/^SEMANA$/, '33/2026'],
+  [/^DIAS_SELECCIONADOS$/, 'Lunes, Mi&eacute;rcoles y Viernes'],
   [/^TITULO/, 'Detalle de la operaci&oacute;n'],
   [/^MENSAJE$/, 'Todo correcto con tu operaci&oacute;n.'],
+  [/^TEXTO_ACCION$/, 'Revisa los detalles de tu pedido para m&aacute;s informaci&oacute;n.'],
   [/^CTA_TEXTO$/, 'Ver detalles'],
+  [/^CTA_URL$/, '#'],
   [/^TIPO_DATO$/, 'Tel&eacute;fono de contacto'],
   [/^NUEVO_VALOR$/, '+34 600 000 000'],
   [/^DIRECCION_NOMBRE$/, 'Rafa Sanchis'],
   [/^DIRECCION_TELEFONO$/, '+34 600 000 000'],
+  [/^DIRECCION_LINEA1$/, 'Av. Generalitat Valenciana, 23'],
+  [/^DIRECCION_LINEA2$/, '46940 Manises (Valencia)'],
   [/^MODALIDAD_LABEL$/, 'Combinaci&oacute;n simple'],
-  [/^BLOQUE_|SORTEOS_INLINE|DATOS_RELACIONADOS/, ''], // handled separately, see buildBlockRow()
+  // {{BLOQUE_*}}, {{SORTEOS_INLINE}} and {{DATOS_RELACIONADOS}} never reach this
+  // dictionary — substituteTokens() intercepts and dispatches them before the
+  // generic lookup, see buildBlockRow() / inlineSorteos() / inlineDatosRelacionados().
 ];
 
 function genericValue(token) {
   for (const [re, val] of GENERIC) if (re.test(token)) return val;
+  console.warn(`[build-previews] Aviso: {{${token}}} no tiene regla explícita ni de patrón; usando fallback genérico ("${token.toLowerCase().replace(/_/g, ' ')}").`);
   return token.toLowerCase().replace(/_/g, ' ');
 }
 
-function buildBlockRow(token) {
-  // Best-effort generic 2-row filler for {{BLOQUE_*}} table-row placeholders.
-  // Wording varies by token: Nacional/Navidad sells décimos, number-draw games
-  // (Primitiva/Bonoloto/Euromillones) are apuestas — using "décimos" for an
-  // apuestas block reads as wrong, so keep the two vocabularies separate.
+// Explicit, auditable family classification for the handful of templates that
+// use a token whose sample content depends on which game the email belongs to
+// ({{BLOQUE_SORTEOS}}, {{SORTEOS_INLINE}}) but whose token *name* alone can't
+// tell juegos-activos apart from lotería-nacional. Add a template here rather
+// than inferring family from a filename prefix or the token name.
+const TEMPLATE_FAMILY = {
+  'abono-confirmacion': 'nacional',
+  'abono-recepcion-solicitud': 'nacional',
+  'nacional-abono-cancelacion': 'nacional',
+  'juegos-recepcion-pedido': 'juegos',
+  'juegos-cancelacion-pedido': 'juegos',
+};
+
+// {{BLOQUE_*}} table-row placeholders only — anything that isn't a run of
+// <tr> block markup (inline text, generic paragraphs) has its own generator
+// below (inlineSorteos, inlineDatosRelacionados) and must not come through here.
+function buildBlockRow(token, name) {
+  // Wording varies by token/family: Nacional/Navidad sells décimos, number-draw
+  // games (Primitiva/Bonoloto/Euromillones) are apuestas — using "décimos" for
+  // an apuestas block reads as wrong, so keep the two vocabularies separate.
   const row = (title, sub, right) => `
                     <tr>
                       <td style="padding:10px 0;border-bottom:1px solid #F3F4F6;">
@@ -125,12 +150,47 @@ function buildBlockRow(token) {
                         </table>
                       </td>
                     </tr>`;
-  if (/^BLOQUE_APUESTAS|^BLOQUE_NUMEROS/.test(token)) {
+  if (/^BLOQUE_APUESTAS/.test(token)) {
     return row('La Primitiva', '05 - 12 - 23 - 31 - 40 - 44', 'Combinaci&oacute;n simple') +
            row('Bonoloto', '02 - 09 - 18 - 27 - 35 - 41', 'Combinaci&oacute;n simple');
   }
-  return row('La Primitiva', 'Jueves 14/08/2026', '2 d&eacute;cimos') +
-         row('Bonoloto', 'Viernes 15/08/2026', '1 d&eacute;cimo');
+  if (/^BLOQUE_NUMEROS/.test(token)) {
+    // Filas de décimo (Lotería Nacional) — mismo formato "Combinación simple"
+    // que ya usan las plantillas reales, pero con nombre de sorteo y número
+    // de décimo (5 dígitos) en vez del combo de 6 números de Juegos Activos.
+    return row('Loter&iacute;a de Navidad', '00542', 'Combinaci&oacute;n simple') +
+           row('Sorteo del S&aacute;bado', '01187', 'Combinaci&oacute;n simple');
+  }
+  if (/^BLOQUE_SORTEOS/.test(token)) {
+    const family = TEMPLATE_FAMILY[name];
+    if (family === 'juegos') {
+      return row('La Primitiva', '3 apuestas', 'Combinaci&oacute;n simple') +
+             row('Bonoloto', '2 apuestas', 'Combinaci&oacute;n simple');
+    }
+    if (family === 'nacional') {
+      return row('Sorteo del Jueves', 'Jueves 13/08/2026', '2 d&eacute;cimos') +
+             row('Sorteo del S&aacute;bado', 'S&aacute;bado 15/08/2026', '1 d&eacute;cimo');
+    }
+    console.warn(`[build-previews] Aviso: {{${token}}} en "${name}" no está clasificado en TEMPLATE_FAMILY; usando marcador visible en vez de asumir una familia.`);
+    return row('&#9888; Familia no clasificada', token, name);
+  }
+  console.warn(`[build-previews] Aviso: {{${token}}} en "${name}" no coincide con ninguna rama conocida de buildBlockRow(); usando marcador visible en vez de asumir contenido.`);
+  return row('&#9888; Bloque no reconocido', token, name);
+}
+
+// {{SORTEOS_INLINE}} — plain inline text inside a single <td>, never a <tr> block.
+function inlineSorteos(name) {
+  const family = TEMPLATE_FAMILY[name];
+  if (family === 'juegos') return 'La Primitiva, Bonoloto';
+  if (family === 'nacional') return 'Sorteo del Jueves, Sorteo del S&aacute;bado';
+  console.warn(`[build-previews] Aviso: {{SORTEOS_INLINE}} en "${name}" no está clasificado en TEMPLATE_FAMILY; usando marcador visible en vez de asumir una familia.`);
+  return '&#9888; familia no clasificada';
+}
+
+// {{DATOS_RELACIONADOS}} — only used by the generic comunicacion-pedido
+// template, which can be about any game or topic. Never introduce a game name.
+function inlineDatosRelacionados() {
+  return 'N&uacute;mero de pedido: J-20260809-001<br>Fecha: 09/08/2026';
 }
 
 // ---- html transforms ----
@@ -157,17 +217,25 @@ function escapeRe(s) {
 // not source of truth, and are freely overwritten by this script each run.
 // Sample data therefore comes from the generic dictionary below (plus a
 // per-template OVERRIDES table) rather than by scraping old preview output.
-function substituteTokens(strippedBase, overrides) {
+function substituteTokens(strippedBase, overrides, name) {
   let out = strippedBase;
-  const tokenRe = /\{\{([A-Z_]+)\}\}/g;
+  const tokenRe = /\{\{([A-Z0-9_]+)\}\}/g;
   let match;
   const replacements = [];
   const seen = {}; // token -> count, so repeated tokens in one file can still vary if an override array is given
   while ((match = tokenRe.exec(strippedBase)) !== null) {
     const [full, token] = match;
     const idx = match.index;
-    if (/^BLOQUE_|SORTEOS_INLINE$|^DATOS_RELACIONADOS$/.test(token)) {
-      replacements.push({ full, idx, value: buildBlockRow(token) });
+    if (token === 'SORTEOS_INLINE') {
+      replacements.push({ full, idx, value: inlineSorteos(name) });
+      continue;
+    }
+    if (token === 'DATOS_RELACIONADOS') {
+      replacements.push({ full, idx, value: inlineDatosRelacionados() });
+      continue;
+    }
+    if (/^BLOQUE_/.test(token)) {
+      replacements.push({ full, idx, value: buildBlockRow(token, name) });
       continue;
     }
     const n = seen[token] = (seen[token] || 0);
@@ -195,6 +263,19 @@ const OVERRIDES = {
     NAVEGADOR: 'Safari / App Loter&iacute;a Manises',
     UBICACION: 'Valencia, Espa&ntilde;a',
   },
+  // Plantillas de Lotería Nacional (décimos): el nombre de sorteo genérico
+  // ("La Primitiva") es de Juegos Activos y no aplica aquí — usar un sorteo
+  // real de Lotería Nacional para que la muestra sea coherente con el resto
+  // del contenido ("décimos", "Modalidad: Custodia/Mensajería", etc.).
+  'nacional-confirmacion-pedido': { NOMBRE_SORTEO: 'Loter&iacute;a de Navidad' },
+  'nacional-recepcion-solicitud': { NOMBRE_SORTEO: 'Loter&iacute;a de Navidad' },
+  'nacional-escrutado-con-premio-custodia': { NOMBRE_SORTEO: 'Loter&iacute;a de Navidad' },
+  'nacional-escrutado-con-premio-mensajeria': { NOMBRE_SORTEO: 'Loter&iacute;a de Navidad' },
+  'nacional-escrutado-sin-premio-custodia': { NOMBRE_SORTEO: 'Loter&iacute;a de Navidad' },
+  'nacional-escrutado-sin-premio-mensajeria': { NOMBRE_SORTEO: 'Loter&iacute;a de Navidad' },
+  'nacional-cancelacion-pedido': { NOMBRE_JUEGO: 'Loter&iacute;a de Navidad' },
+  'nacional-abono-recordatorio': { SORTEO: 'Loter&iacute;a de Navidad' },
+  'nacional-solicitud-modificada': { NOMBRE_SORTEO_PRINCIPAL: 'Loter&iacute;a de Navidad' },
 };
 
 function buildPreview(name) {
@@ -202,7 +283,7 @@ function buildPreview(name) {
   const base = fs.readFileSync(basePath, 'utf8');
 
   let html = unwrapNotMso(stripMso(base));
-  html = substituteTokens(html, OVERRIDES[name]);
+  html = substituteTokens(html, OVERRIDES[name], name);
   html = resolveImages(html);
   return html;
 }
