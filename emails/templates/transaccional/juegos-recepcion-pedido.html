@@ -12,8 +12,8 @@
   <!--
     ================================================================
     EMAIL 01 · Recepción de pedido — Juegos Activos
-    Variables hero: {{HERO_COLOR}}     — color oscuro del juego  ej. #14532D Bonoloto
-                    {{HERO_IMAGE_URL}} — imagen CDN del juego     ej. hero-bonoloto.jpg
+    Cabecera: paleta azul fija (#0B2145/#123B7A/#1565C0) — no usa {{HERO_COLOR}},
+              es un estado pendiente/informativo, no una confirmación final.
     Variables: {{NOMBRE_USUARIO}} {{NOMBRE_JUEGO}} {{NUMERO_PEDIDO}}
                {{FECHA_HORA}} {{BLOQUE_SORTEOS}} {{URL_COMPRA_CERTIFICADA}}
                {{URL_VERSION_WEB}} {{URL_APP_STORE}} {{URL_GOOGLE_PLAY}}
@@ -72,8 +72,8 @@
 
         <!-- BARRA PREHEADER OSCURA -->
         <tr>
-          <td bgcolor="{{HERO_COLOR}}"
-              style="background-color:{{HERO_COLOR}};padding:9px 24px;
+          <td bgcolor="#0B2145"
+              style="background-color:#0B2145;padding:9px 24px;
                      text-align:center;border-bottom:1px solid rgba(255,255,255,0.10);">
             <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
                        font-size:11px;line-height:1.5;color:rgba(255,255,255,0.6);">
@@ -88,12 +88,12 @@
 
         <!-- HERO CON IMAGEN DEL JUEGO -->
         <tr>
-          <td bgcolor="{{HERO_COLOR}}"
-              style="background-color:{{HERO_COLOR}};
-                     background-image:{{HERO_GRADIENT}},
+          <td bgcolor="#0B2145"
+              style="background-color:#0B2145;
+                     background-image:linear-gradient(135deg,rgba(11,33,69,0.88) 0%,rgba(18,59,122,0.88) 55%,rgba(21,101,192,0.88) 100%),
                                       url(https://cdn.loteriamanises.com/emails/hero-bg.jpg);
                      background-size:cover;background-position:center top;padding:0;">
-            <!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:0;background-color:{{HERO_COLOR}};"><![endif]-->
+            <!--[if mso]><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="padding:0;background-color:#0B2145;"><![endif]-->
 
             <!-- Logo blanco -->
             <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
