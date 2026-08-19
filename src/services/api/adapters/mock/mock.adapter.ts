@@ -1,8 +1,18 @@
 import type { IApiProvider } from '../../providers/api.provider';
+import {
+  loginWithEmailMock,
+  registerMock,
+  requestPasswordResetMock,
+  resendVerificationEmailMock,
+  changePendingEmailMock,
+  verifyEmailMock,
+} from './auth.mock';
 import { getLatestResultsMock, getResultByIdMock } from './results.mock';
 import { getUserTicketsMock, getTicketByIdMock } from './tickets.mock';
 import { placeBetMock, submitPlaySessionMock } from './play.mock';
 import { getBalanceMock, getMovementsMock, topUpMock } from './wallet.mock';
+import { listBankAccountsMock, addBankAccountMock, verifyBankAccountOwnershipMock } from './bank-accounts.mock';
+import { createWithdrawalMock } from './withdrawals.mock';
 import { subscriptionsMock } from './subscriptions.mock';
 
 /**
@@ -14,6 +24,12 @@ export class MockAdapter implements IApiProvider {
     signInWithGoogle: async () => {},
     logout: async () => {},
     getCurrentUser: async () => null,
+    loginWithEmail: loginWithEmailMock,
+    requestPasswordReset: requestPasswordResetMock,
+    register: registerMock,
+    resendVerificationEmail: resendVerificationEmailMock,
+    changePendingEmail: changePendingEmailMock,
+    verifyEmail: verifyEmailMock,
   };
 
   results = {
@@ -36,6 +52,12 @@ export class MockAdapter implements IApiProvider {
     getBalance: getBalanceMock,
     getMovements: getMovementsMock,
     topUp: topUpMock,
+    bankAccounts: {
+      list: listBankAccountsMock,
+      add: addBankAccountMock,
+      verifyOwnership: verifyBankAccountOwnershipMock,
+    },
+    createWithdrawal: createWithdrawalMock,
   };
 
   subscriptions = subscriptionsMock;

@@ -3,6 +3,17 @@ import type { ResultDto } from '../../contracts/results.contracts';
 import type { TicketDto } from '../../contracts/tickets.contracts';
 import type { WalletBalanceDto, WalletMovementDto } from '../../contracts/wallet.contracts';
 import type {
+  BankAccountDto,
+  AddBankAccountInput,
+  AddBankAccountResult,
+  VerifyBankAccountInput,
+  VerifyBankAccountResult,
+} from '../../contracts/bank-accounts.contracts';
+import type {
+  CreateWithdrawalInput,
+  CreateWithdrawalResult,
+} from '../../contracts/withdrawals.contracts';
+import type {
   CreateBetRequestDto,
   CreateBetResponseDto,
   SubmitPlaySessionRequestDto,
@@ -22,6 +33,20 @@ import type {
   ConfirmFirstDrawResponseDto,
 } from '../../contracts/subscriptions.contracts';
 import type { UserProfile } from '@/shared/types/domain';
+import type {
+  LoginInput,
+  LoginResult,
+  RegisterInput,
+  RegisterResult,
+  RequestPasswordResetInput,
+  RequestPasswordResetResult,
+  ResendVerificationEmailInput,
+  ResendVerificationEmailResult,
+  ChangePendingEmailInput,
+  ChangePendingEmailResult,
+  VerifyEmailInput,
+  VerifyEmailResult,
+} from '../../contracts/auth.contracts';
 import { apiDelete, apiGet, apiPatch, apiPost } from './http.client';
 
 /**
@@ -49,6 +74,36 @@ export class HttpAdapter implements IApiProvider {
     },
     getCurrentUser: (): Promise<UserProfile | null> => {
       return apiGet<UserProfile | null>('/auth/me');
+    },
+    // TODO(BE): endpoint path/shape not yet defined — see
+    // docs/be-handoff/auth-registration-recovery.md. Implement with apiPost
+    // once BE confirms the route; must reject with AuthError (see
+    // features/auth/lib/authErrors.ts) on failure so the UI error states work unchanged.
+    loginWithEmail: async (_input: LoginInput): Promise<LoginResult> => {
+      throw new Error('HttpAdapter: auth.loginWithEmail — pending BE endpoint definition');
+    },
+    // TODO(BE): endpoint path/shape not yet defined. Response must NOT let
+    // FE distinguish "email exists" from "email doesn't exist".
+    requestPasswordReset: async (_input: RequestPasswordResetInput): Promise<RequestPasswordResetResult> => {
+      throw new Error('HttpAdapter: auth.requestPasswordReset — pending BE endpoint definition');
+    },
+    // TODO(BE): endpoint path/shape not yet defined. No URL invented on
+    // purpose — implement with apiPost once BE confirms the route.
+    register: async (_input: RegisterInput): Promise<RegisterResult> => {
+      throw new Error('HttpAdapter: auth.register — pending BE endpoint definition');
+    },
+    // TODO(BE): endpoint path/shape not yet defined. No URL invented on purpose.
+    resendVerificationEmail: async (_input: ResendVerificationEmailInput): Promise<ResendVerificationEmailResult> => {
+      throw new Error('HttpAdapter: auth.resendVerificationEmail — pending BE endpoint definition');
+    },
+    // TODO(BE): endpoint path/shape not yet defined. No URL invented on purpose.
+    changePendingEmail: async (_input: ChangePendingEmailInput): Promise<ChangePendingEmailResult> => {
+      throw new Error('HttpAdapter: auth.changePendingEmail — pending BE endpoint definition');
+    },
+    // TODO(BE): endpoint path/shape not yet defined. No URL invented on
+    // purpose — token stays opaque, must be forwarded as-is once implemented.
+    verifyEmail: async (_input: VerifyEmailInput): Promise<VerifyEmailResult> => {
+      throw new Error('HttpAdapter: auth.verifyEmail — pending BE endpoint definition');
     },
   };
 
@@ -93,6 +148,26 @@ export class HttpAdapter implements IApiProvider {
 
     topUp: (userId: string, amount: number): Promise<{ success: boolean; newBalance: number }> =>
       apiPost(`/users/${userId}/wallet/top-up`, { amount }),
+
+    // TODO(BE): endpoints not yet defined — see docs/be-handoff/bank-account-verification.md.
+    // No URL invented on purpose.
+    bankAccounts: {
+      list: async (): Promise<BankAccountDto[]> => {
+        throw new Error('HttpAdapter: wallet.bankAccounts.list — pending BE endpoint definition');
+      },
+      add: async (_input: AddBankAccountInput): Promise<AddBankAccountResult> => {
+        throw new Error('HttpAdapter: wallet.bankAccounts.add — pending BE endpoint definition');
+      },
+      verifyOwnership: async (_input: VerifyBankAccountInput): Promise<VerifyBankAccountResult> => {
+        throw new Error('HttpAdapter: wallet.bankAccounts.verifyOwnership — pending BE endpoint definition');
+      },
+    },
+
+    // TODO(BE): endpoint not yet defined — see docs/be-handoff/withdrawals.md.
+    // No URL invented on purpose.
+    createWithdrawal: async (_input: CreateWithdrawalInput): Promise<CreateWithdrawalResult> => {
+      throw new Error('HttpAdapter: wallet.createWithdrawal — pending BE endpoint definition');
+    },
   };
 
   // ── Subscriptions ─────────────────────────────────────────────────────────

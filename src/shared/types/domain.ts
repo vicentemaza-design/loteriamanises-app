@@ -145,6 +145,12 @@ export interface UserProfile {
   postalCode?: string;
   municipality?: string;
   province?: string;
+  /**
+   * Persistent email-verification state. Optional/undefined until BE
+   * populates it via getCurrentUser()/profile sync — no separate status
+   * endpoint exists or is planned; see docs/be-handoff/auth-registration-recovery.md.
+   */
+  emailVerified?: boolean;
 }
 
 export interface WalletMovement {

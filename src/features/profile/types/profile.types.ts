@@ -65,13 +65,25 @@ export interface PaymentCard {
   isDefault: boolean;
 }
 
+/**
+ * `verificationStatus` is the only persistent domain state of a bank
+ * account. It does NOT include 'mismatch' | 'unavailable' | 'error' — those
+ * are one-off operation outcomes (see BankAccountVerificationOutcome in
+ * services/api/contracts/bank-accounts.contracts.ts), never a state the
+ * account can sit in.
+ */
+export type BankAccountVerificationStatus = 'unverified' | 'verified';
+
 export interface BankAccount {
   id: string;
-  iban: string;
-  bank: string;
-  alias: string;
-  holderName: string;
+  /** Always masked, e.g. "ES12 **** **** **** 7890" — the full IBAN never lives in this type. */
+  ibanMasked: string;
+  bank?: string;
+  alias?: string;
   isDefault: boolean;
+  verificationStatus: BankAccountVerificationStatus;
+  /** ISO date. Only meaningful once verificationStatus === 'verified'. */
+  verifiedAt?: string;
 }
 
 export interface BiometricSettings {

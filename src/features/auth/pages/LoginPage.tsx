@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
-import { Mail, Lock, ShieldCheck, Clock, PercentageCircle, Flask } from 'iconoir-react/regular';
-import { toast } from 'sonner';
+import { Mail, Lock, Eye, EyeClosed, ShieldCheck, Clock, PercentageCircle, Flask, WarningTriangle, CheckCircle } from 'iconoir-react/regular';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useLogin } from '@/features/auth/hooks/useLogin';
 import { useNavigate } from 'react-router-dom';
 import { AuthScreenShell } from '@/features/auth/components/AuthScreenShell';
 
@@ -43,19 +43,33 @@ export function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const { status: loginStatus, errorMessage: loginError, login, reset: resetLogin } = useLogin();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const isEmailLoading = loginStatus === 'loading';
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.info('El acceso con email estará disponible próximamente. Usa Google para entrar.');
+    await login(email, password);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    if (loginStatus === 'error') resetLogin();
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    if (loginStatus === 'error') resetLogin();
   };
 
   const handleGoogle = async () => {
-    setIsLoading(true);
+    setIsGoogleLoading(true);
     try {
       await signInWithGoogle();
     } finally {
-      setIsLoading(false);
+      setIsGoogleLoading(false);
     }
   };
 
@@ -99,11 +113,11 @@ export function LoginPage() {
             {/* Google — método principal */}
             <Button
               onClick={handleGoogle}
-              disabled={isLoading}
+              disabled={isGoogleLoading}
               className="w-full h-12 bg-white text-gray-800 hover:bg-gray-50 font-semibold rounded-xl flex items-center justify-center gap-3 shadow-manises transition-all active:scale-[0.98]"
             >
               <GoogleIcon />
-              <span>{isLoading ? 'Conectando...' : 'Continuar con Google'}</span>
+              <span>{isGoogleLoading ? 'Conectando...' : 'Continuar con Google'}</span>
             </Button>
 
             {/* Divider */}
@@ -116,35 +130,79 @@ export function LoginPage() {
             </div>
 
             {/* Email form — secundario */}
-            <form onSubmit={handleLogin} className="space-y-3">
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  autoComplete="email"
-                  className="pl-10 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/25 rounded-xl focus-visible:ring-manises-gold text-sm"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+            <form onSubmit={handleLogin} className="space-y-3" noValidate>
+              <div>
+                <label htmlFor="login-email" className="sr-only">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
+                  <Input
+                    id="login-email"
+                    type="email"
+                    placeholder="Email"
+                    autoComplete="email"
+                    disabled={isEmailLoading}
+                    className="pl-10 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/25 rounded-xl focus-visible:ring-manises-gold text-sm"
+                    value={email}
+                    onChange={handleEmailChange}
+                  />
+                </div>
               </div>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                <Input
-                  type="password"
-                  placeholder="Contraseña"
-                  autoComplete="current-password"
-                  className="pl-10 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/25 rounded-xl focus-visible:ring-manises-gold text-sm"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+              <div>
+                <label htmlFor="login-password" className="sr-only">Contraseña</label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
+                  <Input
+                    id="login-password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Contraseña"
+                    autoComplete="current-password"
+                    disabled={isEmailLoading}
+                    className="pl-10 pr-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/25 rounded-xl focus-visible:ring-manises-gold text-sm"
+                    value={password}
+                    onChange={handlePasswordChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors p-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-manises-gold/40"
+                  >
+                    {showPassword ? <EyeClosed className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
+                  </button>
+                </div>
               </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => navigate('/recover-password')}
+                  className="text-xs font-semibold text-white/50 hover:text-manises-gold transition-colors"
+                >
+                  ¿Has olvidado tu contraseña?
+                </button>
+              </div>
+
+              {loginStatus === 'error' && loginError && (
+                <div role="alert" aria-live="polite" className="flex items-start gap-2 rounded-xl border border-red-400/40 bg-red-400/10 px-3 py-2.5">
+                  <WarningTriangle className="w-4 h-4 mt-0.5 text-red-300 shrink-0" aria-hidden="true" />
+                  <p className="text-[11px] font-semibold text-red-100">{loginError}</p>
+                </div>
+              )}
+
+              {loginStatus === 'success' && (
+                <div role="status" aria-live="polite" className="flex items-start gap-2 rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-3 py-2.5">
+                  <CheckCircle className="w-4 h-4 mt-0.5 text-emerald-300 shrink-0" aria-hidden="true" />
+                  <p className="text-[11px] font-semibold text-emerald-100">Acceso correcto.</p>
+                </div>
+              )}
+
               <Button
                 type="submit"
                 variant="outline"
+                disabled={isEmailLoading}
                 className="w-full h-11 rounded-xl font-semibold border-white/10 bg-white/5 text-white hover:bg-white/10 text-sm transition-colors"
               >
-                Entrar con email
+                {isEmailLoading ? 'Entrando...' : 'Entrar'}
               </Button>
             </form>
 

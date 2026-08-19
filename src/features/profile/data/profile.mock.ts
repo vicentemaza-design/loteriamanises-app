@@ -3,7 +3,6 @@ import type {
   GameSubscription,
   FavoritePlay,
   PaymentCard,
-  BankAccount,
   BiometricSettings,
   NotificationPreferences,
   ResponsibleGamingSettings,
@@ -226,10 +225,6 @@ export const MOCK_FAVORITE_PLAYS: FavoritePlay[] = [
 export const MOCK_PAYMENT_CARDS: PaymentCard[] = [
   { id: 'card-1', brand: 'Visa', last4: '4242', expires: '12/28', isDefault: true },
   { id: 'card-2', brand: 'Mastercard', last4: '5511', expires: '09/25', isDefault: false },
-];
-
-export const MOCK_BANK_ACCOUNTS: BankAccount[] = [
-  { id: 'bank-1', iban: 'ES12 **** **** **** 7890', bank: 'Banco Sabadell', alias: 'Cuenta Principal', holderName: 'Juan Pérez Demo', isDefault: true },
 ];
 
 // ── BIOMETRÍA ────────────────────────────────────────────────────────

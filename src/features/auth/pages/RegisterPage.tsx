@@ -6,20 +6,33 @@ import {
   Mail,
   Lock,
   User,
+  Eye,
+  EyeOff,
   Shield,
   Clock,
   BadgePercent,
   ArrowLeft,
   CheckCircle2,
   Circle,
-  FileCheck2,
-  AlertTriangle,
-  Scale,
+  Phone,
+  Calendar,
+  IdCard,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useRegister } from '@/features/auth/hooks/useRegister';
 import { useNavigate } from 'react-router-dom';
 import { AuthScreenShell } from '@/features/auth/components/AuthScreenShell';
+import { PasswordRequirementsList } from '@/features/auth/components/PasswordRequirementsList';
+import { isValidEmail } from '@/features/auth/lib/authValidation';
+import { isPasswordValid } from '@/features/auth/lib/passwordRules';
+import {
+  isAdult,
+  isValidDocumentNumber,
+  isValidPhone,
+  normalizeDocumentNumber,
+  passwordsMatch,
+} from '@/features/auth/lib/registerValidation';
+import type { DocumentType, RegisterInput } from '@/services/api/contracts/auth.contracts';
 
 function GoogleIcon() {
   return (
@@ -38,86 +51,167 @@ const TRUST_BADGES = [
   { icon: BadgePercent,label: '0 Comisiones' },
 ];
 
-const authContainer = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.11, delayChildren: 0.08 },
-  },
+type RegisterStep = 'access' | 'personal' | 'compliance';
+
+const STEPS: { key: RegisterStep; label: string }[] = [
+  { key: 'access', label: 'Acceso' },
+  { key: 'personal', label: 'Datos' },
+  { key: 'compliance', label: 'Condiciones' },
+];
+
+const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
+  NIF: 'NIF',
+  NIE: 'NIE',
+  PASSPORT: 'Pasaporte',
 };
 
-const authItem = {
-  hidden: { opacity: 0, y: 22 },
-  visible: { opacity: 1, y: 0 },
-};
+const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
-type RegisterStep = 'access' | 'compliance' | 'verification';
+type FieldErrors = Partial<Record<
+  'email' | 'password' | 'repeatPassword' | 'firstName' | 'lastName' | 'documentNumber' | 'birthDate' | 'phone' | 'acceptTerms',
+  string
+>>;
 
 export function RegisterPage() {
   const { signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const { status: registerStatus, errorMessage: registerError, register } = useRegister();
+
   const [step, setStep] = useState<RegisterStep>('access');
-  const [name, setName] = useState('');
+  const [errors, setErrors] = useState<FieldErrors>({});
+
+  // Paso 1 — Acceso
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isAdult, setIsAdult] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const [declareRealData, setDeclareRealData] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [repeatPassword, setRepeatPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !email || !password) {
-      toast.error('Completa nombre, email y contraseña para continuar.');
-      return;
+  // Paso 2 — Datos personales
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [documentType, setDocumentType] = useState<DocumentType>('NIF');
+  const [documentNumber, setDocumentNumber] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [phone, setPhone] = useState('');
+
+  // Paso 3 — Condiciones
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptMarketing, setAcceptMarketing] = useState(false);
+
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const isSubmitting = registerStatus === 'submitting';
+
+  const clearError = (field: keyof FieldErrors) => {
+    setErrors((prev) => {
+      if (!(field in prev)) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const validateStep1 = (): boolean => {
+    const next: FieldErrors = {};
+    if (!email.trim()) next.email = 'El email es obligatorio.';
+    else if (!isValidEmail(email)) next.email = 'Introduce un email válido.';
+
+    if (!password) next.password = 'La contraseña es obligatoria.';
+    else if (!isPasswordValid(password)) next.password = 'La contraseña no cumple todos los requisitos.';
+
+    if (!repeatPassword) next.repeatPassword = 'Repite la contraseña.';
+    else if (!passwordsMatch(password, repeatPassword)) next.repeatPassword = 'Las contraseñas no coinciden.';
+
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const validateStep2 = (): boolean => {
+    const next: FieldErrors = {};
+    if (!firstName.trim()) next.firstName = 'El nombre es obligatorio.';
+    if (!lastName.trim()) next.lastName = 'Los apellidos son obligatorios.';
+
+    if (!documentNumber.trim()) next.documentNumber = 'El número de documento es obligatorio.';
+    else if (!isValidDocumentNumber(documentType, documentNumber)) next.documentNumber = 'Formato de documento no válido.';
+
+    if (!birthDate) next.birthDate = 'La fecha de nacimiento es obligatoria.';
+    else if (!isAdult(birthDate)) next.birthDate = 'Debes ser mayor de 18 años para registrarte.';
+
+    if (!phone.trim()) next.phone = 'El teléfono es obligatorio.';
+    else if (!isValidPhone(phone)) next.phone = 'Introduce un teléfono válido.';
+
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const validateStep3 = (): boolean => {
+    const next: FieldErrors = {};
+    if (!acceptTerms) next.acceptTerms = 'Debes aceptar las condiciones para continuar.';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const goNext = () => {
+    if (step === 'access' && validateStep1()) setStep('personal');
+    else if (step === 'personal' && validateStep2()) setStep('compliance');
+  };
+
+  const goBack = () => {
+    setErrors({});
+    if (step === 'personal') setStep('access');
+    else if (step === 'compliance') setStep('personal');
+    else navigate('/login');
+  };
+
+  const handleSubmit = async () => {
+    if (!validateStep3()) return;
+
+    const input: RegisterInput = {
+      email: email.trim(),
+      password,
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      documentType,
+      documentNumber: normalizeDocumentNumber(documentNumber),
+      birthDate,
+      phone: phone.trim(),
+      acceptTerms,
+      acceptMarketing,
+    };
+
+    const result = await register(input);
+    if (result) {
+      navigate('/register/verify-email', { state: { email: input.email }, replace: true });
     }
-    setStep('compliance');
   };
 
   const handleGoogle = async () => {
-    if (!isAdult || !acceptTerms) {
-      toast.error('Debes confirmar +18 y aceptar los términos para crear cuenta.');
+    if (!acceptTerms) {
+      setErrors({ acceptTerms: 'Debes aceptar las condiciones para continuar.' });
       return;
     }
-    setIsLoading(true);
+    setIsGoogleLoading(true);
     try {
       await signInWithGoogle();
     } finally {
-      setIsLoading(false);
+      setIsGoogleLoading(false);
     }
-  };
-
-  const complianceReady = isAdult && acceptTerms && declareRealData;
-
-  const completeManualFlow = () => {
-    if (!complianceReady) {
-      toast.error('Debes completar todas las confirmaciones legales.');
-      return;
-    }
-    setStep('verification');
-    toast.success('Cuenta creada. Completa la verificación para retirar premios.');
   };
 
   return (
     <AuthScreenShell contentClassName="gap-5 pt-12">
-      <motion.div
-        className="flex min-h-max flex-col items-center justify-start gap-5"
-      >
-        
-        {/* Composición Superior Unificada - Alineada con el ancho de la Card */}
+      <motion.div className="flex min-h-max flex-col items-center justify-start gap-5">
+
         <div className="w-full max-w-sm flex flex-col items-center gap-8 px-1">
-          {/* Botón Volver - Integrado en el flujo */}
           <motion.button
-            onClick={() => navigate('/login')}
+            onClick={goBack}
             className="self-start flex items-center gap-2 text-white/40 hover:text-white transition-colors group"
           >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" aria-hidden="true" />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Volver</span>
           </motion.button>
 
-          {/* Brand */}
-          <motion.div
-            className="flex flex-col items-center gap-3"
-          >
+          <motion.div className="flex flex-col items-center gap-3">
             <motion.img
               src="/assets/branding/logo-white.png"
               alt="Lotería Manises"
@@ -127,7 +221,6 @@ export function RegisterPage() {
           </motion.div>
         </div>
 
-        {/* Header Text */}
         <motion.div className="text-center space-y-1">
           <h1 className="text-white text-2xl font-black tracking-tight">Crea tu cuenta</h1>
           <p className="text-white/40 text-xs font-medium">
@@ -135,30 +228,21 @@ export function RegisterPage() {
           </p>
         </motion.div>
 
-        {/* Form Card */}
-        <motion.div
-          className="w-full max-w-sm shrink-0"
-        >
-          <motion.div
-            className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-7 shadow-[0_18px_44px_rgba(0,0,0,0.28)]"
-          >
+        <motion.div className="w-full max-w-sm shrink-0">
+          <motion.div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-7 shadow-[0_18px_44px_rgba(0,0,0,0.28)]">
+
+            {/* Indicador de pasos */}
             <div className="flex items-center justify-between mb-5 px-1">
-              {[
-                { key: 'access', label: 'Acceso' },
-                { key: 'compliance', label: 'Cumplimiento' },
-                { key: 'verification', label: 'Verificación' },
-              ].map((item, index) => {
-                const itemStep = item.key as RegisterStep;
-                const isDone =
-                  (itemStep === 'access' && step !== 'access') ||
-                  (itemStep === 'compliance' && step === 'verification');
-                const isActive = step === itemStep;
+              {STEPS.map((item, index) => {
+                const currentIndex = STEPS.findIndex((s) => s.key === step);
+                const isDone = index < currentIndex;
+                const isActive = step === item.key;
                 return (
-                  <div key={item.key} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider">
+                  <div key={item.key} className="flex items-center gap-1.5 text-[9.5px] font-black uppercase tracking-wider">
                     {isDone ? (
-                      <CheckCircle2 className="w-4 h-4 text-manises-gold" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-manises-gold shrink-0" aria-hidden="true" />
                     ) : (
-                      <Circle className={`w-4 h-4 ${isActive ? 'text-white' : 'text-white/30'}`} />
+                      <Circle className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-white/30'}`} aria-hidden="true" />
                     )}
                     <span className={isActive ? 'text-white' : 'text-white/40'}>
                       {index + 1}. {item.label}
@@ -168,49 +252,92 @@ export function RegisterPage() {
               })}
             </div>
 
+            {/* ═══════════════════ PASO 1 — ACCESO ═══════════════════ */}
             {step === 'access' && (
               <>
                 <div className="mb-4 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5">
                   <p className="text-[11px] font-semibold text-white/75">
-                    El alta te llevará menos de 1 minuto. La verificación de identidad será necesaria para retiradas.
+                    El alta te llevará menos de 2 minutos. La verificación de identidad será necesaria para retiradas.
                   </p>
                 </div>
 
-                <div className="flex items-center gap-4 my-5">
-                  <div className="flex-1 h-px bg-white/10" />
-                  <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Registro manual</span>
-                  <div className="flex-1 h-px bg-white/10" />
-                </div>
+                <form
+                  onSubmit={(e) => { e.preventDefault(); goNext(); }}
+                  className="space-y-3.5"
+                  noValidate
+                >
+                  <div>
+                    <label htmlFor="reg-email" className="sr-only">Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
+                      <Input
+                        id="reg-email"
+                        type="email"
+                        placeholder="Email"
+                        autoComplete="email"
+                        aria-invalid={Boolean(errors.email)}
+                        aria-describedby={errors.email ? 'reg-email-error' : undefined}
+                        className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
+                        value={email}
+                        onChange={(e) => { setEmail(e.target.value); clearError('email'); }}
+                      />
+                    </div>
+                    {errors.email && <p id="reg-email-error" role="alert" className="text-[11px] text-red-300 font-semibold mt-1 pl-1">{errors.email}</p>}
+                  </div>
 
-                <form onSubmit={handleRegister} className="space-y-3.5">
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                    <Input
-                      placeholder="Nombre completo"
-                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
+                  <div>
+                    <label htmlFor="reg-password" className="sr-only">Contraseña</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
+                      <Input
+                        id="reg-password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Crea una contraseña"
+                        autoComplete="new-password"
+                        aria-invalid={Boolean(errors.password)}
+                        aria-describedby={errors.password ? 'reg-password-error' : undefined}
+                        className="pl-11 pr-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
+                        value={password}
+                        onChange={(e) => { setPassword(e.target.value); clearError('password'); }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors p-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-manises-gold/40"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
+                      </button>
+                    </div>
+                    <PasswordRequirementsList password={password} />
+                    {errors.password && <p id="reg-password-error" role="alert" className="text-[11px] text-red-300 font-semibold mt-1 pl-1">{errors.password}</p>}
                   </div>
-                  <div className="relative">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                    <Input
-                      type="email"
-                      placeholder="Email"
-                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                    <Input
-                      type="password"
-                      placeholder="Crea una contraseña"
-                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
+
+                  <div>
+                    <label htmlFor="reg-repeat-password" className="sr-only">Repetir contraseña</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
+                      <Input
+                        id="reg-repeat-password"
+                        type={showRepeatPassword ? 'text' : 'password'}
+                        placeholder="Repite la contraseña"
+                        autoComplete="new-password"
+                        aria-invalid={Boolean(errors.repeatPassword)}
+                        aria-describedby={errors.repeatPassword ? 'reg-repeat-password-error' : undefined}
+                        className="pl-11 pr-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
+                        value={repeatPassword}
+                        onChange={(e) => { setRepeatPassword(e.target.value); clearError('repeatPassword'); }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowRepeatPassword((prev) => !prev)}
+                        aria-label={showRepeatPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors p-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-manises-gold/40"
+                      >
+                        {showRepeatPassword ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
+                      </button>
+                    </div>
+                    {errors.repeatPassword && <p id="reg-repeat-password-error" role="alert" className="text-[11px] text-red-300 font-semibold mt-1 pl-1">{errors.repeatPassword}</p>}
                   </div>
 
                   <Button
@@ -223,128 +350,267 @@ export function RegisterPage() {
               </>
             )}
 
-            {step === 'compliance' && (
+            {/* ═══════════════════ PASO 2 — DATOS PERSONALES ═══════════════════ */}
+            {step === 'personal' && (
               <div className="space-y-3.5">
-                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3">
-                  <p className="text-[11px] font-semibold text-white/75">
-                    Para activar tu cuenta de juego necesitamos estas confirmaciones legales.
-                  </p>
+                <div>
+                  <label htmlFor="reg-firstName" className="sr-only">Nombre</label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
+                    <Input
+                      id="reg-firstName"
+                      placeholder="Nombre"
+                      autoComplete="given-name"
+                      aria-invalid={Boolean(errors.firstName)}
+                      aria-describedby={errors.firstName ? 'reg-firstName-error' : undefined}
+                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
+                      value={firstName}
+                      onChange={(e) => { setFirstName(e.target.value); clearError('firstName'); }}
+                    />
+                  </div>
+                  {errors.firstName && <p id="reg-firstName-error" role="alert" className="text-[11px] text-red-300 font-semibold mt-1 pl-1">{errors.firstName}</p>}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setIsAdult((prev) => !prev)}
-                  className={`w-full text-left rounded-xl border px-3 py-3 flex items-start gap-3 transition-colors ${isAdult ? 'border-manises-gold/60 bg-manises-gold/10' : 'border-white/10 bg-white/5'}`}
-                >
-                  <Shield className="w-4 h-4 mt-0.5 text-manises-gold shrink-0" />
-                  <div>
-                    <p className="text-[12px] font-bold text-white">Declaro que soy mayor de 18 años</p>
-                    <p className="text-[10px] text-white/55 mt-1">Requisito obligatorio para acceso al juego.</p>
+                <div>
+                  <label htmlFor="reg-lastName" className="sr-only">Apellidos</label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
+                    <Input
+                      id="reg-lastName"
+                      placeholder="Apellidos"
+                      autoComplete="family-name"
+                      aria-invalid={Boolean(errors.lastName)}
+                      aria-describedby={errors.lastName ? 'reg-lastName-error' : undefined}
+                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
+                      value={lastName}
+                      onChange={(e) => { setLastName(e.target.value); clearError('lastName'); }}
+                    />
                   </div>
-                </button>
+                  {errors.lastName && <p id="reg-lastName-error" role="alert" className="text-[11px] text-red-300 font-semibold mt-1 pl-1">{errors.lastName}</p>}
+                </div>
 
-                <button
-                  type="button"
-                  onClick={() => setAcceptTerms((prev) => !prev)}
-                  className={`w-full text-left rounded-xl border px-3 py-3 flex items-start gap-3 transition-colors ${acceptTerms ? 'border-manises-gold/60 bg-manises-gold/10' : 'border-white/10 bg-white/5'}`}
-                >
-                  <Scale className="w-4 h-4 mt-0.5 text-manises-gold shrink-0" />
-                  <div>
-                    <p className="text-[12px] font-bold text-white">Acepto Términos y Política de Privacidad</p>
-                    <p className="text-[10px] text-white/55 mt-1">Condiciones de uso y tratamiento de datos.</p>
+                <fieldset>
+                  <legend className="text-[10px] font-black text-white/40 uppercase tracking-[0.15em] mb-2">Tipo de documento</legend>
+                  <div className="flex gap-2">
+                    {(Object.keys(DOCUMENT_TYPE_LABELS) as DocumentType[]).map((type) => (
+                      <label
+                        key={type}
+                        className={`flex-1 text-center cursor-pointer rounded-xl border px-2 py-2.5 text-[12px] font-bold transition-colors ${
+                          documentType === type ? 'border-manises-gold/60 bg-manises-gold/10 text-white' : 'border-white/10 bg-white/5 text-white/50'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="documentType"
+                          value={type}
+                          checked={documentType === type}
+                          onChange={() => { setDocumentType(type); clearError('documentNumber'); }}
+                          className="sr-only"
+                        />
+                        {DOCUMENT_TYPE_LABELS[type]}
+                      </label>
+                    ))}
                   </div>
-                </button>
+                </fieldset>
 
-                <button
-                  type="button"
-                  onClick={() => setDeclareRealData((prev) => !prev)}
-                  className={`w-full text-left rounded-xl border px-3 py-3 flex items-start gap-3 transition-colors ${declareRealData ? 'border-manises-gold/60 bg-manises-gold/10' : 'border-white/10 bg-white/5'}`}
-                >
-                  <FileCheck2 className="w-4 h-4 mt-0.5 text-manises-gold shrink-0" />
-                  <div>
-                    <p className="text-[12px] font-bold text-white">Confirmo que mis datos son reales</p>
-                    <p className="text-[10px] text-white/55 mt-1">Necesario para verificación y retirada de premios.</p>
+                <div>
+                  <label htmlFor="reg-documentNumber" className="sr-only">Número de documento</label>
+                  <div className="relative">
+                    <IdCard className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
+                    <Input
+                      id="reg-documentNumber"
+                      placeholder={documentType === 'PASSPORT' ? 'Número de pasaporte' : `Número de ${documentType}`}
+                      autoComplete="off"
+                      aria-invalid={Boolean(errors.documentNumber)}
+                      aria-describedby={errors.documentNumber ? 'reg-documentNumber-error' : undefined}
+                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
+                      value={documentNumber}
+                      onChange={(e) => { setDocumentNumber(e.target.value); clearError('documentNumber'); }}
+                    />
                   </div>
-                </button>
+                  {errors.documentNumber && <p id="reg-documentNumber-error" role="alert" className="text-[11px] text-red-300 font-semibold mt-1 pl-1">{errors.documentNumber}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="reg-birthDate" className="text-[10px] font-black text-white/40 uppercase tracking-[0.15em] block mb-1.5">Fecha de nacimiento</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
+                    <Input
+                      id="reg-birthDate"
+                      type="date"
+                      max={TODAY_ISO}
+                      autoComplete="bday"
+                      aria-invalid={Boolean(errors.birthDate)}
+                      aria-describedby={errors.birthDate ? 'reg-birthDate-error' : undefined}
+                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold [color-scheme:dark]"
+                      value={birthDate}
+                      onChange={(e) => { setBirthDate(e.target.value); clearError('birthDate'); }}
+                    />
+                  </div>
+                  {errors.birthDate && <p id="reg-birthDate-error" role="alert" className="text-[11px] text-red-300 font-semibold mt-1 pl-1">{errors.birthDate}</p>}
+                </div>
+
+                <div>
+                  <label htmlFor="reg-phone" className="sr-only">Teléfono móvil</label>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
+                    <Input
+                      id="reg-phone"
+                      type="tel"
+                      placeholder="Teléfono móvil"
+                      autoComplete="tel"
+                      aria-invalid={Boolean(errors.phone)}
+                      aria-describedby={errors.phone ? 'reg-phone-error' : undefined}
+                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
+                      value={phone}
+                      onChange={(e) => { setPhone(e.target.value); clearError('phone'); }}
+                    />
+                  </div>
+                  {errors.phone && <p id="reg-phone-error" role="alert" className="text-[11px] text-red-300 font-semibold mt-1 pl-1">{errors.phone}</p>}
+                </div>
 
                 <div className="flex gap-2 pt-1">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setStep('access')}
+                    onClick={goBack}
                     className="flex-1 h-11 border-white/15 bg-white/5 text-white hover:bg-white/10 rounded-xl"
                   >
                     Volver
                   </Button>
                   <Button
                     type="button"
-                    disabled={!complianceReady}
-                    onClick={completeManualFlow}
+                    onClick={goNext}
+                    className="flex-1 h-11 bg-manises-gold text-manises-blue font-black rounded-xl shadow-gold"
+                  >
+                    Continuar
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* ═══════════════════ PASO 3 — CONDICIONES ═══════════════════ */}
+            {step === 'compliance' && (
+              <div className="space-y-3.5">
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3">
+                  <p className="text-[11px] font-semibold text-white/75">
+                    Para activar tu cuenta de juego necesitamos esta confirmación legal.
+                  </p>
+                </div>
+
+                <div className={`rounded-xl border px-3 py-3 transition-colors ${
+                  errors.acceptTerms ? 'border-red-400/50 bg-red-400/5' : acceptTerms ? 'border-manises-gold/60 bg-manises-gold/10' : 'border-white/10 bg-white/5'
+                }`}>
+                  <div className="flex items-start gap-3">
+                    <input
+                      id="accept-terms"
+                      type="checkbox"
+                      checked={acceptTerms}
+                      onChange={(e) => { setAcceptTerms(e.target.checked); clearError('acceptTerms'); }}
+                      aria-required="true"
+                      aria-invalid={Boolean(errors.acceptTerms)}
+                      aria-describedby={`accept-terms-text${errors.acceptTerms ? ' accept-terms-error' : ''}`}
+                      className="mt-0.5 h-4 w-4 rounded accent-manises-gold shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-manises-gold/50"
+                    />
+                    <p id="accept-terms-text" className="text-[12px] font-semibold text-white/80 leading-snug">
+                      Confirmo que he leído y acepto las{' '}
+                      <span
+                        role="link"
+                        tabIndex={0}
+                        onClick={() => navigate('/legal/condiciones')}
+                        onKeyDown={(e) => { if (e.key === 'Enter') navigate('/legal/condiciones'); }}
+                        className="text-manises-gold underline underline-offset-2 cursor-pointer"
+                      >
+                        Condiciones Generales
+                      </span>
+                      , los{' '}
+                      <span
+                        role="link"
+                        tabIndex={0}
+                        onClick={() => navigate('/legal/condiciones')}
+                        onKeyDown={(e) => { if (e.key === 'Enter') navigate('/legal/condiciones'); }}
+                        className="text-manises-gold underline underline-offset-2 cursor-pointer"
+                      >
+                        Términos de Uso
+                      </span>{' '}
+                      y la{' '}
+                      <span
+                        role="link"
+                        tabIndex={0}
+                        onClick={() => navigate('/legal/privacidad')}
+                        onKeyDown={(e) => { if (e.key === 'Enter') navigate('/legal/privacidad'); }}
+                        className="text-manises-gold underline underline-offset-2 cursor-pointer"
+                      >
+                        Política de Privacidad
+                      </span>
+                      .
+                    </p>
+                  </div>
+                  {errors.acceptTerms && <p id="accept-terms-error" role="alert" className="text-[11px] text-red-300 font-semibold mt-1.5 pl-7">{errors.acceptTerms}</p>}
+                </div>
+
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3">
+                  <div className="flex items-start gap-3">
+                    <input
+                      id="accept-marketing"
+                      type="checkbox"
+                      checked={acceptMarketing}
+                      onChange={(e) => setAcceptMarketing(e.target.checked)}
+                      aria-describedby="accept-marketing-text"
+                      className="mt-0.5 h-4 w-4 rounded accent-manises-gold shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-manises-gold/50"
+                    />
+                    <p id="accept-marketing-text" className="text-[12px] font-semibold text-white/60 leading-snug">
+                      Quiero recibir por email novedades, promociones, información sobre sorteos y otras comunicaciones comerciales.
+                    </p>
+                  </div>
+                </div>
+
+                {registerStatus === 'error' && registerError && (
+                  <div role="alert" aria-live="polite" className="rounded-xl border border-red-400/40 bg-red-400/10 px-3 py-2.5">
+                    <p className="text-[11px] font-semibold text-red-100">{registerError}</p>
+                  </div>
+                )}
+
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={goBack}
+                    disabled={isSubmitting}
+                    className="flex-1 h-11 border-white/15 bg-white/5 text-white hover:bg-white/10 rounded-xl"
+                  >
+                    Volver
+                  </Button>
+                  <Button
+                    type="button"
+                    disabled={!acceptTerms || isSubmitting}
+                    onClick={handleSubmit}
                     className="flex-1 h-11 bg-manises-gold text-manises-blue font-black rounded-xl shadow-gold disabled:opacity-40"
                   >
-                    Activar cuenta
+                    {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
                   </Button>
+                </div>
+
+                <div className="flex items-center gap-4 my-4">
+                  <div className="flex-1 h-px bg-white/10" />
+                  <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">o continuar con</span>
+                  <div className="flex-1 h-px bg-white/10" />
                 </div>
 
                 <Button
                   onClick={handleGoogle}
-                  disabled={isLoading || !complianceReady}
-                  className="w-full h-12 bg-white text-manises-blue hover:bg-white/90 font-black rounded-xl flex items-center justify-center gap-3 shadow-lg transition-transform active:scale-[0.98]"
+                  disabled={isGoogleLoading || !acceptTerms}
+                  className="w-full h-12 bg-white text-manises-blue hover:bg-white/90 font-black rounded-xl flex items-center justify-center gap-3 shadow-lg transition-transform active:scale-[0.98] disabled:opacity-40"
                 >
                   <GoogleIcon />
-                  <span>{isLoading ? 'Conectando...' : 'Continuar con Google'}</span>
+                  <span>{isGoogleLoading ? 'Conectando...' : 'Continuar con Google'}</span>
                 </Button>
-              </div>
-            )}
-
-            {step === 'verification' && (
-              <div className="space-y-3.5">
-                <div className="rounded-xl border border-emerald-400/40 bg-emerald-400/10 px-3 py-3 flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 mt-0.5 text-emerald-300 shrink-0" />
-                  <div>
-                    <p className="text-[12px] font-bold text-white">Cuenta creada correctamente</p>
-                    <p className="text-[10px] text-white/65 mt-1">
-                      Ya puedes entrar y consultar sorteos. Para retirar premios necesitarás verificación de identidad.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-white/75">Estado de verificación</span>
-                    <span className="text-[10px] font-black uppercase text-amber-300">Pendiente</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-4 h-4 mt-0.5 text-amber-300 shrink-0" />
-                    <p className="text-[10px] text-white/65">
-                      Sube DNI/NIE y confirma titularidad para habilitar retiradas y límites completos.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => navigate('/login')}
-                    className="flex-1 h-11 border-white/15 bg-white/5 text-white hover:bg-white/10 rounded-xl"
-                  >
-                    Ir a login
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => navigate('/')}
-                    className="flex-1 h-11 bg-manises-gold text-manises-blue font-black rounded-xl shadow-gold"
-                  >
-                    Entrar
-                  </Button>
-                </div>
               </div>
             )}
 
             <p className="text-center text-[11px] text-white/40 mt-6 font-medium">
               Si ya tienes cuenta,{' '}
-              <button 
+              <button
                 onClick={() => navigate('/login')}
                 className="text-manises-gold font-black hover:underline"
               >
@@ -354,20 +620,18 @@ export function RegisterPage() {
           </motion.div>
         </motion.div>
 
-        {/* Trust Badges */}
         <motion.div className="mt-auto flex justify-center gap-6 pt-2">
           {TRUST_BADGES.map(({ icon: Icon, label }) => (
             <motion.div
               key={label}
               className="flex flex-col items-center gap-1.5 opacity-30"
             >
-              <Icon className="w-4 h-4 text-white" />
+              <Icon className="w-4 h-4 text-white" aria-hidden="true" />
               <span className="text-[8px] font-black text-white uppercase tracking-widest">{label}</span>
             </motion.div>
           ))}
         </motion.div>
 
-        {/* Pie legal minimalista */}
         <div className="flex flex-col items-center gap-3 px-4 opacity-30 mt-2">
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
             <button onClick={() => navigate('/legal/condiciones')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Términos</button>

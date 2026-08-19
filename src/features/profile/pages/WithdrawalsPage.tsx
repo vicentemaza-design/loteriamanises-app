@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Landmark, Plus, CheckCircle2, ChevronLeft, Clock, Shield, AlertCircle, MapPin, Building, Home, Check } from 'lucide-react';
+import { Landmark, Plus, ChevronLeft, Clock, Shield, AlertCircle, MapPin, Building, Home, Check, ShieldCheck } from 'lucide-react';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { Button } from '@/shared/ui/Button';
@@ -8,8 +8,18 @@ import { formatCurrency } from '@/shared/lib/utils';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
-import { MOCK_BANK_ACCOUNTS } from '../data/profile.mock';
+import { useBankAccounts } from '../hooks/useBankAccounts';
+import { useVerifyBankAccountOwnership } from '../hooks/useVerifyBankAccountOwnership';
+import { useCreateWithdrawal } from '../hooks/useCreateWithdrawal';
+import { BankAccountCard } from '../components/BankAccountCard';
+import { AddBankAccountForm } from '../components/AddBankAccountForm';
+import { BankAccountVerificationPanel } from '../components/BankAccountVerificationPanel';
+import { WithdrawalStatusPanel } from '../components/WithdrawalStatusPanel';
+import { WITHDRAWAL_DEMO_FEE_LABEL, WITHDRAWAL_DEMO_PROCESSING_TIME_LABEL, WITHDRAWAL_DEMO_PROCESSING_NOTE } from '../data/withdrawalDemoConfig';
 import type { BankAccount } from '../types/profile.types';
+
+/** UX validation only — obligatorio, numérico, >0, máx. 2 decimales, sin negativos/NaN/Infinity/notación científica. BE revalida en servidor. */
+const AMOUNT_PATTERN = /^\d+(\.\d{1,2})?$/;
 
 type Step = 'address-verification' | 1 | 2 | 3;
 
@@ -18,18 +28,11 @@ export function WithdrawalsPage() {
   const { profile, updateProfile } = useAuth();
   const balance = profile?.balance ?? 0;
 
-  // Cargar cuentas bancarias persistidas
-  const [accounts, setAccounts] = useState<BankAccount[]>(() => {
-    const saved = localStorage.getItem('manises_bank_accounts');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Error parsing accounts', e);
-      }
-    }
-    return MOCK_BANK_ACCOUNTS;
-  });
+  // Cuentas bancarias — listado/alta vía IApiProvider (mock persiste solo
+  // datos no sensibles en localStorage; ver bank-accounts.mock.ts).
+  const { accounts, addAccount, updateAccountLocally } = useBankAccounts();
+  const verification = useVerifyBankAccountOwnership();
+  const withdrawalRequest = useCreateWithdrawal();
 
   // Determinar paso inicial según completitud de datos de dirección
   const [step, setStep] = useState<Step>(() => {
@@ -47,19 +50,16 @@ export function WithdrawalsPage() {
 
   // Formulario de retirada
   const [amount, setAmount] = useState(balance > 0 ? String(balance.toFixed(2)) : '');
-  const [selectedAccount, setSelectedAccount] = useState(() => {
-    const defaultAcc = accounts.find(a => a.isDefault) ?? accounts[0];
-    return defaultAcc?.id || '';
-  });
+  const [selectedAccount, setSelectedAccount] = useState('');
   const [amountError, setAmountError] = useState('');
 
   // Formulario de nueva cuenta bancaria
   const [isAddingAccount, setIsAddingAccount] = useState(false);
-  const [newIban, setNewIban] = useState('');
-  const [newBank, setNewBank] = useState('');
-  const [newAlias, setNewAlias] = useState('');
-  const [newHolder, setNewHolder] = useState(profile?.displayName || '');
-  const [newIbanError, setNewIbanError] = useState('');
+
+  // Marca que la verificación en curso se disparó desde "Continuar" (retirada),
+  // no desde el botón suelto "Verificar titularidad" — solo en ese caso
+  // avanzamos automáticamente al paso 2 cuando el resultado sea 'verified'.
+  const [autoContinueAfterVerify, setAutoContinueAfterVerify] = useState(false);
 
   const parsedAmount = parseFloat(amount) || 0;
   const account = accounts.find(a => a.id === selectedAccount) ?? accounts[0];
@@ -71,7 +71,7 @@ export function WithdrawalsPage() {
       if (profile.postalCode && !postalCode) setPostalCode(profile.postalCode);
       if (profile.municipality && !municipality) setMunicipality(profile.municipality);
       if (profile.province && !province) setProvince(profile.province);
-      
+
       const hasAddress = profile.address && profile.postalCode && profile.municipality && profile.province;
       if (hasAddress && step === 'address-verification') {
         setStep(1);
@@ -79,11 +79,13 @@ export function WithdrawalsPage() {
     }
   }, [profile]);
 
-  // Guardar cuentas en Local Storage
-  const saveAccountsToStorage = (newAccounts: BankAccount[]) => {
-    setAccounts(newAccounts);
-    localStorage.setItem('manises_bank_accounts', JSON.stringify(newAccounts));
-  };
+  // Selecciona la cuenta predeterminada (o la primera) en cuanto el listado carga
+  useEffect(() => {
+    if (!selectedAccount && accounts.length > 0) {
+      const defaultAcc = accounts.find(a => a.isDefault) ?? accounts[0];
+      setSelectedAccount(defaultAcc.id);
+    }
+  }, [accounts, selectedAccount]);
 
   const handleSaveAddress = async () => {
     if (!address.trim() || !postalCode.trim() || !municipality.trim() || !province.trim()) {
@@ -113,64 +115,102 @@ export function WithdrawalsPage() {
   };
 
   const validateAmount = () => {
-    if (parsedAmount <= 0) {
+    const trimmed = amount.trim();
+    if (!trimmed) {
+      setAmountError('Introduce un importe.');
+      return false;
+    }
+    if (!AMOUNT_PATTERN.test(trimmed)) {
+      setAmountError('Introduce un importe en euros válido, con un máximo de 2 decimales.');
+      return false;
+    }
+    const value = Number(trimmed);
+    if (!Number.isFinite(value) || value <= 0) {
       setAmountError('Introduce un importe válido mayor que cero.');
       return false;
     }
-    if (parsedAmount > balance) {
-      setAmountError(`El importe supera tu saldo actual disponible (${formatCurrency(balance)}).`);
+    if (value > balance) {
+      // Comparación orientativa contra el saldo visible en el cliente — el
+      // saldo real y la elegibilidad final los valida el servidor.
+      setAmountError(`El importe supera tu saldo actual disponible (${formatCurrency(balance)}). El saldo real se validará al procesar la solicitud.`);
       return false;
     }
     setAmountError('');
     return true;
   };
 
-  const handleAddAccount = () => {
-    const cleanIban = newIban.replace(/\s+/g, '').toUpperCase();
-    if (!newHolder.trim() || !newBank.trim() || !cleanIban) {
-      setNewIbanError('Todos los campos excepto el alias son obligatorios.');
-      return;
-    }
-    if (!/^ES\d{22}$/.test(cleanIban)) {
-      setNewIbanError('El IBAN debe ser español (empezar por ES seguido de 22 dígitos).');
-      return;
-    }
-
-    setNewIbanError('');
-    const newAcc: BankAccount = {
-      id: `bank-${Date.now()}`,
-      iban: `ES${cleanIban.slice(2, 4)} **** **** **** ${cleanIban.slice(-4)}`,
-      bank: newBank.trim(),
-      alias: newAlias.trim() || 'Cuenta Corriente',
-      holderName: newHolder.trim(),
-      isDefault: accounts.length === 0,
-    };
-
-    const updated = [...accounts, newAcc];
-    saveAccountsToStorage(updated);
-    setSelectedAccount(newAcc.id);
+  const handleAccountAdded = (newAccount: BankAccount) => {
+    setSelectedAccount(newAccount.id);
     setIsAddingAccount(false);
-    setNewIban('');
-    setNewBank('');
-    setNewAlias('');
-    toast.success('Cuenta bancaria vinculada con éxito.');
+    setAutoContinueAfterVerify(false);
+    verification.reset();
+    toast.success('Cuenta bancaria añadida. Pendiente de verificar.');
+  };
+
+  // Único punto que llama a verifyOwnership() — reutilizado tanto por el
+  // botón suelto "Verificar titularidad" como por "Continuar" (goToStep2)
+  // y por el reintento del panel. No existe una segunda implementación.
+  const handleVerifyOwnership = async () => {
+    if (!account) return;
+    const updated = await verification.verify(account.id);
+    if (updated) updateAccountLocally(updated);
+  };
+
+  // Si la verificación dispara desde "Continuar" y termina en 'verified',
+  // avanzamos automáticamente al paso 2 — incluye el caso de reintentar
+  // tras un mismatch/unavailable/error tanto de la propia solicitud.
+  useEffect(() => {
+    if (autoContinueAfterVerify && verification.status === 'verified') {
+      setAutoContinueAfterVerify(false);
+      setStep(2);
+    }
+  }, [autoContinueAfterVerify, verification.status]);
+
+  const handleChooseAnotherAccount = () => {
+    setAutoContinueAfterVerify(false);
+    verification.reset();
+  };
+
+  const handleAddAnotherAccount = () => {
+    setAutoContinueAfterVerify(false);
+    verification.reset();
+    setIsAddingAccount(true);
   };
 
   const goToStep2 = () => {
-    if (!selectedAccount) {
+    if (!selectedAccount || !account) {
       toast.error('Por favor, selecciona o añade una cuenta bancaria de destino.');
       return;
     }
     if (!validateAmount()) return;
-    setStep(2);
+
+    if (account.verificationStatus === 'verified') {
+      // Ya verificada — BE debe revalidar server-side que sigue siendo
+      // válida; el FE no vuelve a llamar a verifyOwnership() aquí.
+      setStep(2);
+      return;
+    }
+
+    // Cuenta unverified: la verificación de titularidad se dispara aquí
+    // mismo, dentro del flujo de retirada — no exige haberla verificado
+    // antes por separado. Reutiliza verifyOwnership() vía handleVerifyOwnership;
+    // el resultado (verifying/verified/mismatch/unavailable/error) lo
+    // renderiza el mismo BankAccountVerificationPanel de siempre.
+    setAutoContinueAfterVerify(true);
+    handleVerifyOwnership();
   };
 
-  const confirm = () => {
-    // Restamos el saldo simulado en demo
-    updateProfile({
-      balance: balance - parsedAmount
-    });
+  const confirm = async () => {
+    if (!account) return;
     setStep(3);
+    await withdrawalRequest.submit({ bankAccountId: account.id, amount: parsedAmount });
+  };
+
+  const startNewWithdrawal = () => {
+    withdrawalRequest.reset();
+    setAmount(balance > 0 ? String(balance.toFixed(2)) : '');
+    setAmountError('');
+    setStep(1);
   };
 
   return (
@@ -354,33 +394,39 @@ export function WithdrawalsPage() {
               {/* Selección de Cuenta */}
               <div className="space-y-2">
                 <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest pl-1">Cuenta bancaria de destino</p>
-                
+
                 <AnimatePresence mode="wait">
                   {!isAddingAccount ? (
                     <motion.div key="accounts-list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
                       {accounts.map(acc => (
-                        <button
+                        <BankAccountCard
                           key={acc.id}
-                          type="button"
-                          onClick={() => setSelectedAccount(acc.id)}
-                          className={`w-full flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all ${
-                            selectedAccount === acc.id ? 'border-emerald-500 bg-emerald-50/40' : 'border-slate-100 bg-white'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedAccount === acc.id ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                              <Landmark className="w-5 h-5" />
-                            </div>
-                            <div className="text-left">
-                              <p className={`text-sm font-bold ${selectedAccount === acc.id ? 'text-emerald-800' : 'text-slate-700'}`}>{acc.iban}</p>
-                              <p className="text-[10px] text-muted-foreground font-semibold uppercase">{acc.bank} · {acc.alias}</p>
-                            </div>
-                          </div>
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedAccount === acc.id ? 'border-emerald-500' : 'border-slate-300'}`}>
-                            {selectedAccount === acc.id && <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />}
-                          </div>
-                        </button>
+                          account={acc}
+                          selected={selectedAccount === acc.id}
+                          onSelect={() => { setSelectedAccount(acc.id); setAutoContinueAfterVerify(false); verification.reset(); }}
+                        />
                       ))}
+
+                      {account && account.verificationStatus === 'unverified' && verification.status === 'idle' && (
+                        <button
+                          type="button"
+                          onClick={handleVerifyOwnership}
+                          className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border border-manises-blue/15 bg-manises-blue/5 text-manises-blue text-[11px] font-black uppercase tracking-wider hover:bg-manises-blue/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-manises-blue/40"
+                        >
+                          <ShieldCheck className="w-4 h-4" aria-hidden="true" />
+                          Verificar titularidad
+                        </button>
+                      )}
+
+                      {verification.status !== 'idle' && (
+                        <BankAccountVerificationPanel
+                          status={verification.status}
+                          onRetry={handleVerifyOwnership}
+                          onChooseAnother={handleChooseAnotherAccount}
+                          onAddAnother={handleAddAnotherAccount}
+                          onDismiss={verification.reset}
+                        />
+                      )}
 
                       <button
                         type="button"
@@ -394,73 +440,12 @@ export function WithdrawalsPage() {
                       </button>
                     </motion.div>
                   ) : (
-                    <motion.div key="add-account-form" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm space-y-3.5">
-                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                        <h4 className="text-[11px] font-black text-manises-blue uppercase tracking-wider">Vincular Nueva Cuenta</h4>
-                        <button type="button" onClick={() => { setIsAddingAccount(false); setNewIbanError(''); }} className="text-[10px] font-bold text-slate-400 hover:text-slate-600">Cancelar</button>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex flex-col gap-1">
-                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Nombre del Titular</label>
-                          <input
-                            type="text"
-                            placeholder="Nombre y apellidos"
-                            value={newHolder}
-                            onChange={e => setNewHolder(e.target.value)}
-                            className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-xs font-semibold outline-none focus:border-manises-blue"
-                          />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Código IBAN (Español)</label>
-                          <input
-                            type="text"
-                            placeholder="ES00 0000 0000 0000 0000 0000"
-                            value={newIban}
-                            onChange={e => setNewIban(e.target.value)}
-                            className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-xs font-mono font-bold outline-none focus:border-manises-blue"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Entidad Bancaria</label>
-                            <input
-                              type="text"
-                              placeholder="Ej. BBVA"
-                              value={newBank}
-                              onChange={e => setNewBank(e.target.value)}
-                              className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-xs font-semibold outline-none focus:border-manises-blue"
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Alias (Opcional)</label>
-                            <input
-                              type="text"
-                              placeholder="Ej. Cuenta Ahorro"
-                              value={newAlias}
-                              onChange={e => setNewAlias(e.target.value)}
-                              className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-xs font-semibold outline-none focus:border-manises-blue"
-                            />
-                          </div>
-                        </div>
-
-                        {newIbanError && (
-                          <div className="flex items-center gap-1 px-0.5">
-                            <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                            <p className="text-[10px] font-bold text-red-500">{newIbanError}</p>
-                          </div>
-                        )}
-
-                        <Button
-                          type="button"
-                          onClick={handleAddAccount}
-                          className="w-full h-11 rounded-xl bg-manises-blue text-white text-xs font-black uppercase tracking-wider"
-                        >
-                          Vincular Cuenta Bancaria
-                        </Button>
-                      </div>
+                    <motion.div key="add-account-form" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                      <AddBankAccountForm
+                        onAdd={addAccount}
+                        onSuccess={handleAccountAdded}
+                        onCancel={() => setIsAddingAccount(false)}
+                      />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -480,9 +465,10 @@ export function WithdrawalsPage() {
                 <PremiumTouchInteraction scale={0.98} className="w-full">
                   <Button
                     onClick={goToStep2}
-                    className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-lg shadow-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 transition-all"
+                    disabled={!account || verification.status === 'verifying'}
+                    className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-lg shadow-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 transition-all disabled:opacity-40 disabled:pointer-events-none"
                   >
-                    Continuar →
+                    {verification.status === 'verifying' ? 'Verificando cuenta...' : 'Continuar →'}
                   </Button>
                 </PremiumTouchInteraction>
               )}
@@ -498,18 +484,18 @@ export function WithdrawalsPage() {
                 </div>
                 <div className="divide-y divide-border/40 bg-white">
                   <SummaryRow label="Importe a cobrar" value={formatCurrency(parsedAmount)} highlight />
-                  <SummaryRow label="Cuenta de destino" value={account?.iban || ''} />
+                  <SummaryRow label="Cuenta de destino" value={account?.ibanMasked || ''} />
                   <SummaryRow label="Entidad" value={account?.bank || ''} />
-                  <SummaryRow label="Titular de la cuenta" value={account?.holderName || profile?.displayName || ''} />
-                  <SummaryRow label="Comisiones" value="0,00 € (Gratis)" />
-                  <SummaryRow label="Plazo de procesamiento" value="72 horas hábiles" />
+                  <SummaryRow label="Titular de la cuenta" value={profile?.displayName || ''} />
+                  <SummaryRow label="Comisiones" value={WITHDRAWAL_DEMO_FEE_LABEL} />
+                  <SummaryRow label="Plazo de procesamiento" value={WITHDRAWAL_DEMO_PROCESSING_TIME_LABEL} />
                 </div>
               </div>
 
               <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 border border-amber-200">
                 <Clock className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-[11px] font-medium text-amber-700 leading-relaxed">
-                  <strong>Nota sobre el plazo:</strong> Las retiradas de fondos se procesan manualmente de forma segura y se transfieren a tu banco. El saldo suele tardar un plazo aproximado de <strong>72 horas hábiles</strong> en reflejarse de forma definitiva en tu extracto bancario.
+                  <strong>Nota:</strong> tu solicitud será revisada y procesada. {WITHDRAWAL_DEMO_PROCESSING_NOTE}
                 </p>
               </div>
 
@@ -524,59 +510,27 @@ export function WithdrawalsPage() {
                 <PremiumTouchInteraction scale={0.98} className="flex-1">
                   <Button
                     onClick={confirm}
-                    className="w-full h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-lg border-b-4 border-emerald-800 transition-all border-none"
+                    disabled={withdrawalRequest.status === 'submitting'}
+                    className="w-full h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-lg border-b-4 border-emerald-800 transition-all border-none disabled:opacity-50"
                   >
-                    Confirmar Retirada
+                    Confirmar retirada
                   </Button>
                 </PremiumTouchInteraction>
               </div>
             </motion.div>
           )}
 
-          {/* ── PASO 3: Confirmación ───────────────────────────── */}
+          {/* ── PASO 3: Estado de la solicitud ───────────────────── */}
           {step === 3 && (
-            <motion.div key="step3" initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="space-y-6 py-4">
-              <div className="flex flex-col items-center gap-4 text-center">
-                <div className="w-20 h-20 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-                  <CheckCircle2 className="w-10 h-10 text-emerald-500 animate-bounce" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-manises-blue">Solicitud Transferida</h3>
-                  <p className="text-2xl font-black text-emerald-600 mt-1 tabular-nums">-{formatCurrency(parsedAmount)}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Nº Referencia: WD-{Math.floor(Math.random() * 90000) + 10000}</p>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 space-y-3">
-                <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                  <p className="text-[12px] font-medium text-emerald-800 leading-relaxed">
-                    Estamos procesando tu transferencia. El importe puede tardar hasta <strong>72 horas hábiles</strong> en reflejarse en tu cuenta bancaria.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 pt-2.5 border-t border-emerald-100">
-                  <Shield className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <p className="text-[10px] font-bold text-emerald-700">
-                    Destino: {account?.iban || ''} · {account?.bank || ''}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <Button
-                  onClick={() => navigate('/profile/wallet')}
-                  className="w-full h-12 rounded-2xl bg-manises-blue text-white font-black border-none"
-                >
-                  Volver a mi saldo
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => { setStep(profile?.address ? 1 : 'address-verification'); setAmount(balance > 0 ? String(balance.toFixed(2)) : ''); }}
-                  className="text-[11px] font-bold text-muted-foreground"
-                >
-                  Realizar otra retirada
-                </Button>
-              </div>
+            <motion.div key="step3" initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+              <WithdrawalStatusPanel
+                createStatus={withdrawalRequest.status}
+                withdrawal={withdrawalRequest.withdrawal}
+                errorMessage={withdrawalRequest.errorMessage}
+                onRetry={() => account && withdrawalRequest.submit({ bankAccountId: account.id, amount: parsedAmount })}
+                onGoToBalance={() => navigate('/profile/wallet')}
+                onNewWithdrawal={startNewWithdrawal}
+              />
             </motion.div>
           )}
         </AnimatePresence>

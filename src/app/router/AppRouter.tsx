@@ -4,6 +4,10 @@ import { PrivateLayout } from '@/app/layouts/PrivateLayout';
 import { RequireAuth } from '@/app/guards/RequireAuth';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
+import { RecoverPasswordPage } from '@/features/auth/pages/RecoverPasswordPage';
+import { EmailSentPage } from '@/features/auth/pages/EmailSentPage';
+import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage';
+import { VerifyEmailLinkPage } from '@/features/auth/pages/VerifyEmailLinkPage';
 import { HomePage } from '@/features/catalog/pages/HomePage';
 import { GamesPage } from '@/features/catalog/pages/GamesPage';
 import { GamePlayPage } from '@/features/play/pages/GamePlayPage';
@@ -54,6 +58,9 @@ export function AppRouter() {
         <Route index element={<LoginPage />} />
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/register/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/recover-password" element={<RecoverPasswordPage />} />
+        <Route path="/recover-password/sent" element={<EmailSentPage />} />
       </Route>
 
       <Route element={<PrivateLayout />}>
@@ -105,6 +112,14 @@ export function AppRouter() {
           <Route path="/profile/matrix" element={<TechnicalMatrixPage />} />
         </Route>
       </Route>
+
+      {/*
+        Standalone route for the verification-link email. Deliberately
+        outside PublicLayout (which redirects any authenticated/demo user to
+        /home before they could see the outcome) and outside RequireAuth
+        (must also work for a logged-out user clicking the link).
+      */}
+      <Route path="/verify-email/:token" element={<VerifyEmailLinkPage />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
