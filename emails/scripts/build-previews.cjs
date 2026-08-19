@@ -83,7 +83,12 @@ const GENERIC = [
   [/^NUM_APUESTAS|NUM_SORTEOS$/, '3'],
   [/^ULTIMOS_DIGITOS_TARJETA$/, '4242'],
   [/^METODO_PAGO|METODO_RECARGA$/, 'Tarjeta Visa'],
-  [/^ESTADO|TIPO_ESTADO$/, 'Confirmado'],
+  // Split on purpose: {{ESTADO}} is a visible status word, {{TIPO_ESTADO}} is a
+  // control key ("informacion"|"atencion"|"incidencia", see comunicacion-pedido's
+  // own header comment) — the previous combined regex (`^ESTADO|TIPO_ESTADO$`)
+  // was only anchored on its first alternative and fed both the same string.
+  [/^ESTADO$/, 'Confirmado'],
+  [/^TIPO_ESTADO$/, 'informacion'],
   [/^JUEGO|NOMBRE_JUEGO|NOMBRE_SORTEO/, 'La Primitiva'],
   [/^SORTEO$/, 'La Primitiva'],
   [/^SORTEOS$/, 'La Primitiva &middot; Bonoloto &middot; Euromillones'],
@@ -127,6 +132,91 @@ const TEMPLATE_FAMILY = {
   'juegos-cancelacion-pedido': 'juegos',
 };
 
+// Explicit per-template <tr> column layout for {{BLOQUE_NUMEROS*}}. The token
+// name alone can't decide this: {{BLOQUE_NUMEROS}} itself needs a different
+// shape in nacional-recepcion-solicitud (Sorteo/Número/Cantidad/Importe) than
+// in nacional-cancelacion-pedido (Fecha+Sorteo/Número/Cantidad/Importe), and
+// nacional-solicitud-modificada's ACEPTADOS/RECHAZADOS blocks have no Importe
+// column at all. Each shape below is copied verbatim from that template's own
+// column headers / "BE renderiza filas" example comment, verified per file.
+const NUMEROS_ROW_SHAPE = {
+  'nacional-recepcion-solicitud': 'sorteo-numero-cantidad-importe',
+  'nacional-confirmacion-pedido': 'sorteo-numero-cantidad-importe',
+  'nacional-cancelacion-pedido': 'fecha-sorteo-numero-cantidad-importe',
+  'nacional-solicitud-modificada': 'fecha-sorteo-numero-cantidad',
+};
+
+// Two sample décimos per BLOQUE_NUMEROS* block, priced at a flat 25,00 €/décimo
+// so any per-template IMPORTE_DECIMOS/TOTAL_PEDIDO override can add up correctly:
+// 2 décimos (50,00 €) + 1 décimo (25,00 €) = 3 décimos / 75,00 €. A distinct
+// second dataset covers BLOQUE_NUMEROS_RECHAZADOS so it doesn't show the exact
+// same décimo numbers as the ACEPTADOS block in the same email.
+const DECIMO_ROWS_DEFAULT = [
+  { fecha: '11/12/2026', sorteo: 'Loter&iacute;a de Navidad', numero: '00542', cantidad: 2, importe: '50,00' },
+  { fecha: '13/12/2026', sorteo: 'Sorteo del S&aacute;bado', numero: '01187', cantidad: 1, importe: '25,00' },
+];
+const DECIMO_ROWS_RECHAZADOS = [
+  { fecha: '11/12/2026', sorteo: 'Loter&iacute;a de Navidad', numero: '03871', cantidad: 2, importe: '50,00' },
+  { fecha: '13/12/2026', sorteo: 'Sorteo del S&aacute;bado', numero: '04216', cantidad: 1, importe: '25,00' },
+];
+
+function buildNumerosRow(token, name) {
+  const shape = NUMEROS_ROW_SHAPE[name];
+  if (!shape) {
+    console.warn(`[build-previews] Aviso: {{${token}}} en "${name}" no está clasificado en NUMEROS_ROW_SHAPE; usando marcador visible en vez de asumir la estructura de columnas.`);
+    return `<tr><td>&#9888; Shape no clasificado: ${token} en ${name}</td></tr>`;
+  }
+  const rows = /^BLOQUE_NUMEROS_RECHAZADOS/.test(token) ? DECIMO_ROWS_RECHAZADOS : DECIMO_ROWS_DEFAULT;
+  return rows.map(d => {
+    const cantidadLabel = `${d.cantidad} d&eacute;cimo${d.cantidad === 1 ? '' : 's'}`;
+    if (shape === 'sorteo-numero-cantidad-importe') {
+      return `
+                    <tr style="border-bottom:1px solid #F3F4F6;">
+                      <td style="padding:10px 16px;font-size:13px;color:#0D1B3D;">${d.sorteo}</td>
+                      <td style="padding:10px 12px;font-size:14px;font-weight:700;color:#0D1B3D;text-align:center;">${d.numero}</td>
+                      <td style="padding:10px 12px;font-size:13px;color:#64748B;text-align:center;">${cantidadLabel}</td>
+                      <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D1B3D;text-align:right;">${d.importe}&nbsp;&euro;</td>
+                    </tr>`;
+    }
+    if (shape === 'fecha-sorteo-numero-cantidad-importe') {
+      return `
+                    <tr style="border-bottom:1px solid #F3F4F6;">
+                      <td style="padding:11px 12px 11px 16px;vertical-align:top;">
+                        <span style="display:block;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#64748B;">${d.fecha}</span>
+                        <span style="display:block;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:12px;font-weight:600;color:#0D1B3D;">${d.sorteo}</span>
+                      </td>
+                      <td style="padding:11px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;color:#1E3A5F;text-align:center;vertical-align:middle;letter-spacing:0.02em;">${d.numero}</td>
+                      <td style="padding:11px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:500;color:#334155;text-align:center;vertical-align:middle;">${cantidadLabel}</td>
+                      <td style="padding:11px 16px 11px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;color:#0D1B3D;text-align:right;vertical-align:middle;">${d.importe}&nbsp;&euro;</td>
+                    </tr>`;
+    }
+    // fecha-sorteo-numero-cantidad — no Importe column (nacional-solicitud-modificada)
+    return `
+                    <tr style="border-bottom:1px solid #F3F4F6;">
+                      <td style="padding:12px 16px;font-size:12px;color:#4B5563;vertical-align:top;font-family:'Inter',Arial,Helvetica,sans-serif;">${d.fecha}<br/><span style="font-weight:600;color:#0D1B3D;">${d.sorteo}</span></td>
+                      <td style="padding:12px 16px;font-size:18px;font-weight:700;color:#1E3A5F;text-align:center;letter-spacing:0.04em;vertical-align:middle;font-family:'Inter',Arial,Helvetica,sans-serif;">${d.numero}</td>
+                      <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#0D1B3D;text-align:right;vertical-align:middle;font-family:'Inter',Arial,Helvetica,sans-serif;">${cantidadLabel}</td>
+                    </tr>`;
+  }).join('');
+}
+
+// {{BLOQUE_APUESTAS_PREMIADAS}} — juegos-escrutado only. Its table has 3 real
+// columns (Apuesta / Categoría / Premio, see the file's own "BE: siempre
+// incluir..." example comment), unlike plain {{BLOQUE_APUESTAS}}'s 2-cell
+// card layout — reusing that would leave the Premio column empty, so this
+// gets its own row markup copied verbatim from the template's example.
+// Premio per row sums to 45,00 € to match the OVERRIDES IMPORTE_PREMIO total.
+function buildApuestasPremiadasRow() {
+  const row = (apuesta, combinacion, categoria, premio) => `
+                    <tr style="border-bottom:1px solid #F3F4F6;">
+                      <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D1B3D;">${apuesta}<br/><span style="font-size:11px;font-weight:400;color:#94A3B8;">${combinacion}</span></td>
+                      <td style="padding:10px 12px;font-size:12px;color:#64748B;text-align:center;">${categoria}</td>
+                      <td style="padding:10px 16px;font-size:14px;font-weight:700;color:#16A34A;text-align:right;">${premio}</td>
+                    </tr>`;
+  return row('La Primitiva', '05 - 12 - 23 - 31 - 40 - 44', '5 aciertos', '25,00&nbsp;&euro;') +
+         row('Bonoloto', '02 - 09 - 18 - 27 - 35 - 41', '3 aciertos', '20,00&nbsp;&euro;');
+}
+
 // {{BLOQUE_*}} table-row placeholders only — anything that isn't a run of
 // <tr> block markup (inline text, generic paragraphs) has its own generator
 // below (inlineSorteos, inlineDatosRelacionados) and must not come through here.
@@ -150,16 +240,19 @@ function buildBlockRow(token, name) {
                         </table>
                       </td>
                     </tr>`;
+  if (/^BLOQUE_APUESTAS_PREMIADAS/.test(token)) {
+    return buildApuestasPremiadasRow();
+  }
   if (/^BLOQUE_APUESTAS/.test(token)) {
     return row('La Primitiva', '05 - 12 - 23 - 31 - 40 - 44', 'Combinaci&oacute;n simple') +
            row('Bonoloto', '02 - 09 - 18 - 27 - 35 - 41', 'Combinaci&oacute;n simple');
   }
   if (/^BLOQUE_NUMEROS/.test(token)) {
-    // Filas de décimo (Lotería Nacional) — mismo formato "Combinación simple"
-    // que ya usan las plantillas reales, pero con nombre de sorteo y número
-    // de décimo (5 dígitos) en vez del combo de 6 números de Juegos Activos.
-    return row('Loter&iacute;a de Navidad', '00542', 'Combinaci&oacute;n simple') +
-           row('Sorteo del S&aacute;bado', '01187', 'Combinaci&oacute;n simple');
+    // Décimos de Lotería Nacional: cada plantilla tiene su propia estructura de
+    // columnas real (ver NUMEROS_ROW_SHAPE) — "Combinación simple" no aplica a
+    // décimos, así que estas filas no reutilizan la row() de dos celdas de
+    // arriba (pensada para el layout de tarjeta de BLOQUE_APUESTAS).
+    return buildNumerosRow(token, name);
   }
   if (/^BLOQUE_SORTEOS/.test(token)) {
     const family = TEMPLATE_FAMILY[name];
@@ -267,15 +360,106 @@ const OVERRIDES = {
   // ("La Primitiva") es de Juegos Activos y no aplica aquí — usar un sorteo
   // real de Lotería Nacional para que la muestra sea coherente con el resto
   // del contenido ("décimos", "Modalidad: Custodia/Mensajería", etc.).
-  'nacional-confirmacion-pedido': { NOMBRE_SORTEO: 'Loter&iacute;a de Navidad' },
-  'nacional-recepcion-solicitud': { NOMBRE_SORTEO: 'Loter&iacute;a de Navidad' },
-  'nacional-escrutado-con-premio-custodia': { NOMBRE_SORTEO: 'Loter&iacute;a de Navidad' },
-  'nacional-escrutado-con-premio-mensajeria': { NOMBRE_SORTEO: 'Loter&iacute;a de Navidad' },
+  // MODALIDAD_LABEL: el genérico ("Combinación simple") es terminología de
+  // apuesta de Juegos Activos y estos 5 templates son los únicos que usan
+  // este token — todos Lotería Nacional, así que necesitan Custodia/Mensajería.
+  // IMPORTE_DECIMOS/GASTOS_MENSAJERIA/TOTAL_PEDIDO: coherentes con las filas
+  // generadas por buildNumerosRow() (2 décimos + 1 décimo = 75,00 € + 5,00 €
+  // de envío = 80,00 € total), no el mismo "50,00" repetido en los tres.
+  // Estos dos templates NO añaden &euro; en su propio markup (a diferencia de
+  // nacional-cancelacion-pedido, que sí lo hace) — el símbolo va en el valor.
+  'nacional-confirmacion-pedido': {
+    NOMBRE_SORTEO: 'Loter&iacute;a de Navidad',
+    MODALIDAD_LABEL: 'Custodia (d&eacute;cimo digital)',
+    IMPORTE_DECIMOS: '75,00&nbsp;&euro;',
+    GASTOS_MENSAJERIA: '5,00&nbsp;&euro;',
+    TOTAL_PEDIDO: '80,00&nbsp;&euro;',
+  },
+  'nacional-recepcion-solicitud': {
+    NOMBRE_SORTEO: 'Loter&iacute;a de Navidad',
+    MODALIDAD_LABEL: 'Custodia (d&eacute;cimo digital)',
+    IMPORTE_DECIMOS: '75,00&nbsp;&euro;',
+    GASTOS_MENSAJERIA: '5,00&nbsp;&euro;',
+    TOTAL_PEDIDO: '80,00&nbsp;&euro;',
+  },
+  // Esta plantilla SÍ añade &euro; en su propio markup — el valor se queda sin
+  // símbolo para no duplicarlo ("50,00 € €").
+  'nacional-cancelacion-pedido': {
+    NOMBRE_JUEGO: 'Loter&iacute;a de Navidad',
+    MODALIDAD_LABEL: 'Custodia (d&eacute;cimo digital)',
+    IMPORTE_DECIMOS: '75,00',
+    GASTOS_MENSAJERIA: '5,00',
+    TOTAL_PEDIDO: '80,00',
+  },
+  // CANTIDAD_DECIMOS × PREMIO_POR_DECIMO = IMPORTE_PREMIO_TOTAL (2 × 25,00 = 50,00),
+  // no los tres a "50,00" como antes. SALDO_DISPONIBLE es un saldo de cuenta
+  // independiente del premio — se evita repetir el mismo "50,00" ahí también.
+  'nacional-escrutado-con-premio-custodia': {
+    NOMBRE_SORTEO: 'Loter&iacute;a de Navidad',
+    CANTIDAD_DECIMOS: '2',
+    PREMIO_POR_DECIMO: '25,00',
+    IMPORTE_PREMIO_TOTAL: '50,00',
+    SALDO_DISPONIBLE: '120,00',
+  },
+  'nacional-escrutado-con-premio-mensajeria': {
+    NOMBRE_SORTEO: 'Loter&iacute;a de Navidad',
+    CANTIDAD_DECIMOS: '2',
+    PREMIO_POR_DECIMO: '25,00',
+    IMPORTE_PREMIO_TOTAL: '50,00',
+  },
   'nacional-escrutado-sin-premio-custodia': { NOMBRE_SORTEO: 'Loter&iacute;a de Navidad' },
-  'nacional-escrutado-sin-premio-mensajeria': { NOMBRE_SORTEO: 'Loter&iacute;a de Navidad' },
-  'nacional-cancelacion-pedido': { NOMBRE_JUEGO: 'Loter&iacute;a de Navidad' },
-  'nacional-abono-recordatorio': { SORTEO: 'Loter&iacute;a de Navidad' },
-  'nacional-solicitud-modificada': { NOMBRE_SORTEO_PRINCIPAL: 'Loter&iacute;a de Navidad' },
+  // Variante mensajería: MODALIDAD_LABEL debe decir "Mensajería", no el
+  // genérico "Custodia" usado en el resto de templates Nacional.
+  'nacional-escrutado-sin-premio-mensajeria': {
+    NOMBRE_SORTEO: 'Loter&iacute;a de Navidad',
+    MODALIDAD_LABEL: 'Mensajer&iacute;a (env&iacute;o a domicilio)',
+  },
+  // CANTIDAD × IMPORTE_UNITARIO = IMPORTE_TOTAL (2 × 25,00 = 50,00).
+  'nacional-abono-recordatorio': {
+    SORTEO: 'Loter&iacute;a de Navidad',
+    CANTIDAD: '2',
+    IMPORTE_UNITARIO: '25,00',
+    IMPORTE_TOTAL: '50,00',
+  },
+  // BLOQUE_NUMEROS_RECHAZADOS usa un dataset de décimos distinto al de
+  // ACEPTADOS (ver DECIMO_ROWS_RECHAZADOS) — 3 décimos rechazados × 25,00 €
+  // = 75,00 € a devolver, no el "50,00" genérico. Esta plantilla no añade
+  // &euro; en su propio markup, así que va incluido en el valor.
+  'nacional-solicitud-modificada': {
+    NOMBRE_SORTEO_PRINCIPAL: 'Loter&iacute;a de Navidad',
+    MODALIDAD_LABEL: 'Custodia (d&eacute;cimo digital)',
+    IMPORTE_NO_INCLUIDO: '75,00&nbsp;&euro;',
+  },
+  // NUM_APUESTAS × IMPORTE_POR_APUESTA = IMPORTE (2 × 5,00 = 10,00), valores
+  // realistas para Juegos Activos en vez de "50,00" repetido en los tres tokens.
+  'juegos-abono-confirmacion': { NUM_APUESTAS: '2', IMPORTE_POR_APUESTA: '5,00', IMPORTE: '10,00' },
+  'juegos-abono-cancelacion': { NUM_APUESTAS: '2', IMPORTE_POR_APUESTA: '5,00', IMPORTE: '10,00' },
+  'juegos-abono-renovacion-fallida': {
+    NUM_APUESTAS: '2',
+    IMPORTE_POR_APUESTA: '5,00',
+    IMPORTE: '10,00',
+    // El motivo genérico ("Baja solicitada por el usuario") no encaja con un
+    // fallo de renovación automática recuperable antes de {{FECHA_LIMITE}}.
+    MOTIVO: 'No se ha podido procesar el m&eacute;todo de pago',
+  },
+  // Mismo patrón NUM_APUESTAS/IMPORTE que el grupo de abonos, para las otras
+  // plantillas de Juegos Activos que muestran "Apuestas" e "Importe" juntos.
+  // Ninguna de estas tres añade &euro; en su propio markup — va en el valor.
+  'juegos-cancelacion-pedido': { NUM_APUESTAS: '2', IMPORTE_CANCELADO: '10,00&nbsp;&euro;' },
+  'juegos-confirmacion-pedido': { NUM_SORTEOS: '2', NUM_APUESTAS: '2', IMPORTE_TOTAL: '10,00&nbsp;&euro;' },
+  // IMPORTE_PREMIO = suma de las 2 filas de BLOQUE_APUESTAS_PREMIADAS
+  // (25,00 € + 20,00 € = 45,00 €).
+  'juegos-escrutado': { NUM_APUESTAS: '2', IMPORTE_JUGADO: '10,00&nbsp;&euro;', IMPORTE_PREMIO: '45,00&nbsp;&euro;' },
+  // MOTIVO_RECHAZO: el genérico de cancelación ("Baja solicitada por el
+  // usuario") no tiene sentido como motivo de un RECHAZO de una solicitud
+  // nueva de abono — no reutilizar el mismo texto entre ambos flujos.
+  'abono-rechazo': { MOTIVO_RECHAZO: 'El n&uacute;mero solicitado ya no est&aacute; disponible' },
+  // El email dice literalmente "No hemos podido realizar tu recarga" — mostrar
+  // ESTADO: Confirmado ahí es una contradicción directa.
+  'recarga-fallida': { ESTADO: 'Fallida' },
+  // Esta plantilla no añade &euro; en su propio markup (su propio comentario
+  // interno documenta el formato esperado como "50,00 €", símbolo incluido).
+  'recarga-transferencia': { IMPORTE: '50,00&nbsp;&euro;' },
 };
 
 function buildPreview(name) {
