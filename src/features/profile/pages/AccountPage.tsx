@@ -4,6 +4,7 @@ import { Save, ShieldCheck, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';
+import { ProfileChangeVerificationModal } from '../components/ProfileChangeVerificationModal';
 import { Button } from '@/shared/ui/Button';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 
@@ -40,7 +41,7 @@ function AccountField({
 
 export function AccountPage() {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, updateProfile } = useAuth();
   const [formData, setFormData] = useState({
     name: 'Juan Carlos',
     surname: 'Martínez',
@@ -55,6 +56,7 @@ export function AccountPage() {
     province: 'Valencia',
     country: 'España',
   });
+  const [isVerificationOpen, setIsVerificationOpen] = useState(false);
 
   const emailsMatch = !formData.newEmail || formData.newEmail === formData.confirmEmail;
 
@@ -67,7 +69,38 @@ export function AccountPage() {
       toast.error('El nuevo email y su confirmación deben coincidir.');
       return;
     }
-    toast.success('Datos personales preparados en demo.');
+    // NO se persiste nada todavía — solo se abre el modal de confirmación.
+    // Los cambios de formData solo se aplican en handleChangesConfirmed(),
+    // una vez validado el código de 6 dígitos.
+    setIsVerificationOpen(true);
+  };
+
+  /**
+   * Llamado por el modal SOLO tras confirmar el código correctamente.
+   *
+   * Nota de alcance: UserProfile (shared/types/domain.ts) hoy no modela
+   * name/surname/phone/alternatePhone/country — no son campos inventados
+   * aquí, ya eran puramente locales en este formulario antes de esta tarea
+   * (handleSave nunca los persistía). Por eso solo address/postalCode/
+   * municipality/province/email —que sí existen en UserProfile— se envían a
+   * updateProfile(); el resto queda protegido por el mismo gate de
+   * confirmación pero se mantiene como estado local, igual que antes.
+   */
+  const handleChangesConfirmed = async () => {
+    const changes: Parameters<typeof updateProfile>[0] = {
+      address: formData.address,
+      postalCode: formData.postalCode,
+      municipality: formData.municipality,
+      province: formData.province,
+    };
+    if (formData.newEmail) {
+      changes.email = formData.newEmail;
+    }
+    await updateProfile(changes, { silent: true });
+    if (formData.newEmail) {
+      setFormData((current) => ({ ...current, currentEmail: formData.newEmail, newEmail: '', confirmEmail: '' }));
+    }
+    toast.success('Datos actualizados', { description: 'Los cambios se han guardado correctamente.' });
   };
 
   return (
@@ -152,6 +185,13 @@ export function AccountPage() {
           </div>
         </PremiumSectionCard>
       </div>
+
+      <ProfileChangeVerificationModal
+        isOpen={isVerificationOpen}
+        onClose={() => setIsVerificationOpen(false)}
+        email={profile?.email ?? formData.currentEmail}
+        onConfirmed={handleChangesConfirmed}
+      />
     </div>
   );
 }

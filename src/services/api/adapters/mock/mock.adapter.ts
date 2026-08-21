@@ -14,6 +14,7 @@ import { getBalanceMock, getMovementsMock, topUpMock } from './wallet.mock';
 import { listBankAccountsMock, addBankAccountMock, verifyBankAccountOwnershipMock } from './bank-accounts.mock';
 import { createWithdrawalMock } from './withdrawals.mock';
 import { subscriptionsMock } from './subscriptions.mock';
+import { requestProfileChangeVerificationMock, confirmProfileChangeVerificationMock } from './profile.mock';
 
 /**
  * MockAdapter
@@ -30,6 +31,11 @@ export class MockAdapter implements IApiProvider {
     resendVerificationEmail: resendVerificationEmailMock,
     changePendingEmail: changePendingEmailMock,
     verifyEmail: verifyEmailMock,
+  };
+
+  profile = {
+    requestProfileChangeVerification: requestProfileChangeVerificationMock,
+    confirmProfileChangeVerification: confirmProfileChangeVerificationMock,
   };
 
   results = {

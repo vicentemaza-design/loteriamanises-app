@@ -29,6 +29,12 @@ import type {
   CreateWithdrawalResult,
 } from '../contracts/withdrawals.contracts';
 import type {
+  RequestProfileChangeVerificationInput,
+  RequestProfileChangeVerificationResult,
+  ConfirmProfileChangeVerificationInput,
+  ConfirmProfileChangeVerificationResult,
+} from '../contracts/profile.contracts';
+import type {
   CreateSubscriptionRequestDto,
   CreateSubscriptionResponseDto,
   UpdateSubscriptionRequestDto,
@@ -95,6 +101,29 @@ export interface IApiProvider {
      * AuthError for genuine technical failures (network, rate limit, etc.).
      */
     verifyEmail: (input: VerifyEmailInput) => Promise<VerifyEmailResult>;
+  };
+
+  /**
+   * Profile change verification — 6-digit code sent by email, required
+   * before any edit made on the account/profile screen is persisted.
+   * See docs/be-handoff/profile-change-verification.md.
+   */
+  profile: {
+    /**
+     * Requests a new code be sent to `input.email`. Rejects with AuthError
+     * on failure (e.g. 'service_unavailable'). Resolving does not mean the
+     * email arrived — only that BE accepted the request.
+     */
+    requestProfileChangeVerification: (input: RequestProfileChangeVerificationInput) => Promise<RequestProfileChangeVerificationResult>;
+    /**
+     * Confirms a previously requested code. Resolves with an outcome
+     * ('confirmed' | 'invalid' | 'expired') — these are operation outcomes,
+     * not persistent state. Only rejects with AuthError for genuine
+     * technical failures. FE must call AuthContext.updateProfile() itself
+     * ONLY after outcome === 'confirmed' — this method never persists
+     * anything on its own.
+     */
+    confirmProfileChangeVerification: (input: ConfirmProfileChangeVerificationInput) => Promise<ConfirmProfileChangeVerificationResult>;
   };
 
   // Results

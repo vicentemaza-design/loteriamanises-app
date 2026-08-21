@@ -37,6 +37,12 @@ function buildTicketsForBet(dto: CreateBetRequestDto, userId: string, orderIdOve
       scheduleMode: dto.scheduleMode ?? 'next_draw',
       weeksCount: dto.weeksCount ?? 1,
       drawIndex: index,
+      // Already computed by resolvePlayPricing() and carried on the DTO
+      // (see mapSessionItemToBetDto/CreateBetRequestDto.betsCount) — just
+      // wasn't being copied into the ticket's metadata, which is what
+      // TicketDetailPage.getBetsCount() reads. No combinatorics here, only
+      // reusing a count that already exists on `dto`.
+      betsCount: dto.betsCount,
     },
     createdAt,
   }));

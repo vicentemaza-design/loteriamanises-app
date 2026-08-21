@@ -63,6 +63,21 @@ export class FirebaseAdapter implements IApiProvider {
     },
   };
 
+  // Deliberately NOT implemented against Firestore — sending/validating a
+  // real email OTP requires a mail provider + server-side rate limiting and
+  // expiry, not client-writable Firestore documents. Stub only, out of scope
+  // for this phase. See docs/be-handoff/profile-change-verification.md.
+  profile = {
+    requestProfileChangeVerification: async () => {
+      console.warn('FirebaseAdapter.profile.requestProfileChangeVerification: not implemented — out of scope for this phase.');
+      throw new AuthError('service_unavailable');
+    },
+    confirmProfileChangeVerification: async () => {
+      console.warn('FirebaseAdapter.profile.confirmProfileChangeVerification: not implemented — out of scope for this phase.');
+      throw new AuthError('service_unavailable');
+    },
+  };
+
   // Results
   results = {
     getLatest: getLatestResultsFirebase,

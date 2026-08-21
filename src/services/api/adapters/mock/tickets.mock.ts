@@ -157,6 +157,48 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
     createdAt: new Date(Date.now() - 3600000).toISOString(),
   },
 
+  // ── Bonoloto reducida pendiente — 20 números, sistema "Reducida al 5" ────
+  // DEMO — `bets` aquí contiene solo una MUESTRA de 12 columnas estáticas
+  // escritas a mano (igual que el resto de fixtures de este archivo), NO las
+  // 1336 columnas reales del sistema. Sirve únicamente para validar
+  // visualmente cómo se representará el desarrollo cuando BE entregue el
+  // desarrollo completo real — el frontend nunca genera columnas por sí
+  // mismo. `metadata.betsCount` (1336) es el total real del sistema; al no
+  // coincidir con `bets.length` (12), TicketDetailPage muestra tanto la
+  // selección original como el desarrollo parcial, sin confundir ambos.
+  // Ver docs/be-handoff/ticket-bet-columns.md.
+  {
+    id: 'demo-bonoloto-reducida',
+    userId: 'demo-user',
+    gameId: 'bonoloto',
+    gameType: 'bonoloto',
+    numbers: [1, 3, 7, 10, 11, 14, 15, 18, 20, 21, 23, 26, 30, 32, 33, 35, 37, 38, 42, 45],
+    bets: [
+      [1, 3, 7, 10, 11, 14],
+      [1, 3, 7, 10, 15, 18],
+      [1, 3, 7, 11, 20, 21],
+      [1, 3, 10, 14, 23, 26],
+      [1, 7, 11, 15, 30, 32],
+      [3, 10, 14, 18, 33, 35],
+      [1, 3, 20, 23, 37, 38],
+      [7, 11, 15, 21, 42, 45],
+      [1, 10, 14, 26, 32, 37],
+      [3, 7, 18, 30, 35, 42],
+      [11, 15, 21, 23, 38, 45],
+      [1, 14, 20, 26, 33, 42],
+    ],
+    drawDate: '2026-08-20',
+    status: 'pending',
+    price: 668.00,
+    metadata: {
+      playStatus: 'pending',
+      orderTotalPrice: 668.00,
+      betsCount: 1336,
+      orderDrawDates: ['2026-08-20'],
+    },
+    createdAt: new Date(Date.now() - 1800000).toISOString(),
+  },
+
   // ── Primitiva pendiente (12 columnas · 2 boletos · con Joker) ─────────────
   {
     id: 'demo-primitiva-12',

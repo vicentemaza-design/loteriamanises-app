@@ -98,6 +98,92 @@ const NUMBERS_PER_ROW: Record<string, number> = {
   primitiva: 6, bonoloto: 6, gordo: 5, euromillones: 5, eurodreams: 6,
 };
 
+// Simple-column size for the "stars"/clave/sueño dimension. Only needed for
+// games that have one — NUMBERS_PER_ROW already covers the numbers dimension
+// for every game, so this isn't a duplicate, just the missing half.
+const SIMPLE_STARS_SIZE: Partial<Record<string, number>> = {
+  euromillones: 2,
+  gordo: 1,
+  eurodreams: 1,
+};
+
+function getSimpleColumnSize(gameType: string): number {
+  return NUMBERS_PER_ROW[gameType] ?? 6;
+}
+
+/**
+ * True when the ticket's flat selection (`ticket.numbers`/`stars`) is itself
+ * larger than one simple column — i.e. it's the base pool a system was built
+ * from (Bonoloto 20 números, Primitiva 11 números, Gordo 10+clave…), as
+ * opposed to several simple columns picked one by one from a same-size pool
+ * (e.g. two independent Bonoloto bets). Only this — never `betsCount` —
+ * decides whether "Selección original" is shown; see getBets()/section 5 of
+ * the client request.
+ */
+function isExpandedSelection(ticket: Ticket, gameType: string): boolean {
+  if (ticket.numbers.length > getSimpleColumnSize(gameType)) return true;
+  const starsSize = SIMPLE_STARS_SIZE[gameType];
+  return starsSize != null && (ticket.stars?.length ?? 0) > starsSize;
+}
+
+/**
+ * Transversal simple-vs-multiple detection (never depends on the game's
+ * name beyond looking up its simple-column size, never computes how many
+ * combinations a system produces): a ticket is a "system/multiple" bet when
+ * BE reports more than one real column, or when the flat selection is
+ * itself larger than one simple column. Only applies to numeric games —
+ * Quiniela/Lotería Nacional/Navidad/Niño never reach this (separate render
+ * branches in TicketDetailPage).
+ */
+function isMultipleSelection(ticket: Ticket, gameType: string): boolean {
+  return getBetsCount(ticket) > 1 || isExpandedSelection(ticket, gameType);
+}
+
+/** Preserve exactly one entry per real column, never drop/reshuffle betStars/betReintegros. */
+function isValidSimpleColumn(bet: { numbers: number[]; stars?: number[] }, gameType: string): boolean {
+  if (bet.numbers.length !== getSimpleColumnSize(gameType)) return false;
+  const starsSize = SIMPLE_STARS_SIZE[gameType];
+  return starsSize == null || bet.stars == null || bet.stars.length <= starsSize;
+}
+
+/**
+ * Copy for the "Desarrollo" heading — never derives a total from pricing,
+ * only uses `metadata.betsCount` when it's actually > 1 (a legacy value of
+ * 1 on a ticket that's clearly multiple is not "reliable", so no number is
+ * shown rather than the misleading "Desarrollo · 1 columnas" — section 6).
+ */
+function getDevelopmentLabel(betsCount: number): string {
+  return betsCount > 1 ? `Desarrollo · ${betsCount} columnas` : 'Desarrollo de columnas';
+}
+
+/**
+ * Wraps a flat number selection across multiple BallSelection rows (same
+ * chunking already used for individual bets/boletos elsewhere in this file —
+ * BallSelection itself is a single scrollable row, never intended to hold
+ * more than one combination's worth of numbers). Used for the "Selección
+ * original" block of a reduced/multiple bet whose real per-column
+ * development isn't available yet — see getBets()/hasDevelopment.
+ */
+function SelectionRows({ numbers, stars, gameType }: { numbers: number[]; stars?: number[]; gameType: string }) {
+  const perRow = NUMBERS_PER_ROW[gameType] ?? 6;
+  const rows = numbers.length > perRow ? chunkArray(numbers, perRow) : [numbers];
+  return (
+    <div className="flex flex-col gap-1.5">
+      {rows.map((rowNums, rowIdx) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <div key={rowIdx}>
+          <BallSelection
+            numbers={rowNums}
+            stars={rowIdx === rows.length - 1 ? stars : undefined}
+            type={gameType}
+            large
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── sub-components ─────────────────────────────────────────────────────────
 
 type MatchResult = {
@@ -109,19 +195,103 @@ type MatchResult = {
   reintegro?: number;
 } | null;
 
+/**
+ * Real, per-column developed bets (each entry = one actual combination
+ * played). Only ever reads `ticket.bets`/`betStars`/`betReintegros` — never
+ * computes or splits a selection into columns here (that's a lottery-rules
+ * calculation and must come from BE; see docs/be-handoff/ticket-bet-columns.md).
+ *
+ * CASE A — genuine single/simple bet (no `ticket.bets`, not multiple per
+ * isMultipleSelection): the flat `ticket.numbers`/`stars` selection IS the
+ * one real combination played — falling back to it here is correct.
+ *
+ * CASE B — `ticket.bets` present: every entry must be a valid simple column
+ * for this game (right number-count, stars within the expected size — see
+ * isValidSimpleColumn). If even one entry isn't (e.g. a wide selection
+ * wrapped as a single oversized "bet"), the whole array is untrustworthy —
+ * discard it entirely rather than show a partially-wrong development.
+ *
+ * CASE C — no `ticket.bets` but the selection is demonstrably multiple: no
+ * fallback to `[ticket.numbers]` (that would misrepresent N numbers as one
+ * combination) — returns [] so callers render the honest "desarrollo no
+ * disponible" state (see SingleDrawDetail/SemanalDetail/BoletoGroupsView).
+ */
 function getBets(ticket: Ticket): Array<{ numbers: number[]; stars?: number[]; reintegro?: number }> {
+  const gameType = ticket.gameType;
   if (ticket.bets && ticket.bets.length > 0) {
-    return ticket.bets.map((nums, i) => ({
+    const candidates = ticket.bets.map((nums, i) => ({
       numbers: nums,
       stars: ticket.betStars?.[i],
       reintegro: ticket.betReintegros?.[i],
     }));
+    return candidates.every(bet => isValidSimpleColumn(bet, gameType)) ? candidates : [];
+  }
+  if (isMultipleSelection(ticket, gameType)) {
+    return [];
   }
   return [{ numbers: ticket.numbers, stars: ticket.stars }];
 }
 
 function getGroupBets(groupTickets: Ticket[]): Array<{ numbers: number[]; stars?: number[]; reintegro?: number }> {
   return groupTickets.flatMap(t => getBets(t));
+}
+
+/**
+ * Compact grid presentation for the "Desarrollo" block — same data as the
+ * full-size per-bet cards (bets.map elsewhere in this file), just laid out
+ * 2-3 per row using BallSelection's existing `compact` size instead of one
+ * full-width card per column. Only used when isMultipleSelection() is true;
+ * the single simple-bet "Mi apuesta (1)" card is untouched.
+ */
+function DevelopmentColumnsGrid({
+  bets,
+  result,
+  gameType,
+}: {
+  bets: Array<{ numbers: number[]; stars?: number[]; reintegro?: number }>;
+  result: MatchResult;
+  gameType: string;
+}) {
+  const isGordo = gameType === 'gordo';
+  return (
+    <div className="grid grid-cols-1 min-[375px]:grid-cols-2 lg:grid-cols-3 gap-1.5">
+      {bets.map((bet, i) => {
+        const matchedNumbers = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+        const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
+        const reintegroMatches = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
+        const claveMatches = isGordo && bet.stars?.[0] != null && !!result?.stars?.includes(bet.stars[0]);
+        return (
+          // eslint-disable-next-line react/no-array-index-key
+          <div key={i} className="rounded-xl border border-slate-100 bg-white px-1.5 pb-1.5 pt-1 shadow-sm">
+            <span className="mb-0.5 block pl-1 text-[8px] font-black leading-none tabular-nums text-slate-300">
+              {i + 1}
+            </span>
+            <BallSelection
+              numbers={bet.numbers}
+              stars={isGordo ? undefined : bet.stars}
+              matchedNumbers={matchedNumbers}
+              matchedStars={isGordo ? [] : matchedStars}
+              type={gameType}
+              compact
+            />
+            {isGordo && bet.stars?.[0] != null && (
+              <span className={cn('mt-1 block text-[9px] font-black', claveMatches ? 'text-emerald-600' : 'text-amber-600')}>
+                Clave: {bet.stars[0]}
+              </span>
+            )}
+            {!isGordo && bet.reintegro != null && (
+              <span className={cn(
+                'mt-1 inline-block rounded-md px-1.5 py-0.5 text-[9px] font-black',
+                reintegroMatches ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
+              )}>
+                R:{bet.reintegro}
+              </span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 // ── Game detail header ─────────────────────────────────────────────────────
@@ -375,6 +545,14 @@ function BoletoGroupsView({
   const status = getPlayStatus(ticket);
   const isScrutinized = status === 'scrutinized';
   const bets = groupTickets && groupTickets.length > 1 ? getGroupBets(groupTickets) : getBets(ticket);
+  const betsCount = getBetsCount(ticket);
+  const hasDevelopment = bets.length > 0;
+  // Same transversal rule as SingleDrawDetail/SemanalDetail — see section 3/7
+  // of the client request. BoletoGroupsView is only entered when this is
+  // already true (see the gate in SingleDrawDetail), kept here too so the
+  // three views share one identical conceptual criterion.
+  const isMultiple = isMultipleSelection(ticket, ticket.gameType);
+  const showOriginalSelection = isExpandedSelection(ticket, ticket.gameType);
   const prize = ticket.prize ?? 0;
 
   const boletosSize = BOLETO_SIZE[ticket.gameType] ?? bets.length;
@@ -424,12 +602,30 @@ function BoletoGroupsView({
 
       {/* Mis jugadas — agrupadas por boletos */}
       <div>
+        {showOriginalSelection && (
+          <div className="mb-4">
+            <p className="mb-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+              Selección original · {ticket.numbers.length} números
+            </p>
+            <div className="rounded-2xl border border-slate-100 bg-white px-4 py-2 shadow-sm">
+              <SelectionRows numbers={ticket.numbers} stars={ticket.stars} gameType={game.type} />
+            </div>
+          </div>
+        )}
+
         <p className="mb-3 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
-          Mis jugadas
+          {isMultiple ? getDevelopmentLabel(betsCount) : `Mi apuesta (${bets.length})`}
         </p>
 
+        {!hasDevelopment && (
+          <div className="mb-3 flex items-center gap-2 rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3">
+            <Clock className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+            <span className="text-[10px] font-semibold text-slate-400">Desarrollo de columnas no disponible</span>
+          </div>
+        )}
+
         {/* Toggle Joker */}
-        {hasJoker && (
+        {hasDevelopment && hasJoker && (
           <div className="mb-3 space-y-2">
             <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-3 py-2.5">
               <div className="flex items-center gap-2">
@@ -472,19 +668,21 @@ function BoletoGroupsView({
           </div>
         )}
 
-        <BoletosGrid
-          bets={bets}
-          boletosSize={boletosSize}
-          result={result}
-          game={game}
-          millonBoletos={millonBoletos}
-          jokerBoletos={showJoker ? jokerBoletos : []}
-          largeBalls
-        />
+        {hasDevelopment && (
+          <BoletosGrid
+            bets={bets}
+            boletosSize={boletosSize}
+            result={result}
+            game={game}
+            millonBoletos={millonBoletos}
+            jokerBoletos={showJoker ? jokerBoletos : []}
+            largeBalls
+          />
+        )}
       </div>
 
       {/* Nota Joker (solo Primitiva) */}
-      {hasJoker && showJoker && ticket.gameType === 'primitiva' && (
+      {hasDevelopment && hasJoker && showJoker && ticket.gameType === 'primitiva' && (
         <div className="flex items-start gap-2.5 rounded-2xl border border-emerald-100 bg-emerald-50/50 px-4 py-3">
           <span className="text-base leading-tight">🍀</span>
           <p className="text-[10px] font-medium leading-relaxed text-slate-500">
@@ -816,14 +1014,25 @@ function SingleDrawDetail({
   game: (typeof LOTTERY_GAMES)[number];
   groupTickets?: Ticket[];
 }) {
-  // Euromillones and Primitiva use boleto-grouped display
-  if (BOLETO_SIZE[ticket.gameType]) {
+  // Euromillones and Primitiva use boleto-grouped display — only when
+  // genuinely multiple; a simple 1-column bet in these games falls through
+  // to the plain "Mi apuesta (1)" rendering below, same as any other game
+  // (section 12 of the client request).
+  if (BOLETO_SIZE[ticket.gameType] && isMultipleSelection(ticket, ticket.gameType)) {
     return <BoletoGroupsView ticket={ticket} result={result} game={game} groupTickets={groupTickets} />;
   }
 
   const status = getPlayStatus(ticket);
   const isScrutinized = status === 'scrutinized';
   const bets = groupTickets && groupTickets.length > 1 ? getGroupBets(groupTickets) : getBets(ticket);
+  const betsCount = getBetsCount(ticket);
+  const hasDevelopment = bets.length > 0;
+  // Same transversal rule everywhere (section 3/7): "Selección original" only
+  // when the flat selection is itself larger than one simple column; the
+  // "Desarrollo" heading/grid whenever the ticket is a system/multiple bet,
+  // regardless of whether real per-column data exists.
+  const isMultiple = isMultipleSelection(ticket, game.type);
+  const showOriginalSelection = isExpandedSelection(ticket, game.type);
   const prize = ticket.prize ?? 0;
 
   return (
@@ -870,60 +1079,82 @@ function SingleDrawDetail({
 
       {/* My bets */}
       <div>
+        {showOriginalSelection && (
+          <div className="mb-4">
+            <p className="mb-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+              Selección original · {ticket.numbers.length} números
+            </p>
+            <div className="rounded-2xl border border-slate-100 bg-white px-4 py-2 shadow-sm">
+              <SelectionRows numbers={ticket.numbers} stars={ticket.stars} gameType={game.type} />
+            </div>
+          </div>
+        )}
+
         <p className="mb-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
-          Mi apuesta ({bets.length})
+          {isMultiple ? getDevelopmentLabel(betsCount) : `Mi apuesta (${bets.length})`}
         </p>
-        <div className="space-y-2">
-          {bets.map((bet, i) => {
-            const allMatchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
-            const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
-            const reintegroMatches = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
-            const claveMatches = game.type === 'gordo' && bet.stars?.[0] != null && result?.stars?.includes(bet.stars[0]);
-            const perRow = NUMBERS_PER_ROW[game.type] ?? 6;
-            const rows = bet.numbers.length > perRow
-              ? chunkArray(bet.numbers, perRow)
-              : [bet.numbers];
-            return (
-              // eslint-disable-next-line react/no-array-index-key
-              <div key={i} className="rounded-2xl border border-slate-100 bg-white px-4 py-2 shadow-sm">
-                <div className="flex flex-col gap-1">
-                  {rows.map((rowNums, rowIdx) => {
-                    const isLast = rowIdx === rows.length - 1;
-                    const rowMatchedNums = allMatchedNums.filter(n => rowNums.includes(n));
-                    return (
-                      <div key={rowIdx} className="flex items-center gap-2">
-                        <BallSelection
-                          numbers={rowNums}
-                          stars={isLast && game.type !== 'gordo' ? bet.stars : undefined}
-                          matchedNumbers={rowMatchedNums}
-                          matchedStars={isLast && game.type !== 'gordo' ? matchedStars : []}
-                          type={game.type}
-                          large
-                        />
-                        {isLast && game.type === 'gordo' && bet.stars?.[0] != null && (
-                          <span className={cn(
-                            'ml-auto text-[13px] font-black',
-                            claveMatches ? 'text-emerald-600' : 'text-amber-600'
-                          )}>
-                            Clave: {bet.stars[0]}
-                          </span>
-                        )}
-                        {isLast && game.type !== 'gordo' && bet.reintegro != null && (
-                          <span className={cn(
-                            'ml-auto shrink-0 rounded-lg px-2 py-1 text-[13px] font-black',
-                            reintegroMatches ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
-                          )}>
-                            R:{bet.reintegro}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        {hasDevelopment ? (
+          isMultiple ? (
+            <DevelopmentColumnsGrid bets={bets} result={result} gameType={game.type} />
+          ) : (
+            <div className="space-y-2">
+              {bets.map((bet, i) => {
+                const allMatchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+                const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
+                const reintegroMatches = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
+                const claveMatches = game.type === 'gordo' && bet.stars?.[0] != null && result?.stars?.includes(bet.stars[0]);
+                const perRow = NUMBERS_PER_ROW[game.type] ?? 6;
+                const rows = bet.numbers.length > perRow
+                  ? chunkArray(bet.numbers, perRow)
+                  : [bet.numbers];
+                return (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <div key={i} className="rounded-2xl border border-slate-100 bg-white px-4 py-2 shadow-sm">
+                    <div className="flex flex-col gap-1">
+                      {rows.map((rowNums, rowIdx) => {
+                        const isLast = rowIdx === rows.length - 1;
+                        const rowMatchedNums = allMatchedNums.filter(n => rowNums.includes(n));
+                        return (
+                          <div key={rowIdx} className="flex items-center gap-2">
+                            <BallSelection
+                              numbers={rowNums}
+                              stars={isLast && game.type !== 'gordo' ? bet.stars : undefined}
+                              matchedNumbers={rowMatchedNums}
+                              matchedStars={isLast && game.type !== 'gordo' ? matchedStars : []}
+                              type={game.type}
+                              large
+                            />
+                            {isLast && game.type === 'gordo' && bet.stars?.[0] != null && (
+                              <span className={cn(
+                                'ml-auto text-[13px] font-black',
+                                claveMatches ? 'text-emerald-600' : 'text-amber-600'
+                              )}>
+                                Clave: {bet.stars[0]}
+                              </span>
+                            )}
+                            {isLast && game.type !== 'gordo' && bet.reintegro != null && (
+                              <span className={cn(
+                                'ml-auto shrink-0 rounded-lg px-2 py-1 text-[13px] font-black',
+                                reintegroMatches ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
+                              )}>
+                                R:{bet.reintegro}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
+        ) : (
+          <div className="flex items-center gap-2 rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3">
+            <Clock className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+            <span className="text-[10px] font-semibold text-slate-400">Desarrollo de columnas no disponible</span>
+          </div>
+        )}
       </div>
 
       {/* Prize — shown ONCE at bottom */}
@@ -964,6 +1195,11 @@ function SemanalDetail({
   game: (typeof LOTTERY_GAMES)[number];
 }) {
   const bets = getBets(ticket);
+  const betsCount = getBetsCount(ticket);
+  const hasDevelopment = bets.length > 0;
+  // Same transversal rule as SingleDrawDetail/BoletoGroupsView — section 3/7.
+  const isMultiple = isMultipleSelection(ticket, ticket.gameType);
+  const showOriginalSelection = isExpandedSelection(ticket, ticket.gameType);
   const totalPrize = ticket.prize ?? 0;
   const boletosSize = BOLETO_SIZE[ticket.gameType];
   const millonBoletos = ticket.metadata?.millonBoletos ?? [];
@@ -1048,10 +1284,26 @@ function SemanalDetail({
                   </>
                 )}
 
+                {showOriginalSelection && (
+                  <div className="mb-3">
+                    <p className="mb-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+                      Selección original · {ticket.numbers.length} números
+                    </p>
+                    <div className="rounded-xl border border-slate-100 bg-white px-3 py-2">
+                      <SelectionRows numbers={ticket.numbers} stars={ticket.stars} gameType={game.type} />
+                    </div>
+                  </div>
+                )}
+
                 <p className="text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
-                  Mi apuesta ({bets.length})
+                  {isMultiple ? getDevelopmentLabel(betsCount) : `Mi apuesta (${bets.length})`}
                 </p>
-                {boletosSize ? (
+                {!hasDevelopment ? (
+                  <div className="flex items-center gap-2 rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2.5">
+                    <Clock className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+                    <span className="text-[10px] font-semibold text-slate-400">Desarrollo de columnas no disponible</span>
+                  </div>
+                ) : boletosSize && isMultiple ? (
                   <BoletosGrid
                     bets={bets}
                     boletosSize={boletosSize}
@@ -1060,6 +1312,8 @@ function SemanalDetail({
                     millonBoletos={millonBoletos}
                     jokerBoletos={jokerBoletos}
                   />
+                ) : isMultiple ? (
+                  <DevelopmentColumnsGrid bets={bets} result={result} gameType={game.type} />
                 ) : (
                   bets.map((bet, betIdx) => {
                     const allMatchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];

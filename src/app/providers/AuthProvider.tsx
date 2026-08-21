@@ -144,17 +144,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateProfile = async (updates: Partial<UserProfile>) => {
+  const updateProfile = async (updates: Partial<UserProfile>, options?: { silent?: boolean }) => {
+    const silent = options?.silent ?? false;
     if (isDemo) {
       setProfile(prev => prev ? { ...prev, ...updates } : null);
-      toast.success('Perfil actualizado en demo 🎯');
+      if (!silent) toast.success('Perfil actualizado en demo 🎯');
       return;
     }
     if (user) {
       try {
         const userDocRef = doc(db, 'users', user.uid);
         await setDoc(userDocRef, updates, { merge: true });
-        toast.success('Perfil actualizado');
+        if (!silent) toast.success('Perfil actualizado');
       } catch (err) {
         console.error('Error updating profile:', err);
         toast.error('Error al actualizar el perfil');

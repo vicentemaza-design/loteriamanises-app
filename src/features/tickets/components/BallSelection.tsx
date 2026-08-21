@@ -24,7 +24,7 @@ export function BallSelection({
   const isGordo  = type === 'gordo';
   const isDream  = type === 'eurodreams';
   const ballSize  = large ? 'h-9 w-9' : medium ? 'h-8 w-8' : compact ? 'h-[22px] w-[22px]' : 'h-7 w-7';
-  const ballText  = large ? 'text-[13px] font-black' : medium ? 'text-[12px] font-bold' : compact ? 'text-[9px] font-bold' : 'text-[11px] font-bold';
+  const ballText  = large ? 'text-[13px] font-black' : medium ? 'text-[12px] font-bold' : compact ? 'text-[10px] font-extrabold' : 'text-[11px] font-bold';
   const gap       = large ? 'gap-2' : medium ? 'gap-1.5' : compact ? 'gap-1' : 'gap-1.5';
 
   return (

@@ -47,6 +47,12 @@ import type {
   VerifyEmailInput,
   VerifyEmailResult,
 } from '../../contracts/auth.contracts';
+import type {
+  RequestProfileChangeVerificationInput,
+  RequestProfileChangeVerificationResult,
+  ConfirmProfileChangeVerificationInput,
+  ConfirmProfileChangeVerificationResult,
+} from '../../contracts/profile.contracts';
 import { apiDelete, apiGet, apiPatch, apiPost } from './http.client';
 
 /**
@@ -104,6 +110,18 @@ export class HttpAdapter implements IApiProvider {
     // purpose — token stays opaque, must be forwarded as-is once implemented.
     verifyEmail: async (_input: VerifyEmailInput): Promise<VerifyEmailResult> => {
       throw new Error('HttpAdapter: auth.verifyEmail — pending BE endpoint definition');
+    },
+  };
+
+  // ── Profile change verification ─────────────────────────────────────────
+  // TODO(BE): endpoint paths/shapes not yet defined — see
+  // docs/be-handoff/profile-change-verification.md. No URL invented on purpose.
+  profile = {
+    requestProfileChangeVerification: async (_input: RequestProfileChangeVerificationInput): Promise<RequestProfileChangeVerificationResult> => {
+      throw new Error('HttpAdapter: profile.requestProfileChangeVerification — pending BE endpoint definition');
+    },
+    confirmProfileChangeVerification: async (_input: ConfirmProfileChangeVerificationInput): Promise<ConfirmProfileChangeVerificationResult> => {
+      throw new Error('HttpAdapter: profile.confirmProfileChangeVerification — pending BE endpoint definition');
     },
   };
 
