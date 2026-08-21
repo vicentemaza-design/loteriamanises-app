@@ -6,6 +6,7 @@ import { formatCurrency } from '@/shared/lib/utils';
 import { usePlaySession } from '../hooks/usePlaySession';
 import { usePlaySessionConfirm } from '../hooks/usePlaySessionConfirm';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useSecurityGate } from '@/features/profile/hooks/useSecurityGate';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { serializeSelection } from '../lib/session.utils';
@@ -216,6 +217,7 @@ export function GamesCartPanel() {
   const { gameDrafts, reviewTarget, removeDrafts, status, errorMessage, closeReview } = usePlaySession();
   const { confirm, isSubmitting } = usePlaySessionConfirm({ draftFilter: 'games' });
   const { profile } = useAuth();
+  const { requireReauth, gateModal } = useSecurityGate();
 
   const [showInsufficientBalance, setShowInsufficientBalance] = useState(false);
   const [inlineStep, setInlineStep] = useState<'warning' | 'recharge'>('warning');
@@ -246,7 +248,7 @@ export function GamesCartPanel() {
     setShowInsufficientBalance(false);
   };
 
-  const handlePagar = () => {
+  const handlePagar = async () => {
     if (isOverBalance) {
       const shortfall = total - effectiveBalance;
       setInlineAmt(INLINE_AMOUNTS.find(a => a >= shortfall) ?? 20);
@@ -256,6 +258,12 @@ export function GamesCartPanel() {
       setShowInsufficientBalance(true);
       return;
     }
+    // Local PIN gate only when the user opted in (Perfil → Seguridad →
+    // "Al comprar boletos") — never a substitute for BE authorization of
+    // the purchase itself, which submitPlaySession still performs exactly
+    // as before. See docs/be-handoff/security-reauthentication.md.
+    const reauthed = await requireReauth('purchase');
+    if (!reauthed) return;
     setJustRecharged(false);
     confirm();
   };
@@ -507,6 +515,7 @@ export function GamesCartPanel() {
           </>
         )}
       </AnimatePresence>
+      {gateModal}
     </div>
   );
 }

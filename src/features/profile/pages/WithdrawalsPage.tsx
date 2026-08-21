@@ -11,6 +11,7 @@ import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInterac
 import { useBankAccounts } from '../hooks/useBankAccounts';
 import { useVerifyBankAccountOwnership } from '../hooks/useVerifyBankAccountOwnership';
 import { useCreateWithdrawal } from '../hooks/useCreateWithdrawal';
+import { useSecurityGate } from '../hooks/useSecurityGate';
 import { BankAccountCard } from '../components/BankAccountCard';
 import { AddBankAccountForm } from '../components/AddBankAccountForm';
 import { BankAccountVerificationPanel } from '../components/BankAccountVerificationPanel';
@@ -33,6 +34,7 @@ export function WithdrawalsPage() {
   const { accounts, addAccount, updateAccountLocally } = useBankAccounts();
   const verification = useVerifyBankAccountOwnership();
   const withdrawalRequest = useCreateWithdrawal();
+  const { requireReauth, gateModal } = useSecurityGate();
 
   // Determinar paso inicial según completitud de datos de dirección
   const [step, setStep] = useState<Step>(() => {
@@ -202,6 +204,12 @@ export function WithdrawalsPage() {
 
   const confirm = async () => {
     if (!account) return;
+    // Local PIN gate only when the user opted in (Perfil → Seguridad →
+    // "Al retirar saldo") — never a substitute for BE authorization of the
+    // withdrawal itself, which withdrawalRequest.submit still performs
+    // exactly as before. See docs/be-handoff/security-reauthentication.md.
+    const reauthed = await requireReauth('withdrawal');
+    if (!reauthed) return;
     setStep(3);
     await withdrawalRequest.submit({ bankAccountId: account.id, amount: parsedAmount });
   };
@@ -535,6 +543,7 @@ export function WithdrawalsPage() {
           )}
         </AnimatePresence>
       </div>
+      {gateModal}
     </div>
   );
 }

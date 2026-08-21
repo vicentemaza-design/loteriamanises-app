@@ -7,13 +7,14 @@ import { AppLock } from '@/app/components/AppLock';
 import { PlaySessionProvider } from '@/features/session/context/PlaySessionProvider';
 import { GamesCartPanel } from '@/features/session/components/GamesCartPanel';
 import { LotteryCartPanel } from '@/features/session/components/LotteryCartPanel';
+import { getSecurityPreferences, isReauthRequiredForLaunch } from '@/features/profile/lib/security';
 
 const HIDE_BOTTOM_NAV_PATTERNS = ['/play/'];
 
 export function PrivateLayout() {
   const location = useLocation();
   const [isLocked, setIsLocked] = React.useState(() => {
-    return localStorage.getItem('app_lock_enabled') === 'true';
+    return isReauthRequiredForLaunch(getSecurityPreferences());
   });
 
   const hideNav = HIDE_BOTTOM_NAV_PATTERNS.some(p =>

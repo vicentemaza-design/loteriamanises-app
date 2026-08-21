@@ -10,6 +10,7 @@ import { formatCurrency } from '@/shared/lib/utils';
 import { toast } from 'sonner';
 import { RedsysGateway } from './RedsysGateway';
 import { AddCardFlow } from './AddCardFlow';
+import { useSecurityGate } from '@/features/profile/hooks/useSecurityGate';
 
 interface TopUpModalProps {
   isOpen: boolean;
@@ -67,6 +68,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
   const [showRedsys, setShowRedsys] = useState(false);
   const [showTokenizeRedsys, setShowTokenizeRedsys] = useState(false);
   const [showAddCardFlow, setShowAddCardFlow] = useState(false);
+  const { requireReauth, gateModal } = useSecurityGate();
 
   const primaryCard = savedCards[0] ?? null;
   const hasSavedCard = primaryCard !== null;
@@ -93,6 +95,12 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
   }, [isOpen]);
 
   const handlePay = async () => {
+    // Local PIN gate only when the user opted in (Perfil → Seguridad →
+    // "Al cargar saldo") — never a substitute for BE authorization of the
+    // recharge itself, which onSuccess()/Redsys still perform exactly as
+    // before. See docs/be-handoff/security-reauthentication.md.
+    const reauthed = await requireReauth('topUp');
+    if (!reauthed) return;
     if (isTransfer) {
       toast.success('Datos copiados. El saldo se actualizará en hasta 72 h hábiles.');
       return;
@@ -167,6 +175,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
   const btnBg = 'bg-manises-blue hover:bg-[#083d7d]';
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <>
@@ -442,6 +451,8 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
         </>
       )}
     </AnimatePresence>
+    {gateModal}
+    </>
   );
 }
 

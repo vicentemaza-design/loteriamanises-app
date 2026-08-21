@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@/shared/ui/Button';
 import {
@@ -16,7 +15,6 @@ import {
   Bank,
   Building,
   Lock,
-  LockSlash,
   Repeat,
   InfoCircle,
   Trophy,
@@ -26,7 +24,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useSubscriptions } from '@/features/profile/hooks/useSubscriptions';
 import { useGameSubscriptions } from '@/features/profile/hooks/useGameSubscriptions';
 import { formatCurrency } from '@/shared/lib/utils';
-import { toast } from 'sonner';
+import { getSecurityPreferences } from '@/features/profile/lib/security';
 import visaLogo from '@/assets/games/visa.svg';
 import mastercardLogo from '@/assets/games/mastercard.svg';
 import maestroLogo from '@/assets/games/maestro.svg';
@@ -58,21 +56,7 @@ export function ProfilePage() {
   const { pendingCount } = useSubscriptions();
   const { activeCount } = useGameSubscriptions();
   const navigate = useNavigate();
-  const [isLockEnabled, setIsLockEnabled] = useState(() => {
-    return localStorage.getItem('app_lock_enabled') === 'true';
-  });
-
-  const toggleLock = () => {
-    const newVal = !isLockEnabled;
-    setIsLockEnabled(newVal);
-    localStorage.setItem('app_lock_enabled', String(newVal));
-    
-    if (newVal) {
-      toast.success('Protección por PIN activada (PIN: 1234)');
-    } else {
-      toast.info('Protección por PIN desactivada');
-    }
-  };
+  const isSecurityEnabled = getSecurityPreferences().securityEnabled;
 
   const MENU_SECTIONS = [
     {
@@ -98,18 +82,16 @@ export function ProfilePage() {
       title: 'Seguridad y Privacidad',
       items: [
         {
-          icon: isLockEnabled ? Lock : LockSlash,
-          label: 'Bloqueo por PIN',
+          icon: Lock,
+          label: 'Seguridad',
           detail: () => (
-            <div className={`w-10 h-5 rounded-full transition-colors relative ${isLockEnabled ? 'bg-manises-blue' : 'bg-gray-200'}`}>
-              <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${isLockEnabled ? 'left-6' : 'left-1'}`} />
-            </div>
+            <span className={`text-[10px] font-black uppercase ${isSecurityEnabled ? 'text-emerald-500' : 'text-slate-400'}`}>
+              {isSecurityEnabled ? 'Activada' : 'Configurar'}
+            </span>
           ),
-          color: isLockEnabled ? 'text-purple-600' : 'text-gray-400',
-          bg: isLockEnabled ? 'bg-purple-50' : 'bg-gray-50',
-          onClick: toggleLock,
-          ariaRole: 'switch' as const,
-          isChecked: isLockEnabled,
+          color: 'text-purple-600',
+          bg: 'bg-purple-50',
+          onClick: () => navigate('/profile/security'),
         },
         { icon: User,        label: 'Verificación de identidad', detail: () => <span className="text-[10px] font-black text-amber-500 uppercase">Pendiente</span>, color: 'text-amber-600', bg: 'bg-amber-50', onClick: () => navigate('/profile/kyc') },
         {

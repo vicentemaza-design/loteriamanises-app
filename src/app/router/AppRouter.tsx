@@ -40,6 +40,7 @@ import { ResponsibleGamingPage } from '@/features/profile/pages/ResponsibleGamin
 import { ResponsibleGamingResourcePage } from '@/features/profile/pages/ResponsibleGamingResourcePage';
 import { CompaniesPage } from '@/features/profile/pages/CompaniesPage';
 import { BiometricsPage } from '@/features/profile/pages/BiometricsPage';
+import { SecurityPage } from '@/features/profile/pages/SecurityPage';
 import { AboutUsPage } from '@/features/profile/pages/AboutUsPage';
 import { PrizeTaxPage } from '@/features/profile/pages/PrizeTaxPage';
 import { TechnicalMatrixPage } from '@/features/admin/pages/TechnicalMatrixPage';
@@ -106,6 +107,7 @@ export function AppRouter() {
           <Route path="/profile/gaming-control/:sectionId" element={<ResponsibleGamingResourcePage />} />
           <Route path="/profile/companies" element={<CompaniesPage />} />
           <Route path="/profile/biometrics" element={<BiometricsPage />} />
+          <Route path="/profile/security" element={<SecurityPage />} />
           <Route path="/profile/about" element={<AboutUsPage />} />
           <Route path="/profile/delivered-prizes" element={<DeliveredPrizesPage />} />
           <Route path="/profile/settings" element={<SettingsPage />} />

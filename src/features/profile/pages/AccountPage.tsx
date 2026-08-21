@@ -7,6 +7,7 @@ import { PremiumSectionCard } from '../components/PremiumSectionCard';
 import { ProfileChangeVerificationModal } from '../components/ProfileChangeVerificationModal';
 import { Button } from '@/shared/ui/Button';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useSecurityGate } from '@/features/profile/hooks/useSecurityGate';
 
 function AccountField({
   label,
@@ -57,6 +58,7 @@ export function AccountPage() {
     country: 'España',
   });
   const [isVerificationOpen, setIsVerificationOpen] = useState(false);
+  const { requireReauth, gateModal } = useSecurityGate();
 
   const emailsMatch = !formData.newEmail || formData.newEmail === formData.confirmEmail;
 
@@ -64,11 +66,21 @@ export function AccountPage() {
     setFormData((current) => ({ ...current, [key]: value }));
   };
 
-  const handleSave = () => {
+  /**
+   * Order is deliberate: local PIN reauth first (requireReauth('profile') —
+   * always required, independent of any toggle, see
+   * features/profile/lib/security.ts), THEN the existing email-OTP modal.
+   * The PIN only proves "this is the device owner" locally; it never
+   * replaces the OTP's real BE-validated confirmation of the actual change
+   * — see docs/be-handoff/security-reauthentication.md.
+   */
+  const handleSave = async () => {
     if (!emailsMatch) {
       toast.error('El nuevo email y su confirmación deben coincidir.');
       return;
     }
+    const reauthed = await requireReauth('profile');
+    if (!reauthed) return;
     // NO se persiste nada todavía — solo se abre el modal de confirmación.
     // Los cambios de formData solo se aplican en handleChangesConfirmed(),
     // una vez validado el código de 6 dígitos.
@@ -185,6 +197,8 @@ export function AccountPage() {
           </div>
         </PremiumSectionCard>
       </div>
+
+      {gateModal}
 
       <ProfileChangeVerificationModal
         isOpen={isVerificationOpen}

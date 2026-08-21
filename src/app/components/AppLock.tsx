@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Shield, Delete, Fingerprint } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { cn } from '@/shared/lib/utils';
+import { verifyPin } from '@/features/profile/lib/security';
 import loteriaManisesLogo from '@/assets/games/logo-01-blue.svg';
 
 interface AppLockProps {
@@ -17,24 +18,30 @@ interface AppLockProps {
 export function AppLock({ onUnlock }: AppLockProps) {
   const [pin, setPin] = React.useState<string>('');
   const [error, setError] = React.useState(false);
-  
-  // En este MVP el PIN es '1234' por defecto o el guardado en localStorage
-  const storedPin = localStorage.getItem('app_pin') || '1234';
+  const [isChecking, setIsChecking] = React.useState(false);
 
   const handleKeyPress = (num: string) => {
-    if (pin.length < 4) {
-      const newPin = pin + num;
-      setPin(newPin);
-      setError(false);
-      
-      if (newPin.length === 4) {
-        if (newPin === storedPin) {
+    if (isChecking || pin.length >= 4) return;
+    const newPin = pin + num;
+    setPin(newPin);
+    setError(false);
+
+    if (newPin.length === 4) {
+      setIsChecking(true);
+      // verifyPin() compares a hash, never the plain digits, and fails
+      // closed in production (no universal default PIN) — see
+      // features/profile/lib/security.ts. A demo/QA-only `1234` is accepted
+      // there ONLY while no custom PIN has been created; once one exists
+      // (via SecurityPage), only that PIN works, in demo or production.
+      verifyPin(newPin).then((ok) => {
+        setIsChecking(false);
+        if (ok) {
           setTimeout(onUnlock, 150);
         } else {
           setError(true);
           setTimeout(() => setPin(''), 500);
         }
-      }
+      });
     }
   };
 
@@ -89,8 +96,20 @@ export function AppLock({ onUnlock }: AppLockProps) {
             {num}
           </button>
         ))}
-        {/* Biométrico Mock */}
-        <button className="w-16 h-16 rounded-full flex items-center justify-center text-manises-blue/30 active:scale-90 transition-all">
+        {/*
+          Future integration point: unlocking this screen via a Passkey/
+          WebAuthn platform authenticator (Face ID, Touch ID, device PIN…)
+          instead of the numeric PIN — see docs/be-handoff/passkeys-webauthn.md.
+          FUTURE / NOT IMPLEMENTED: no navigator.credentials call exists yet,
+          so this stays visually present but inert (disabled, no onClick)
+          rather than pretending to do something.
+        */}
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          className="w-16 h-16 rounded-full flex items-center justify-center text-manises-blue/20 cursor-not-allowed"
+        >
           <Fingerprint className="w-7 h-7" />
         </button>
         <button

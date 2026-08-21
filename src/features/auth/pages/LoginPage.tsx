@@ -7,6 +7,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useLogin } from '@/features/auth/hooks/useLogin';
 import { useNavigate } from 'react-router-dom';
 import { AuthScreenShell } from '@/features/auth/components/AuthScreenShell';
+import { RUNTIME_CONFIG } from '@/config/runtime';
 
 // SVG inline de Google — sin dependencia externa
 function GoogleIcon() {
@@ -219,17 +220,26 @@ export function LoginPage() {
             </p>
           </motion.div>
 
-          {/* DEMO MODE — acceso rápido sin Firebase */}
-          <div className="mt-4 border border-white/8 rounded-xl overflow-hidden">
-            <button
-              type="button"
-              onClick={signInDemo}
-              className="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors text-xs font-semibold"
-            >
-              <Flask className="w-4 h-4 text-white/30" />
-              <span>Entrar en modo demo <span className="text-white/25">(sin cuenta)</span></span>
-            </button>
-          </div>
+          {/* DEMO MODE — acceso rápido sin Firebase. Solo visible cuando
+              VITE_ENABLE_DEMO_ACCESS=true está configurado explícitamente
+              (Vercel demo/QA) — ausente o en producción este bloque no se
+              renderiza en absoluto, no solo se oculta. Deliberadamente NO
+              usa apiProvider === 'mock': ese flag por defecto cae a 'mock'
+              cuando VITE_API_PROVIDER no está definido (para no romper el
+              dato-adapter de desarrollo local), lo cual expondría este
+              acceso demo en cualquier build sin configurar. */}
+          {RUNTIME_CONFIG.demoEnabled && (
+            <div className="mt-4 border border-white/8 rounded-xl overflow-hidden">
+              <button
+                type="button"
+                onClick={signInDemo}
+                className="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors text-xs font-semibold"
+              >
+                <Flask className="w-4 h-4 text-white/30" />
+                <span>Entrar en modo demo <span className="text-white/25">(sin cuenta)</span></span>
+              </button>
+            </div>
+          )}
         </motion.div>
 
         {/* Trust badges */}

@@ -7,6 +7,7 @@ import { formatCurrency } from '@/shared/lib/utils';
 import { usePlaySession } from '../hooks/usePlaySession';
 import { usePlaySessionConfirm } from '../hooks/usePlaySessionConfirm';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useSecurityGate } from '@/features/profile/hooks/useSecurityGate';
 import type { PlayDraft } from '../types/session.types';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
 import { ShippingAddressModal, type ShippingAddress } from './lottery/ShippingAddressModal';
@@ -302,6 +303,7 @@ export function LotteryCartPanel() {
   const { lotteryDrafts, reviewTarget, closeReview, removeDraft, updateDraft, status, errorMessage } = usePlaySession();
   const { confirm, isSubmitting } = usePlaySessionConfirm({ draftFilter: 'lottery' });
   const { profile } = useAuth();
+  const { requireReauth, gateModal } = useSecurityGate();
   const [deliveryMode, setDeliveryMode] = useState<'custodia' | 'mensajeria'>('custodia');
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(null);
   const [showShipping, setShowShipping] = useState(false);
@@ -353,7 +355,7 @@ export function LotteryCartPanel() {
     setShowInsufficientBalance(false);
   };
 
-  const handleComprar = () => {
+  const handleComprar = async () => {
     if (isOverBalance) {
       const shortfall = total - effectiveBalance;
       setInlineAmt(INLINE_AMOUNTS.find(a => a >= shortfall) ?? 20);
@@ -363,6 +365,11 @@ export function LotteryCartPanel() {
       setShowInsufficientBalance(true);
       return;
     }
+    // Local PIN gate only when the user opted in (Perfil → Seguridad →
+    // "Al comprar boletos") — never a substitute for BE authorization; see
+    // docs/be-handoff/security-reauthentication.md.
+    const reauthed = await requireReauth('purchase');
+    if (!reauthed) return;
     setJustRecharged(false);
     confirm();
   };
@@ -696,6 +703,7 @@ export function LotteryCartPanel() {
 
       <ShippingAddressModal isOpen={showShipping} onClose={() => setShowShipping(false)} onSave={setShippingAddress} savedAddress={shippingAddress} />
       <AddSorteoModal isOpen={showAddSorteo} onClose={() => setShowAddSorteo(false)} deliveryMode={deliveryMode} />
+      {gateModal}
     </>
   );
 }
