@@ -192,7 +192,10 @@ export function RegisterPage() {
     }
     setIsGoogleLoading(true);
     try {
-      await signInWithGoogle();
+      const success = await signInWithGoogle();
+      if (success) {
+        navigate('/home', { replace: true });
+      }
     } finally {
       setIsGoogleLoading(false);
     }

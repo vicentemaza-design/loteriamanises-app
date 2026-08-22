@@ -17,11 +17,14 @@ export function resolveRedirectSignIn() {
   return getRedirectResult(auth);
 }
 
-export async function signInWithGoogleProvider() {
+export type GoogleSignInOutcome = 'success' | 'cancelled' | 'redirecting';
+
+export async function signInWithGoogleProvider(): Promise<GoogleSignInOutcome> {
   const provider = new GoogleAuthProvider();
 
   try {
     await signInWithPopup(auth, provider);
+    return 'success';
   } catch (error) {
     const errorCode = getFirebaseAuthCode(error);
 
@@ -29,7 +32,7 @@ export async function signInWithGoogleProvider() {
     // only case where falling back to a full-page redirect makes sense.
     if (errorCode === 'auth/popup-blocked') {
       await signInWithRedirect(auth, provider);
-      return;
+      return 'redirecting';
     }
 
     // The user closed the popup, or a second attempt cancelled the first
@@ -40,7 +43,7 @@ export async function signInWithGoogleProvider() {
       errorCode === 'auth/popup-closed-by-user' ||
       errorCode === 'auth/cancelled-popup-request'
     ) {
-      return;
+      return 'cancelled';
     }
 
     throw error;

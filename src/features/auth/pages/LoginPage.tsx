@@ -68,10 +68,20 @@ export function LoginPage() {
     if (loginStatus === 'error') resetLogin();
   };
 
+  // In a demo-enabled deployment, PublicLayout no longer auto-redirects a
+  // merely-restored session to /home (see PublicLayout.tsx) — so a
+  // successful popup sign-in must navigate explicitly, same as the demo
+  // entry points below. The popup-blocked fallback (full-page redirect to
+  // Google and back) is handled separately by PublicLayout's
+  // `redirectSignInJustCompleted` exception; there is no click left to
+  // navigate from once that flow returns.
   const handleGoogle = async () => {
     setIsGoogleLoading(true);
     try {
-      await signInWithGoogle();
+      const success = await signInWithGoogle();
+      if (success) {
+        navigate('/home', { replace: true });
+      }
     } finally {
       setIsGoogleLoading(false);
     }

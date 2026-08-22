@@ -33,6 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDemo, setIsDemo]   = useState(false);
+  const [redirectSignInJustCompleted, setRedirectSignInJustCompleted] = useState(false);
   const profileUnsubRef       = useRef<null | (() => void)>(null);
 
   // Detectar modo demo al inicio (persistido en sessionStorage)
@@ -48,10 +49,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isDemo) return; // No escuchar Firebase si estamos en demo
 
     enableAuthPersistence().catch(console.error);
-    resolveRedirectSignIn().catch((error) => {
-      console.error('Redirect sign-in error:', error);
-      toast.error(getFirebaseAuthMessage(error));
-    });
+    resolveRedirectSignIn()
+      .then((result) => {
+        // Non-null ONLY when a pending redirect sign-in (the popup-blocked
+        // fallback) just resolved on this exact page load — never for a
+        // plain persisted-session restore. See auth.types.ts for why this
+        // distinction matters in a demo-enabled deployment.
+        if (result) setRedirectSignInJustCompleted(true);
+      })
+      .catch((error) => {
+        console.error('Redirect sign-in error:', error);
+        toast.error(getFirebaseAuthMessage(error));
+      });
 
     const timeoutId = setTimeout(() => setLoading(false), 10000);
 
@@ -130,12 +139,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [isDemo]);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (): Promise<boolean> => {
     try {
-      await signInWithGoogleProvider();
+      const outcome = await signInWithGoogleProvider();
+      return outcome === 'success';
     } catch (error) {
       console.error('Error signing in with Google', error);
       toast.error(getFirebaseAuthMessage(error));
+      return false;
     }
   };
 
@@ -202,7 +213,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isDemo, user]);
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isDemo, signInWithGoogle, signInDemo, logout, updateProfile, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, isDemo, redirectSignInJustCompleted, signInWithGoogle, signInDemo, logout, updateProfile, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

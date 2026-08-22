@@ -6,7 +6,16 @@ export interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   isDemo: boolean;
-  signInWithGoogle: () => Promise<void>;
+  /**
+   * True for exactly one render window right after `getRedirectResult`
+   * resolves a real, just-completed Google redirect sign-in (the
+   * popup-blocked fallback) — as opposed to `user` merely being restored
+   * from a persisted session on a cold load. PublicLayout uses this as the
+   * one legitimate exception to let a demo-environment visit bypass the
+   * "Login must stay visible" rule: see PublicLayout.tsx.
+   */
+  redirectSignInJustCompleted: boolean;
+  signInWithGoogle: () => Promise<boolean>;
   signInDemo: () => void;
   logout: () => Promise<void>;
   /**
