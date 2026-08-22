@@ -8,6 +8,7 @@ import { usePlaySessionSummary } from './usePlaySessionSummary';
 import { notifyPurchaseConfirmed } from '../lib/cart-toast';
 import type { GameType, SelaeGameCode } from '@/shared/types/domain';
 import type { PlayDraft } from '../types/session.types';
+import { getFunctionalUserId } from '@/shared/lib/getFunctionalUserId';
 
 const GAME_TYPE_TO_SELAE: Record<GameType, SelaeGameCode> = {
   'primitiva':       'PRIM',
@@ -131,7 +132,7 @@ export function usePlaySessionConfirm({ draftFilter }: UsePlaySessionConfirmOpti
       const client = await createApiClient();
       const response = await client.play.submitPlaySession({
         sessionId: session.id,
-        userId: user?.uid || 'demo-user',
+        userId: getFunctionalUserId(user),
         paymentMethod: 'wallet',
         totalAmount: summary.totalAmount,
         items: validDrafts.map(mapDraftToDto),

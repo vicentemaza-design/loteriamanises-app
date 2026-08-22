@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { createApiClient } from '@/services/api/factory/createApiClient';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
+import { getFunctionalUserId } from '@/shared/lib/getFunctionalUserId';
 
 /**
  * useWallet Hook
@@ -26,7 +27,7 @@ export function useWallet() {
 
     try {
       const client = await createApiClient();
-      const result = await client.wallet.topUp(user.uid, amount);
+      const result = await client.wallet.topUp(getFunctionalUserId(user), amount);
 
       if (result.success) {
         // Refresh the global auth profile to update balance across the app

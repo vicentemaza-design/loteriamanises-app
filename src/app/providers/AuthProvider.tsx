@@ -6,6 +6,7 @@ import { auth, db } from '@/shared/config/firebase';
 import type { UserProfile } from '@/shared/types/domain';
 import type { AuthContextType } from '@/features/auth/types/auth.types';
 import { createApiClient } from '@/services/api/factory/createApiClient';
+import { RUNTIME_CONFIG } from '@/config/runtime';
 import {
   enableAuthPersistence,
   getFirebaseAuthMessage,
@@ -64,6 +65,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!firebaseUser) {
           setProfile(null);
+          setLoading(false);
+          return;
+        }
+
+        // In a demo-enabled deployment, the FUNCTIONAL dataset (balance,
+        // tickets, movements...) always comes from the shared demo fixtures,
+        // regardless of which real identity (Google/email) signed in. Only
+        // the identity fields below reflect the real Firebase user; real
+        // Firestore is intentionally not read/written for this profile.
+        if (RUNTIME_CONFIG.demoEnabled) {
+          const client = await createApiClient();
+          const { balance } = await client.wallet.getBalance('demo-user');
+          setProfile({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            displayName: firebaseUser.displayName || 'Usuario',
+            balance,
+            photoURL: firebaseUser.photoURL || undefined,
+          });
           setLoading(false);
           return;
         }
@@ -164,7 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const refreshProfile = useCallback(async () => {
-    if (isDemo) {
+    if (isDemo || RUNTIME_CONFIG.demoEnabled) {
       const client = await createApiClient();
       const { balance } = await client.wallet.getBalance('demo-user');
       setProfile((prev: UserProfile | null) => prev ? { ...prev, balance } : null);

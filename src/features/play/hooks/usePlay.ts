@@ -4,6 +4,7 @@ import { playMapper, type BuildBetDtoInput } from '@/services/api/mappers/play.m
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
 import type { CreateBetRequestDto } from '@/services/api/contracts/play.contracts';
+import { getFunctionalUserId } from '@/shared/lib/getFunctionalUserId';
 
 /**
  * usePlay Hook
@@ -42,9 +43,9 @@ export function usePlay() {
       const client = await createApiClient();
       
       // 3. Place the bet (merging DTO with session data)
-      const result = await client.play.placeBet({ 
-        ...dto, 
-        userId: user?.uid || 'demo-user' 
+      const result = await client.play.placeBet({
+        ...dto,
+        userId: getFunctionalUserId(user)
       });
 
       if (result.success) {

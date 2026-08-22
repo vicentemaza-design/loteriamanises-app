@@ -90,6 +90,15 @@ export function LoginPage() {
     return () => window.removeEventListener('pageshow', handlePageShow);
   }, []);
 
+  // Explicit navigation on both demo entry points — PublicLayout no longer
+  // auto-redirects on isDemo alone (a restored/stale demo flag must never
+  // silently bypass Login, see PublicLayout.tsx), so entering demo now
+  // navigates directly instead of relying on that reactive check.
+  const handleDemoLogin = () => {
+    signInDemo();
+    navigate('/home', { replace: true });
+  };
+
   // DEMO-ONLY: the modal is purely a timed visual simulation (see
   // FaceIdDemoModal.tsx) — the actual "sign in" here is the exact same
   // signInDemo() the classic "Entrar en modo demo" button already calls.
@@ -97,6 +106,7 @@ export function LoginPage() {
   const handleFaceIdVerified = () => {
     setIsFaceIdDemoOpen(false);
     signInDemo();
+    navigate('/home', { replace: true });
   };
 
   return (
@@ -261,7 +271,7 @@ export function LoginPage() {
             <div className="mt-4 border border-white/8 rounded-xl overflow-hidden divide-y divide-white/8">
               <button
                 type="button"
-                onClick={signInDemo}
+                onClick={handleDemoLogin}
                 className="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors text-xs font-semibold"
               >
                 <Flask className="w-4 h-4 text-white/30" />

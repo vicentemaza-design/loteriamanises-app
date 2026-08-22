@@ -4,6 +4,7 @@ import { ticketsMapper } from '@/services/api/mappers/tickets.mapper';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { Ticket } from '@/shared/types/domain';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
+import { getFunctionalUserId } from '@/shared/lib/getFunctionalUserId';
 
 /**
  * useTickets Hook
@@ -32,7 +33,7 @@ export function useTickets() {
       }
 
       const client = await createApiClient();
-      const userId = user?.uid || 'demo-user';
+      const userId = getFunctionalUserId(user);
       const dtos = await client.tickets.getUserTickets(userId);
       
       // Transform DTOs to Domain Models
