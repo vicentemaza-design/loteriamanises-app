@@ -40,16 +40,39 @@ function AccountField({
   );
 }
 
+/**
+ * Persona ficticia del modo demo — mostrada ÚNICAMENTE cuando isDemo es
+ * true. UserProfile (shared/types/domain.ts) no modela name/surname/phone/
+ * nif/birthDate todavía (ver nota de alcance en handleChangesConfirmed),
+ * así que para una sesión Google real estos campos se derivan de
+ * profile.displayName o se muestran vacíos/"No disponible" — nunca se
+ * rellenan con la identidad de otra persona.
+ */
+const DEMO_ACCOUNT_DEFAULTS = {
+  name: 'Juan Carlos',
+  surname: 'Martínez',
+  phone: '600 123 456',
+  nif: '12345678Z',
+  birthDate: '14/05/1985',
+};
+
+function splitDisplayName(displayName?: string | null): { name: string; surname: string } {
+  const trimmed = (displayName ?? '').trim();
+  if (!trimmed) return { name: '', surname: '' };
+  const [first, ...rest] = trimmed.split(/\s+/);
+  return { name: first, surname: rest.join(' ') };
+}
+
 export function AccountPage() {
   const navigate = useNavigate();
-  const { profile, updateProfile } = useAuth();
+  const { profile, isDemo, updateProfile } = useAuth();
   const [formData, setFormData] = useState({
-    name: 'Juan Carlos',
-    surname: 'Martínez',
-    currentEmail: profile?.email ?? 'usuario@loteriamanises.com',
+    name: '',
+    surname: '',
+    currentEmail: profile?.email ?? '',
     newEmail: '',
     confirmEmail: '',
-    phone: '600 123 456',
+    phone: '',
     alternatePhone: '',
     address: profile?.address ?? '',
     postalCode: profile?.postalCode ?? '',
@@ -61,19 +84,40 @@ export function AccountPage() {
   const [isSaving, setIsSaving] = useState(false);
   const { requireReauth, gateModal } = useSecurityGate();
 
-  // Sincroniza dirección desde profile si llega de forma asíncrona (mismo
-  // patrón que WithdrawalsPage.tsx) — solo rellena campos que el usuario
-  // todavía no ha tocado, nunca sobrescribe una edición en curso.
+  // Rellena identidad/dirección desde la sesión real una vez disponible
+  // (mismo patrón que WithdrawalsPage.tsx) — solo campos que el usuario
+  // todavía no ha tocado, nunca sobrescribe una edición en curso. En demo
+  // usa la persona ficticia de siempre; en una sesión Google real deriva
+  // nombre/apellidos de profile.displayName y dirección de profile — nunca
+  // mezcla ambas identidades.
   useEffect(() => {
+    if (isDemo) {
+      setFormData((current) => ({
+        ...current,
+        name: current.name || DEMO_ACCOUNT_DEFAULTS.name,
+        surname: current.surname || DEMO_ACCOUNT_DEFAULTS.surname,
+        phone: current.phone || DEMO_ACCOUNT_DEFAULTS.phone,
+        currentEmail: current.currentEmail || profile?.email || 'usuario@loteriamanises.com',
+        address: !current.address && profile?.address ? profile.address : current.address,
+        postalCode: !current.postalCode && profile?.postalCode ? profile.postalCode : current.postalCode,
+        municipality: !current.municipality && profile?.municipality ? profile.municipality : current.municipality,
+        province: !current.province && profile?.province ? profile.province : current.province,
+      }));
+      return;
+    }
     if (!profile) return;
+    const { name, surname } = splitDisplayName(profile.displayName);
     setFormData((current) => ({
       ...current,
+      name: current.name || name,
+      surname: current.surname || surname,
+      currentEmail: current.currentEmail || profile.email || '',
       address: !current.address && profile.address ? profile.address : current.address,
       postalCode: !current.postalCode && profile.postalCode ? profile.postalCode : current.postalCode,
       municipality: !current.municipality && profile.municipality ? profile.municipality : current.municipality,
       province: !current.province && profile.province ? profile.province : current.province,
     }));
-  }, [profile]);
+  }, [profile, isDemo]);
 
   const emailsMatch = !formData.newEmail || formData.newEmail === formData.confirmEmail;
 
@@ -160,8 +204,8 @@ export function AccountPage() {
               <AccountField label="Apellidos" value={formData.surname} onChange={(value) => updateField('surname', value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <AccountField label="NIF / NIE" value="12345678Z" onChange={() => undefined} readOnly />
-              <AccountField label="Fecha de nacimiento" value="14/05/1985" onChange={() => undefined} readOnly />
+              <AccountField label="NIF / NIE" value={isDemo ? DEMO_ACCOUNT_DEFAULTS.nif : 'No disponible'} onChange={() => undefined} readOnly />
+              <AccountField label="Fecha de nacimiento" value={isDemo ? DEMO_ACCOUNT_DEFAULTS.birthDate : 'No disponible'} onChange={() => undefined} readOnly />
             </div>
           </div>
         </PremiumSectionCard>

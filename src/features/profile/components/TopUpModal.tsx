@@ -13,6 +13,7 @@ import { AddCardFlow } from './AddCardFlow';
 import { useSecurityGate } from '@/features/profile/hooks/useSecurityGate';
 import { getConnectivityErrorMessage } from '@/services/api/adapters/http/http.client';
 import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
+import { isDemoEnvironment } from '@/features/profile/lib/security';
 
 interface TopUpModalProps {
   isOpen: boolean;
@@ -22,7 +23,7 @@ interface TopUpModalProps {
 }
 
 const AMOUNTS = [5, 10, 20, 50, 100, 200];
-type PaymentMethod = 'card' | 'other-card' | 'apple' | 'google' | 'bizum' | 'transfer' | 'new-card';
+type PaymentMethod = 'none' | 'card' | 'apple' | 'google' | 'bizum' | 'transfer' | 'new-card';
 
 interface StoredCard { id: string; brand: string; last4: string; expires: string; isDefault: boolean; }
 
@@ -64,10 +65,9 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
   const [selectedAmount, setSelectedAmount] = useState<number>(10);
   const [isCustom, setIsCustom] = useState(false);
   const [customValue, setCustomValue] = useState('');
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('card');
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('none');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [showRedsys, setShowRedsys] = useState(false);
   const [showTokenizeRedsys, setShowTokenizeRedsys] = useState(false);
   const [showAddCardFlow, setShowAddCardFlow] = useState(false);
   const { requireReauth, gateModal } = useSecurityGate();
@@ -75,11 +75,12 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
 
   const primaryCard = savedCards[0] ?? null;
   const hasSavedCard = primaryCard !== null;
+  const isDemo = isDemoEnvironment();
 
   const effectiveAmount = isCustom ? (parseFloat(customValue) || 0) : selectedAmount;
   const isTransfer = selectedMethod === 'transfer';
   const isNewCard = selectedMethod === 'new-card';
-  const isRedsysCard = selectedMethod === 'other-card' || (!hasSavedCard && selectedMethod === 'card');
+  const canSubmit = effectiveAmount > 0 && effectiveAmount <= 500 && selectedMethod !== 'none';
 
   useEffect(() => {
     if (isOpen) {
@@ -88,10 +89,9 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       setSelectedAmount(10);
       setIsCustom(false);
       setCustomValue('');
-      setSelectedMethod('card');
+      setSelectedMethod(cards.length > 0 ? 'card' : 'none');
       setIsProcessing(false);
       setIsSuccess(false);
-      setShowRedsys(false);
       setShowTokenizeRedsys(false);
       setShowAddCardFlow(false);
     }
@@ -120,10 +120,6 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       setShowAddCardFlow(true);
       return;
     }
-    if (isRedsysCard) {
-      setShowRedsys(true);
-      return;
-    }
     setIsProcessing(true);
     await new Promise(resolve => setTimeout(resolve, 1500));
     try {
@@ -132,24 +128,6 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
     } catch (err) {
       toast.error(getConnectivityErrorMessage(err) ?? 'No se ha podido completar la simulación de recarga.');
-      setIsProcessing(false);
-    }
-  };
-
-  /**
-   * En producción: este handler se invoca desde la URL de retorno que el BE
-   * configura en Redsys (urlOK). El BE habrá procesado la notificación server-to-server
-   * y actualizado el saldo/tarjetas antes de redirigir aquí.
-   */
-  const handleRedsysAuthorize = async () => {
-    setShowRedsys(false);
-    setIsProcessing(true);
-    try {
-      await onSuccess(effectiveAmount);
-      setIsSuccess(true);
-      setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
-    } catch (err) {
-      toast.error(getConnectivityErrorMessage(err) ?? 'No se ha podido completar el pago.');
       setIsProcessing(false);
     }
   };
@@ -182,17 +160,6 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
     <AnimatePresence>
       {isOpen && (
         <>
-          <AnimatePresence>
-            {showRedsys && (
-              <RedsysGateway
-                mode="payment"
-                amount={effectiveAmount}
-                onAuthorize={handleRedsysAuthorize}
-                onCancel={() => setShowRedsys(false)}
-              />
-            )}
-          </AnimatePresence>
-
           <AnimatePresence>
             {showTokenizeRedsys && (
               <RedsysGateway
@@ -289,20 +256,20 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                           </button>
                         </PremiumTouchInteraction>
                       ))}
-                      <PremiumTouchInteraction scale={0.95} className="col-span-3">
-                        <button
-                          onClick={() => { setIsCustom(true); setCustomValue(''); }}
-                          disabled={isProcessing}
-                          className={`w-full h-11 rounded-xl border-2 font-bold text-xs transition-all ${
-                            isCustom
-                              ? 'border-manises-blue bg-manises-blue/5 text-manises-blue shadow-sm'
-                              : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'
-                          }`}
-                        >
-                          {isCustom ? 'Importe personalizado' : 'Otro importe'}
-                        </button>
-                      </PremiumTouchInteraction>
                     </div>
+                    <PremiumTouchInteraction scale={0.95} className="block mt-4">
+                      <button
+                        onClick={() => { setIsCustom(true); setCustomValue(''); }}
+                        disabled={isProcessing}
+                        className={`w-full h-11 rounded-xl border-2 font-bold text-xs transition-all ${
+                          isCustom
+                            ? 'border-manises-blue bg-manises-blue/5 text-manises-blue shadow-sm'
+                            : 'border-slate-100 bg-white text-slate-400 hover:border-slate-200'
+                        }`}
+                      >
+                        {isCustom ? 'Importe personalizado' : 'Introducir otro importe'}
+                      </button>
+                    </PremiumTouchInteraction>
                     {isCustom && (
                       <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-manises-blue font-black text-lg">€</span>
@@ -324,7 +291,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                   <div className="space-y-3">
                     <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest pl-1">Método de pago</p>
                     <div className="space-y-2">
-                      {/* Estado 2: tarjeta guardada como opción rápida */}
+                      {/* Tarjeta guardada — solo si existe realmente, nunca una tarjeta ficticia */}
                       {hasSavedCard && primaryCard && (
                         <MethodRow
                           id="card" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
@@ -334,37 +301,9 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                           selBg="bg-manises-blue" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
                         />
                       )}
-                      {/* Estado 2: pagar con otra tarjeta / Estado 1: pagar con tarjeta */}
-                      <MethodRow
-                        id={hasSavedCard ? 'other-card' : 'card'}
-                        selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
-                        iconEl={<CreditCard className="w-5 h-5" />}
-                        label={hasSavedCard ? 'Pagar con otra tarjeta' : 'Pagar con tarjeta'}
-                        sub="Pago seguro"
-                        selBg="bg-manises-blue" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
-                      />
-                      <MethodRow
-                        id="apple" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
-                        iconEl={<ApplePayIcon white={selectedMethod === 'apple'} />} label="Apple Pay" sub="Pago instantáneo"
-                        selBg="bg-black" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
-                      />
-                      <MethodRow
-                        id="google" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
-                        iconEl={<GooglePayIcon />} label="Google Pay" sub="Pago instantáneo"
-                        selBg="bg-white" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
-                      />
-                      <MethodRow
-                        id="bizum" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
-                        iconEl={<span className="font-black italic text-base">bz</span>} label="Bizum" sub="Recarga rápida"
-                        selBg="bg-[#00c4b3]" selBorder="border-[#00c4b3]" selCardBg="bg-[#00c4b3]/10"
-                        selLabel="text-[#00c4b3]" selDot="bg-[#00c4b3]"
-                      />
-                      <MethodRow
-                        id="transfer" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
-                        iconEl={<Landmark className="w-5 h-5" />} label="Transferencia bancaria" sub="Hasta 72 h hábiles"
-                        selBg="bg-emerald-600" selBorder="border-emerald-500" selCardBg="bg-emerald-50/60"
-                        selLabel="text-emerald-700" selDot="bg-emerald-600"
-                      />
+                      {/* Único punto de entrada para tarjeta: añadir (nueva) tarjeta vía el
+                          flujo existente preparado para Redsys/AddCardFlow. Sin tarjeta
+                          guardada, es la única forma de pagar con tarjeta. */}
                       <button
                         onClick={() => setSelectedMethod('new-card')}
                         disabled={isProcessing}
@@ -377,7 +316,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                         </div>
                         <div className="text-left flex-1">
                           <p className={`text-sm font-bold ${isNewCard ? 'text-manises-blue' : 'text-slate-500'}`}>
-                            Añadir tarjeta para próximas recargas
+                            {hasSavedCard ? '+ Añadir otra tarjeta' : '+ Añadir tarjeta'}
                           </p>
                           {isNewCard && (
                             <p className="text-[9px] text-manises-blue/60 font-medium flex items-center gap-1 mt-0.5">
@@ -387,6 +326,35 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                           )}
                         </div>
                       </button>
+                      {/* Apple Pay / Google Pay / Bizum: sin integración real todavía —
+                          simulados y marcados como demo en este entorno; fuera de demo se
+                          muestran deshabilitados con "Próximamente" en vez de fingir que
+                          ya están disponibles. */}
+                      <MethodRow
+                        id="apple" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing || !isDemo}
+                        iconEl={<ApplePayIcon white={selectedMethod === 'apple'} />} label="Apple Pay"
+                        sub={isDemo ? 'Pago instantáneo · demo' : 'Próximamente'}
+                        selBg="bg-black" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
+                      />
+                      <MethodRow
+                        id="google" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing || !isDemo}
+                        iconEl={<GooglePayIcon />} label="Google Pay"
+                        sub={isDemo ? 'Pago instantáneo · demo' : 'Próximamente'}
+                        selBg="bg-white" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
+                      />
+                      <MethodRow
+                        id="bizum" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing || !isDemo}
+                        iconEl={<span className="font-black italic text-base">bz</span>} label="Bizum"
+                        sub={isDemo ? 'Recarga rápida · demo' : 'Próximamente'}
+                        selBg="bg-[#00c4b3]" selBorder="border-[#00c4b3]" selCardBg="bg-[#00c4b3]/10"
+                        selLabel="text-[#00c4b3]" selDot="bg-[#00c4b3]"
+                      />
+                      <MethodRow
+                        id="transfer" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
+                        iconEl={<Landmark className="w-5 h-5" />} label="Transferencia bancaria" sub="Hasta 72 h hábiles"
+                        selBg="bg-emerald-600" selBorder="border-emerald-500" selCardBg="bg-emerald-50/60"
+                        selLabel="text-emerald-700" selDot="bg-emerald-600"
+                      />
                     </div>
                   </div>
 
@@ -434,7 +402,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                   <PremiumTouchInteraction scale={0.98} className="w-full">
                     <Button
                       onClick={handlePay}
-                      disabled={isProcessing}
+                      disabled={isProcessing || !canSubmit}
                       className={`w-full h-14 rounded-2xl text-white font-black text-lg transition-all shadow-md ${btnBg}`}
                     >
                       {isProcessing ? (
@@ -443,8 +411,8 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                         <>Ver datos de transferencia <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
                       ) : isNewCard ? (
                         <>Añadir tarjeta <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
-                      ) : isRedsysCard ? (
-                        <>Ir a Redsys <Lock className="w-5 h-5 ml-2 opacity-70" /></>
+                      ) : selectedMethod === 'none' ? (
+                        <>Selecciona un método de pago</>
                       ) : effectiveAmount > 0 ? (
                         <>Recargar {formatCurrency(effectiveAmount)} demo <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
                       ) : (
@@ -485,7 +453,7 @@ function MethodRow({ id, selected, onSelect, disabled, iconEl, label, sub, selBg
     <button
       onClick={() => onSelect(id)}
       disabled={disabled}
-      className={`w-full flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all ${
+      className={`w-full flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
         isSelected ? `${selBorder} ${selCardBg}` : 'border-slate-100 bg-white'
       }`}
     >
