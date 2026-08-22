@@ -7,13 +7,15 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { toast } from 'sonner';
 import { MOCK_NOTIFICATION_PREFS } from '../data/profile.mock';
+import { isDemoEnvironment } from '../lib/security';
 
-function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function ToggleSwitch({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
-    <PremiumTouchInteraction scale={0.9}>
+    <PremiumTouchInteraction scale={disabled ? 1 : 0.9}>
       <button
-        onClick={() => onChange(!checked)}
-        className={`w-11 h-6 rounded-full p-0.5 transition-all duration-200 flex items-center border-none outline-none cursor-pointer ${
+        onClick={() => !disabled && onChange(!checked)}
+        disabled={disabled}
+        className={`w-11 h-6 rounded-full p-0.5 transition-all duration-200 flex items-center border-none outline-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${
           checked ? 'bg-emerald-500 justify-end' : 'bg-slate-200 justify-start'
         }`}
       >
@@ -85,6 +87,7 @@ export function SettingsPage() {
   });
 
   const [openSection, setOpenSection] = useState<'push' | 'email' | 'games' | null>('push');
+  const demoModeActive = isDemoEnvironment();
 
   const savePrefs = (newPrefs: typeof prefs) => {
     setPrefs(newPrefs);
@@ -135,6 +138,15 @@ export function SettingsPage() {
 
       <div className="p-5 flex flex-col gap-4">
 
+        {!demoModeActive && (
+          <div className="settings-section flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5">
+            <ToggleLeft className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+            <p className="text-[11.5px] font-semibold leading-relaxed text-slate-500">
+              Las notificaciones todavía no están conectadas a un sistema real. Los interruptores están desactivados — próximamente.
+            </p>
+          </div>
+        )}
+
         {/* Acordeón 1: Push */}
         <div className="settings-section">
           <AccordionSection
@@ -149,7 +161,7 @@ export function SettingsPage() {
                 <p className="font-bold text-manises-blue text-sm">Actividad de cuenta</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Seguridad, accesos y estado de tus compras.</p>
               </div>
-              <ToggleSwitch checked={prefs.push.account} onChange={() => handlePushToggle('account')} />
+              <ToggleSwitch checked={prefs.push.account} onChange={() => handlePushToggle('account')} disabled={!demoModeActive} />
             </div>
             
             <div className="flex items-center justify-between pt-3 pb-3">
@@ -157,7 +169,7 @@ export function SettingsPage() {
                 <p className="font-bold text-manises-blue text-sm">Resultados y escrutinios</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Aviso al instante cuando se publiquen tus premios.</p>
               </div>
-              <ToggleSwitch checked={prefs.push.results} onChange={() => handlePushToggle('results')} />
+              <ToggleSwitch checked={prefs.push.results} onChange={() => handlePushToggle('results')} disabled={!demoModeActive} />
             </div>
 
             <div className="flex items-center justify-between pt-3">
@@ -165,7 +177,7 @@ export function SettingsPage() {
                 <p className="font-bold text-manises-blue text-sm">Alertas de grandes botes</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Te avisamos cuando un bote supere los 10M €.</p>
               </div>
-              <ToggleSwitch checked={prefs.push.jackpots} onChange={() => handlePushToggle('jackpots')} />
+              <ToggleSwitch checked={prefs.push.jackpots} onChange={() => handlePushToggle('jackpots')} disabled={!demoModeActive} />
             </div>
           </AccordionSection>
         </div>
@@ -184,7 +196,7 @@ export function SettingsPage() {
                 <p className="font-bold text-manises-blue text-sm">Resguardos digitales de compra</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Copia oficial en PDF de cada décimo o apuesta adquirida.</p>
               </div>
-              <ToggleSwitch checked={prefs.email.account} onChange={() => handleEmailToggle('account')} />
+              <ToggleSwitch checked={prefs.email.account} onChange={() => handleEmailToggle('account')} disabled={!demoModeActive} />
             </div>
 
             <div className="flex items-center justify-between pt-3">
@@ -192,7 +204,7 @@ export function SettingsPage() {
                 <p className="font-bold text-manises-blue text-sm">Novedades y peñas especiales</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Apertura de peñas de empresa, promociones y botes.</p>
               </div>
-              <ToggleSwitch checked={prefs.email.marketing} onChange={() => handleEmailToggle('marketing')} />
+              <ToggleSwitch checked={prefs.email.marketing} onChange={() => handleEmailToggle('marketing')} disabled={!demoModeActive} />
             </div>
           </AccordionSection>
         </div>
@@ -211,7 +223,7 @@ export function SettingsPage() {
                 <p className="font-bold text-manises-blue text-sm">Lotería Primitiva</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Aviso de sorteos de Jueves y Sábados.</p>
               </div>
-              <ToggleSwitch checked={prefs.games['primitiva']} onChange={() => handleGameToggle('primitiva')} />
+              <ToggleSwitch checked={prefs.games['primitiva']} onChange={() => handleGameToggle('primitiva')} disabled={!demoModeActive} />
             </div>
 
             <div className="flex items-center justify-between pt-3 pb-3">
@@ -219,7 +231,7 @@ export function SettingsPage() {
                 <p className="font-bold text-manises-blue text-sm">Bonoloto</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Aviso de escrutinios diarios de Bonoloto.</p>
               </div>
-              <ToggleSwitch checked={prefs.games['bonoloto']} onChange={() => handleGameToggle('bonoloto')} />
+              <ToggleSwitch checked={prefs.games['bonoloto']} onChange={() => handleGameToggle('bonoloto')} disabled={!demoModeActive} />
             </div>
 
             <div className="flex items-center justify-between pt-3 pb-3">
@@ -227,7 +239,7 @@ export function SettingsPage() {
                 <p className="font-bold text-manises-blue text-sm">Euromillones</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Aviso de sorteos europeos de Martes y Viernes.</p>
               </div>
-              <ToggleSwitch checked={prefs.games['euromillones']} onChange={() => handleGameToggle('euromillones')} />
+              <ToggleSwitch checked={prefs.games['euromillones']} onChange={() => handleGameToggle('euromillones')} disabled={!demoModeActive} />
             </div>
 
             <div className="flex items-center justify-between pt-3 pb-3">
@@ -235,7 +247,7 @@ export function SettingsPage() {
                 <p className="font-bold text-manises-blue text-sm">El Gordo de la Primitiva</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Aviso del sorteo de los Domingos.</p>
               </div>
-              <ToggleSwitch checked={prefs.games['gordo']} onChange={() => handleGameToggle('gordo')} />
+              <ToggleSwitch checked={prefs.games['gordo']} onChange={() => handleGameToggle('gordo')} disabled={!demoModeActive} />
             </div>
 
             <div className="flex items-center justify-between pt-3 pb-3">
@@ -243,7 +255,7 @@ export function SettingsPage() {
                 <p className="font-bold text-manises-blue text-sm">Lotería Nacional Jueves / Sábado</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Escrutinio completo de décimos ordinarios.</p>
               </div>
-              <ToggleSwitch checked={prefs.games['loteria-nacional']} onChange={() => handleGameToggle('loteria-nacional')} />
+              <ToggleSwitch checked={prefs.games['loteria-nacional']} onChange={() => handleGameToggle('loteria-nacional')} disabled={!demoModeActive} />
             </div>
 
             <div className="flex items-center justify-between pt-3">
@@ -251,7 +263,7 @@ export function SettingsPage() {
                 <p className="font-bold text-manises-blue text-sm">Sorteos Extraordinarios (Navidad y Niño)</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">Resultados de los sorteos especiales de final de año.</p>
               </div>
-              <ToggleSwitch checked={prefs.games['navidad-nino']} onChange={() => handleGameToggle('navidad-nino')} />
+              <ToggleSwitch checked={prefs.games['navidad-nino']} onChange={() => handleGameToggle('navidad-nino')} disabled={!demoModeActive} />
             </div>
           </AccordionSection>
         </div>

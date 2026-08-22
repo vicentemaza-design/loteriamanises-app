@@ -264,7 +264,7 @@ export function LoginPage() {
             <span className="text-[8px]">•</span>
             <button onClick={() => navigate('/legal/privacidad')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Privacidad</button>
             <span className="text-[8px]">•</span>
-            <button className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Juego responsable</button>
+            <button onClick={() => navigate('/legal/juego-responsable')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Juego responsable</button>
             <span className="text-[8px]">•</span>
             <span className="text-[9px] font-bold uppercase tracking-wider">+18</span>
           </div>

@@ -18,7 +18,6 @@ import { getDeliveredPrizesTotalAmount } from '../data/delivered-prizes.mock';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { GameIcon } from '@/shared/ui/GameIcon';
-import { ScannerModal } from '@/shared/ui/ScannerModal';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { useInstallPrompt } from '@/shared/hooks/useInstallPrompt';
 import { useLotteryGames } from '@/shared/hooks/useLotteryGames';
@@ -369,7 +368,6 @@ export function HomePage() {
   const { featuredGame, upcomingGames } = useLotteryGames();
   const { canInstall, isInstalled, shouldShowIosHint, promptInstall } = useInstallPrompt();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const deliveredPrizesTotalAmount = useMemo(() => getDeliveredPrizesTotalAmount(), []);
 
   // Los juegos destacados en el bento (priorizamos los nacionales e inmediatos)
@@ -583,8 +581,6 @@ export function HomePage() {
 
 {/* ── Responsible Gaming Footer ─────────────────────────── */}
       <ResponsibleGamingFooter />
-
-      <ScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} />
     </div>
   );
 }

@@ -50,6 +50,7 @@ import { CondicionesPage } from '@/features/legal/pages/CondicionesPage';
 import { PrivacidadPage } from '@/features/legal/pages/PrivacidadPage';
 import { AvisoLegalPage } from '@/features/legal/pages/AvisoLegalPage';
 import { CondicionesAbonosPage } from '@/features/legal/pages/CondicionesAbonosPage';
+import { JuegoResponsablePage } from '@/features/legal/pages/JuegoResponsablePage';
 
 export function AppRouter() {
   return (
@@ -77,6 +78,7 @@ export function AppRouter() {
         <Route path="/legal/condiciones-abonos" element={<CondicionesAbonosPage />} />
         <Route path="/legal/privacidad" element={<PrivacidadPage />} />
         <Route path="/legal/aviso" element={<AvisoLegalPage />} />
+        <Route path="/legal/juego-responsable" element={<JuegoResponsablePage />} />
 
         <Route element={<RequireAuth />}>
           <Route path="/tickets" element={<TicketsPage />} />
