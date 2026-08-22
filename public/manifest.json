@@ -8,8 +8,8 @@
   "display": "standalone",
   "orientation": "portrait",
   "lang": "es-ES",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#0a4792",
+  "theme_color": "#0a4792",
   "categories": ["finance", "shopping", "lifestyle"],
   "icons": [
     {
