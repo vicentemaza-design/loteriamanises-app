@@ -272,6 +272,7 @@ export function AboutUsPage() {
                   <img
                     src={entry.img}
                     alt={entry.title}
+                    loading="lazy"
                     className="h-32 w-full object-cover"
                     style={{ objectPosition: entry.imgPosition ?? 'center' }}
                   />
@@ -344,6 +345,7 @@ export function AboutUsPage() {
               <img
                 src={photo.img}
                 alt={photo.label}
+                loading="lazy"
                 className="h-32 w-full object-cover"
               />
               <div className="py-2 text-center" style={{ background: '#0a4792' }}>

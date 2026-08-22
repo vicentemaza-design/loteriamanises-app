@@ -139,6 +139,7 @@ function BentoGameCard({ game, onClick }: { key?: Key; game: ReturnType<typeof u
         <img
           src={image}
           alt={game.name}
+          loading="lazy"
           className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-30"
           style={{ ...imageStyle, opacity: imageOpacity }}
         />
@@ -235,6 +236,7 @@ function PremiumEditorialCard({
   stats,
   className,
   isCompact,
+  loading = 'lazy',
 }: {
   badge: string;
   title: string;
@@ -248,6 +250,8 @@ function PremiumEditorialCard({
   stats: string[];
   className?: string;
   isCompact?: boolean;
+  /** First card in the page (e.g. "Premios Entregados") must stay eager — it can be the LCP element. */
+  loading?: 'lazy' | 'eager';
 }) {
   const accentClasses =
     accent === 'gold'
@@ -305,6 +309,7 @@ function PremiumEditorialCard({
           <img
             src={image}
             alt={imageAlt}
+            loading={loading}
             className="h-full w-full object-cover transition-transform duration-[2000ms] group-hover:scale-105"
           />
           <div className={`absolute inset-0 ${accentClasses.overlay}`} />
@@ -431,6 +436,7 @@ export function HomePage() {
           accent="emerald"
           isCompact={true}
           stats={['Premios']}
+          loading="eager"
           onClick={() => navigate('/premios-entregados')}
         />
       </section>
