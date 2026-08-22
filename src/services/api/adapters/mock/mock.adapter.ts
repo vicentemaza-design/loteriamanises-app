@@ -6,6 +6,7 @@ import {
   resendVerificationEmailMock,
   changePendingEmailMock,
   verifyEmailMock,
+  resetPasswordMock,
 } from './auth.mock';
 import { getLatestResultsMock, getResultByIdMock } from './results.mock';
 import { getUserTicketsMock, getTicketByIdMock } from './tickets.mock';
@@ -31,6 +32,7 @@ export class MockAdapter implements IApiProvider {
     resendVerificationEmail: resendVerificationEmailMock,
     changePendingEmail: changePendingEmailMock,
     verifyEmail: verifyEmailMock,
+    resetPassword: resetPasswordMock,
   };
 
   profile = {

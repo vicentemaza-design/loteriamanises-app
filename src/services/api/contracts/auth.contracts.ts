@@ -144,3 +144,23 @@ export type VerifyEmailOutcome = 'verified' | 'expired' | 'invalid';
 export interface VerifyEmailResult {
   outcome: VerifyEmailOutcome;
 }
+
+/**
+ * Password reset — consumes the token from the recovery email link together
+ * with the new password in a single call (no separate "check token" round
+ * trip). Same opaque-token discipline as VerifyEmailInput: FE never decodes
+ * it, never infers a userId/email from it. Not implemented against a real
+ * backend yet — see docs/be-handoff/auth-email-password.md.
+ */
+export interface ResetPasswordInput {
+  /** Opaque — FE never decodes/infers anything from it (no userId, no email). */
+  token: string;
+  password: string;
+}
+
+/** Same outcome-vs-error split as VerifyEmailResult: 'expired'/'invalid' are outcomes of this one attempt, never persistent user state. */
+export type ResetPasswordOutcome = 'reset' | 'expired' | 'invalid';
+
+export interface ResetPasswordResult {
+  outcome: ResetPasswordOutcome;
+}

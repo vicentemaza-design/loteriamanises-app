@@ -61,6 +61,12 @@ export class FirebaseAdapter implements IApiProvider {
       console.warn('FirebaseAdapter.auth.verifyEmail: not implemented — out of scope for this phase.');
       throw new AuthError('service_unavailable');
     },
+    // Deliberately NOT wired to Firebase confirmPasswordReset — not
+    // authorized for this phase. See docs/be-handoff/auth-email-password.md.
+    resetPassword: async () => {
+      console.warn('FirebaseAdapter.auth.resetPassword: not implemented — out of scope for this phase.');
+      throw new AuthError('service_unavailable');
+    },
   };
 
   // Deliberately NOT implemented against Firestore — sending/validating a

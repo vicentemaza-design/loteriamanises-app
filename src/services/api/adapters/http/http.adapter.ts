@@ -46,6 +46,8 @@ import type {
   ChangePendingEmailResult,
   VerifyEmailInput,
   VerifyEmailResult,
+  ResetPasswordInput,
+  ResetPasswordResult,
 } from '../../contracts/auth.contracts';
 import type {
   RequestProfileChangeVerificationInput,
@@ -110,6 +112,12 @@ export class HttpAdapter implements IApiProvider {
     // purpose — token stays opaque, must be forwarded as-is once implemented.
     verifyEmail: async (_input: VerifyEmailInput): Promise<VerifyEmailResult> => {
       throw new Error('HttpAdapter: auth.verifyEmail — pending BE endpoint definition');
+    },
+    // TODO(BE): endpoint path/shape not yet defined — see
+    // docs/be-handoff/auth-email-password.md. No URL invented on purpose —
+    // token stays opaque, must be forwarded as-is once implemented.
+    resetPassword: async (_input: ResetPasswordInput): Promise<ResetPasswordResult> => {
+      throw new Error('HttpAdapter: auth.resetPassword — pending BE endpoint definition');
     },
   };
 

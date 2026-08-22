@@ -12,6 +12,8 @@ import type {
   ChangePendingEmailResult,
   VerifyEmailInput,
   VerifyEmailResult,
+  ResetPasswordInput,
+  ResetPasswordResult,
 } from '../contracts/auth.contracts';
 import type { ResultDto } from '../contracts/results.contracts';
 import type { CreateBetRequestDto, CreateBetResponseDto, SubmitPlaySessionRequestDto, SubmitPlaySessionResponseDto } from '../contracts/play.contracts';
@@ -101,6 +103,15 @@ export interface IApiProvider {
      * AuthError for genuine technical failures (network, rate limit, etc.).
      */
     verifyEmail: (input: VerifyEmailInput) => Promise<VerifyEmailResult>;
+    /**
+     * Consume a password-reset link token together with the new password
+     * (opaque token — never decoded by FE). Resolves with an outcome
+     * ('reset' | 'expired' | 'invalid') — operation outcomes, not persistent
+     * user state. Only rejects with AuthError for genuine technical
+     * failures (network, rate limit, validation, etc.). Never logs the
+     * user in automatically after a successful reset.
+     */
+    resetPassword: (input: ResetPasswordInput) => Promise<ResetPasswordResult>;
   };
 
   /**

@@ -11,6 +11,8 @@ import type {
   ChangePendingEmailResult,
   VerifyEmailInput,
   VerifyEmailResult,
+  ResetPasswordInput,
+  ResetPasswordResult,
 } from '../../contracts/auth.contracts';
 import { AuthError } from '@/features/auth/lib/authErrors';
 
@@ -123,6 +125,29 @@ export async function verifyEmailMock(input: VerifyEmailInput): Promise<VerifyEm
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({ outcome: DEMO_TOKEN_OUTCOMES[input.token] ?? 'invalid' });
+    }, 900);
+  });
+}
+
+// Explicit, isolated demo tokens for password reset — the ONLY values this
+// mock recognizes. Same token strings as DEMO_TOKEN_OUTCOMES above (kept as
+// a separate map because the outcome type differs: 'reset' vs 'verified').
+// Any unrecognized value defaults to 'invalid' — fail closed.
+const DEMO_RESET_TOKEN_OUTCOMES: Record<string, ResetPasswordResult['outcome']> = {
+  'demo-success': 'reset',
+  'demo-expired': 'expired',
+  'demo-invalid': 'invalid',
+};
+
+/**
+ * Consume a password-reset link token + new password. Purely a demo lookup
+ * against the 3 explicit tokens above — never persists the new password
+ * anywhere, never creates a session, never logs the user in.
+ */
+export async function resetPasswordMock(input: ResetPasswordInput): Promise<ResetPasswordResult> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ outcome: DEMO_RESET_TOKEN_OUTCOMES[input.token] ?? 'invalid' });
     }, 900);
   });
 }

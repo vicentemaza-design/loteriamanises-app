@@ -8,6 +8,7 @@ import { RecoverPasswordPage } from '@/features/auth/pages/RecoverPasswordPage';
 import { EmailSentPage } from '@/features/auth/pages/EmailSentPage';
 import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage';
 import { VerifyEmailLinkPage } from '@/features/auth/pages/VerifyEmailLinkPage';
+import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage';
 import { HomePage } from '@/features/catalog/pages/HomePage';
 import { GamesPage } from '@/features/catalog/pages/GamesPage';
 import { GamePlayPage } from '@/features/play/pages/GamePlayPage';
@@ -125,6 +126,12 @@ export function AppRouter() {
         (must also work for a logged-out user clicking the link).
       */}
       <Route path="/verify-email/:token" element={<VerifyEmailLinkPage />} />
+
+      {/*
+        Standalone route for the password-reset email link — same reasoning
+        as /verify-email/:token above: outside PublicLayout and RequireAuth.
+      */}
+      <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
