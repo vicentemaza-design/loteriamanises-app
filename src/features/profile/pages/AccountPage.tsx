@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, ShieldCheck, User } from 'lucide-react';
+import { Loader2, Save, ShieldCheck, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { PremiumSectionCard } from '../components/PremiumSectionCard';
@@ -51,14 +51,29 @@ export function AccountPage() {
     confirmEmail: '',
     phone: '600 123 456',
     alternatePhone: '',
-    address: 'Calle Mayor, 45',
-    postalCode: '46940',
-    municipality: 'Manises',
-    province: 'Valencia',
+    address: profile?.address ?? '',
+    postalCode: profile?.postalCode ?? '',
+    municipality: profile?.municipality ?? '',
+    province: profile?.province ?? '',
     country: 'España',
   });
   const [isVerificationOpen, setIsVerificationOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { requireReauth, gateModal } = useSecurityGate();
+
+  // Sincroniza dirección desde profile si llega de forma asíncrona (mismo
+  // patrón que WithdrawalsPage.tsx) — solo rellena campos que el usuario
+  // todavía no ha tocado, nunca sobrescribe una edición en curso.
+  useEffect(() => {
+    if (!profile) return;
+    setFormData((current) => ({
+      ...current,
+      address: !current.address && profile.address ? profile.address : current.address,
+      postalCode: !current.postalCode && profile.postalCode ? profile.postalCode : current.postalCode,
+      municipality: !current.municipality && profile.municipality ? profile.municipality : current.municipality,
+      province: !current.province && profile.province ? profile.province : current.province,
+    }));
+  }, [profile]);
 
   const emailsMatch = !formData.newEmail || formData.newEmail === formData.confirmEmail;
 
@@ -75,16 +90,22 @@ export function AccountPage() {
    * — see docs/be-handoff/security-reauthentication.md.
    */
   const handleSave = async () => {
+    if (isSaving) return;
     if (!emailsMatch) {
       toast.error('El nuevo email y su confirmación deben coincidir.');
       return;
     }
-    const reauthed = await requireReauth('profile');
-    if (!reauthed) return;
-    // NO se persiste nada todavía — solo se abre el modal de confirmación.
-    // Los cambios de formData solo se aplican en handleChangesConfirmed(),
-    // una vez validado el código de 6 dígitos.
-    setIsVerificationOpen(true);
+    setIsSaving(true);
+    try {
+      const reauthed = await requireReauth('profile');
+      if (!reauthed) return;
+      // NO se persiste nada todavía — solo se abre el modal de confirmación.
+      // Los cambios de formData solo se aplican en handleChangesConfirmed(),
+      // una vez validado el código de 6 dígitos.
+      setIsVerificationOpen(true);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   /**
@@ -176,9 +197,22 @@ export function AccountPage() {
           </div>
         </PremiumSectionCard>
 
-        <Button className="w-full rounded-xl bg-emerald-600 text-white hover:bg-emerald-700" onClick={handleSave}>
-          <Save className="mr-2 h-4 w-4" />
-          Guardar cambios
+        <Button
+          className="w-full rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
+          onClick={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Guardando...
+            </>
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Guardar cambios
+            </>
+          )}
         </Button>
 
         <PremiumSectionCard title="Gestión de la cuenta" eyebrow="Baja del servicio" description="La baja no se realiza desde aquí directamente. Primero te explicamos sus consecuencias y luego confirmas la solicitud." tone="default">

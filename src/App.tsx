@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/app/providers/AuthProvider';
 import { AppRouter } from '@/app/router/AppRouter';
+import { ErrorBoundary } from '@/app/components/ErrorBoundary';
 
 export default function App() {
   useEffect(() => {
@@ -24,25 +25,27 @@ export default function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <AppRouter />
-        <Toaster
-          position="top-center"
-          richColors
-          toastOptions={{
-            actionButtonStyle: {
-              backgroundColor: '#0a4792',
-              color: '#ffffff',
-              fontWeight: 700,
-              fontSize: '11px',
-              borderRadius: '8px',
-              padding: '6px 12px',
-            },
-          }}
-        />
-      </BrowserRouter>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRouter />
+          <Toaster
+            position="top-center"
+            richColors
+            toastOptions={{
+              actionButtonStyle: {
+                backgroundColor: '#0a4792',
+                color: '#ffffff',
+                fontWeight: 700,
+                fontSize: '11px',
+                borderRadius: '8px',
+                padding: '6px 12px',
+              },
+            }}
+          />
+        </BrowserRouter>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 // Trigger build
