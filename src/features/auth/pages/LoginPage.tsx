@@ -3,10 +3,12 @@ import { motion } from 'motion/react';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
 import { Mail, Lock, Eye, EyeClosed, ShieldCheck, Clock, PercentageCircle, Flask, WarningTriangle, CheckCircle } from 'iconoir-react/regular';
+import { ScanFace } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useLogin } from '@/features/auth/hooks/useLogin';
 import { useNavigate } from 'react-router-dom';
 import { AuthScreenShell } from '@/features/auth/components/AuthScreenShell';
+import { FaceIdDemoModal } from '@/features/auth/components/FaceIdDemoModal';
 import { RUNTIME_CONFIG } from '@/config/runtime';
 
 // SVG inline de Google — sin dependencia externa
@@ -46,6 +48,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isFaceIdDemoOpen, setIsFaceIdDemoOpen] = useState(false);
   const { status: loginStatus, errorMessage: loginError, login, reset: resetLogin } = useLogin();
 
   const isEmailLoading = loginStatus === 'loading';
@@ -72,6 +75,15 @@ export function LoginPage() {
     } finally {
       setIsGoogleLoading(false);
     }
+  };
+
+  // DEMO-ONLY: the modal is purely a timed visual simulation (see
+  // FaceIdDemoModal.tsx) — the actual "sign in" here is the exact same
+  // signInDemo() the classic "Entrar en modo demo" button already calls.
+  // No separate auth path, no new session mechanism.
+  const handleFaceIdVerified = () => {
+    setIsFaceIdDemoOpen(false);
+    signInDemo();
   };
 
   return (
@@ -140,7 +152,7 @@ export function LoginPage() {
                     id="login-email"
                     type="email"
                     placeholder="Email"
-                    autoComplete="email"
+                    autoComplete="username"
                     disabled={isEmailLoading}
                     className="pl-10 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/25 rounded-xl focus-visible:ring-manises-gold text-sm"
                     value={email}
@@ -229,7 +241,7 @@ export function LoginPage() {
               dato-adapter de desarrollo local), lo cual expondría este
               acceso demo en cualquier build sin configurar. */}
           {RUNTIME_CONFIG.demoEnabled && (
-            <div className="mt-4 border border-white/8 rounded-xl overflow-hidden">
+            <div className="mt-4 border border-white/8 rounded-xl overflow-hidden divide-y divide-white/8">
               <button
                 type="button"
                 onClick={signInDemo}
@@ -238,9 +250,21 @@ export function LoginPage() {
                 <Flask className="w-4 h-4 text-white/30" />
                 <span>Entrar en modo demo <span className="text-white/25">(sin cuenta)</span></span>
               </button>
+              {/* Simulación visual DEMO — reutiliza exactamente signInDemo(),
+                  ver FaceIdDemoModal.tsx. No es biometría real. */}
+              <button
+                type="button"
+                onClick={() => setIsFaceIdDemoOpen(true)}
+                className="w-full flex items-center justify-center gap-2.5 px-4 py-3.5 text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors text-xs font-semibold"
+              >
+                <ScanFace className="w-4 h-4 text-white/30" />
+                <span>Entrar con Face ID <span className="text-white/25">(demo)</span></span>
+              </button>
             </div>
           )}
         </motion.div>
+
+        <FaceIdDemoModal isOpen={isFaceIdDemoOpen} onVerified={handleFaceIdVerified} />
 
         {/* Trust badges */}
         <motion.div
