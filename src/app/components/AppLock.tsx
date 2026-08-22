@@ -4,7 +4,6 @@ import { Shield, Delete, Fingerprint } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import { cn } from '@/shared/lib/utils';
 import { verifyPin } from '@/features/profile/lib/security';
-import loteriaManisesLogo from '@/assets/games/logo-01-blue.svg';
 
 interface AppLockProps {
   onUnlock: () => void;
@@ -55,22 +54,33 @@ export function AppLock({ onUnlock }: AppLockProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] bg-white flex flex-col items-center justify-center p-6"
+      className="fixed inset-0 z-[200] bg-white flex flex-col items-center justify-center px-6"
+      style={{
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1.5rem)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)',
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="app-lock-title"
     >
       {/* Branding */}
-      <div className="flex flex-col items-center gap-4 mb-12">
-        <img src={loteriaManisesLogo} alt="Lotería Manises" className="h-10 opacity-80" />
+      <div className="flex flex-col items-center gap-4 mb-14">
         <div className="w-16 h-16 rounded-2xl bg-manises-blue/5 flex items-center justify-center">
           <Shield className="w-8 h-8 text-manises-blue" />
         </div>
         <div className="text-center">
-          <h2 className="text-xl font-black text-manises-blue uppercase tracking-tight">Privacidad Activa</h2>
+          <h2 id="app-lock-title" className="text-xl font-black text-manises-blue uppercase tracking-tight">Privacidad Activa</h2>
           <p className="text-xs text-muted-foreground font-medium mt-1">Introduce tu PIN de seguridad</p>
         </div>
       </div>
 
       {/* PIN Dots */}
-      <div className="flex gap-4 mb-12">
+      <div
+        className="flex gap-4 mb-12"
+        role="status"
+        aria-live="polite"
+        aria-label={error ? 'PIN incorrecto' : `${pin.length} de 4 dígitos introducidos`}
+      >
         {[0, 1, 2, 3].map((i) => (
           <motion.div
             key={i}
@@ -91,6 +101,7 @@ export function AppLock({ onUnlock }: AppLockProps) {
           <button
             key={num}
             onClick={() => handleKeyPress(num)}
+            aria-label={`Dígito ${num}`}
             className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-xl font-black text-manises-blue hover:bg-gray-100 active:scale-90 transition-all"
           >
             {num}
@@ -108,18 +119,21 @@ export function AppLock({ onUnlock }: AppLockProps) {
           type="button"
           disabled
           aria-disabled="true"
+          aria-label="Autenticación biométrica no disponible todavía"
           className="w-16 h-16 rounded-full flex items-center justify-center text-manises-blue/20 cursor-not-allowed"
         >
           <Fingerprint className="w-7 h-7" />
         </button>
         <button
           onClick={() => handleKeyPress('0')}
+          aria-label="Dígito 0"
           className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-xl font-black text-manises-blue hover:bg-gray-100 active:scale-90 transition-all"
         >
           0
         </button>
         <button
           onClick={handleDelete}
+          aria-label="Borrar último dígito"
           className="w-16 h-16 rounded-full flex items-center justify-center text-manises-blue/60 hover:bg-gray-50 active:scale-90 transition-all"
         >
           <Delete className="w-6 h-6" />

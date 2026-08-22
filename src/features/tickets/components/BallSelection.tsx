@@ -30,9 +30,9 @@ export function BallSelection({
   return (
     <div className={cn('flex items-center', gap, 'overflow-x-auto')}>
       {/* ── Números ─────────────────────────────────────────────── */}
-      {numbers.map((n) => (
+      {numbers.map((n, i) => (
         <div
-          key={n}
+          key={`n-${i}`}
           className={cn(
             'flex shrink-0 items-center justify-center rounded-full border transition-all',
             ballSize,
@@ -78,9 +78,9 @@ export function BallSelection({
           </div>
 
           {/* Bola del número especial */}
-          {stars.map((s) => (
+          {stars.map((s, i) => (
             <div
-              key={s}
+              key={`s-${i}`}
               className={cn(
                 'flex shrink-0 items-center justify-center rounded-full border transition-all',
                 ballSize,

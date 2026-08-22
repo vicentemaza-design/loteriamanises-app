@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { RedsysGateway } from './RedsysGateway';
 import { AddCardFlow } from './AddCardFlow';
 import { useSecurityGate } from '@/features/profile/hooks/useSecurityGate';
+import { getConnectivityErrorMessage } from '@/services/api/adapters/http/http.client';
 
 interface TopUpModalProps {
   isOpen: boolean;
@@ -127,8 +128,8 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       await onSuccess(effectiveAmount);
       setIsSuccess(true);
       setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
-    } catch {
-      toast.error('No se ha podido completar la simulación de recarga.');
+    } catch (err) {
+      toast.error(getConnectivityErrorMessage(err) ?? 'No se ha podido completar la simulación de recarga.');
       setIsProcessing(false);
     }
   };
@@ -145,8 +146,8 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       await onSuccess(effectiveAmount);
       setIsSuccess(true);
       setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
-    } catch {
-      toast.error('No se ha podido completar el pago.');
+    } catch (err) {
+      toast.error(getConnectivityErrorMessage(err) ?? 'No se ha podido completar el pago.');
       setIsProcessing(false);
     }
   };
@@ -159,8 +160,8 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       setSavedCards(readSavedCards());
       setIsSuccess(true);
       setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
-    } catch {
-      toast.error('No se ha podido completar el pago.');
+    } catch (err) {
+      toast.error(getConnectivityErrorMessage(err) ?? 'No se ha podido completar el pago.');
       setIsProcessing(false);
     }
   };

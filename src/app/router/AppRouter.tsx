@@ -51,6 +51,7 @@ import { PrivacidadPage } from '@/features/legal/pages/PrivacidadPage';
 import { AvisoLegalPage } from '@/features/legal/pages/AvisoLegalPage';
 import { CondicionesAbonosPage } from '@/features/legal/pages/CondicionesAbonosPage';
 import { JuegoResponsablePage } from '@/features/legal/pages/JuegoResponsablePage';
+import { NotFoundPage } from '@/shared/ui/NotFoundPage';
 
 export function AppRouter() {
   return (
@@ -125,7 +126,7 @@ export function AppRouter() {
       */}
       <Route path="/verify-email/:token" element={<VerifyEmailLinkPage />} />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

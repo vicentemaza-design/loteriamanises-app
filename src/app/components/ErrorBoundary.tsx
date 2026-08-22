@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { AlertTriangle, RotateCw } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
-import loteriaManisesLogo from '@/assets/games/logo-01-blue.svg';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -44,12 +43,16 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     }
 
     return (
-      <div className="fixed inset-0 z-[300] flex flex-col items-center justify-center bg-white p-6 text-center">
-        <img src={loteriaManisesLogo} alt="Lotería Manises" className="mb-8 h-10 opacity-80" />
+      <div
+        className="fixed inset-0 z-[300] flex flex-col items-center justify-center bg-white p-6 text-center"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="error-boundary-title"
+      >
         <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50">
           <AlertTriangle className="h-8 w-8 text-red-500" />
         </div>
-        <h1 className="text-xl font-black uppercase tracking-tight text-manises-blue">Algo ha ido mal</h1>
+        <h1 id="error-boundary-title" className="text-xl font-black uppercase tracking-tight text-manises-blue">Algo ha ido mal</h1>
         <p className="mt-2 max-w-[280px] text-sm font-medium text-muted-foreground">
           Ha ocurrido un problema inesperado. Puedes intentar recargar la aplicación para continuar.
         </p>

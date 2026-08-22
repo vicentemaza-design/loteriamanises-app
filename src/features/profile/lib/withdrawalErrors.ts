@@ -1,3 +1,5 @@
+import { getConnectivityErrorMessage } from '@/services/api/adapters/http/http.client';
+
 export type WithdrawalErrorCode = 'rate_limited' | 'service_unavailable' | 'technical_error';
 
 /**
@@ -26,6 +28,10 @@ export const WITHDRAWAL_ERROR_MESSAGES: Record<WithdrawalErrorCode, string> = {
 
 /** Maps any thrown value to a user-facing Spanish message, defaulting to a generic technical error. */
 export function getWithdrawalErrorMessage(error: unknown): string {
+  const connectivityMessage = getConnectivityErrorMessage(error);
+  if (connectivityMessage) {
+    return connectivityMessage;
+  }
   if (error instanceof WithdrawalError) {
     return error.message;
   }

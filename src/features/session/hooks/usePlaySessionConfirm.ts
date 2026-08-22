@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { createApiClient } from '@/services/api/factory/createApiClient';
+import { getConnectivityErrorMessage } from '@/services/api/adapters/http/http.client';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePlaySession } from './usePlaySession';
 import { usePlaySessionSummary } from './usePlaySessionSummary';
@@ -156,7 +157,7 @@ export function usePlaySessionConfirm({ draftFilter }: UsePlaySessionConfirmOpti
       return { ok: true, needsAuth: false };
     } catch (error) {
       console.error('[usePlaySessionConfirm] Unexpected error:', error);
-      resolveConfirmFailure('Ocurrió un problema inesperado al confirmar tus jugadas.');
+      resolveConfirmFailure(getConnectivityErrorMessage(error) ?? 'Ocurrió un problema inesperado al confirmar tus jugadas.');
       return { ok: false, needsAuth: false };
     } finally {
       setIsSubmitting(false);

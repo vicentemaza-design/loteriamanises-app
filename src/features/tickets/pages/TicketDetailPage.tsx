@@ -976,17 +976,21 @@ function QuinielaDetailView({
           </table>
         </div>
 
-        {/* Leyenda */}
-        {isScrutinized && (
+        {/* Leyenda — el disclosure de columnas mostradas no depende del escrutinio: numCols/betsCount ya existen desde la compra */}
+        {(isScrutinized || numCols > 1) && (
           <div className="flex items-center gap-5 border-t border-slate-100 bg-slate-50/60 px-4 py-2.5">
-            <div className="flex items-center gap-1.5">
-              <div className="h-3 w-6 rounded-sm bg-emerald-100 border border-emerald-300" />
-              <span className="text-[8.5px] font-semibold text-slate-500">Acierto</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="h-3 w-6 rounded-sm bg-white border border-slate-200" />
-              <span className="text-[8.5px] font-semibold text-slate-500">No acierto</span>
-            </div>
+            {isScrutinized && (
+              <>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-3 w-6 rounded-sm bg-emerald-100 border border-emerald-300" />
+                  <span className="text-[8.5px] font-semibold text-slate-500">Acierto</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-3 w-6 rounded-sm bg-white border border-slate-200" />
+                  <span className="text-[8.5px] font-semibold text-slate-500">No acierto</span>
+                </div>
+              </>
+            )}
             {numCols > 1 && (
               <div className="flex items-center gap-1.5 ml-auto">
                 <span className="text-[8.5px] font-semibold text-slate-400">

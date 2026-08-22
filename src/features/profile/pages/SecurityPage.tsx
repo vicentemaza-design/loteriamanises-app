@@ -100,6 +100,7 @@ export function SecurityPage() {
               onClick={handleToggleSecurity}
               role="switch"
               aria-checked={prefs.securityEnabled}
+              aria-label="Activar seguridad"
               className={cn(
                 'w-12 h-6 rounded-full transition-colors relative outline-none border-none',
                 prefs.securityEnabled ? 'bg-indigo-600' : 'bg-slate-200'
@@ -147,6 +148,7 @@ export function SecurityPage() {
                   disabled={disabled}
                   role="switch"
                   aria-checked={checked}
+                  aria-label={label}
                   className={cn(
                     'w-11 h-6 rounded-full transition-colors relative outline-none border-none shrink-0',
                     checked && !disabled ? 'bg-indigo-600' : 'bg-slate-200',

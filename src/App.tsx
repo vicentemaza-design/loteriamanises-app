@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from '@/app/providers/AuthProvider';
 import { AppRouter } from '@/app/router/AppRouter';
 import { ErrorBoundary } from '@/app/components/ErrorBoundary';
+import { ConnectionStatusBanner } from '@/shared/components/ConnectionStatusBanner';
 
 export default function App() {
   useEffect(() => {
@@ -26,6 +27,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
+      <ConnectionStatusBanner />
       <AuthProvider>
         <BrowserRouter>
           <AppRouter />

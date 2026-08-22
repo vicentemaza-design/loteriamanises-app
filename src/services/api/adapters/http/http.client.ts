@@ -28,6 +28,23 @@ export class HttpNetworkError extends Error {
 }
 
 /**
+ * Coherent, user-facing copy for a real connectivity failure (timeout or
+ * network) — returns `null` for any other error so callers keep their own
+ * fallback message. Used by financial flows (purchase/withdrawal/top-up) to
+ * distinguish "we couldn't reach the server" from a generic unexpected
+ * error, WITHOUT ever suggesting an automatic retry — a client-side timeout
+ * never proves the server didn't process the operation, so callers keep
+ * their normal manual "try again" action (the same submit button), never an
+ * automatic resend.
+ */
+export function getConnectivityErrorMessage(error: unknown): string | null {
+  if (error instanceof HttpTimeoutError || error instanceof HttpNetworkError) {
+    return 'No hemos podido conectar. Comprueba tu conexión e inténtalo de nuevo.';
+  }
+  return null;
+}
+
+/**
  * Wraps fetch with a single AbortController-based timeout so no individual
  * endpoint has to implement its own — every apiGet/apiPost/apiPatch/apiDelete
  * call goes through this. Deliberately does NOT retry: retrying a financial
