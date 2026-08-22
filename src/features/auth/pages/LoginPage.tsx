@@ -154,6 +154,8 @@ export function LoginPage() {
                     placeholder="Email"
                     autoComplete="username"
                     disabled={isEmailLoading}
+                    aria-invalid={loginStatus === 'error'}
+                    aria-describedby={loginStatus === 'error' ? 'login-error-message' : undefined}
                     className="pl-10 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/25 rounded-xl focus-visible:ring-manises-gold text-sm"
                     value={email}
                     onChange={handleEmailChange}
@@ -170,6 +172,8 @@ export function LoginPage() {
                     placeholder="Contraseña"
                     autoComplete="current-password"
                     disabled={isEmailLoading}
+                    aria-invalid={loginStatus === 'error'}
+                    aria-describedby={loginStatus === 'error' ? 'login-error-message' : undefined}
                     className="pl-10 pr-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/25 rounded-xl focus-visible:ring-manises-gold text-sm"
                     value={password}
                     onChange={handlePasswordChange}
@@ -198,7 +202,7 @@ export function LoginPage() {
               {loginStatus === 'error' && loginError && (
                 <div role="alert" aria-live="polite" className="flex items-start gap-2 rounded-xl border border-red-400/40 bg-red-400/10 px-3 py-2.5">
                   <WarningTriangle className="w-4 h-4 mt-0.5 text-red-300 shrink-0" aria-hidden="true" />
-                  <p className="text-[11px] font-semibold text-red-100">{loginError}</p>
+                  <p id="login-error-message" className="text-[11px] font-semibold text-red-100">{loginError}</p>
                 </div>
               )}
 

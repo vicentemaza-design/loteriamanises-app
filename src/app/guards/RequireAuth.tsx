@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { AuthScreenShell } from '@/features/auth/components/AuthScreenShell';
@@ -53,6 +53,7 @@ function AuthLoadingScreen({ isSilent = false }: { isSilent?: boolean }) {
 
 export function RequireAuth() {
   const { user, isDemo, loading } = useAuth();
+  const location = useLocation();
   const [shouldShowLoading, setShouldShowLoading] = useState(false);
 
   useEffect(() => {
@@ -66,9 +67,11 @@ export function RequireAuth() {
     }
   }, [loading]);
 
-  // Si no hay usuario y ya terminó de cargar, redirigimos a login (ahora en la raíz /)
+  // Si no hay usuario y ya terminó de cargar, redirigimos a login (ahora en la
+  // raíz /) preservando la ruta original en location.state — PublicLayout la
+  // usa para volver aquí tras un login correcto (ver getSafeInternalPath).
   if (!loading && !user && !isDemo) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/" replace state={{ from: `${location.pathname}${location.search}` }} />;
   }
 
   // Solo mostramos LoadingScreen si estamos en una ruta privada y esperando sesión
