@@ -89,7 +89,9 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       setSelectedAmount(10);
       setIsCustom(false);
       setCustomValue('');
-      setSelectedMethod(cards.length > 0 ? 'card' : 'none');
+      // Fuera de demo, la tarjeta guardada no tiene backend real que la cargue
+      // (ver handlePay) — no puede quedar preseleccionada como método válido.
+      setSelectedMethod(cards.length > 0 && isDemo ? 'card' : 'none');
       setIsProcessing(false);
       setIsSuccess(false);
       setShowTokenizeRedsys(false);
@@ -120,6 +122,14 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       setShowAddCardFlow(true);
       return;
     }
+    // Fuera de demo no existe todavía un cargo real sobre una tarjeta ya
+    // guardada (la fila queda deshabilitada en la UI, ver MethodRow "card"
+    // más abajo) — esta comprobación es solo defensa en profundidad, nunca
+    // debe simular un pago exitoso en producción.
+    if (selectedMethod === 'card' && !isDemo) {
+      toast.error('La recarga con esta tarjeta todavía no está disponible.');
+      return;
+    }
     setIsProcessing(true);
     await new Promise(resolve => setTimeout(resolve, 1500));
     try {
@@ -127,7 +137,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
       setIsSuccess(true);
       setTimeout(() => { onClose(); setIsProcessing(false); }, 1500);
     } catch (err) {
-      toast.error(getConnectivityErrorMessage(err) ?? 'No se ha podido completar la simulación de recarga.');
+      toast.error(getConnectivityErrorMessage(err) ?? 'No se ha podido completar la recarga.');
       setIsProcessing(false);
     }
   };
@@ -232,11 +242,13 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                     )}
                   </div>
 
-                  <div className="bg-manises-blue/5 rounded-2xl p-3 border border-manises-blue/10">
-                    <p className="text-[10px] font-bold text-manises-blue/60 uppercase tracking-widest text-center">
-                      Demo · No se realizará ningún cargo real
-                    </p>
-                  </div>
+                  {isDemo && (
+                    <div className="bg-manises-blue/5 rounded-2xl p-3 border border-manises-blue/10">
+                      <p className="text-[10px] font-bold text-manises-blue/60 uppercase tracking-widest text-center">
+                        Demo · No se realizará ningún cargo real
+                      </p>
+                    </div>
+                  )}
 
                   <div className="space-y-3">
                     <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest pl-1">Selecciona importe</p>
@@ -291,13 +303,16 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                   <div className="space-y-3">
                     <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest pl-1">Método de pago</p>
                     <div className="space-y-2">
-                      {/* Tarjeta guardada — solo si existe realmente, nunca una tarjeta ficticia */}
+                      {/* Tarjeta guardada — solo si existe realmente, nunca una tarjeta
+                          ficticia. Fuera de demo no hay todavía un cargo real sobre una
+                          tarjeta ya guardada, así que se muestra deshabilitada con
+                          "Próximamente", igual que Apple/Google Pay/Bizum más abajo. */}
                       {hasSavedCard && primaryCard && (
                         <MethodRow
-                          id="card" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing}
+                          id="card" selected={selectedMethod} onSelect={setSelectedMethod} disabled={isProcessing || !isDemo}
                           iconEl={<CreditCard className="w-5 h-5" />}
                           label={`${primaryCard.brand} **** ${primaryCard.last4}`}
-                          sub={`Exp: ${primaryCard.expires}`}
+                          sub={isDemo ? `Exp: ${primaryCard.expires}` : 'Próximamente'}
                           selBg="bg-manises-blue" selBorder="border-manises-blue" selCardBg="bg-blue-50/50"
                         />
                       )}
@@ -360,7 +375,9 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
 
                   {isTransfer && (
                     <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 space-y-3">
-                      <p className="text-[10px] font-black text-blue-700 uppercase tracking-widest">Datos de transferencia (demo)</p>
+                      <p className="text-[10px] font-black text-blue-700 uppercase tracking-widest">
+                        {isDemo ? 'Datos de transferencia (demo)' : 'Datos de transferencia'}
+                      </p>
                       {(Object.entries(BANK_TRANSFER_INFO) as [string, string][]).map(([label, value]) => (
                         <div key={label} className="flex items-center justify-between gap-3">
                           <div className="min-w-0">
@@ -386,7 +403,9 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
 
                   <div className="flex items-center justify-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Demo · no operativo</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      {isDemo ? 'Demo · no operativo' : 'Pago seguro y cifrado'}
+                    </p>
                   </div>
                 </div>
 
@@ -396,7 +415,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                 >
                   {!isTransfer && effectiveAmount > 500 && (
                     <p className="text-[9px] font-black text-red-500 uppercase tracking-widest text-center animate-pulse">
-                      Límite de recarga demo: 500€
+                      {isDemo ? 'Límite de recarga demo: 500€' : 'Límite de recarga: 500€'}
                     </p>
                   )}
                   <PremiumTouchInteraction scale={0.98} className="w-full">
@@ -414,7 +433,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                       ) : selectedMethod === 'none' ? (
                         <>Selecciona un método de pago</>
                       ) : effectiveAmount > 0 ? (
-                        <>Recargar {formatCurrency(effectiveAmount)} demo <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
+                        <>Recargar {formatCurrency(effectiveAmount)}{isDemo ? ' demo' : ''} <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
                       ) : (
                         <>Recargar saldo <ArrowRight className="w-5 h-5 ml-2 opacity-70" /></>
                       )}

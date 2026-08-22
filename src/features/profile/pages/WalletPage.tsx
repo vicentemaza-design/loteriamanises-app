@@ -15,6 +15,7 @@ import { PremiumSectionCard } from '../components/PremiumSectionCard';
 import { useWallet } from '@/features/wallet/hooks/useWallet';
 import { useMovements } from '@/features/wallet/hooks/useMovements';
 import { MovementRowSkeleton } from '@/shared/ui/Skeleton';
+import { isDemoEnvironment } from '@/features/profile/lib/security';
 
 export function WalletPage() {
   const { profile } = useAuth();
@@ -23,6 +24,7 @@ export function WalletPage() {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
+  const isDemo = isDemoEnvironment();
   
   const latestMovements = movements.slice(0, 3);
 
@@ -79,7 +81,9 @@ export function WalletPage() {
               
               <div className="mt-2 flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Demo · Monedero Virtual</p>
+                <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest">
+                  {isDemo ? 'Demo · Monedero Virtual' : 'Monedero Virtual'}
+                </p>
               </div>
             </div>
 
@@ -143,7 +147,7 @@ export function WalletPage() {
             
             <div className="mt-3 flex flex-col items-center gap-1.5">
               <p className="text-[9px] font-black text-manises-blue/20 uppercase tracking-widest text-center">
-                Demo · No se realizará ningún cargo real
+                {isDemo ? 'Demo · No se realizará ningún cargo real' : 'Operaciones sujetas a confirmación'}
               </p>
               <Button 
                 variant="link" 
