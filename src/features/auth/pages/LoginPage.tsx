@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
@@ -76,6 +76,19 @@ export function LoginPage() {
       setIsGoogleLoading(false);
     }
   };
+
+  // Safety net for the popup-blocked -> signInWithRedirect fallback: that
+  // path navigates the whole page away to Google, so if the browser
+  // restores this page from bfcache after the user cancels/goes back, the
+  // component is revived mid-await with isGoogleLoading still true — no
+  // finally block ever ran because the page never actually reloaded.
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) setIsGoogleLoading(false);
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
 
   // DEMO-ONLY: the modal is purely a timed visual simulation (see
   // FaceIdDemoModal.tsx) — the actual "sign in" here is the exact same

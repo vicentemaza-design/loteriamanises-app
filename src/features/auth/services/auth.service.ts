@@ -25,12 +25,21 @@ export async function signInWithGoogleProvider() {
   } catch (error) {
     const errorCode = getFirebaseAuthCode(error);
 
+    // Genuinely blocked by the browser (not a deliberate user action) — the
+    // only case where falling back to a full-page redirect makes sense.
+    if (errorCode === 'auth/popup-blocked') {
+      await signInWithRedirect(auth, provider);
+      return;
+    }
+
+    // The user closed the popup, or a second attempt cancelled the first
+    // one — a deliberate cancel, not an error. Resolve silently: no forced
+    // redirect, no thrown error, so the caller's loading state clears and
+    // no error toast shows for what is normal cancellation behavior.
     if (
-      errorCode === 'auth/popup-blocked' ||
       errorCode === 'auth/popup-closed-by-user' ||
       errorCode === 'auth/cancelled-popup-request'
     ) {
-      await signInWithRedirect(auth, provider);
       return;
     }
 
