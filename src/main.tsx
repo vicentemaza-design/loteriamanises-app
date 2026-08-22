@@ -1,7 +1,10 @@
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
+import { registerGlobalErrorHandlers } from '@/shared/lib/globalErrorHandlers';
 import './index.css';
+
+registerGlobalErrorHandlers();
 
 const getRealViewportHeight = () => {
   const candidates = [
