@@ -8,6 +8,7 @@ import { NumberBall, NumberBallLabeled, StarNumberBall, DreamNumberBall } from '
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { formatCurrency } from '@/shared/lib/utils';
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
 import type { ResultDto, ScrutinyCategory } from '@/services/api/contracts/results.contracts';
 
 // Full game name map (same as ResultsPage cards)
@@ -215,6 +216,11 @@ interface ResultDetailModalProps {
 export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModalProps) {
   const [checkerInput, setCheckerInput] = useState('');
   const [checkerResult, setCheckerResult] = useState<NationalCheckerResult | null>(null);
+  const dialogRef = useDialogA11y<HTMLDivElement>({ active: isOpen, onClose });
+  const checkerDialogRef = useDialogA11y<HTMLDivElement>({
+    active: Boolean(checkerResult),
+    onClose: () => setCheckerResult(null),
+  });
 
   const game = result ? LOTTERY_GAMES.find(g => g.id === result.gameId) : null;
 
@@ -243,11 +249,16 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="result-detail-title"
+            tabIndex={-1}
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
-            className="fixed inset-x-0 top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] z-[55] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] flex flex-col max-w-lg mx-auto shadow-2xl"
+            className="fixed inset-x-0 top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] z-[55] bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] flex flex-col max-w-lg mx-auto shadow-2xl outline-none"
           >
             {/* Top Prize Banner — padding-top absorbs the safe-area so content sits below status bar */}
             <div
@@ -269,7 +280,7 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                 <button
                   type="button"
                   onClick={onClose}
-                  className="p-1 rounded-full text-slate-650 hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
+                  className="flex h-10 w-10 -ml-1.5 items-center justify-center rounded-full text-slate-650 hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
                   aria-label="Volver"
                 >
                   <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
@@ -277,7 +288,7 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                 <GameBadge game={game} size="sm" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-2">
-                    <h3 className="font-black text-manises-blue text-[14px] uppercase tracking-tight leading-none truncate">
+                    <h3 id="result-detail-title" className="font-black text-manises-blue text-[14px] uppercase tracking-tight leading-none truncate">
                       {getModalFullName(game.id, game.name)}
                     </h3>
                     {result.drawId && (
@@ -633,15 +644,21 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
+              ref={checkerDialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="checker-result-title"
+              tabIndex={-1}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-[22rem] bg-white rounded-[2rem] p-6 shadow-2xl z-10 border border-gray-100 flex flex-col items-center text-center font-sans"
+              className="relative w-full max-w-[22rem] bg-white rounded-[2rem] p-6 shadow-2xl z-10 border border-gray-100 flex flex-col items-center text-center font-sans outline-none"
             >
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setCheckerResult(null)}
+                aria-label="Cerrar"
                 className="absolute top-4 right-4 rounded-full text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 cursor-pointer"
               >
                 <X className="w-4 h-4" />
@@ -659,7 +676,7 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
                 )}
               </div>
 
-              <h4 className={`text-[15px] font-black tracking-wider uppercase ${checkerResult.isWinner ? 'text-manises-blue' : 'text-gray-500'}`}>
+              <h4 id="checker-result-title" className={`text-[15px] font-black tracking-wider uppercase ${checkerResult.isWinner ? 'text-manises-blue' : 'text-gray-500'}`}>
                 {checkerResult.isWinner ? '¡Enhorabuena!' : 'Lo sentimos'}
               </h4>
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mt-1">

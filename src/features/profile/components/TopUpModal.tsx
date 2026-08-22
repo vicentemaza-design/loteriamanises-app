@@ -12,6 +12,7 @@ import { RedsysGateway } from './RedsysGateway';
 import { AddCardFlow } from './AddCardFlow';
 import { useSecurityGate } from '@/features/profile/hooks/useSecurityGate';
 import { getConnectivityErrorMessage } from '@/services/api/adapters/http/http.client';
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
 
 interface TopUpModalProps {
   isOpen: boolean;
@@ -70,6 +71,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
   const [showTokenizeRedsys, setShowTokenizeRedsys] = useState(false);
   const [showAddCardFlow, setShowAddCardFlow] = useState(false);
   const { requireReauth, gateModal } = useSecurityGate();
+  const dialogRef = useDialogA11y<HTMLDivElement>({ active: isOpen, onClose });
 
   const primaryCard = savedCards[0] ?? null;
   const hasSavedCard = primaryCard !== null;
@@ -215,11 +217,16 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
             className="fixed inset-0 z-[90] bg-[#0a4792]/40 backdrop-blur-sm"
           />
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="topup-modal-title"
+            tabIndex={-1}
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 z-[100] bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col max-h-[calc(100dvh-0.75rem)]"
+            className="fixed bottom-0 left-0 right-0 z-[100] bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col max-h-[calc(100dvh-0.75rem)] outline-none"
           >
             <div className="w-full flex justify-center pt-3 pb-2 shrink-0">
               <div className="w-12 h-1.5 rounded-full bg-gray-200" />
@@ -234,7 +241,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                 <div className="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 border border-emerald-100">
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
-                <h3 className="text-2xl font-black text-manises-blue">¡Pago Completado!</h3>
+                <h3 id="topup-modal-title" className="text-2xl font-black text-manises-blue">¡Pago Completado!</h3>
                 <p className="text-sm font-medium text-muted-foreground text-center">
                   Has recargado {formatCurrency(effectiveAmount)} con éxito.
                 </p>
@@ -245,14 +252,14 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-2xl font-black text-manises-blue">Añadir fondos</h3>
+                      <h3 id="topup-modal-title" className="text-2xl font-black text-manises-blue">Añadir fondos</h3>
                       <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-0.5 flex items-center gap-1">
                         <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                         Saldo actual: {formatCurrency(currentBalance)}
                       </p>
                     </div>
                     {!isProcessing && (
-                      <Button variant="ghost" size="icon" onClick={onClose} className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500">
+                      <Button variant="ghost" size="icon" onClick={onClose} aria-label="Cerrar" className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500">
                         <X className="w-5 h-5" />
                       </Button>
                     )}

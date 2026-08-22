@@ -4,6 +4,7 @@ import { Button } from '@/shared/ui/Button';
 import { formatDate, formatCurrency } from '@/shared/lib/utils';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { GameReceiptVisual } from './GameReceiptVisual';
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
 import type { Ticket } from '@/shared/types/domain';
 
 interface TicketReceiptModalProps {
@@ -24,6 +25,8 @@ export function TicketReceiptModal({
   orderDatesSummary,
   selectionSummary 
 }: TicketReceiptModalProps) {
+  const dialogRef = useDialogA11y<HTMLDivElement>({ active: !!ticket, onClose });
+
   if (!ticket) return null;
   const game = LOTTERY_GAMES.find((g) => g.id === ticket.gameId);
   const totalPrice = typeof ticket.metadata?.orderTotalPrice === 'number'
@@ -43,17 +46,22 @@ export function TicketReceiptModal({
           onClick={onClose}
         />
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ticket-receipt-title"
+          tabIndex={-1}
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className="relative w-full max-w-sm overflow-hidden rounded-[2.5rem] bg-white p-1 shadow-2xl"
+          className="relative w-full max-w-sm overflow-hidden rounded-[2.5rem] bg-white p-1 shadow-2xl outline-none"
         >
           <div className="rounded-[2.2rem] border-2 border-slate-50 bg-white p-6 pt-8">
             <div className="mb-6 flex flex-col items-center text-center">
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-manises-blue/5 text-manises-blue">
                 <ReceiptText className="h-8 w-8" />
               </div>
-              <h3 className="text-lg font-black uppercase tracking-tight text-manises-blue">
+              <h3 id="ticket-receipt-title" className="text-lg font-black uppercase tracking-tight text-manises-blue">
                 {title}
               </h3>
               <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">

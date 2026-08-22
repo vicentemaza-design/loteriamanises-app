@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { Xmark, Star, InfoCircle } from 'iconoir-react/regular';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { GameBadge } from '@/shared/ui/GameBadge';
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
 
 const SUBSCRIBABLE_GAME_IDS = [
   'loteria-navidad',
@@ -22,6 +23,7 @@ export function AbonarseModal({ isOpen, onClose, decimalNumber }: AbonarseModalP
   const navigate = useNavigate();
   const [quantities, setQuantities] = useState<Record<string, number>>({} as Record<string, number>);
   const [accepted, setAccepted] = useState(false);
+  const dialogRef = useDialogA11y<HTMLDivElement>({ active: isOpen, onClose });
 
   if (!isOpen) return null;
 
@@ -36,12 +38,18 @@ export function AbonarseModal({ isOpen, onClose, decimalNumber }: AbonarseModalP
   return (
     <div className="fixed inset-0 z-[250] flex flex-col">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-        className="relative mt-auto flex max-h-[90vh] flex-col rounded-t-3xl bg-white shadow-2xl">
+      <motion.div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="abonarse-modal-title"
+        tabIndex={-1}
+        initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+        className="relative mt-auto flex max-h-[90vh] flex-col rounded-t-3xl bg-white shadow-2xl outline-none">
 
         <div className="flex items-center justify-between px-5 pb-3 pt-5">
-          <p className="text-[16px] font-black text-manises-blue">Abonarse al número {decimalNumber}</p>
-          <button type="button" onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+          <p id="abonarse-modal-title" className="text-[16px] font-black text-manises-blue">Abonarse al número {decimalNumber}</p>
+          <button type="button" onClick={onClose} aria-label="Cerrar" className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500">
             <Xmark className="h-4 w-4" />
           </button>
         </div>
@@ -71,12 +79,14 @@ export function AbonarseModal({ isOpen, onClose, decimalNumber }: AbonarseModalP
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <button type="button" onClick={() => setQty(game.id, -1)} disabled={qty === 0}
-                    className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 text-[13px] font-black text-slate-400 disabled:opacity-30 hover:border-manises-blue hover:text-manises-blue transition-colors">
+                    aria-label="Disminuir cantidad"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-[13px] font-black text-slate-400 disabled:opacity-30 hover:border-manises-blue hover:text-manises-blue transition-colors">
                     −
                   </button>
                   <span className="w-4 text-center text-[13px] font-black text-manises-blue">{qty}</span>
                   <button type="button" onClick={() => setQty(game.id, 1)}
-                    className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 text-[13px] font-black text-slate-400 hover:border-manises-blue hover:text-manises-blue transition-colors">
+                    aria-label="Aumentar cantidad"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-[13px] font-black text-slate-400 hover:border-manises-blue hover:text-manises-blue transition-colors">
                     +
                   </button>
                 </div>

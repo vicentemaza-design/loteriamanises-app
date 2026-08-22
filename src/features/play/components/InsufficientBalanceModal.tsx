@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Wallet, X } from 'lucide-react';
 import { formatCurrency } from '@/shared/lib/utils';
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
 
 interface InsufficientBalanceModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ export function InsufficientBalanceModal({
   onAddBalance,
   onClose,
 }: InsufficientBalanceModalProps) {
+  const dialogRef = useDialogA11y<HTMLDivElement>({ active: isOpen, onClose });
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -30,17 +33,22 @@ export function InsufficientBalanceModal({
 
           <div className="pointer-events-none fixed inset-0 z-[121] flex items-center justify-center p-6">
             <motion.div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="insufficient-balance-title"
+              tabIndex={-1}
               initial={{ scale: 0.9, opacity: 0, y: 12 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 12 }}
               transition={{ type: 'spring', damping: 26, stiffness: 340 }}
-              className="pointer-events-auto relative w-full max-w-[340px] overflow-hidden rounded-[2rem] bg-white px-6 pb-6 pt-7 shadow-2xl"
+              className="pointer-events-auto relative w-full max-w-[340px] overflow-hidden rounded-[2rem] bg-white px-6 pb-6 pt-7 shadow-2xl outline-none"
             >
               {/* Close */}
               <button
                 type="button"
                 onClick={onClose}
-                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
+                className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
                 aria-label="Cerrar"
               >
                 <X className="h-4 w-4" />
@@ -57,7 +65,7 @@ export function InsufficientBalanceModal({
 
               {/* Heading */}
               <div className="mb-5 text-center">
-                <h2 className="text-[1.6rem] font-black leading-none text-manises-blue">¡Ups!</h2>
+                <h2 id="insufficient-balance-title" className="text-[1.6rem] font-black leading-none text-manises-blue">¡Ups!</h2>
                 <p className="mt-2 text-[15px] font-black leading-snug text-slate-800">
                   No tienes saldo suficiente
                 </p>

@@ -7,6 +7,7 @@ import { GameBadge } from '@/shared/ui/GameBadge';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useSubscriptions } from '@/features/profile/hooks/useSubscriptions';
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
 import { toast } from 'sonner';
 import type { Ticket } from '@/shared/types/domain';
 import type { SubscriptionDrawType } from '@/features/profile/data/subscriptionsDemo';
@@ -63,6 +64,7 @@ export function AbonarseDrawSheet({ ticket, onClose }: AbonarseDrawSheetProps) {
 
   const [selectedDrawTypes, setSelectedDrawTypes] = useState<SubscriptionDrawType[]>([]);
   const [quantity, setQuantity] = useState(1);
+  const dialogRef = useDialogA11y<HTMLDivElement>({ active: !!ticket, onClose });
 
   const game = ticket ? LOTTERY_GAMES.find(g => g.id === ticket.gameId) ?? null : null;
   const nationalNumber = ticket?.metadata?.nationalNumber ?? ticket?.numbers.join('').padStart(5, '0') ?? '';
@@ -127,11 +129,16 @@ export function AbonarseDrawSheet({ ticket, onClose }: AbonarseDrawSheetProps) {
           {/* Sheet */}
           <motion.div
             key="abonarse-sheet"
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="abonarse-sheet-title"
+            tabIndex={-1}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-            className="fixed inset-x-0 bottom-0 z-[80] flex max-h-[88vh] flex-col overflow-hidden rounded-t-[2.5rem] bg-white"
+            className="fixed inset-x-0 bottom-0 z-[80] flex max-h-[88vh] flex-col overflow-hidden rounded-t-[2.5rem] bg-white outline-none"
           >
             {/* Drag handle */}
             <div className="flex shrink-0 justify-center pb-1 pt-3">
@@ -150,12 +157,13 @@ export function AbonarseDrawSheet({ ticket, onClose }: AbonarseDrawSheetProps) {
               )}
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Crear abono</p>
-                <p className="text-[15px] font-black leading-tight text-manises-blue">{game?.name}</p>
+                <p id="abonarse-sheet-title" className="text-[15px] font-black leading-tight text-manises-blue">{game?.name}</p>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-transform active:scale-90"
+                aria-label="Cerrar"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-transform active:scale-90"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -261,7 +269,8 @@ export function AbonarseDrawSheet({ ticket, onClose }: AbonarseDrawSheetProps) {
                             type="button"
                             onClick={() => setQuantity(q => Math.max(1, q - 1))}
                             disabled={quantity <= 1}
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-manises-blue disabled:opacity-30 active:scale-95 transition-transform"
+                            aria-label="Disminuir cantidad"
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-manises-blue disabled:opacity-30 active:scale-95 transition-transform"
                           >
                             <Minus className="h-4 w-4" />
                           </button>
@@ -275,7 +284,8 @@ export function AbonarseDrawSheet({ ticket, onClose }: AbonarseDrawSheetProps) {
                             type="button"
                             onClick={() => setQuantity(q => Math.min(10, q + 1))}
                             disabled={quantity >= 10}
-                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-manises-blue/20 bg-manises-blue/8 text-manises-blue disabled:opacity-30 active:scale-95 transition-transform"
+                            aria-label="Aumentar cantidad"
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-manises-blue/20 bg-manises-blue/8 text-manises-blue disabled:opacity-30 active:scale-95 transition-transform"
                           >
                             <Plus className="h-4 w-4" />
                           </button>

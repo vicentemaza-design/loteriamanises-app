@@ -7,6 +7,7 @@ import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { getDrawScheduleConfig } from '@/features/play/config/draw-schedule.config';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { toast } from 'sonner';
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
 import type { Ticket } from '@/shared/types/domain';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -47,6 +48,7 @@ export function RepeatDrawSheet({ ticket, onClose }: RepeatDrawSheetProps) {
   const { profile } = useAuth();
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [mode, setMode] = useState<'same' | 'random'>('same');
+  const dialogRef = useDialogA11y<HTMLDivElement>({ active: !!ticket, onClose });
 
   const game   = ticket ? LOTTERY_GAMES.find(g => g.id === ticket.gameId) ?? null : null;
   const config = ticket ? getDrawScheduleConfig(ticket.gameType) : null;
@@ -117,11 +119,16 @@ export function RepeatDrawSheet({ ticket, onClose }: RepeatDrawSheetProps) {
           {/* Sheet */}
           <motion.div
             key="repeat-sheet"
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="repeat-sheet-title"
+            tabIndex={-1}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 240 }}
-            className="fixed inset-x-0 bottom-0 z-[80] flex max-h-[82vh] flex-col overflow-hidden rounded-t-[2.5rem] bg-white"
+            className="fixed inset-x-0 bottom-0 z-[80] flex max-h-[82vh] flex-col overflow-hidden rounded-t-[2.5rem] bg-white outline-none"
           >
 
             {/* Drag handle */}
@@ -141,12 +148,13 @@ export function RepeatDrawSheet({ ticket, onClose }: RepeatDrawSheetProps) {
               )}
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Repetir jugada</p>
-                <p className="text-[15px] font-black leading-tight text-manises-blue">{game?.name}</p>
+                <p id="repeat-sheet-title" className="text-[15px] font-black leading-tight text-manises-blue">{game?.name}</p>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-transform active:scale-90"
+                aria-label="Cerrar"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-transform active:scale-90"
               >
                 <X className="h-4 w-4" />
               </button>

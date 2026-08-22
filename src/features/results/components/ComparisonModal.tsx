@@ -6,6 +6,7 @@ import { NumberBall } from '@/shared/ui/NumberBall';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { formatCurrency, formatDate } from '@/shared/lib/utils';
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
 import type { Ticket, LotteryGame } from '@/shared/types/domain';
 
 interface ComparisonModalProps {
@@ -46,6 +47,7 @@ function evaluateNationalTicket(
  * Cumple con la petición de MILOTO de poder comparar mi boleto con el resultado en una misma pantalla.
  */
 export function ComparisonModal({ isOpen, onClose, result, userTickets }: ComparisonModalProps) {
+  const dialogRef = useDialogA11y<HTMLDivElement>({ active: isOpen, onClose });
   const game = LOTTERY_GAMES.find(g => g.id === result.gameId);
   if (!game) return null;
   const isNationalLottery = game.type === 'loteria-nacional' || game.type === 'navidad' || game.type === 'nino';
@@ -65,10 +67,15 @@ export function ComparisonModal({ isOpen, onClose, result, userTickets }: Compar
           />
           
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="comparison-modal-title"
+            tabIndex={-1}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            className="relative w-full max-w-lg bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] rounded-t-[2rem] sm:rounded-[2rem] shadow-[0_30px_60px_rgba(10,25,47,0.30)] overflow-hidden max-h-[90vh] flex flex-col border border-white/80"
+            className="relative w-full max-w-lg bg-[linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)] rounded-t-[2rem] sm:rounded-[2rem] shadow-[0_30px_60px_rgba(10,25,47,0.30)] overflow-hidden max-h-[90vh] flex flex-col border border-white/80 outline-none"
           >
             {/* Header */}
             <div className="relative flex items-center justify-between p-6 border-b border-gray-100 bg-[linear-gradient(135deg,rgba(10,25,47,0.06)_0%,rgba(227,182,87,0.10)_100%)]">
@@ -76,11 +83,11 @@ export function ComparisonModal({ isOpen, onClose, result, userTickets }: Compar
               <div className="flex items-center gap-3">
                 <GameBadge game={game} size="sm" />
                 <div>
-                  <h3 className="font-black text-manises-blue">Resumen de escrutinio</h3>
+                  <h3 id="comparison-modal-title" className="font-black text-manises-blue">Resumen de escrutinio</h3>
                   <p className="text-[10px] text-muted-foreground font-medium">Lectura disponible del sorteo {formatDate(result.date)}</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+              <Button variant="ghost" size="icon" onClick={onClose} aria-label="Cerrar" className="rounded-full">
                 <X className="w-5 h-5" />
               </Button>
             </div>

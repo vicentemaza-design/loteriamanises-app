@@ -5,6 +5,7 @@ import { GameBadge } from '@/shared/ui/GameBadge';
 import { Button } from '@/shared/ui/Button';
 import { cn } from '@/shared/lib/utils';
 import { MOTION_EASE_OUT, listItemFadeUp, listStagger, panelSwap } from '@/shared/lib/motion';
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
 import type { GameHelpContent } from '../lib/game-help';
 
 interface GameInfoSheetProps {
@@ -15,6 +16,8 @@ interface GameInfoSheetProps {
 }
 
 export function GameInfoSheet({ game, isOpen, onClose, content }: GameInfoSheetProps) {
+  const dialogRef = useDialogA11y<HTMLDivElement>({ active: isOpen, onClose });
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -31,7 +34,12 @@ export function GameInfoSheet({ game, isOpen, onClose, content }: GameInfoSheetP
           />
 
           <motion.div
-            className="fixed inset-x-0 bottom-0 z-[80] mx-auto w-full max-w-[32rem] overflow-hidden rounded-t-[2rem] border border-white/10 bg-white shadow-[0_-24px_80px_rgba(15,23,42,0.35)]"
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="game-info-title"
+            tabIndex={-1}
+            className="fixed inset-x-0 bottom-0 z-[80] mx-auto w-full max-w-[32rem] overflow-hidden rounded-t-[2rem] border border-white/10 bg-white shadow-[0_-24px_80px_rgba(15,23,42,0.35)] outline-none"
             variants={panelSwap}
             initial="initial"
             animate="animate"
@@ -49,7 +57,7 @@ export function GameInfoSheet({ game, isOpen, onClose, content }: GameInfoSheetP
                   <GameBadge game={game} size="md" className="bg-white/10 shadow-none" />
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/68">Guía contextual</p>
-                    <h2 className="mt-1 text-xl font-black leading-tight">{game.name}</h2>
+                    <h2 id="game-info-title" className="mt-1 text-xl font-black leading-tight">{game.name}</h2>
                     <div className="mt-2 flex items-center gap-2">
                       <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white">
                         {content.modeLabel}

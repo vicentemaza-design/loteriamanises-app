@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from 'react';
 import { motion } from 'motion/react';
 import { Xmark, MapPin, Phone, Mail, User, Trash, EditPencil, NavArrowRight } from 'iconoir-react/regular';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
 
 export interface ShippingAddress {
   name: string;
@@ -84,6 +85,7 @@ export function ShippingAddressModal({ isOpen, onClose, onSave, savedAddress }: 
   const { profile } = useAuth();
   const [editing, setEditing] = useState(false);
   const [showNew, setShowNew] = useState(false);
+  const dialogRef = useDialogA11y<HTMLDivElement>({ active: isOpen, onClose });
 
   if (!isOpen) return null;
 
@@ -99,12 +101,18 @@ export function ShippingAddressModal({ isOpen, onClose, onSave, savedAddress }: 
   return (
     <div className="fixed inset-0 z-[250] flex flex-col">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-        className="relative mt-auto flex max-h-[92vh] flex-col rounded-t-3xl bg-[#f6f8fb] shadow-2xl">
+      <motion.div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="shipping-address-title"
+        tabIndex={-1}
+        initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+        className="relative mt-auto flex max-h-[92vh] flex-col rounded-t-3xl bg-[#f6f8fb] shadow-2xl outline-none">
 
         <div className="flex items-center justify-between px-5 pb-3 pt-5">
-          <p className="text-[16px] font-black text-manises-blue">Datos de envío</p>
-          <button type="button" onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+          <p id="shipping-address-title" className="text-[16px] font-black text-manises-blue">Datos de envío</p>
+          <button type="button" onClick={onClose} aria-label="Cerrar" className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500">
             <Xmark className="h-4 w-4" />
           </button>
         </div>
