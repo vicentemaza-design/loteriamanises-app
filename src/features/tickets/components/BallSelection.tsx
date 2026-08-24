@@ -26,9 +26,18 @@ export function BallSelection({
   const ballSize  = large ? 'h-9 w-9' : medium ? 'h-8 w-8' : compact ? 'h-[22px] w-[22px]' : 'h-7 w-7';
   const ballText  = large ? 'text-[13px] font-black' : medium ? 'text-[12px] font-bold' : compact ? 'text-[10px] font-extrabold' : 'text-[11px] font-bold';
   const gap       = large ? 'gap-2' : medium ? 'gap-1.5' : compact ? 'gap-1' : 'gap-1.5';
+  // EuroDreams en tamaño "large" (detalle de jugada): nube + bola del sueño
+  // quedaban muy justas al final de la fila. Solo para ese caso, la bola del
+  // sueño baja un escalón de tamaño (al mismo que ya se usa como "medium");
+  // el resto de juegos y tamaños no cambian.
+  const specialBallSize = isDream && large ? 'h-8 w-8' : ballSize;
+  const specialBallText = isDream && large ? 'text-[12px] font-black' : ballText;
+  // Mismo caso: un poco menos de separación entre elementos (no su tamaño)
+  // para que la fila entera respire sin recortarse en móviles de 375px+.
+  const rowGap = isDream && large ? 'gap-1' : gap;
 
   return (
-    <div className={cn('flex items-center', gap, 'overflow-x-auto')}>
+    <div className={cn('flex items-center', rowGap, 'overflow-x-auto')}>
       {/* ── Números ─────────────────────────────────────────────── */}
       {numbers.map((n, i) => (
         <div
@@ -63,9 +72,11 @@ export function BallSelection({
                 </svg>
               </div>
             ) : isDream ? (
-              /* Nube violeta para EuroDreams */
+              /* Nube violeta para EuroDreams — un punto más pequeña en
+                 "large" para que quepa junto a la bola del sueño sin
+                 apretarse (ver specialBallSize más arriba). */
               <svg viewBox="0 0 24 24" fill="#7c3aed" opacity="0.25"
-                className={large ? 'h-8 w-8' : medium ? 'h-7 w-7' : compact ? 'h-4 w-4' : 'h-6 w-6'}>
+                className={large ? 'h-7 w-7' : medium ? 'h-7 w-7' : compact ? 'h-4 w-4' : 'h-6 w-6'}>
                 <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z" />
               </svg>
             ) : (
@@ -83,8 +94,8 @@ export function BallSelection({
               key={`s-${i}`}
               className={cn(
                 'flex shrink-0 items-center justify-center rounded-full border transition-all',
-                ballSize,
-                ballText,
+                specialBallSize,
+                specialBallText,
                 isDream
                   ? matchedStars.includes(s)
                     ? 'border-violet-600 bg-violet-600 text-white shadow-[0_0_12px_rgba(124,58,237,0.4)]'

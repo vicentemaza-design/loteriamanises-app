@@ -1455,7 +1455,15 @@ function PedidoResumen({ ticket }: { ticket: Ticket }) {
             </div>
             <div className="min-w-0">
               <p className="text-[8px] font-black uppercase tracking-wider text-slate-400">{label}</p>
-              <p className="break-all text-[10px] font-black text-manises-blue">{value}</p>
+              <p className={cn(
+                'text-[10px] font-black text-manises-blue',
+                // Titular es nombre + apellidos con espacios: partir por
+                // palabra (break-words) evita cortes feos a mitad de
+                // apellido ("Rafael Sanchis Penad" / "és"). El resto de
+                // celdas son códigos sin espacios (TLJ-…, SEL-…) que sí
+                // necesitan poder partirse en cualquier punto si no caben.
+                label === 'Titular' ? 'break-words' : 'break-all'
+              )}>{value}</p>
             </div>
           </div>
         ))}
