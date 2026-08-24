@@ -1120,6 +1120,11 @@ function SingleDrawDetail({
                         const rowMatchedNums = allMatchedNums.filter(n => rowNums.includes(n));
                         return (
                           <div key={rowIdx} className="flex items-center gap-2">
+                            {bets.length > 1 && (
+                              <span className="w-5 shrink-0 text-right text-[9px] font-black text-slate-300 tabular-nums">
+                                {rowIdx === 0 ? i + 1 : ''}
+                              </span>
+                            )}
                             <BallSelection
                               numbers={rowNums}
                               stars={isLast && game.type !== 'gordo' ? bet.stars : undefined}
@@ -1336,6 +1341,11 @@ function SemanalDetail({
                             const rowMatchedNums = allMatchedNums.filter(n => rowNums.includes(n));
                             return (
                               <div key={rowIdx} className="flex items-center gap-2">
+                                {bets.length > 1 && (
+                                  <span className="w-5 shrink-0 text-right text-[9px] font-black text-slate-300 tabular-nums">
+                                    {rowIdx === 0 ? betIdx + 1 : ''}
+                                  </span>
+                                )}
                                 <BallSelection
                                   numbers={rowNums}
                                   stars={isLast ? bet.stars : undefined}
