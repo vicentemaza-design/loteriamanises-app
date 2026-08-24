@@ -14,11 +14,14 @@
     EMAIL 03 · Pedido escrutado — Juegos Activos
     Variables hero: {{HERO_COLOR}}     — color oscuro del juego
                     {{HERO_IMAGE_URL}} — imagen CDN del juego
-    Variables: {{NOMBRE_JUEGO}} {{FECHA_SORTEO}} {{NUM_APUESTAS}}
+    Variables: {{NOMBRE_JUEGO}} {{FECHA_SORTEO}} {{NUM_APUESTAS}} {{NUMERO_PEDIDO}} {{NUMERO_JUGADA}}
                {{IMPORTE_JUGADO}} {{URL_COMPRA_CERTIFICADA}}
                {{URL_VERSION_WEB}} {{URL_APP_STORE}} {{URL_GOOGLE_PLAY}}
                https://www.facebook.com/LoteriaManises/ https://www.instagram.com/loteriamanises/ https://x.com/loteriamanises
     CON PREMIO: {{IMPORTE_PREMIO}} {{CTA_TEXTO}}
+    NOTA {{NUMERO_JUGADA}}: identificador de la jugada individual (distinto del
+               nº de pedido, que agrupa todas las jugadas de la misma compra) — PENDIENTE BE:
+               no hay hoy ningún campo poblado en mock/adapters equivalente a este valor.
     BE: renderizar UNA sola variante del hero según resultado:
       — CON PREMIO: bloque [HERO CON PREMIO] (activo por defecto)
       — SIN PREMIO: bloque [HERO SIN PREMIO] (comentado, activar y eliminar el otro)
@@ -76,8 +79,8 @@
 
         <!-- BARRA PREHEADER OSCURA -->
         <tr>
-          <td bgcolor="#0B2145"
-              style="background-color:#0B2145;padding:9px 24px;
+          <td bgcolor="#0B3320"
+              style="background-color:#0B3320;padding:9px 24px;
                      text-align:center;border-bottom:1px solid rgba(255,255,255,0.10);">
             <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
                        font-size:11px;line-height:1.5;color:rgba(255,255,255,0.6);">
@@ -205,25 +208,93 @@
         [/HERO SIN PREMIO]
         -->
 
-        <!-- RESUMEN 4 COLUMNAS -->
+        <!-- RESUMEN — Nº de pedido en fila propia a todo el ancho (necesita
+             espacio para ser legible: identifica la jugada exacta cuando hay
+             varias del mismo juego) + las 4 columnas originales debajo -->
         <tr>
           <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:24px 24px 0;">
             <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
                    style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
               <tr>
-                <td class="summary-col" width="25%" style="text-align:center;padding:18px 8px 14px;border-right:1px solid #F3F4F6;">
+                <td colspan="4" style="padding:14px 20px;border-bottom:1px solid #F3F4F6;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td width="24" valign="middle" style="width:24px;padding-right:8px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-solicitud-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td width="100" style="width:100px;padding-right:12px;vertical-align:middle;word-wrap:break-word;overflow-wrap:break-word;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#596175;text-transform:uppercase;letter-spacing:0.08em;">N&ordm; de pedido</td>
+                      <td style="text-align:right;white-space:nowrap;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#0D1B3D;vertical-align:middle;">{{NUMERO_PEDIDO}}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="4" style="padding:14px 20px;border-bottom:1px solid #F3F4F6;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td width="24" valign="middle" style="width:24px;padding-right:8px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-ticket-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td width="100" style="width:100px;padding-right:12px;vertical-align:middle;word-wrap:break-word;overflow-wrap:break-word;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#596175;text-transform:uppercase;letter-spacing:0.08em;">N&ordm; de jugada</td>
+                      <td style="text-align:right;white-space:nowrap;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;color:#0D1B3D;vertical-align:middle;">{{NUMERO_JUGADA}}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="summary-col" width="25%" valign="top" style="text-align:center;vertical-align:top;padding:18px 8px 14px;border-right:1px solid #F3F4F6;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="margin:0 auto 6px auto;border-collapse:separate !important;">
+                    <tr>
+                      <td width="24" height="24" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                        <img src="https://cdn.loteriamanises.com/emails/icon-ticket-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#596175;text-transform:uppercase;letter-spacing:0.08em;">Juego</p>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#0D1B3D;">{{NOMBRE_JUEGO}}</p>
                 </td>
-                <td class="summary-col" width="25%" style="text-align:center;padding:18px 8px 14px;border-right:1px solid #F3F4F6;">
+                <td class="summary-col" width="25%" valign="top" style="text-align:center;vertical-align:top;padding:18px 8px 14px;border-right:1px solid #F3F4F6;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="margin:0 auto 6px auto;border-collapse:separate !important;">
+                    <tr>
+                      <td width="24" height="24" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                        <img src="https://cdn.loteriamanises.com/emails/icon-calendar-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#596175;text-transform:uppercase;letter-spacing:0.08em;">Fecha sorteo</p>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#0D1B3D;">{{FECHA_SORTEO}}</p>
                 </td>
-                <td class="summary-col" width="25%" style="text-align:center;padding:18px 8px 14px;border-right:1px solid #F3F4F6;">
+                <td class="summary-col" width="25%" valign="top" style="text-align:center;vertical-align:top;padding:18px 8px 14px;border-right:1px solid #F3F4F6;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="margin:0 auto 6px auto;border-collapse:separate !important;">
+                    <tr>
+                      <td width="24" height="24" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                        <img src="https://cdn.loteriamanises.com/emails/icon-package-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#596175;text-transform:uppercase;letter-spacing:0.08em;">Apuestas</p>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#0D1B3D;">{{NUM_APUESTAS}}</p>
                 </td>
-                <td class="summary-col" width="25%" style="text-align:center;padding:18px 8px 14px;">
+                <td class="summary-col" width="25%" valign="top" style="text-align:center;vertical-align:top;padding:18px 8px 14px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="margin:0 auto 6px auto;border-collapse:separate !important;">
+                    <tr>
+                      <td width="24" height="24" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                        <img src="https://cdn.loteriamanises.com/emails/icon-importe-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#596175;text-transform:uppercase;letter-spacing:0.08em;">Jugado</p>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:17px;font-weight:700;color:#1565C0;">{{IMPORTE_JUGADO}}</p>
                 </td>
@@ -232,30 +303,12 @@
           </td>
         </tr>
 
-        <!-- DETALLE APUESTAS (BE renderiza segun resultado) -->
-        <!-- BE: siempre incluir. CON PREMIO: filas con categoria e importe.
-             SIN PREMIO: fila unica 'Sin premio esta vez'.
-             Ejemplo fila con premio:
-             <tr style="border-bottom:1px solid #F3F4F6;">
-               <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D1B3D;">Apuesta 1</td>
-               <td style="padding:10px 12px;font-size:12px;color:#64748B;text-align:center;">3 Categoria</td>
-               <td style="padding:10px 16px;font-size:14px;font-weight:700;color:#16A34A;text-align:right;">125,00 EUR</td>
-             </tr>
-        -->
-        <tr>
-          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:16px 24px 0;">
-            <p style="margin:0 0 10px 0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase;letter-spacing:0.08em;">Detalle del escrutinio</p>
-            <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                   style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;">
-              <tr style="background-color:#F8FAFC;">
-                <td style="padding:10px 16px;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;font-weight:600;color:#596175;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #E5E7EB;width:35%;">Apuesta</td>
-                <td style="padding:10px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;font-weight:600;color:#596175;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #E5E7EB;width:30%;text-align:center;">Categor&iacute;a</td>
-                <td style="padding:10px 16px;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;font-weight:600;color:#596175;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #E5E7EB;width:35%;text-align:right;">Premio</td>
-              </tr>
-              {{BLOQUE_APUESTAS_PREMIADAS}}
-            </table>
-          </td>
-        </tr>
+        <!-- El detalle de columnas premiadas (Apuesta/Categoría/Premio) se ha
+             retirado a petición del cliente: en Juegos Activos el total del
+             premio ya se muestra en el hero (bloque CON PREMIO); para más
+             detalle el usuario debe ir a su Compra Certificada (ver CTA y
+             aviso legal más abajo). No aplica a escrutinio de Lotería
+             Nacional, que mantiene su propio detalle. -->
 
         <!-- CTA — texto variable según resultado -->
         <tr>

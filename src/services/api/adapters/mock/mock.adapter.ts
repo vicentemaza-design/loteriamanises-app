@@ -12,7 +12,7 @@ import { getLatestResultsMock, getResultByIdMock } from './results.mock';
 import { getUserTicketsMock, getTicketByIdMock } from './tickets.mock';
 import { placeBetMock, submitPlaySessionMock } from './play.mock';
 import { getBalanceMock, getMovementsMock, topUpMock } from './wallet.mock';
-import { listBankAccountsMock, addBankAccountMock, verifyBankAccountOwnershipMock } from './bank-accounts.mock';
+import { listBankAccountsMock, addBankAccountMock, verifyBankAccountOwnershipMock, deleteBankAccountMock, setDefaultBankAccountMock } from './bank-accounts.mock';
 import { createWithdrawalMock } from './withdrawals.mock';
 import { subscriptionsMock } from './subscriptions.mock';
 import { requestProfileChangeVerificationMock, confirmProfileChangeVerificationMock } from './profile.mock';
@@ -64,6 +64,8 @@ export class MockAdapter implements IApiProvider {
       list: listBankAccountsMock,
       add: addBankAccountMock,
       verifyOwnership: verifyBankAccountOwnershipMock,
+      delete: deleteBankAccountMock,
+      setDefault: setDefaultBankAccountMock,
     },
     createWithdrawal: createWithdrawalMock,
   };

@@ -83,6 +83,12 @@ export function TicketReceiptModal({
                   <span>CÓDIGO:</span>
                   <span className="font-bold text-manises-blue">{ticketCode}</span>
                 </div>
+                {/* Nº de pedido (arriba) sin tocar — fila puramente aditiva.
+                    BE aún no puebla ticket.selaeTicketId en ningún adapter. */}
+                <div className="flex justify-between">
+                  <span>Nº JUGADA:</span>
+                  <span className="font-bold text-manises-blue">{ticket.selaeTicketId ?? '—'}</span>
+                </div>
               </div>
 
               <div className="py-2">

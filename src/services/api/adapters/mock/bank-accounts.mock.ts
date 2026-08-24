@@ -5,6 +5,10 @@ import type {
   VerifyBankAccountInput,
   VerifyBankAccountResult,
   BankAccountVerificationOutcome,
+  DeleteBankAccountInput,
+  DeleteBankAccountResult,
+  SetDefaultBankAccountInput,
+  SetDefaultBankAccountResult,
 } from '../../contracts/bank-accounts.contracts';
 
 /**
@@ -154,5 +158,40 @@ export async function verifyBankAccountOwnershipMock(input: VerifyBankAccountInp
 
       resolve({ outcome, bankAccount: updatedAccount });
     }, 1100);
+  });
+}
+
+/**
+ * Removes an account. If it was the default, no other account is
+ * auto-promoted — explicit, minimal rule: the user picks the next default
+ * themselves (setDefaultBankAccountMock) rather than the system guessing.
+ * Deleting an unknown id is a no-op that still resolves with the current list.
+ */
+export async function deleteBankAccountMock(input: DeleteBankAccountInput): Promise<DeleteBankAccountResult> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const accounts = readStoredAccounts().filter((a) => a.id !== input.bankAccountId);
+      writeStoredAccounts(accounts);
+      resolve({ accounts });
+    }, 500);
+  });
+}
+
+/**
+ * Marks exactly one account as default, clearing the flag on every other
+ * one. Setting an unknown id leaves every account's isDefault untouched.
+ */
+export async function setDefaultBankAccountMock(input: SetDefaultBankAccountInput): Promise<SetDefaultBankAccountResult> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const accounts = readStoredAccounts();
+      if (!accounts.some((a) => a.id === input.bankAccountId)) {
+        reject(new Error('bank-accounts.setDefault: unknown bankAccountId'));
+        return;
+      }
+      const updated = accounts.map((a) => ({ ...a, isDefault: a.id === input.bankAccountId }));
+      writeStoredAccounts(updated);
+      resolve({ accounts: updated });
+    }, 400);
   });
 }

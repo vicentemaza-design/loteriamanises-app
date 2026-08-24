@@ -8,6 +8,10 @@ import type {
   AddBankAccountResult,
   VerifyBankAccountInput,
   VerifyBankAccountResult,
+  DeleteBankAccountInput,
+  DeleteBankAccountResult,
+  SetDefaultBankAccountInput,
+  SetDefaultBankAccountResult,
 } from '../../contracts/bank-accounts.contracts';
 import type {
   CreateWithdrawalInput,
@@ -186,6 +190,12 @@ export class HttpAdapter implements IApiProvider {
       },
       verifyOwnership: async (_input: VerifyBankAccountInput): Promise<VerifyBankAccountResult> => {
         throw new Error('HttpAdapter: wallet.bankAccounts.verifyOwnership — pending BE endpoint definition');
+      },
+      delete: async (_input: DeleteBankAccountInput): Promise<DeleteBankAccountResult> => {
+        throw new Error('HttpAdapter: wallet.bankAccounts.delete — pending BE endpoint definition');
+      },
+      setDefault: async (_input: SetDefaultBankAccountInput): Promise<SetDefaultBankAccountResult> => {
+        throw new Error('HttpAdapter: wallet.bankAccounts.setDefault — pending BE endpoint definition');
       },
     },
 

@@ -75,6 +75,7 @@ export function ProfilePage() {
         { icon: Repeat,         label: 'Mis abonos de juegos', detail: () => <span className="text-[10px] font-black text-emerald-500">{activeCount} activos</span>, color: 'text-emerald-700', bg: 'bg-emerald-50', onClick: () => navigate('/profile/game-subscriptions') },
         { icon: Repeat,         label: 'Movimientos',          detail: null, color: 'text-cyan-700', bg: 'bg-cyan-50', onClick: () => navigate('/profile/movements') },
         { icon: Bank,           label: 'Cobrar premios',       detail: null, color: 'text-emerald-700', bg: 'bg-emerald-50', onClick: () => navigate('/profile/withdrawals') },
+        { icon: Bank,           label: 'Mis cuentas bancarias',detail: null, color: 'text-teal-700',    bg: 'bg-teal-50',    onClick: () => navigate('/profile/bank-accounts') },
         { icon: Building,       label: 'Empresas y colectivos',detail: null, color: 'text-indigo-700', bg: 'bg-indigo-50', onClick: () => navigate('/profile/companies') },
       ],
     },

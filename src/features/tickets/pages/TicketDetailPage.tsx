@@ -1418,7 +1418,10 @@ function PedidoResumen({ ticket }: { ticket: Ticket }) {
     { icon: CheckCircle2, label: 'Fecha confirmación',    value: confirmedAt ? formatDate(confirmedAt) : '—' },
     { icon: User,         label: 'Titular',                value: holderName ?? '—' },
     { icon: CreditCard,   label: 'NIF',                    value: holderNif ?? '—' },
-    { icon: CreditCard,   label: 'Forma de pago',           value: '—' },
+    // Antes "Forma de pago" (siempre '—', sin dato real detrás) — sustituido
+    // por Nº jugada a petición del cliente para no añadir una 7ª celda al
+    // grid. BE aún no puebla ticket.selaeTicketId en ningún adapter.
+    { icon: Hash,         label: 'Nº jugada',            value: ticket.selaeTicketId ?? '—' },
   ];
 
   return (

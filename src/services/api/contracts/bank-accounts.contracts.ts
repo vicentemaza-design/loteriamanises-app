@@ -58,3 +58,26 @@ export interface VerifyBankAccountResult {
   outcome: BankAccountVerificationOutcome;
   bankAccount: BankAccountDto;
 }
+
+export interface DeleteBankAccountInput {
+  bankAccountId: string;
+}
+
+export interface DeleteBankAccountResult {
+  /**
+   * The remaining accounts after deletion, so the caller never has to
+   * separately re-derive default/ordering client-side. If the deleted
+   * account was the default one, no other account is auto-promoted — see
+   * deleteBankAccountMock: minimal, explicit rule, nothing invented.
+   */
+  accounts: BankAccountDto[];
+}
+
+export interface SetDefaultBankAccountInput {
+  bankAccountId: string;
+}
+
+export interface SetDefaultBankAccountResult {
+  /** The full list, already reflecting the single new default. */
+  accounts: BankAccountDto[];
+}

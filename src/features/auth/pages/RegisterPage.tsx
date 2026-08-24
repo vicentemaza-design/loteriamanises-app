@@ -26,6 +26,7 @@ import { PasswordRequirementsList } from '@/features/auth/components/PasswordReq
 import { isValidEmail } from '@/features/auth/lib/authValidation';
 import { isPasswordValid } from '@/features/auth/lib/passwordRules';
 import {
+  hasValidDocumentFormat,
   isAdult,
   isValidDocumentNumber,
   isValidPhone,
@@ -132,6 +133,13 @@ export function RegisterPage() {
     if (!lastName.trim()) next.lastName = 'Los apellidos son obligatorios.';
 
     if (!documentNumber.trim()) next.documentNumber = 'El número de documento es obligatorio.';
+    // NIF con formato correcto (8 dígitos + letra) pero letra de control
+    // incorrecta: mensaje específico. NIE/PASAPORTE nunca pasan por aquí,
+    // solo verifican formato (isValidDocumentNumber === hasValidDocumentFormat
+    // para esos dos tipos).
+    else if (documentType === 'NIF' && hasValidDocumentFormat('NIF', documentNumber) && !isValidDocumentNumber('NIF', documentNumber)) {
+      next.documentNumber = 'NIF no válido';
+    }
     else if (!isValidDocumentNumber(documentType, documentNumber)) next.documentNumber = 'Formato de documento no válido.';
 
     if (!birthDate) next.birthDate = 'La fecha de nacimiento es obligatoria.';
@@ -434,9 +442,9 @@ export function RegisterPage() {
                   {errors.documentNumber && <p id="reg-documentNumber-error" role="alert" className="text-[11px] text-red-300 font-semibold mt-1 pl-1">{errors.documentNumber}</p>}
                 </div>
 
-                <div>
+                <div className="min-w-0">
                   <label htmlFor="reg-birthDate" className="text-[10px] font-black text-white/40 uppercase tracking-[0.15em] block mb-1.5">Fecha de nacimiento</label>
-                  <div className="relative">
+                  <div className="relative min-w-0">
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
                     <Input
                       id="reg-birthDate"
@@ -445,7 +453,14 @@ export function RegisterPage() {
                       autoComplete="bday"
                       aria-invalid={Boolean(errors.birthDate)}
                       aria-describedby={errors.birthDate ? 'reg-birthDate-error' : undefined}
-                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold [color-scheme:dark]"
+                      // min-w-0 + max-w-full: un <input type="date"> es un
+                      // elemento reemplazado cuyo ancho intrínseco (nativo)
+                      // puede ignorar el w-full heredado, especialmente en
+                      // iOS Safari. text-base (16px): por debajo de 16px,
+                      // iOS Safari hace zoom automático de toda la página al
+                      // enfocar el campo — eso es lo que se percibe como "el
+                      // módulo crece y se sale de los márgenes" al interactuar.
+                      className="pl-11 h-12 w-full min-w-0 max-w-full box-border bg-white/5 border-white/10 text-white text-base placeholder:text-white/20 rounded-xl focus:ring-manises-gold [color-scheme:dark]"
                       value={birthDate}
                       onChange={(e) => { setBirthDate(e.target.value); clearError('birthDate'); }}
                     />

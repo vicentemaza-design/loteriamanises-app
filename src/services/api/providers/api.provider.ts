@@ -25,6 +25,10 @@ import type {
   AddBankAccountResult,
   VerifyBankAccountInput,
   VerifyBankAccountResult,
+  DeleteBankAccountInput,
+  DeleteBankAccountResult,
+  SetDefaultBankAccountInput,
+  SetDefaultBankAccountResult,
 } from '../contracts/bank-accounts.contracts';
 import type {
   CreateWithdrawalInput,
@@ -177,6 +181,14 @@ export interface IApiProvider {
        * provider returns. Never compare holderName to the profile in FE.
        */
       verifyOwnership: (input: VerifyBankAccountInput) => Promise<VerifyBankAccountResult>;
+      /**
+       * If the deleted account was the default one, no other account is
+       * auto-promoted — the user must explicitly pick a new default. See
+       * deleteBankAccountMock.
+       */
+      delete: (input: DeleteBankAccountInput) => Promise<DeleteBankAccountResult>;
+      /** Exactly one account is default at a time; setting one clears the rest. */
+      setDefault: (input: SetDefaultBankAccountInput) => Promise<SetDefaultBankAccountResult>;
     };
     /**
      * Creates a DEMO withdrawal request — this phase only. No real transfer,

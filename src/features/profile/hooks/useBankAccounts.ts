@@ -49,5 +49,29 @@ export function useBankAccounts() {
     setAccounts((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
   }, []);
 
-  return { accounts, isLoading, addAccount, updateAccountLocally, reload: load };
+  /** Resolves true on success. On failure, the local list is left untouched — no optimistic removal. */
+  const deleteAccount = useCallback(async (bankAccountId: string): Promise<boolean> => {
+    try {
+      const client = await createApiClient();
+      const result = await client.wallet.bankAccounts.delete({ bankAccountId });
+      setAccounts(result.accounts);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  /** Resolves true on success. On failure, the local list is left untouched — no optimistic default flip. */
+  const setDefaultAccount = useCallback(async (bankAccountId: string): Promise<boolean> => {
+    try {
+      const client = await createApiClient();
+      const result = await client.wallet.bankAccounts.setDefault({ bankAccountId });
+      setAccounts(result.accounts);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  return { accounts, isLoading, addAccount, updateAccountLocally, deleteAccount, setDefaultAccount, reload: load };
 }

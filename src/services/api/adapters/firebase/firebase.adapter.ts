@@ -115,6 +115,8 @@ export class FirebaseAdapter implements IApiProvider {
       list: async () => { throw new Error('FirebaseAdapter: wallet.bankAccounts.list — not implemented, out of scope for this phase'); },
       add: async () => { throw new Error('FirebaseAdapter: wallet.bankAccounts.add — not implemented, out of scope for this phase'); },
       verifyOwnership: async () => { throw new Error('FirebaseAdapter: wallet.bankAccounts.verifyOwnership — not implemented, out of scope for this phase'); },
+      delete: async () => { throw new Error('FirebaseAdapter: wallet.bankAccounts.delete — not implemented, out of scope for this phase'); },
+      setDefault: async () => { throw new Error('FirebaseAdapter: wallet.bankAccounts.setDefault — not implemented, out of scope for this phase'); },
     },
     // Deliberately NOT implemented against Firestore — a real withdrawal
     // requires authoritative balance/ledger logic that must live server-side,

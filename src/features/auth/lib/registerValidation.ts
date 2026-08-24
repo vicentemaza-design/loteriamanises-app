@@ -19,21 +19,45 @@ export function isAdult(birthDateIso: string, minAge = MIN_REGISTRATION_AGE): bo
   return differenceInYears(new Date(), date) >= minAge;
 }
 
-// Format-only checks — NOT a checksum/validity algorithm (no NIF/NIE control
-// letter verification implemented on purpose, per explicit scope for this
-// phase). BE must perform the definitive validation server-side.
+// Format-only patterns. NIE and PASSPORT stay format-only on purpose (no
+// control-letter/checksum algorithm) — explicit client decision, do not
+// extend the NIF algorithm below to them. BE must still perform the
+// definitive validation server-side for all three.
 const DOCUMENT_PATTERNS: Record<DocumentType, RegExp> = {
   NIF: /^\d{8}[A-Za-z]$/,
   NIE: /^[XYZxyz]\d{7}[A-Za-z]$/,
   PASSPORT: /^[A-Za-z0-9]{5,15}$/,
 };
 
+// Official Spanish NIF control-letter algorithm: resto = número % 23,
+// indexed into this 23-letter table.
+const NIF_CONTROL_LETTERS = 'TRWAGMYFPDXBNJZSQVHLCKE';
+
+function hasValidNifControlLetter(normalizedNif: string): boolean {
+  const number = parseInt(normalizedNif.slice(0, 8), 10);
+  const letter = normalizedNif.slice(8);
+  return NIF_CONTROL_LETTERS[number % 23] === letter;
+}
+
 export function normalizeDocumentNumber(value: string): string {
   return value.trim().toUpperCase().replace(/[\s-]/g, '');
 }
 
-export function isValidDocumentNumber(type: DocumentType, value: string): boolean {
+/** Format-only check (8 digits + letter for NIF, etc.) — no checksum. */
+export function hasValidDocumentFormat(type: DocumentType, value: string): boolean {
   return DOCUMENT_PATTERNS[type].test(normalizeDocumentNumber(value));
+}
+
+/**
+ * Full validity check. NIF additionally verifies its control letter via the
+ * official checksum (resto = número % 23); NIE and PASSPORT remain
+ * format-only, matching hasValidDocumentFormat exactly for those two types.
+ */
+export function isValidDocumentNumber(type: DocumentType, value: string): boolean {
+  const normalized = normalizeDocumentNumber(value);
+  if (!DOCUMENT_PATTERNS[type].test(normalized)) return false;
+  if (type === 'NIF') return hasValidNifControlLetter(normalized);
+  return true;
 }
 
 /**

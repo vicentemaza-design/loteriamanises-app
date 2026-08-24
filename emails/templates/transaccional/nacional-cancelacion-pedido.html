@@ -12,7 +12,7 @@
   <!--
     ================================================================
     EMAIL 03 · Pedido cancelado — Lotería Nacional
-    Variables: {{NUMERO_SOLICITUD}} {{NOMBRE_JUEGO}} {{MODALIDAD_LABEL}} {{FECHA_SOLICITUD}} {{FECHA_HORA_SOLICITUD}}
+    Variables: {{NUMERO_SOLICITUD}} {{NUMERO_JUGADA}} {{NOMBRE_JUEGO}} {{MODALIDAD_LABEL}} {{FECHA_SOLICITUD}} {{FECHA_HORA_SOLICITUD}}
                {{MOTIVO_CANCELACION}} — texto del motivo específico
                {{BLOQUE_NUMEROS}} — BE renderiza filas de la tabla de números
                {{IMPORTE_DECIMOS}} {{TOTAL_PEDIDO}}
@@ -20,6 +20,11 @@
                {{URL_COMPRA_CERTIFICADA}} {{URL_VERSION_WEB}}
                {{URL_APP_STORE}} {{URL_GOOGLE_PLAY}} https://www.facebook.com/LoteriaManises/ https://www.instagram.com/loteriamanises/ https://x.com/loteriamanises
     BE: activar la variante correcta (CUSTODIA o MENSAJERÍA) descomentando los bloques correspondientes
+    NOTA {{NUMERO_SOLICITUD}} = Nº de pedido (agrupa todas las jugadas de la
+               misma compra); {{NUMERO_JUGADA}} = identificador de la jugada
+               individual — nunca derivar uno del otro. PENDIENTE BE: hoy no
+               hay ningún campo poblado en mock/adapters equivalente a
+               {{NUMERO_JUGADA}}.
     ================================================================
   -->
   <title>Tu pedido ha sido cancelado &middot; Loter&iacute;a Manises</title>
@@ -157,36 +162,106 @@
           </td>
         </tr>
 
-        <!-- 5. CHIPS DE INFORMACIÓN DE LA SOLICITUD -->
+        <!-- 5. DATOS DEL PEDIDO CANCELADO — mismo patrón de tarjeta que
+             "Datos del pedido confirmado" en nacional-confirmacion-pedido.html,
+             más legible que la fila de chips pequeños anterior -->
         <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:0 24px 24px;text-align:center;">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                   style="margin:0 auto;">
+          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:0 24px 24px;">
+            <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                   style="background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;">
               <tr>
-                <td style="padding:0 3px;">
-                  <span style="display:inline-block;background-color:#F1F5F9;border-radius:16px;
-                               padding:4px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;
-                               font-size:11px;color:#334155;">
-                    <span style="display:block;color:#64748B;font-size:10px;">Tipo de juego</span>
-                    <strong>{{NOMBRE_JUEGO}}</strong>
-                  </span>
+                <td style="padding:12px 20px;border-bottom:1px solid #F3F4F6;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#DC2626" style="background-color:#DC2626;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-solicitud-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;color:#64748B;">N&uacute;mero de pedido</td>
+                      <td style="text-align:right;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#0D1B3D;">#{{NUMERO_SOLICITUD}}</td>
+                    </tr>
+                  </table>
                 </td>
-                <td style="padding:0 3px;">
-                  <span style="display:inline-block;background-color:#F1F5F9;border-radius:16px;
-                               padding:4px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;
-                               font-size:11px;color:#334155;">
-                    <span style="display:block;color:#64748B;font-size:10px;">Modalidad</span>
-                    <strong>{{MODALIDAD_LABEL}}</strong>
-                  </span>
+              </tr>
+              <tr>
+                <td style="padding:12px 20px;border-bottom:1px solid #F3F4F6;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#DC2626" style="background-color:#DC2626;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-ticket-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;color:#64748B;">N&uacute;mero de jugada</td>
+                      <td style="text-align:right;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#0D1B3D;">#{{NUMERO_JUGADA}}</td>
+                    </tr>
+                  </table>
                 </td>
-                <td style="padding:0 3px;">
-                  <span style="display:inline-block;background-color:#F1F5F9;border-radius:16px;
-                               padding:4px 12px;font-family:'Inter',Arial,Helvetica,sans-serif;
-                               font-size:11px;color:#334155;">
-                    <span style="display:block;color:#64748B;font-size:10px;">Fecha de solicitud</span>
-                    <strong>{{FECHA_HORA_SOLICITUD}}</strong>
-                  </span>
+              </tr>
+              <tr>
+                <td style="padding:12px 20px;border-bottom:1px solid #F3F4F6;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#DC2626" style="background-color:#DC2626;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-ticket-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;color:#64748B;">Tipo de juego</td>
+                      <td style="text-align:right;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#0D1B3D;">{{NOMBRE_JUEGO}}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:12px 20px;border-bottom:1px solid #F3F4F6;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#DC2626" style="background-color:#DC2626;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-package-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;color:#64748B;">Modalidad</td>
+                      <td style="text-align:right;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;color:#0D1B3D;">{{MODALIDAD_LABEL}}</td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:12px 20px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#DC2626" style="background-color:#DC2626;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-clock-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;color:#64748B;">Fecha de compra</td>
+                      <td style="text-align:right;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;color:#0D1B3D;">{{FECHA_HORA_SOLICITUD}}</td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
@@ -339,9 +414,9 @@
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0"
                                width="28" style="border-collapse:separate !important;">
                           <tr>
-                            <td width="28" height="28" bgcolor="#EA580C"
-                                style="background-color:#EA580C;border-radius:50%;
-                                       width:28px;height:28px;text-align:center;
+                            <td width="28" height="28" bgcolor="#DC2626"
+                                style="background-color:#DC2626;border-radius:50%;box-sizing:border-box;
+                                       width:28px;height:28px;min-width:28px;max-width:28px;min-height:28px;max-height:28px;text-align:center;
                                        vertical-align:middle;line-height:28px;
                                        mso-line-height-rule:exactly;">
                               <span style="font-family:Arial,Helvetica,sans-serif;font-size:16px;
@@ -384,17 +459,17 @@
                 <td style="padding:16px 18px;">
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
-                      <td width="62" valign="top" style="vertical-align:top;padding-right:16px;width:62px;">
+                      <td width="42" valign="top" style="vertical-align:top;padding-right:12px;width:42px;">
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               width="48" style="border-collapse:separate !important;">
+                               width="28" style="border-collapse:separate !important;">
                           <tr>
-                            <td width="48" height="48" bgcolor="#16A34A"
-                                style="background-color:#16A34A;border-radius:50%;width:48px;height:48px;
-                                       text-align:center;vertical-align:middle;line-height:48px;
+                            <td width="28" height="28" bgcolor="#DC2626"
+                                style="background-color:#DC2626;border-radius:50%;box-sizing:border-box;width:28px;height:28px;min-width:28px;max-width:28px;min-height:28px;max-height:28px;
+                                       text-align:center;vertical-align:middle;line-height:28px;
                                        mso-line-height-rule:exactly;">
-                              <img src="https://cdn.loteriamanises.com/emails/icon-truck-white.png"
-                                   width="40" height="40" alt=""
-                                   style="display:block;width:40px;height:40px;border:0;margin:4px auto;" />
+                              <img src="https://cdn.loteriamanises.com/emails/icon-location-white.png"
+                                   width="14" height="14" alt=""
+                                   style="display:block;width:14px;height:14px;margin:auto;border:0;" />
                             </td>
                           </tr>
                         </table>

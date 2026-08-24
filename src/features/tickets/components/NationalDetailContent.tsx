@@ -1,5 +1,5 @@
 import type { ElementType, ReactNode } from 'react';
-import { Clock, CheckCircle2, Trophy, User, Truck, Lock, LayoutList, AlertTriangle, Info } from 'lucide-react';
+import { Clock, CheckCircle2, Trophy, User, Truck, Lock, LayoutList, AlertTriangle, Info, Hash } from 'lucide-react';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
 import { formatCurrency, cn } from '@/shared/lib/utils';
 import type { Ticket } from '@/shared/types/domain';
@@ -32,10 +32,6 @@ function getQty(ticket: Ticket): number {
 
 function getOrderTotal(ticket: Ticket): number {
   return typeof ticket.metadata?.orderTotalPrice === 'number' ? ticket.metadata.orderTotalPrice : ticket.price;
-}
-
-function getPedidoCode(ticket: Ticket): string {
-  return `TLJ-${ticket.id.slice(-8).toUpperCase()}`;
 }
 
 const DRAW_NAMES: Record<string, string> = {
@@ -265,6 +261,25 @@ function SeriesFracciones({ ticket }: { ticket: Ticket }) {
   );
 }
 
+// ── Datos del pedido (trazabilidad) ─────────────────────────────────────────
+// orderId = Nº de pedido (agrupa todas las jugadas de la misma compra).
+// selaeTicketId = Nº de jugada individual. Nunca se deriva uno del otro.
+// BE aún no puebla selaeTicketId en ningún adapter — se muestra '—' mientras
+// tanto, igual que el resto de campos "no disponible" de esta pantalla.
+
+function DatosPedido({ ticket }: { ticket: Ticket }) {
+  const confirmedAt = ticket.metadata?.confirmedAt;
+
+  return (
+    <InfoSection icon={Hash} title="Datos del pedido">
+      <InfoRow label="Fecha de pedido" value={formatDateTime(ticket.createdAt)} />
+      <InfoRow label="Fecha de confirmación" value={confirmedAt ? formatDateTime(confirmedAt) : '—'} />
+      <InfoRow label="Nº de pedido" value={ticket.orderId ?? '—'} />
+      <InfoRow label="Nº de jugada" value={ticket.selaeTicketId ?? '—'} />
+    </InfoSection>
+  );
+}
+
 // ── Datos del titular ───────────────────────────────────────────────────────
 
 function DatosTitular({ ticket }: { ticket: Ticket }) {
@@ -438,6 +453,7 @@ function StatePending({ ticket }: { ticket: Ticket }) {
           valueClass="text-amber-600"
         />
         <InfoRow label="Fecha de solicitud" value={formatDateTime(ticket.createdAt)} />
+        <InfoRow label="Fecha de confirmación" value={ticket.metadata?.confirmedAt ? formatDateTime(ticket.metadata.confirmedAt) : '—'} />
         <div className="flex items-start justify-between gap-4 px-4 py-2">
           <span className="shrink-0 text-[10px] font-medium text-slate-400">Sorteo</span>
           <div className="text-right">
@@ -445,7 +461,8 @@ function StatePending({ ticket }: { ticket: Ticket }) {
             <p className="text-[10px] font-semibold text-slate-400">{drawDate}</p>
           </div>
         </div>
-        <InfoRow label="Nº de pedido" value={getPedidoCode(ticket)} />
+        <InfoRow label="Nº de pedido" value={ticket.orderId ?? '—'} />
+        <InfoRow label="Nº de jugada" value={ticket.selaeTicketId ?? '—'} />
       </InfoSection>
 
       <div className="flex items-start gap-2.5 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
@@ -478,6 +495,7 @@ function StateConfirmed({ ticket }: { ticket: Ticket }) {
       <div className="flex flex-col gap-4 px-4">
         <DecimoImage ticket={ticket} />
         <SeriesFracciones ticket={ticket} />
+        <DatosPedido ticket={ticket} />
         <DatosTitular ticket={ticket} />
         {isShipping ? <DatosEnvio ticket={ticket} /> : <DatosCustodia />}
         <ResumenEconomico ticket={ticket} />
@@ -508,6 +526,7 @@ function StateScrutinized({ ticket }: { ticket: Ticket }) {
       <div className="flex flex-col gap-4 px-4">
         <DecimoImage ticket={ticket} />
         <SeriesFracciones ticket={ticket} />
+        <DatosPedido ticket={ticket} />
         <DatosTitular ticket={ticket} />
         {isShipping ? <DatosEnvio ticket={ticket} /> : <DatosCustodia />}
         {hasPrize && <PremiosObtenidos prize={prize} isShipping={isShipping} />}

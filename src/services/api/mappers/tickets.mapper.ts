@@ -55,6 +55,7 @@ export const ticketsMapper = {
       orderId: dto.orderId,
       metadata: dto.metadata,
       createdAt: dto.createdAt,
+      selaeTicketId: dto.selaeTicketId,
       // Map other optional domain fields if present in DTO
     } as Ticket;
   },

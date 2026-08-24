@@ -41,6 +41,7 @@ const GameSubscriptionsPage = lazy(() => import('@/features/profile/pages/GameSu
 const GameSubscriptionDetailPage = lazy(() => import('@/features/profile/pages/GameSubscriptionDetailPage').then(m => ({ default: m.GameSubscriptionDetailPage })));
 const MovementsPage = lazy(() => import('@/features/profile/pages/MovementsPage').then(m => ({ default: m.MovementsPage })));
 const WithdrawalsPage = lazy(() => import('@/features/profile/pages/WithdrawalsPage').then(m => ({ default: m.WithdrawalsPage })));
+const BankAccountsPage = lazy(() => import('@/features/profile/pages/BankAccountsPage').then(m => ({ default: m.BankAccountsPage })));
 const HelpPage = lazy(() => import('@/features/profile/pages/HelpPage').then(m => ({ default: m.HelpPage })));
 const KycPage = lazy(() => import('@/features/profile/pages/KycPage').then(m => ({ default: m.KycPage })));
 const ResponsibleGamingPage = lazy(() => import('@/features/profile/pages/ResponsibleGamingPage').then(m => ({ default: m.ResponsibleGamingPage })));
@@ -130,6 +131,7 @@ export function AppRouter() {
             <Route path="/profile/game-subscriptions/:subscriptionId" element={<GameSubscriptionDetailPage />} />
             <Route path="/profile/movements" element={<MovementsPage />} />
             <Route path="/profile/withdrawals" element={<WithdrawalsPage />} />
+            <Route path="/profile/bank-accounts" element={<BankAccountsPage />} />
             <Route path="/profile/help" element={<HelpPage />} />
             <Route path="/profile/prizes-and-tax" element={<PrizeTaxPage />} />
             <Route path="/profile/kyc" element={<KycPage />} />
