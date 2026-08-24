@@ -20,7 +20,13 @@ export function useDialogA11y<T extends HTMLElement>({ active, onClose }: UseDia
   const dialogRef = useRef<T>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
   const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+  // Mantener la ref sincronizada con la última `onClose` fuera del render
+  // (no mutar `ref.current` durante el render) — sin dependencias, corre
+  // tras cada render/commit, así que el handler de Escape siempre lee la
+  // versión más reciente sin forzar a esos efectos a depender de `onClose`.
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   // Move focus in on open, restore it on close — depends only on `active`
   // so re-renders while the dialog stays open never re-steal focus from

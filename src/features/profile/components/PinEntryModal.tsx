@@ -53,13 +53,19 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
 
   const handleVerifyComplete = async (pin: string) => {
     setIsBusy(true);
-    const ok = await verifyPin(pin);
-    setIsBusy(false);
-    if (ok) {
-      onSuccess();
-    } else {
-      setError('PIN incorrecto. Inténtalo de nuevo.');
-      setValue('');
+    try {
+      const ok = await verifyPin(pin);
+      setIsBusy(false);
+      if (ok) {
+        onSuccess();
+      } else {
+        setError('PIN incorrecto. Inténtalo de nuevo.');
+        setValue('');
+      }
+    } catch {
+      // Si verifyPin lanza inesperadamente, no dejar el modal atascado en
+      // "ocupado" (handleClose ignora el cierre mientras isBusy es true).
+      setIsBusy(false);
     }
   };
 
@@ -79,9 +85,15 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
       return;
     }
     setIsBusy(true);
-    await createPin(pin);
-    setIsBusy(false);
-    onSuccess();
+    try {
+      await createPin(pin);
+      setIsBusy(false);
+      onSuccess();
+    } catch {
+      // Igual que en handleVerifyComplete: un throw inesperado de createPin
+      // no debe dejar el modal atascado en "ocupado".
+      setIsBusy(false);
+    }
   };
 
   const handleComplete = mode === 'verify'

@@ -195,6 +195,7 @@ function StepSelectNumber({ onSelect }: { onSelect: (n: string, avail: Subscript
             value={search}
             onChange={e => setSearch(e.target.value.replace(/\D/g, '').slice(0, 5))}
             placeholder="Escribe el número..."
+            aria-label="Buscar número"
             autoFocus={searchOpen}
             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] font-mono font-black text-manises-blue placeholder:font-sans placeholder:font-medium placeholder:text-slate-400 focus:border-manises-blue/40 focus:outline-none"
           />
@@ -333,6 +334,7 @@ function StepConfigure({
                   <button
                     type="button"
                     onClick={() => onQty(dt, Math.max(0, qty - 1))}
+                    aria-label="Restar una unidad"
                     className={cn(
                       'flex h-8 w-8 items-center justify-center rounded-xl border text-manises-blue transition-all active:scale-90',
                       qty <= 0 ? 'border-slate-100 bg-slate-50 text-slate-300' : 'border-manises-blue/20 bg-manises-blue/5',
@@ -349,6 +351,7 @@ function StepConfigure({
                   <button
                     type="button"
                     onClick={() => onQty(dt, Math.min(maxQty, qty + 1))}
+                    aria-label="Sumar una unidad"
                     className={cn(
                       'flex h-8 w-8 items-center justify-center rounded-xl border border-manises-blue/20 bg-manises-blue/5 text-manises-blue transition-all active:scale-90',
                       qty >= maxQty && 'opacity-30',
@@ -589,6 +592,7 @@ export function AbonoSetupPage() {
           <button
             type="button"
             onClick={handleBack}
+            aria-label="Volver"
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-manises-blue transition-transform active:scale-90"
           >
             <ChevronLeft className="h-4 w-4 stroke-[2.5]" />
@@ -641,8 +645,19 @@ export function AbonoSetupPage() {
 
             {/* T&C */}
             <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3">
+              {/* Checkbox real sin <input> nativo (evitaba cambiar el target
+                  de click de todo el <label>, que solo activa esta pieza y
+                  el enlace de abajo) — role="checkbox" + aria-checked +
+                  tabIndex + Enter/Espacio lo hacen operable por teclado y
+                  anunciable por lector de pantalla, mismo comportamiento de
+                  click que ya tenía. */}
               <span
+                role="checkbox"
+                aria-checked={terms2}
+                aria-label="He leído y acepto las condiciones del servicio de abonos"
+                tabIndex={0}
                 onClick={() => setTerms2(v => !v)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setTerms2(v => !v); } }}
                 className={cn(
                   'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-all',
                   terms2 ? 'border-manises-blue bg-manises-blue text-white' : 'border-slate-300 bg-white',
@@ -679,8 +694,14 @@ export function AbonoSetupPage() {
 
             {/* T&C */}
             <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3">
+              {/* Ver comentario equivalente en el checkbox del paso 2. */}
               <span
+                role="checkbox"
+                aria-checked={terms3}
+                aria-label="He leído y acepto las condiciones del servicio de abonos"
+                tabIndex={0}
                 onClick={() => setTerms3(v => !v)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setTerms3(v => !v); } }}
                 className={cn(
                   'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-all',
                   terms3 ? 'border-manises-blue bg-manises-blue text-white' : 'border-slate-300 bg-white',

@@ -105,7 +105,11 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   const supportsTimeSelection = Boolean(drawScheduleConfig?.supportsMultipleDrawSelection);
   const maxWeeksSelectable = drawScheduleConfig?.maxWeeksSelectable ?? DEFAULT_CUSTOM_WEEKS;
 
-  // Restore editing draft
+  // Restore editing draft. Reads `game.type` (line ~128) without listing it
+  // in deps: `game` comes from a single LOTTERY_GAMES lookup by `game.id`,
+  // so `game.type` only ever changes together with `game.id` (already a
+  // dep) — adding it would be a no-op re-render trigger, never a distinct
+  // signal. Intentional exclusion, not a missed dependency.
   useEffect(() => {
     if (!editingDraft || editingDraft.gameId !== game.id) return;
     if (
@@ -423,23 +427,27 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     ];
   }, [betMethod, drawsCount, mode, supportsQuickPick]);
 
+  // Los updaters de setState deben ser puros (React puede invocarlos más de
+  // una vez, p.ej. en StrictMode) — el toast de "máximo alcanzado" se decide
+  // aquí, fuera del updater, leyendo el mismo estado que "prev" reflejaría
+  // (no hay ningún otro setState de por medio en este mismo handler).
   const toggleNumber = (n: number) => {
+    if (!selectedNumbers.includes(n) && selectedNumbers.length >= maxNums) {
+      toast.error(`Máximo ${maxNums} números`);
+      return;
+    }
     setSelectedNumbers((prev) =>
-      prev.includes(n)
-        ? prev.filter((x) => x !== n)
-        : prev.length < maxNums
-          ? [...prev, n].sort((a, b) => a - b)
-          : (toast.error(`Máximo ${maxNums} números`), prev)
+      prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n].sort((a, b) => a - b)
     );
   };
 
   const toggleStar = (n: number) => {
+    if (!selectedStars.includes(n) && selectedStars.length >= maxStars) {
+      toast.error(`Máximo ${maxStars} ${game.type === 'eurodreams' ? 'sueño' : 'estrellas'}`);
+      return;
+    }
     setSelectedStars((prev) =>
-      prev.includes(n)
-        ? prev.filter((x) => x !== n)
-        : prev.length < maxStars
-          ? [...prev, n].sort((a, b) => a - b)
-          : (toast.error(`Máximo ${maxStars} ${game.type === 'eurodreams' ? 'sueño' : 'estrellas'}`), prev)
+      prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n].sort((a, b) => a - b)
     );
   };
 

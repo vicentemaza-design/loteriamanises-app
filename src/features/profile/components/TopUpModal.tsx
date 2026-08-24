@@ -82,6 +82,10 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
   const isNewCard = selectedMethod === 'new-card';
   const canSubmit = effectiveAmount > 0 && effectiveAmount <= 500 && selectedMethod !== 'none';
 
+  // Reset del modal cada vez que se abre. Lee `isDemo` sin listarlo en deps:
+  // es el resultado de isDemoEnvironment(), invariante durante la sesión —
+  // añadirlo no cambiaría cuándo se ejecuta este efecto, solo lo haría
+  // menos legible. Intentional exclusion.
   useEffect(() => {
     if (isOpen) {
       const cards = readSavedCards();

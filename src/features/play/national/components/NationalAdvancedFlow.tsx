@@ -247,6 +247,7 @@ export function NationalAdvancedFlow({
             type="text"
             inputMode="numeric"
             maxLength={5}
+            aria-label="Buscar número de lotería"
             placeholder="Ej.: 12345 · 123 · 45"
             value={nationalShowcase.searchState.query}
             onChange={e => nationalShowcase.setSearchState({
@@ -260,6 +261,7 @@ export function NationalAdvancedFlow({
               type="button"
               onClick={() => nationalShowcase.setSearchState({ ...nationalShowcase.searchState, query: '' })}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+              aria-label="Borrar búsqueda"
             >
               ×
             </button>
@@ -290,10 +292,13 @@ export function NationalAdvancedFlow({
           <p className="text-[10px] font-black text-manises-blue">Décimo de la Suerte</p>
           <p className="text-[8px] font-medium text-slate-400">Elegido por Lotería Manises</p>
         </div>
-        <div
-          className="flex shrink-0 items-center gap-1 rounded-xl border border-manises-gold/30 bg-white px-2.5 py-1 text-[9px] font-black text-manises-gold shadow-sm"
-          onClick={e => { e.stopPropagation(); onRandomNationalNumber(deliveryMode); }}
-        >
+        {/* Sin onClick propio: es una pieza puramente visual dentro de la
+            tarjeta ya accesible (role="button"/onKeyDown arriba) — un
+            control interactivo anidado dentro de otro rompía a11y sin
+            aportar ningún comportamiento distinto (llamaba al mismo
+            onRandomNationalNumber). El click sigue funcionando vía burbujeo
+            al contenedor. */}
+        <div className="flex shrink-0 items-center gap-1 rounded-xl border border-manises-gold/30 bg-white px-2.5 py-1 text-[9px] font-black text-manises-gold shadow-sm">
           Añadir {formatCurrency(selectedNationalDraw.decimoPrice)}
           <span className="text-sm leading-none">+</span>
         </div>
@@ -406,6 +411,7 @@ export function NationalAdvancedFlow({
                                     else nationalCart.updateQuantity(line.number, line.drawId, -1);
                                   }}
                                   className="flex h-8 w-8 items-center justify-center rounded-lg text-white font-black text-base hover:bg-white/20 transition-colors"
+                                  aria-label={line.quantity <= 1 ? 'Quitar décimo' : 'Restar una unidad'}
                                 >
                                   {line.quantity <= 1 ? '×' : '−'}
                                 </button>
@@ -417,6 +423,7 @@ export function NationalAdvancedFlow({
                                   onClick={() => nationalCart.updateQuantity(line.number, line.drawId, 1)}
                                   disabled={line.quantity >= line.maxQuantity}
                                   className="flex h-8 w-8 items-center justify-center rounded-lg text-white font-black text-base hover:bg-white/20 transition-colors disabled:opacity-30"
+                                  aria-label="Sumar una unidad"
                                 >
                                   +
                                 </button>

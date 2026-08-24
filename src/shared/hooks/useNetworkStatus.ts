@@ -26,6 +26,9 @@ export function useNetworkStatus() {
       if (wasOfflineRef.current) {
         wasOfflineRef.current = false;
         setJustReconnected(true);
+        // Evita un timer huérfano si offline/online parpadea varias veces
+        // seguidas (cada ciclo reemplazaría al anterior sin esto).
+        if (reconnectTimer) clearTimeout(reconnectTimer);
         reconnectTimer = setTimeout(() => setJustReconnected(false), RECONNECTED_VISIBLE_MS);
       }
     };

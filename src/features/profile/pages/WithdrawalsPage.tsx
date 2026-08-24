@@ -66,7 +66,15 @@ export function WithdrawalsPage() {
   const parsedAmount = parseFloat(amount) || 0;
   const account = accounts.find(a => a.id === selectedAccount) ?? accounts[0];
 
-  // Sincronizar campos de dirección si el perfil se carga tarde
+  // Sincronizar campos de dirección si el perfil se carga tarde. Deps
+  // intencionadamente solo `[profile]`: los campos locales (address,
+  // postalCode, municipality, province, step) se LEEN para decidir si
+  // rellenarlos/avanzar, pero el efecto no debe re-dispararse en cada
+  // pulsación mientras el usuario los edita — solo cuando el perfil llega
+  // o cambia. Los guards (`!address`, `step === 'address-verification'`)
+  // ya hacen la operación idempotente si se añadieran esas dependencias,
+  // así que no hay riesgo de bucle — es una exclusión deliberada, no un
+  // hueco real.
   useEffect(() => {
     if (profile) {
       if (profile.address && !address) setAddress(profile.address);

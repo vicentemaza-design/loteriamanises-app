@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { LotteryGame } from '@/shared/types/domain';
 import { generateRandomPlay } from '@/features/play/services/play.service';
 import { buildGameSelection } from '@/features/play/application/build-game-selection';
@@ -13,6 +13,7 @@ export function useQuickPick(game: LotteryGame, enabled: boolean = true) {
   const [count, setCount] = useState<number>(12);
   const [combinations, setCombinations] = useState<QuickPickCombination[]>([]);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const regeneratingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const buildSingleCombo = useCallback((): QuickPickCombination | null => {
     if (!enabled || !game.selectionRange?.numbers) return null;
@@ -56,7 +57,13 @@ export function useQuickPick(game: LotteryGame, enabled: boolean = true) {
       if (combo) newCombinations.push(combo);
     }
     setCombinations(newCombinations);
-    setTimeout(() => setIsRegenerating(false), 300);
+    // Evita timers duplicados si generate() se vuelve a llamar (regenerar
+    // manual) antes de que termine el anterior.
+    if (regeneratingTimeoutRef.current) clearTimeout(regeneratingTimeoutRef.current);
+    regeneratingTimeoutRef.current = setTimeout(() => {
+      regeneratingTimeoutRef.current = null;
+      setIsRegenerating(false);
+    }, 300);
   }, [game, count, enabled, buildSingleCombo]);
 
   const regenerateAt = useCallback((index: number) => {
@@ -68,6 +75,13 @@ export function useQuickPick(game: LotteryGame, enabled: boolean = true) {
   useEffect(() => {
     if (enabled) generate();
   }, [count, generate, enabled]);
+
+  // Limpia el timer pendiente al desmontar para no llamar setState tras unmount.
+  useEffect(() => {
+    return () => {
+      if (regeneratingTimeoutRef.current) clearTimeout(regeneratingTimeoutRef.current);
+    };
+  }, []);
 
   return {
     count,
