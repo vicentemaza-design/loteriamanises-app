@@ -4,6 +4,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── Primitiva escrutada (18 columnas · 3 boletos · con Joker) ────────────
   {
     id: 'demo-primitiva',
+    selaeTicketId: 'SEL-90234871',
     userId: 'demo-user',
     gameId: 'primitiva',
     gameType: 'primitiva',
@@ -52,6 +53,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── Lotería del Jueves confirmada, mensajería, 4 décimos, premio ──────────
   {
     id: 'demo-lotjueves-shipping',
+    selaeTicketId: 'SEL-90234872',
     userId: 'demo-user',
     gameId: 'loteria-nacional-jueves',
     gameType: 'loteria-nacional',
@@ -94,6 +96,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── Bonoloto Semanal confirmada (7 sorteos · 5 apuestas) ─────────────────
   {
     id: 'demo-bonoloto-semanal',
+    selaeTicketId: 'SEL-90234873',
     userId: 'demo-user',
     gameId: 'bonoloto',
     gameType: 'bonoloto',
@@ -136,6 +139,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── Bonoloto pendiente (1 sorteo, 2 apuestas) ─────────────────────────────
   {
     id: 'demo-bonoloto-pending',
+    selaeTicketId: 'SEL-90234874',
     userId: 'demo-user',
     gameId: 'bonoloto',
     gameType: 'bonoloto',
@@ -169,6 +173,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // Ver docs/be-handoff/ticket-bet-columns.md.
   {
     id: 'demo-bonoloto-reducida',
+    selaeTicketId: 'SEL-90234875',
     userId: 'demo-user',
     gameId: 'bonoloto',
     gameType: 'bonoloto',
@@ -202,6 +207,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── Primitiva pendiente (12 columnas · 2 boletos · con Joker) ─────────────
   {
     id: 'demo-primitiva-12',
+    selaeTicketId: 'SEL-90234876',
     userId: 'demo-user',
     gameId: 'primitiva',
     gameType: 'primitiva',
@@ -242,6 +248,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── Primitiva sistema — 11 números en 1 columna (jugada múltiple) ─────────
   {
     id: 'demo-primitiva-sistema',
+    selaeTicketId: 'SEL-90234877',
     userId: 'demo-user',
     gameId: 'primitiva',
     gameType: 'primitiva',
@@ -264,6 +271,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── El Gordo múltiple — 10 números + clave en 1 apuesta ──────────────────
   {
     id: 'demo-gordo-multiple',
+    selaeTicketId: 'SEL-90234878',
     userId: 'demo-user',
     gameId: 'gordo',
     gameType: 'gordo',
@@ -284,6 +292,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── El Gordo escrutado con premio ────────────────────────────────────────
   {
     id: 'demo-gordo-won',
+    selaeTicketId: 'SEL-90234879',
     userId: 'demo-user',
     gameId: 'gordo',
     gameType: 'gordo',
@@ -306,6 +315,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── El Gordo pendiente ────────────────────────────────────────────────────
   {
     id: 'demo-gordo-pending',
+    selaeTicketId: 'SEL-90234880',
     userId: 'demo-user',
     gameId: 'gordo',
     gameType: 'gordo',
@@ -326,6 +336,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── Lotería Sábado confirmada, custodia, sin premio ───────────────────────
   {
     id: 'demo-lotsabado-custody',
+    selaeTicketId: 'SEL-90234881',
     userId: 'demo-user',
     gameId: 'loteria-nacional-sabado',
     gameType: 'loteria-nacional',
@@ -355,6 +366,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── Euromillones confirmado (25 columnas · 5 boletos · con El Millón) ────
   {
     id: 'demo-euro-subscription',
+    selaeTicketId: 'SEL-90234882',
     userId: 'demo-user',
     gameId: 'euromillones',
     gameType: 'euromillones',
@@ -397,6 +409,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── EuroDreams escrutado — 5ª categoría (3 aciertos, sin sueño) — 10 € ───
   {
     id: 'demo-eurodreams-won',
+    selaeTicketId: 'SEL-90234883',
     userId: 'demo-user',
     gameId: 'eurodreams',
     gameType: 'eurodreams',
@@ -420,6 +433,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── EuroDreams pendiente — próximo sorteo jue 17 jul 2026 ─────────────────
   {
     id: 'demo-eurodreams-pending',
+    selaeTicketId: 'SEL-90234884',
     userId: 'demo-user',
     gameId: 'eurodreams',
     gameType: 'eurodreams',
@@ -443,6 +457,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── Quiniela escrutada (columna sencilla) ─────────────────────────────────
   {
     id: 'demo-quiniela-sencilla',
+    selaeTicketId: 'SEL-90234885',
     userId: 'demo-user',
     gameId: 'quiniela',
     gameType: 'quiniela',
@@ -486,6 +501,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── Quiniela escrutada (Reducidas Manises al 13, 96 apuestas, C2 premiada) ─
   {
     id: 'demo-quiniela-manises',
+    selaeTicketId: 'SEL-90234886',
     userId: 'demo-user',
     gameId: 'quiniela',
     gameType: 'quiniela',
@@ -538,6 +554,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── Quiniela pendiente (Reducidas Manises al 12, 24 apuestas, jornada 61) ──
   {
     id: 'demo-quiniela-pendiente',
+    selaeTicketId: 'SEL-90234887',
     userId: 'demo-user',
     gameId: 'quiniela',
     gameType: 'quiniela',
@@ -588,6 +605,7 @@ const INITIAL_MOCK_TICKETS_DATA: TicketDto[] = [
   // ── Lotería Jueves en trámite (mensajería, sin confirmar) ─────────────────
   {
     id: 'demo-lotjueves-processing',
+    selaeTicketId: 'SEL-90234888',
     userId: 'demo-user',
     gameId: 'loteria-nacional-jueves',
     gameType: 'loteria-nacional',

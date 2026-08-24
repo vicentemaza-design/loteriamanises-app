@@ -18,10 +18,16 @@ function buildTicketsForBet(dto: CreateBetRequestDto, userId: string, orderIdOve
   const orderId = orderIdOverride ?? `mock-order-${Math.random().toString(36).slice(2, 10)}`;
   const distributedPrices = splitAmountAcrossDraws(dto.price, drawDates.length);
   const createdAt = new Date().toISOString();
+  // DEMO only: BE aún no puebla selaeTicketId en ningún adapter real (firebase/http
+  // siguen sin generarlo — ver mappers/tickets.mapper.ts). Se genera aquí solo para
+  // que la demo no muestre "—"; cada jugada tiene su propio consecutivo (nunca
+  // comparte selaeTicketId con otra), aunque varias compartan el mismo orderId.
+  const selaeBase = Math.floor(10000000 + Math.random() * 90000000);
 
   return drawDates.map((drawDate, index) => ({
     id: `mock-ticket-${Math.random().toString(36).slice(2, 11)}`,
     orderId,
+    selaeTicketId: `SEL-${selaeBase + index}`,
     userId,
     gameId: dto.gameId,
     gameType: dto.gameType,
