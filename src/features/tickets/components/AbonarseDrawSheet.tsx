@@ -339,7 +339,7 @@ export function AbonarseDrawSheet({ ticket, onClose }: AbonarseDrawSheetProps) {
               style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
             >
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-              <div className="mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white">
+              <div className="mx-auto grid min-h-14 w-full max-w-screen-sm grid-cols-[minmax(min-content,1fr)_minmax(min-content,1fr)_minmax(5.5rem,2.15fr)] text-white">
 
                 {/* Saldo */}
                 <div className="relative flex min-w-0 flex-col items-center justify-center border-r border-white/12 px-1">

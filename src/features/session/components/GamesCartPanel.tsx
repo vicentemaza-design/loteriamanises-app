@@ -31,6 +31,17 @@ const reintegroBubble = (reintegro: number | null, color: string) =>
     ? <span key="r" className="inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-dashed border-slate-300 text-[9px] font-black text-slate-400">R</span>
     : <span key="r" className="inline-flex h-7 w-7 items-center justify-center rounded-full border-2 text-[11px] font-black" style={{ borderColor: color, color }}>{reintegro}</span>;
 
+// Estrella dorada de Euromillones — mismo icono/color/tamaño que BallSelection.tsx
+// (Mis Jugadas → Detalle), para que "azul = números, ★ = estrellas" se lea igual
+// en toda la app. Solo para estrellas reales: no se reutiliza para Clave (El
+// Gordo) ni sueño (EuroDreams), que no son estrellas.
+const starIcon = (
+  <svg key="star-icon" viewBox="0 0 24 24" fill="#fef3c7" stroke="#d97706" strokeWidth="1.5" strokeLinejoin="round"
+    className="h-6 w-6 shrink-0">
+    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+  </svg>
+);
+
 function DraftNumbers({ draft, gameColor }: { draft: PlayDraft; gameColor: string }) {
   const { selection } = draft;
   const sep = <span key="sep" className="mx-0.5 text-slate-200">|</span>;
@@ -49,7 +60,8 @@ function DraftNumbers({ draft, gameColor }: { draft: PlayDraft; gameColor: strin
   );
   if (selection.type === 'euromillones') return (
     <div className="flex flex-wrap items-center gap-1">
-      {selection.numbers.map((n) => numBubble(n, gameColor))}{sep}
+      {selection.numbers.map((n) => numBubble(n, gameColor))}
+      <span key="star-sep" className="mx-0.5 flex shrink-0 items-center">{starIcon}</span>
       {selection.stars.map((s) => starBubble(s, '#f59e0b'))}
     </div>
   );
