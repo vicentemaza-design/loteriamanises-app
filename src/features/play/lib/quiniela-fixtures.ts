@@ -8,6 +8,8 @@
 // una llamada a tu API → fetch(`/api/quiniela/fixtures?date=${key}`)
 // ============================================================
 
+import { RUNTIME_CONFIG } from '@/config/runtime';
+
 export interface QuinielaFixture {
   id: number;
   home: string;
@@ -144,9 +146,27 @@ export function getFixturesForDate(date: Date): QuinielaFixture[] {
  */
 export function getUpcomingJornadaDates(from: Date, count: number): Date[] {
   const today = from.toISOString().slice(0, 10);
-  return Object.keys(QUINIELA_CALENDAR)
+  const dates = Object.keys(QUINIELA_CALENDAR)
     .filter(key => key >= today)
     .sort()
     .slice(0, count)
     .map(key => new Date(`${key}T18:00:00`));
+
+  // El calendario estático solo cubre un rango de fechas limitado. En DEMO
+  // (RUNTIME_CONFIG.demoEnabled) se rellena con jornadas sintéticas semanales
+  // para que el flujo se pueda seguir probando aunque `from` caiga más allá
+  // de la última jornada conocida. En PRODUCCIÓN nunca se fabrica una fecha:
+  // se devuelve lo que haya (incluso vacío) y QuinielaPlayPage debe mostrar
+  // un estado vacío controlado en vez de asumir que siempre hay una jornada.
+  if (!RUNTIME_CONFIG.demoEnabled) {
+    return dates;
+  }
+
+  let cursor = dates.length > 0 ? dates[dates.length - 1] : new Date(from);
+  while (dates.length < count) {
+    cursor = new Date(cursor.getTime() + 7 * 24 * 60 * 60 * 1000);
+    dates.push(new Date(cursor));
+  }
+
+  return dates;
 }

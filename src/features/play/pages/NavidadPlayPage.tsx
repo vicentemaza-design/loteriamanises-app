@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { notifyAddedToCart } from '@/features/session/lib/cart-toast';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
+import { usePurchaseConfirmedEffect, scrollMainToTop } from '@/features/session/lib/purchase-events';
 import { GameInfoSheet } from '../components/GameInfoSheet';
 import { GamePlayHeader } from '../components/GamePlayHeader';
 import { NavidadCheckoutFlow } from '../national/components/NavidadCheckoutFlow';
@@ -55,6 +56,13 @@ export function NavidadPlayPage({ game }: NavidadPlayPageProps) {
       navigate(-1);
     }
   };
+
+  // Tras una compra confirmada (no solo añadida a la cesta), volver a la
+  // pantalla de entrada "en fresco".
+  usePurchaseConfirmedEffect(() => {
+    setFlowScreen('config');
+    scrollMainToTop();
+  });
 
   // Formato de fecha de sorteo para el pill informativo
   const formatSorteoLabel = () => {

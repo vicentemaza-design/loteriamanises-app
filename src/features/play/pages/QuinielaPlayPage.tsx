@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { notifyAddedToCart } from '@/features/session/lib/cart-toast';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
+import { usePurchaseConfirmedEffect, scrollMainToTop } from '@/features/session/lib/purchase-events';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import { getGameHelpContent } from '../lib/game-help';
 import { resolveDrawDates } from '../application/resolve-draw-dates';
@@ -79,9 +80,11 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
   const [system, setSystem] = useState<QuinielaSystem>('simple');
   const [isInfoOpen, setIsInfoOpen] = useState(false);
 
-  // Draw date selection
+  // Draw date selection. En producción, si no hay jornadas en el calendario
+  // (o quedan por debajo del hoy simulado), `drawDates` puede venir vacío —
+  // ver quiniela-fixtures.ts. Nunca se fabrica una fecha fuera de demo.
   const drawDates = useMemo(() => getUpcomingJornadaDates(new Date(), 5), []);
-  const [selectedDrawDate, setSelectedDrawDate] = useState<Date>(() => drawDates[0]);
+  const [selectedDrawDate, setSelectedDrawDate] = useState<Date | undefined>(() => drawDates[0]);
 
   // Summaries from each section
   const [simpleSummary, setSimpleSummary] = useState<QuinielaSimpleSummary | null>(null);
@@ -91,7 +94,10 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
   const helpContent = getGameHelpContent({ game, mode: 'simple', betsCount: 1, totalPrice: 0.75 });
 
   // Partidos del sorteo seleccionado (cambia al cambiar la fecha)
-  const fixtures = useMemo(() => getFixturesForDate(selectedDrawDate), [selectedDrawDate]);
+  const fixtures = useMemo(
+    () => (selectedDrawDate ? getFixturesForDate(selectedDrawDate) : []),
+    [selectedDrawDate]
+  );
 
   const activeSummary = system === 'simple' ? simpleSummary : system === 'manises' ? manisesSummary : oficialSummary;
   const totalPrice = activeSummary?.price ?? 0;
@@ -120,8 +126,20 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
     }
   };
 
+  // Tras una compra confirmada (no solo añadida a la cesta), volver a la
+  // pantalla de elección de sistema "en fresco" — al desmontar la sección
+  // activa (Simple/Manises/Oficial) se pierden también sus 15 pronósticos
+  // internos, que hasta ahora nunca se limpiaban tras comprar.
+  usePurchaseConfirmedEffect(() => {
+    setStep('pick_system');
+    setSimpleSummary(null);
+    setManisesSummary(null);
+    setOficialSummary(null);
+    scrollMainToTop();
+  });
+
   const handlePlay = useCallback(async () => {
-    if (!isValid) {
+    if (!isValid || !selectedDrawDate) {
       toast.error('Completa el pronóstico de los 15 partidos');
       return;
     }
@@ -280,6 +298,38 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
   ]);
 
   const headerTitle = step === 'pick_system' ? game.name : SYSTEM_TITLE[system];
+
+  // Producción sin jornadas disponibles en el calendario (ver
+  // quiniela-fixtures.ts): nunca se fabrica una fecha, se muestra un estado
+  // vacío controlado en vez de crashear.
+  if (!selectedDrawDate) {
+    return (
+      <div
+        className="flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] pb-24"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 56px)' }}
+      >
+        <GamePlayHeader
+          game={game}
+          drawTime={game.nextDraw}
+          onBack={() => navigate(-1)}
+          onInfo={() => setIsInfoOpen(true)}
+        />
+        <GameInfoSheet
+          game={game}
+          isOpen={isInfoOpen}
+          onClose={() => setIsInfoOpen(false)}
+          content={helpContent}
+        />
+        <div className="mx-auto flex w-full max-w-screen-sm flex-1 flex-col items-center justify-center gap-3 p-4 text-center">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Quiniela</p>
+          <h2 className="text-lg font-black text-manises-blue">Próxima jornada no disponible</h2>
+          <p className="max-w-[20rem] text-sm font-medium leading-relaxed text-slate-400">
+            En este momento no hay ninguna jornada abierta para jugar. Vuelve a intentarlo más tarde.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

@@ -6,6 +6,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePlaySession } from './usePlaySession';
 import { usePlaySessionSummary } from './usePlaySessionSummary';
 import { notifyPurchaseConfirmed } from '../lib/cart-toast';
+import { dispatchPurchaseConfirmed } from '../lib/purchase-events';
 import type { GameType, SelaeGameCode } from '@/shared/types/domain';
 import type { PlayDraft } from '../types/session.types';
 import { getFunctionalUserId } from '@/shared/lib/getFunctionalUserId';
@@ -165,6 +166,14 @@ export function usePlaySessionConfirm({ draftFilter }: UsePlaySessionConfirmOpti
       }
 
       resolveConfirmSuccess(response.confirmedDraftIds ?? validDrafts.map((draft) => draft.id));
+      // Señal para que la página de juego que queda debajo del carrito (este
+      // hook es compartido por todos los juegos vía GamesCartPanel/
+      // LotteryCartPanel) resetee su estado local "en fresco" ANTES de que
+      // el carrito se cierre — así, cuando el cierre del carrito revela la
+      // página, ya está en su estado inicial y no hay un segundo cambio
+      // visible justo después (ver purchase-events.ts para por qué no basta
+      // con session.status).
+      dispatchPurchaseConfirmed();
       closeReview();
       notifyPurchaseConfirmed(validDrafts.length);
       // El saldo se descuenta en el propio backend/mock al confirmar el

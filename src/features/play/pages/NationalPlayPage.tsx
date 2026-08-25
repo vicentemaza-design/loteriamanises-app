@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { notifyAddedToCart } from '@/features/session/lib/cart-toast';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
+import { usePurchaseConfirmedEffect, scrollMainToTop } from '@/features/session/lib/purchase-events';
 import { GameInfoSheet } from '../components/GameInfoSheet';
 import { GamePlayHeader } from '../components/GamePlayHeader';
 import { NationalAdvancedFlow } from '../national/components/NationalAdvancedFlow';
@@ -206,6 +207,16 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
     clearNationalCart();
     setNationalSearchState(DEFAULT_NATIONAL_SEARCH_STATE);
   };
+
+  // Tras una compra confirmada (no solo añadida a la cesta), volver a la
+  // pantalla de entrada "en fresco" — el carrito local ya se limpia al
+  // añadir a la sesión (handlePersistNationalCart), esto cubre además el
+  // filtro de búsqueda y el paso del flujo, y el scroll.
+  usePurchaseConfirmedEffect(() => {
+    handleClear();
+    setFlowScreen('config');
+    scrollMainToTop();
+  });
 
   const handlePersistNationalCart = () => {
     if (nationalCartLines.length === 0) return;

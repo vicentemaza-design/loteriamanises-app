@@ -34,6 +34,7 @@ import { inferMulticolumnPlayMode } from '../multicolumn/application/infer-multi
 import { getDrawScheduleConfig, type ScheduleMode } from '@/features/play/config/draw-schedule.config';
 import { getDrawsForCurrentWeek, groupDrawsByWeek, getUpcomingDraws, type ScheduledDraw } from '../lib/draw-schedule';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
+import { usePurchaseConfirmedEffect, scrollMainToTop } from '@/features/session/lib/purchase-events';
 import { buildGameSelection } from '@/features/play/application/build-game-selection';
 import { buildPlayDrafts } from '@/features/play/application/build-play-drafts';
 import { resolvePlayPricing } from '@/features/play/application/resolve-play-pricing';
@@ -157,6 +158,16 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   useEffect(() => {
     setDateStepConfirmed(false);
   }, [game.id, editingDraftId]);
+
+  // Tras una compra confirmada (no solo añadida a la cesta), volver a la
+  // pantalla de entrada del juego "en fresco" — misma idea que ya aplican
+  // los flujos de Lotería Nacional/Navidad/Niño al volver a su paso inicial.
+  usePurchaseConfirmedEffect(() => {
+    handleClear();
+    setBetMethod(null);
+    setDateStepConfirmed(false);
+    scrollMainToTop();
+  });
 
   const currentModeDefinition = getModeDefinition(game.id, mode);
   const currentSelection = currentModeDefinition?.selection ?? game.selectionRange!;
