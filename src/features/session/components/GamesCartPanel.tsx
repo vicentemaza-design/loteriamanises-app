@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Xmark, Trash, NavArrowDown, NavArrowUp, Lock, WarningTriangle, NavArrowLeft } from 'iconoir-react/regular';
 import { CreditCard, Check, Loader2, CheckCircle2 } from 'lucide-react';
 import { formatCurrency } from '@/shared/lib/utils';
+import { toast } from 'sonner';
 import { usePlaySession } from '../hooks/usePlaySession';
 import { usePlaySessionConfirm } from '../hooks/usePlaySessionConfirm';
-import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useWallet } from '@/features/wallet/hooks/useWallet';
 import { useSecurityGate } from '@/features/profile/hooks/useSecurityGate';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
@@ -228,7 +229,7 @@ function GameGroup({ data, onDeleteCombo }: { data: GroupData; onDeleteCombo: (i
 export function GamesCartPanel() {
   const { gameDrafts, reviewTarget, removeDrafts, status, errorMessage, closeReview } = usePlaySession();
   const { confirm, isSubmitting } = usePlaySessionConfirm({ draftFilter: 'games' });
-  const { profile } = useAuth();
+  const { balance, topUp } = useWallet();
   const { requireReauth, gateModal } = useSecurityGate();
 
   const [showInsufficientBalance, setShowInsufficientBalance] = useState(false);
@@ -239,25 +240,27 @@ export function GamesCartPanel() {
   const [isRechargingInline, setIsRechargingInline] = useState(false);
   const [isCustomAmt, setIsCustomAmt] = useState(false);
   const [customAmt, setCustomAmt] = useState('');
-  const [balanceBoost, setBalanceBoost] = useState(0);
   const [justRecharged, setJustRecharged] = useState(false);
 
   const isOpen = reviewTarget === 'games' && (status === 'reviewing' || status === 'confirming' || status === 'failed');
   if (!isOpen) return null;
 
   const total = gameDrafts.reduce((s, d) => s + d.totalPrice, 0);
-  const balance = profile?.balance ?? 0;
-  const effectiveBalance = balance + balanceBoost;
+  const effectiveBalance = balance;
   const isOverBalance = effectiveBalance < total;
   const hasBonoloto = gameDrafts.some((d) => d.selection.type === 'bonoloto');
 
   const handleInlineRecharge = async () => {
     setIsRechargingInline(true);
-    await new Promise(r => setTimeout(r, 1500));
+    const amount = isCustomAmt ? (parseFloat(customAmt) || 0) : inlineAmt;
+    const result = await topUp(amount);
     setIsRechargingInline(false);
-    setBalanceBoost(prev => prev + (isCustomAmt ? (parseFloat(customAmt) || 0) : inlineAmt));
-    setJustRecharged(true);
-    setShowInsufficientBalance(false);
+    if (result?.success) {
+      setJustRecharged(true);
+      setShowInsufficientBalance(false);
+    } else {
+      toast.error('No se pudo procesar la recarga.');
+    }
   };
 
   const handlePagar = async () => {

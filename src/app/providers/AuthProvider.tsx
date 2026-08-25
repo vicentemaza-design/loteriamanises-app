@@ -42,6 +42,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(DEMO_PROFILE);
       setIsDemo(true);
       setLoading(false);
+      // El saldo demo persiste en localStorage (ver wallet.mock.ts), a
+      // diferencia del resto de DEMO_PROFILE — se sincroniza aparte para que
+      // un refresh de página no lo resetee al valor inicial fijo.
+      createApiClient()
+        .then((client) => client.wallet.getBalance('demo-user'))
+        .then(({ balance }) => setProfile((prev) => prev ? { ...prev, balance } : prev))
+        .catch(console.error);
     }
   }, []);
 
@@ -157,6 +164,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsDemo(true);
     setLoading(false);
     toast.success('Modo demo activado 🎯');
+    // Mismo saldo persistente que el resto de la app (ver wallet.mock.ts) —
+    // si ya hubo actividad demo en este navegador, respeta ese saldo en vez
+    // del valor inicial fijo de DEMO_PROFILE.
+    createApiClient()
+      .then((client) => client.wallet.getBalance('demo-user'))
+      .then(({ balance }) => setProfile((prev) => prev ? { ...prev, balance } : prev))
+      .catch(console.error);
   };
 
   const logout = async () => {

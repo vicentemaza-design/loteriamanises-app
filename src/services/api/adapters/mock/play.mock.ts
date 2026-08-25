@@ -6,8 +6,10 @@ import type {
   SubmitPlaySessionResponseDto,
 } from '../../contracts/play.contracts';
 import type { TicketDto } from '../../contracts/tickets.contracts';
+import type { WalletMovementDto } from '../../contracts/wallet.contracts';
 import { splitAmountAcrossDraws } from '../../shared/play.utils';
 import { appendMockTickets } from './tickets.mock';
+import { appendMockMovement, deductDemoWalletBalance, getDemoWalletBalanceSync } from './wallet.mock';
 
 /**
  * Mock Play Adapter
@@ -93,17 +95,113 @@ function mapSessionItemToBetDto(item: SubmitPlaySessionItemDto): CreateBetReques
   };
 }
 
+// Un pedido de Lotería Nacional puede agrupar varios décimos/números distintos
+// bajo el mismo orderId (misma sesión) — el movimiento de "Mis movimientos"
+// debe representar esa compra como UNA sola línea que a su vez detalla todos
+// los décimos, no un movimiento por décimo. Detectamos los items nacionales
+// por `metadata.nationalNumber`, que mapDraftToDto (usePlaySessionConfirm)
+// ya rellena para draft.selection.type === 'national'.
+function buildNationalMovementForSession(
+  items: SubmitPlaySessionItemDto[],
+  userId: string,
+  orderId: string,
+  shippingCost: number,
+): WalletMovementDto | null {
+  const nationalItems = items.filter((item) => item.metadata?.nationalNumber !== undefined);
+  if (nationalItems.length === 0) return null;
+
+  const numbers = nationalItems.map((item) => ({
+    number: String(item.metadata?.nationalNumber),
+    quantity: item.quantity,
+  }));
+  // El envío pertenece al PEDIDO, no a cada línea/décimo — se suma una sola
+  // vez aquí, nunca por número/ticket.
+  const totalAmount = nationalItems.reduce((sum, item) => sum + item.totalPrice, 0) + shippingCost;
+  const gameId = nationalItems[0].gameType;
+  const drawLabels = new Set(nationalItems.map((item) => item.metadata?.nationalDrawLabel));
+  const drawLabel = drawLabels.size === 1
+    ? (nationalItems[0].metadata?.nationalDrawLabel as string | undefined) ?? 'Lotería Nacional'
+    : undefined;
+  const description = drawLabel
+    ? gameId === 'loteria-nacional' ? `Compra Lotería Nacional ${drawLabel}` : `Compra ${drawLabel}`
+    : 'Compra Lotería Nacional';
+  const deliveryMode = shippingCost > 0 ? 'shipping' : 'custody';
+
+  return {
+    id: `mock-movement-${orderId}`,
+    userId,
+    type: 'bet',
+    amount: -totalAmount,
+    description,
+    createdAt: new Date().toISOString(),
+    orderId,
+    details: {
+      gameId,
+      gameLabel: drawLabel ?? 'Lotería Nacional',
+      numbers,
+      number: numbers[0]?.number,
+      quantity: numbers.reduce((sum, n) => sum + n.quantity, 0),
+      deliveryMode,
+      shippingCost: shippingCost > 0 ? shippingCost : undefined,
+    },
+  };
+}
+
 export async function submitPlaySessionMock(payload: SubmitPlaySessionRequestDto): Promise<SubmitPlaySessionResponseDto> {
   return new Promise((resolve) => {
     console.log('[MockAdapter] Submitting play session:', payload);
 
     setTimeout(() => {
+      // Importe real del pedido: se calcula sumando el propio payload.items
+      // (ya viene filtrado por draftFilter en usePlaySessionConfirm — solo
+      // los borradores que se están confirmando en ESTA llamada), no
+      // payload.totalAmount, que agrega TODA la sesión y podría incluir
+      // borradores todavía pendientes en el otro carrito (juegos/lotería).
+      // El envío (si lo hay) pertenece al PEDIDO, se suma UNA sola vez, nunca
+      // por línea/décimo — ver LotteryCartPanel::handleComprar.
+      const shippingCost = payload.shippingCost ?? 0;
+      const decimosTotal = payload.items.reduce((sum, item) => sum + item.totalPrice, 0);
+      const orderTotal = decimosTotal + shippingCost;
+
+      // Defensa adicional además del gate del cliente (isOverBalance en
+      // GamesCartPanel/LotteryCartPanel): el mock nunca debe dejar el saldo
+      // en negativo ni confirmar un pedido que no se puede pagar (envío incluido).
+      if (orderTotal > getDemoWalletBalanceSync()) {
+        resolve({ success: false, error: 'Saldo insuficiente para confirmar el pedido.' });
+        return;
+      }
+
       // Una sesión debe comportarse como una única operación atómica: mismo orderId en todos los tickets.
       const sessionOrderId = `mock-session-${payload.sessionId.slice(0, 10)}`;
       const tickets = payload.items.flatMap((item) =>
         buildTicketsForBet(mapSessionItemToBetDto(item), payload.userId, sessionOrderId)
       );
+      // El envío se adjunta solo al primer ticket del pedido (orderTotalPrice
+      // = su propio importe de décimos + el envío completo) — el resto de
+      // tickets se quedan sin orderTotalPrice y caen a su propio `price`
+      // (ver getOrderTotal en NationalDetailContent.tsx). Sumando
+      // getOrderTotal() de TODOS los tickets del grupo se obtiene
+      // decimosTotal + shippingCost exactamente una vez, igual que ya hacen
+      // los fixtures estáticos de demo (ver tickets.mock.ts).
+      if (shippingCost > 0 && tickets[0]) {
+        tickets[0] = {
+          ...tickets[0],
+          metadata: {
+            ...tickets[0].metadata,
+            orderTotalPrice: tickets[0].price + shippingCost,
+            deliveryMode: 'shipping',
+          },
+        };
+      }
       appendMockTickets(tickets);
+
+      const movement = buildNationalMovementForSession(payload.items, payload.userId, sessionOrderId, shippingCost);
+      if (movement) appendMockMovement(movement);
+
+      // Se descuenta UNA sola vez por pedido, por el importe real agregado
+      // (orderTotal, décimos + envío) — nunca por ticket individual (un
+      // pedido con 5 números genera 5 tickets pero un único descuento).
+      deductDemoWalletBalance(orderTotal);
 
       resolve({
         success: true,

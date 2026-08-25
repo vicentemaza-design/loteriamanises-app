@@ -6,6 +6,8 @@ export interface MovementDetails {
   combinations?: string[];
   number?: string;
   quantity?: number;
+  /** Lotería Nacional: cuando un mismo pedido agrupa varios décimos/números, uno por línea. `number`/`quantity` siguen cubriendo el caso de un único décimo. */
+  numbers?: Array<{ number: string; quantity: number }>;
   shippingCost?: number;
   deliveryMode?: 'custody' | 'shipping';
   iban?: string;

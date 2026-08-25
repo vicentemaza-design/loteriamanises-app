@@ -4,9 +4,10 @@ import { Xmark, Trash, Lock, Plus, EditPencil, Truck, Star, ShieldCheck, Eye, Wa
 import { CreditCard, Check, Loader2, CheckCircle2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { formatCurrency } from '@/shared/lib/utils';
+import { toast } from 'sonner';
 import { usePlaySession } from '../hooks/usePlaySession';
 import { usePlaySessionConfirm } from '../hooks/usePlaySessionConfirm';
-import { useAuth } from '@/features/auth/hooks/useAuth';
+import { useWallet } from '@/features/wallet/hooks/useWallet';
 import { useSecurityGate } from '@/features/profile/hooks/useSecurityGate';
 import type { PlayDraft } from '../types/session.types';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
@@ -302,7 +303,7 @@ function DrawGroup({ drawLabel, data, onDelete, onQty, deliveryMode }: {
 export function LotteryCartPanel() {
   const { lotteryDrafts, reviewTarget, closeReview, removeDraft, updateDraft, status, errorMessage } = usePlaySession();
   const { confirm, isSubmitting } = usePlaySessionConfirm({ draftFilter: 'lottery' });
-  const { profile } = useAuth();
+  const { balance, topUp } = useWallet();
   const { requireReauth, gateModal } = useSecurityGate();
   const [deliveryMode, setDeliveryMode] = useState<'custodia' | 'mensajeria'>('custodia');
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(null);
@@ -316,14 +317,12 @@ export function LotteryCartPanel() {
   const [isRechargingInline, setIsRechargingInline] = useState(false);
   const [isCustomAmt, setIsCustomAmt] = useState(false);
   const [customAmt, setCustomAmt] = useState('');
-  const [balanceBoost, setBalanceBoost] = useState(0);
   const [justRecharged, setJustRecharged] = useState(false);
 
   const isOpen = reviewTarget === 'lottery' && (status === 'reviewing' || status === 'confirming' || status === 'failed');
   if (!isOpen) return null;
 
-  const balance = profile?.balance ?? 0;
-  const effectiveBalance = balance + balanceBoost;
+  const effectiveBalance = balance;
   const subtotal = lotteryDrafts.reduce((s, d) => s + d.totalPrice, 0);
   const SHIPPING_COST = 12;
   const shipping = deliveryMode === 'mensajeria' ? SHIPPING_COST : 0;
@@ -348,11 +347,15 @@ export function LotteryCartPanel() {
 
   const handleInlineRecharge = async () => {
     setIsRechargingInline(true);
-    await new Promise(r => setTimeout(r, 1500));
+    const amount = isCustomAmt ? (parseFloat(customAmt) || 0) : inlineAmt;
+    const result = await topUp(amount);
     setIsRechargingInline(false);
-    setBalanceBoost(prev => prev + (isCustomAmt ? (parseFloat(customAmt) || 0) : inlineAmt));
-    setJustRecharged(true);
-    setShowInsufficientBalance(false);
+    if (result?.success) {
+      setJustRecharged(true);
+      setShowInsufficientBalance(false);
+    } else {
+      toast.error('No se pudo procesar la recarga.');
+    }
   };
 
   const handleComprar = async () => {
@@ -371,7 +374,7 @@ export function LotteryCartPanel() {
     const reauthed = await requireReauth('purchase');
     if (!reauthed) return;
     setJustRecharged(false);
-    confirm();
+    confirm({ shippingCost: shipping });
   };
 
   return (

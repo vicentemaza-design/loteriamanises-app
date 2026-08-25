@@ -291,10 +291,11 @@ function MovementDetail({ movement: mv, onClose }: { movement: MovementWithBalan
     prevista.setDate(prevista.getDate() + 3);
     fields.push({ label: 'Fecha prevista', value: formatDateOnly(prevista.toISOString()) });
   } else if (isNational) {
+    const nationalQty = mv.details?.numbers?.reduce((s, n) => s + n.quantity, 0) ?? mv.details?.quantity ?? 1;
     fields.push({ label: 'Fecha del pedido', value: formatDatetime(mv.createdAt) });
     fields.push({ label: 'Fecha del sorteo', value: '22 dic 2026' });
     fields.push({ label: 'Nº de pedido', value: mv.orderId || 'LN-983055', mono: true });
-    fields.push({ label: 'Detalle', value: `${mv.details?.quantity || 1} décimos` });
+    fields.push({ label: 'Detalle', value: `${nationalQty} décimos` });
     fields.push({ label: 'Método de entrega', value: mv.details?.deliveryMode === 'shipping' ? 'Mensajería (Nacex)' : 'Custodia digital' });
   } else if (isAdjustment) {
     fields.push({ label: 'Fecha y hora', value: formatDatetime(mv.createdAt) });
@@ -324,7 +325,7 @@ function MovementDetail({ movement: mv, onClose }: { movement: MovementWithBalan
   // ── Resumen económico (solo apuestas) ────────────────────────────────────
   const economicLines: Array<{ label: string; value: string }> = [];
   if (isNational) {
-    const qty = mv.details?.quantity || 1;
+    const qty = mv.details?.numbers?.reduce((s, n) => s + n.quantity, 0) ?? mv.details?.quantity ?? 1;
     const shipping = mv.details?.shippingCost || (mv.details?.deliveryMode === 'shipping' ? 12 : 0);
     const decimosCost = Math.abs(mv.amount) - shipping;
     const priceEach = qty > 0 ? decimosCost / qty : decimosCost;
@@ -394,6 +395,31 @@ function MovementDetail({ movement: mv, onClose }: { movement: MovementWithBalan
             </div>
           ))}
         </div>
+
+        {/* Números/décimos adquiridos — solo Lotería Nacional, cuando el pedido
+            trae el detalle línea a línea (compras nuevas de esta sesión demo;
+            los movimientos de ejemplo antiguos solo tienen number/quantity). */}
+        {isNational && mv.details?.numbers && mv.details.numbers.length > 0 && (
+          <div className="rounded-2xl border border-slate-100 bg-white overflow-hidden">
+            <div className="px-4 pt-3.5 pb-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-manises-blue">
+                Números adquiridos ({mv.details.numbers.length})
+              </p>
+            </div>
+            <div className="max-h-64 overflow-y-auto divide-y divide-slate-50">
+              {mv.details.numbers.map((n, i) => (
+                <div key={`${n.number}-${i}`} className="flex items-center justify-between px-4 py-2.5">
+                  <span className="font-mono text-[13px] font-black tracking-widest text-manises-blue tabular-nums">
+                    {n.number}
+                  </span>
+                  {n.quantity > 1 && (
+                    <span className="text-[11px] font-bold text-slate-400 tabular-nums">× {n.quantity}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Resumen económico */}
         {economicLines.length > 0 && (

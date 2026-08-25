@@ -1570,7 +1570,7 @@ export function TicketDetailPage() {
       {!isNational && <DetailHeader ticket={ticket} game={game} />}
 
       {isNational ? (
-        <NationalDetailContent ticket={ticket} />
+        <NationalDetailContent ticket={ticket} groupTickets={groupTickets} />
       ) : ticket.gameType === 'quiniela' ? (
         <QuinielaDetailView ticket={ticket} result={dayResults[0]?.result ?? null} />
       ) : isSemanal ? (

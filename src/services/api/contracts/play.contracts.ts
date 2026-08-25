@@ -57,6 +57,12 @@ export interface SubmitPlaySessionRequestDto {
   /** COF card token (Redsys Ds_Merchant_Identifier) — required when paymentMethod = 'card'. */
   cardToken?: string;
   totalAmount: number;
+  /**
+   * Coste de envío del PEDIDO completo (Lotería Nacional, entrega por
+   * mensajería) — pertenece al pedido, no a cada línea/décimo, y se cobra
+   * una única vez con independencia de cuántos números/tickets contenga.
+   */
+  shippingCost?: number;
   items: SubmitPlaySessionItemDto[];
 }
 

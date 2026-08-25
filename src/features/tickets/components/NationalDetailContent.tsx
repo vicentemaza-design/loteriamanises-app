@@ -34,6 +34,21 @@ function getOrderTotal(ticket: Ticket): number {
   return typeof ticket.metadata?.orderTotalPrice === 'number' ? ticket.metadata.orderTotalPrice : ticket.price;
 }
 
+// Un pedido de Lotería Nacional puede agrupar varias líneas/números bajo el
+// mismo orderId (uno por número distinto, cada uno con su propia quantity y
+// su propio selaeTicketId — ver tickets.mock.ts::buildTicketsForBet). Estos
+// helpers agregan sobre TODAS las líneas del pedido en vez de leer solo el
+// ticket representativo (grpTickets[0] en TicketsPage), que es lo que
+// producía "Décimos solicitados"/"Importe solicitado" incorrectos cuando el
+// pedido tenía más de un número.
+function getGroupQty(tickets: Ticket[]): number {
+  return tickets.reduce((sum, t) => sum + getQty(t), 0);
+}
+
+function getGroupTotal(tickets: Ticket[]): number {
+  return tickets.reduce((sum, t) => sum + getOrderTotal(t), 0);
+}
+
 const DRAW_NAMES: Record<string, string> = {
   'navidad': 'Lotería de Navidad',
   'nino': 'El Niño',
@@ -111,12 +126,15 @@ function DocumentStatusHeader({
 
 // ── Stats bar: NÚMERO | DÉCIMOS | IMPORTE TOTAL ────────────────────────────
 
-function StatsBar({ number, qty, total }: { number: string; qty: number; total: number }) {
+function StatsBar({ number, numbersCount, qty, total }: { number: string; numbersCount?: number; qty: number; total: number }) {
+  const isMultiple = (numbersCount ?? 1) > 1;
   return (
     <div className="grid grid-cols-3 divide-x divide-slate-100 border-y border-slate-100 bg-white">
       <div className="flex flex-col items-center py-3 px-2">
-        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Número</p>
-        <p className="mt-1 text-[20px] font-black tracking-[0.10em] text-manises-blue leading-none">{number}</p>
+        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">{isMultiple ? 'Números' : 'Número'}</p>
+        <p className="mt-1 text-[20px] font-black tracking-[0.10em] text-manises-blue leading-none">
+          {isMultiple ? numbersCount : number}
+        </p>
       </div>
       <div className="flex flex-col items-center py-3 px-2">
         <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400">Décimos</p>
@@ -227,9 +245,9 @@ function InfoRow({
 
 // ── Series y fracciones (grouped) ──────────────────────────────────────────
 
-function SeriesFracciones({ ticket }: { ticket: Ticket }) {
-  const items = ticket.metadata?.seriesFractions ?? [];
-  const qty = getQty(ticket);
+function SeriesFracciones({ tickets }: { tickets: Ticket[] }) {
+  const items = tickets.flatMap((t) => t.metadata?.seriesFractions ?? []);
+  const qty = getGroupQty(tickets);
   if (items.length === 0) return null;
 
   const grouped = items.reduce<Record<string, (string | number)[]>>((acc, { serie, fraccion }) => {
@@ -267,7 +285,7 @@ function SeriesFracciones({ ticket }: { ticket: Ticket }) {
 // BE aún no puebla selaeTicketId en ningún adapter — se muestra '—' mientras
 // tanto, igual que el resto de campos "no disponible" de esta pantalla.
 
-function DatosPedido({ ticket }: { ticket: Ticket }) {
+function DatosPedido({ ticket, isMultiple }: { ticket: Ticket; isMultiple: boolean }) {
   const confirmedAt = ticket.metadata?.confirmedAt;
 
   return (
@@ -275,7 +293,42 @@ function DatosPedido({ ticket }: { ticket: Ticket }) {
       <InfoRow label="Fecha de pedido" value={formatDateTime(ticket.createdAt)} />
       <InfoRow label="Fecha de confirmación" value={confirmedAt ? formatDateTime(confirmedAt) : '—'} />
       <InfoRow label="Nº de pedido" value={ticket.orderId ?? '—'} />
-      <InfoRow label="Nº de jugada" value={ticket.selaeTicketId ?? '—'} />
+      {/* Con varias líneas/números, cada una tiene su propio Nº de jugada
+          (ver NumerosSolicitados) — mostrar aquí solo el del ticket
+          representativo daría a entender que representa todo el pedido. */}
+      {!isMultiple && <InfoRow label="Nº de jugada" value={ticket.selaeTicketId ?? '—'} />}
+    </InfoSection>
+  );
+}
+
+// ── Números solicitados (varias líneas del mismo pedido) ───────────────────
+// Cada línea es un ticket real con su propio número, quantity y
+// selaeTicketId (ver tickets.mock.ts::buildTicketsForBet) — nunca se fabrica
+// aquí ningún identificador nuevo.
+
+function NumerosSolicitados({ tickets }: { tickets: Ticket[] }) {
+  if (tickets.length <= 1) return null;
+
+  return (
+    <InfoSection icon={Hash} title={`Números solicitados (${tickets.length})`}>
+      <div className="max-h-64 overflow-y-auto divide-y divide-slate-50">
+        {tickets.map((t) => {
+          const qty = getQty(t);
+          return (
+            <div key={t.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
+              <div className="flex items-baseline gap-1.5 min-w-0">
+                <span className="font-mono text-[14px] font-black tracking-[0.10em] text-manises-blue">
+                  {getNumber(t)}
+                </span>
+                {qty > 1 && <span className="text-[10px] font-bold text-slate-400 shrink-0">× {qty}</span>}
+              </div>
+              <span className="shrink-0 font-mono text-[9px] font-semibold text-slate-400">
+                {t.selaeTicketId ?? '—'}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </InfoSection>
   );
 }
@@ -379,18 +432,20 @@ function PremiosObtenidos({ prize, isShipping }: { prize: number; isShipping: bo
 // ── Resumen económico ───────────────────────────────────────────────────────
 
 function ResumenEconomico({
-  ticket,
+  tickets,
   showPrize,
 }: {
-  ticket: Ticket;
+  tickets: Ticket[];
   showPrize?: boolean;
 }) {
-  const qty = getQty(ticket);
-  const orderTotal = getOrderTotal(ticket);
-  const isShipping = ticket.metadata?.deliveryMode === 'shipping';
-  const decimosTotal = qty * ticket.price;
+  const orderTotal = getGroupTotal(tickets);
+  const isShipping = tickets[0]?.metadata?.deliveryMode === 'shipping';
+  // t.price ya es el total de esa línea (unitario × su propia quantity, ver
+  // buildTicketsForBet en play.mock.ts) — sumarlo tal cual, sin volver a
+  // multiplicar por getQty(t), que duplicaría el importe cuando quantity > 1.
+  const decimosTotal = tickets.reduce((sum, t) => sum + t.price, 0);
   const shippingCost = isShipping ? Math.max(orderTotal - decimosTotal, 0) : 0;
-  const prize = ticket.prize ?? 0;
+  const prize = tickets.reduce((sum, t) => sum + (t.prize ?? 0), 0);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
@@ -425,10 +480,11 @@ function ResumenEconomico({
 
 // ── State: Pending ─────────────────────────────────────────────────────────
 
-function StatePending({ ticket }: { ticket: Ticket }) {
+function StatePending({ ticket, tickets }: { ticket: Ticket; tickets: Ticket[] }) {
+  const isMultiple = tickets.length > 1;
   const number = getNumber(ticket);
-  const qty = getQty(ticket);
-  const orderTotal = getOrderTotal(ticket);
+  const qty = getGroupQty(tickets);
+  const orderTotal = getGroupTotal(tickets);
   const drawName = getDrawName(ticket);
   const drawDate = formatLongDate(ticket.drawDate);
 
@@ -440,12 +496,14 @@ function StatePending({ ticket }: { ticket: Ticket }) {
       />
 
       <InfoSection icon={Info} title="Datos de la solicitud">
-        <div className="flex items-start justify-between gap-4 px-4 py-2.5">
-          <span className="shrink-0 text-[10px] font-medium text-slate-400">Número solicitado</span>
-          <span className="text-right font-mono text-[18px] font-black tracking-[0.12em] text-manises-blue leading-tight">
-            {number}
-          </span>
-        </div>
+        {!isMultiple && (
+          <div className="flex items-start justify-between gap-4 px-4 py-2.5">
+            <span className="shrink-0 text-[10px] font-medium text-slate-400">Número solicitado</span>
+            <span className="text-right font-mono text-[18px] font-black tracking-[0.12em] text-manises-blue leading-tight">
+              {number}
+            </span>
+          </div>
+        )}
         <InfoRow label="Décimos solicitados" value={`${qty} ${qty === 1 ? 'décimo' : 'décimos'}`} />
         <InfoRow
           label="Importe solicitado"
@@ -462,8 +520,10 @@ function StatePending({ ticket }: { ticket: Ticket }) {
           </div>
         </div>
         <InfoRow label="Nº de pedido" value={ticket.orderId ?? '—'} />
-        <InfoRow label="Nº de jugada" value={ticket.selaeTicketId ?? '—'} />
+        {!isMultiple && <InfoRow label="Nº de jugada" value={ticket.selaeTicketId ?? '—'} />}
       </InfoSection>
+
+      <NumerosSolicitados tickets={tickets} />
 
       <div className="flex items-start gap-2.5 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
         <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
@@ -477,10 +537,11 @@ function StatePending({ ticket }: { ticket: Ticket }) {
 
 // ── State: Confirmed ────────────────────────────────────────────────────────
 
-function StateConfirmed({ ticket }: { ticket: Ticket }) {
+function StateConfirmed({ ticket, tickets }: { ticket: Ticket; tickets: Ticket[] }) {
+  const isMultiple = tickets.length > 1;
   const number = getNumber(ticket);
-  const qty = getQty(ticket);
-  const orderTotal = getOrderTotal(ticket);
+  const qty = getGroupQty(tickets);
+  const orderTotal = getGroupTotal(tickets);
   const isShipping = ticket.metadata?.deliveryMode === 'shipping';
 
   return (
@@ -490,15 +551,16 @@ function StateConfirmed({ ticket }: { ticket: Ticket }) {
         description="Tu compra ha sido realizada con éxito. Este documento es tu justificante de compra."
       />
 
-      <StatsBar number={number} qty={qty} total={orderTotal} />
+      <StatsBar number={number} numbersCount={tickets.length} qty={qty} total={orderTotal} />
 
       <div className="flex flex-col gap-4 px-4">
-        <DecimoImage ticket={ticket} />
-        <SeriesFracciones ticket={ticket} />
-        <DatosPedido ticket={ticket} />
+        {!isMultiple && <DecimoImage ticket={ticket} />}
+        <SeriesFracciones tickets={tickets} />
+        <DatosPedido ticket={ticket} isMultiple={isMultiple} />
+        <NumerosSolicitados tickets={tickets} />
         <DatosTitular ticket={ticket} />
         {isShipping ? <DatosEnvio ticket={ticket} /> : <DatosCustodia />}
-        <ResumenEconomico ticket={ticket} />
+        <ResumenEconomico tickets={tickets} />
       </div>
     </div>
   );
@@ -506,12 +568,13 @@ function StateConfirmed({ ticket }: { ticket: Ticket }) {
 
 // ── State: Scrutinized ──────────────────────────────────────────────────────
 
-function StateScrutinized({ ticket }: { ticket: Ticket }) {
+function StateScrutinized({ ticket, tickets }: { ticket: Ticket; tickets: Ticket[] }) {
+  const isMultiple = tickets.length > 1;
   const number = getNumber(ticket);
-  const qty = getQty(ticket);
-  const orderTotal = getOrderTotal(ticket);
+  const qty = getGroupQty(tickets);
+  const orderTotal = getGroupTotal(tickets);
   const isShipping = ticket.metadata?.deliveryMode === 'shipping';
-  const prize = ticket.prize ?? 0;
+  const prize = tickets.reduce((sum, t) => sum + (t.prize ?? 0), 0);
   const hasPrize = prize > 0;
 
   return (
@@ -521,16 +584,17 @@ function StateScrutinized({ ticket }: { ticket: Ticket }) {
         description="El sorteo ha sido celebrado. Este es el resultado definitivo de tu compra."
       />
 
-      <StatsBar number={number} qty={qty} total={orderTotal} />
+      <StatsBar number={number} numbersCount={tickets.length} qty={qty} total={orderTotal} />
 
       <div className="flex flex-col gap-4 px-4">
-        <DecimoImage ticket={ticket} />
-        <SeriesFracciones ticket={ticket} />
-        <DatosPedido ticket={ticket} />
+        {!isMultiple && <DecimoImage ticket={ticket} />}
+        <SeriesFracciones tickets={tickets} />
+        <DatosPedido ticket={ticket} isMultiple={isMultiple} />
+        <NumerosSolicitados tickets={tickets} />
         <DatosTitular ticket={ticket} />
         {isShipping ? <DatosEnvio ticket={ticket} /> : <DatosCustodia />}
         {hasPrize && <PremiosObtenidos prize={prize} isShipping={isShipping} />}
-        <ResumenEconomico ticket={ticket} showPrize={hasPrize} />
+        <ResumenEconomico tickets={tickets} showPrize={hasPrize} />
       </div>
     </div>
   );
@@ -538,12 +602,17 @@ function StateScrutinized({ ticket }: { ticket: Ticket }) {
 
 // ── Main export ────────────────────────────────────────────────────────────
 
-export function NationalDetailContent({ ticket }: { ticket: Ticket }) {
+export function NationalDetailContent({ ticket, groupTickets }: { ticket: Ticket; groupTickets?: Ticket[] }) {
   const status = getPlayStatus(ticket);
+  // El pedido completo (todas las líneas/números bajo el mismo orderId) —
+  // ver TicketsPage.tsx::groupedDisplayed, que ya las agrupa y las pasa por
+  // router state. Sin ese estado (p.ej. entrada directa por URL) caemos al
+  // ticket representativo, igual que hace SingleDrawDetail para el resto de juegos.
+  const tickets = groupTickets && groupTickets.length > 0 ? groupTickets : [ticket];
 
-  if (status === 'pending' || status === 'processing') return <StatePending ticket={ticket} />;
-  if (status === 'confirmed') return <StateConfirmed ticket={ticket} />;
-  if (status === 'scrutinized') return <StateScrutinized ticket={ticket} />;
+  if (status === 'pending' || status === 'processing') return <StatePending ticket={ticket} tickets={tickets} />;
+  if (status === 'confirmed') return <StateConfirmed ticket={ticket} tickets={tickets} />;
+  if (status === 'scrutinized') return <StateScrutinized ticket={ticket} tickets={tickets} />;
 
   return (
     <div className="mx-4 mt-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3">

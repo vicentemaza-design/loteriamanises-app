@@ -103,15 +103,22 @@ interface UsePlaySessionConfirmOptions {
 }
 
 export function usePlaySessionConfirm({ draftFilter }: UsePlaySessionConfirmOptions = {}) {
-  const { user, isDemo } = useAuth();
+  const { user, isDemo, refreshProfile } = useAuth();
   const { session, drafts, closeReview, markConfirming, resolveConfirmFailure, resolveConfirmPartial, resolveConfirmSuccess } = usePlaySession();
   const summary = usePlaySessionSummary();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const confirm = async () => {
+  // `shippingCost`: coste de envío del PEDIDO (Lotería Nacional, Mensajería)
+  // — lo calcula y lo conoce solo el carrito que confirma (LotteryCartPanel),
+  // nunca los borradores individuales, así que se pasa aquí explícitamente
+  // en vez de intentar derivarlo de cada draft. Se cobra una única vez por
+  // pedido, nunca por línea/décimo.
+  const confirm = async (options?: { shippingCost?: number }) => {
     if (!user && !isDemo) {
       return { ok: false, needsAuth: true };
     }
+
+    const shippingCost = options?.shippingCost ?? 0;
 
     const scopedDrafts = draftFilter === 'games'
       ? drafts.filter((d) => d.selection.type !== 'national')
@@ -134,7 +141,8 @@ export function usePlaySessionConfirm({ draftFilter }: UsePlaySessionConfirmOpti
         sessionId: session.id,
         userId: getFunctionalUserId(user),
         paymentMethod: 'wallet',
-        totalAmount: summary.totalAmount,
+        totalAmount: summary.totalAmount + shippingCost,
+        shippingCost,
         items: validDrafts.map(mapDraftToDto),
       });
 
@@ -149,12 +157,21 @@ export function usePlaySessionConfirm({ draftFilter }: UsePlaySessionConfirmOpti
           : `${response.failures.length} jugadas no se pudieron confirmar.`;
         resolveConfirmPartial(response.confirmedDraftIds ?? [], failureMessage);
         toast.error(failureMessage);
+        // Confirmación parcial: algunas jugadas sí llegaron a cobrarse — el
+        // saldo mostrado debe reflejarlo de inmediato (mismo mecanismo que
+        // usa TopUpModal/useWallet tras una recarga real).
+        await refreshProfile();
         return { ok: false, needsAuth: false };
       }
 
       resolveConfirmSuccess(response.confirmedDraftIds ?? validDrafts.map((draft) => draft.id));
       closeReview();
       notifyPurchaseConfirmed(validDrafts.length);
+      // El saldo se descuenta en el propio backend/mock al confirmar el
+      // pedido — refrescamos aquí el mismo `profile.balance` que usa el
+      // resto de la app (AuthProvider.refreshProfile), sin crear una
+      // segunda fuente de verdad del saldo.
+      await refreshProfile();
       return { ok: true, needsAuth: false };
     } catch (error) {
       console.error('[usePlaySessionConfirm] Unexpected error:', error);
