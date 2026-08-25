@@ -208,6 +208,7 @@ export function NavidadPlayPage({ game }: NavidadPlayPageProps) {
             <div className="sticky top-14 z-10 -mx-4 px-4 pb-2 pt-0">
               <NationalContextBar
                 drawDate={game.nextDraw}
+                delivery={selectedDelivery}
                 method={selectedMethod}
                 onEdit={() => setFlowScreen('config')}
               />
