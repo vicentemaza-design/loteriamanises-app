@@ -217,7 +217,12 @@ export function TicketsPage() {
   const groupedDisplayed = useMemo((): TicketGroup[] => {
     const groups = new Map<string, Ticket[]>();
     for (const ticket of displayed) {
-      const key = (ticket.orderId ?? ticket.id) + '::' + ticket.gameId;
+      // Lotería Nacional: cada ticket ya es un número/sorteo/quantity propio
+      // (nunca varias líneas fusionadas) — el cliente necesita verlo como
+      // jugada individual, aunque comparta orderId con otros números del
+      // mismo pedido. El resto de juegos mantiene el agrupado por
+      // pedido+juego (combinaciones de un mismo boleto/sesión).
+      const key = isNationalTicket(ticket) ? ticket.id : (ticket.orderId ?? ticket.id) + '::' + ticket.gameId;
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key)!.push(ticket);
     }

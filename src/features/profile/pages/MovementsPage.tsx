@@ -292,8 +292,16 @@ function MovementDetail({ movement: mv, onClose }: { movement: MovementWithBalan
     fields.push({ label: 'Fecha prevista', value: formatDateOnly(prevista.toISOString()) });
   } else if (isNational) {
     const nationalQty = mv.details?.numbers?.reduce((s, n) => s + n.quantity, 0) ?? mv.details?.quantity ?? 1;
+    // Fechas de sorteo REALES presentes en el desglose (nunca fabricadas). Si
+    // el pedido cubre un único sorteo se muestra aquí como atajo; si cubre
+    // varios, esta línea se omite (serían fechas distintas bajo una sola
+    // etiqueta) y el desglose por sorteo de más abajo ya las muestra todas.
+    // Los movimientos antiguos sin drawDate tampoco fabrican una fecha.
+    const realDrawDates = Array.from(new Set((mv.details?.numbers ?? []).map((n) => n.drawDate).filter((d): d is string => !!d)));
     fields.push({ label: 'Fecha del pedido', value: formatDatetime(mv.createdAt) });
-    fields.push({ label: 'Fecha del sorteo', value: '22 dic 2026' });
+    if (realDrawDates.length === 1) {
+      fields.push({ label: 'Fecha del sorteo', value: formatDateOnly(realDrawDates[0]) });
+    }
     fields.push({ label: 'Nº de pedido', value: mv.orderId || 'LN-983055', mono: true });
     fields.push({ label: 'Detalle', value: `${nationalQty} décimos` });
     fields.push({ label: 'Método de entrega', value: mv.details?.deliveryMode === 'shipping' ? 'Mensajería (Nacex)' : 'Custodia digital' });
@@ -398,28 +406,58 @@ function MovementDetail({ movement: mv, onClose }: { movement: MovementWithBalan
 
         {/* Números/décimos adquiridos — solo Lotería Nacional, cuando el pedido
             trae el detalle línea a línea (compras nuevas de esta sesión demo;
-            los movimientos de ejemplo antiguos solo tienen number/quantity). */}
-        {isNational && mv.details?.numbers && mv.details.numbers.length > 0 && (
-          <div className="rounded-2xl border border-slate-100 bg-white overflow-hidden">
-            <div className="px-4 pt-3.5 pb-2">
-              <p className="text-[10px] font-black uppercase tracking-widest text-manises-blue">
-                Números adquiridos ({mv.details.numbers.length})
-              </p>
+            los movimientos de ejemplo antiguos solo tienen number/quantity).
+            Cuando cada línea conserva su drawDate real, se agrupa por sorteo
+            (un pedido puede cubrir varios sorteos distintos); si no hay
+            drawDate (movimientos antiguos), se mantiene la lista plana de
+            siempre, sin fabricar una fecha. */}
+        {isNational && mv.details?.numbers && mv.details.numbers.length > 0 && (() => {
+          const allNumbers = mv.details.numbers;
+          const drawGroups = new Map<string, { drawDate?: string; drawLabel?: string; entries: typeof allNumbers }>();
+          for (const n of allNumbers) {
+            const key = n.drawDate ?? '__sin-fecha__';
+            if (!drawGroups.has(key)) drawGroups.set(key, { drawDate: n.drawDate, drawLabel: n.drawLabel, entries: [] });
+            drawGroups.get(key)!.entries.push(n);
+          }
+          const groups = Array.from(drawGroups.values()).sort((a, b) => (a.drawDate ?? '').localeCompare(b.drawDate ?? ''));
+          const showPerDrawHeaders = groups.some((g) => !!g.drawDate);
+
+          return (
+            <div className="rounded-2xl border border-slate-100 bg-white overflow-hidden">
+              <div className="px-4 pt-3.5 pb-2">
+                <p className="text-[10px] font-black uppercase tracking-widest text-manises-blue">
+                  Números adquiridos ({allNumbers.length})
+                </p>
+              </div>
+              <div className="max-h-64 overflow-y-auto divide-y divide-slate-50">
+                {groups.map((g, gi) => (
+                  <div key={g.drawDate ?? `sin-fecha-${gi}`}>
+                    {showPerDrawHeaders && (
+                      <div className="bg-slate-50/70 px-4 pt-2.5 pb-1.5">
+                        <p className="text-[9px] font-black uppercase tracking-wider text-slate-500">
+                          {g.drawLabel ? `${g.drawLabel} ` : ''}{g.drawDate ? formatDateOnly(g.drawDate) : 'Sin fecha'}
+                        </p>
+                        <p className="text-[9px] font-medium text-slate-400">
+                          {g.entries.reduce((s, n) => s + n.quantity, 0)} décimos
+                        </p>
+                      </div>
+                    )}
+                    {g.entries.map((n, i) => (
+                      <div key={`${n.number}-${i}`} className="flex items-center justify-between px-4 py-2.5">
+                        <span className="font-mono text-[13px] font-black tracking-widest text-manises-blue tabular-nums">
+                          {n.number}
+                        </span>
+                        {n.quantity > 1 && (
+                          <span className="text-[11px] font-bold text-slate-400 tabular-nums">× {n.quantity}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="max-h-64 overflow-y-auto divide-y divide-slate-50">
-              {mv.details.numbers.map((n, i) => (
-                <div key={`${n.number}-${i}`} className="flex items-center justify-between px-4 py-2.5">
-                  <span className="font-mono text-[13px] font-black tracking-widest text-manises-blue tabular-nums">
-                    {n.number}
-                  </span>
-                  {n.quantity > 1 && (
-                    <span className="text-[11px] font-bold text-slate-400 tabular-nums">× {n.quantity}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Resumen económico */}
         {economicLines.length > 0 && (

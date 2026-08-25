@@ -41,7 +41,7 @@ function formatDrawDate(iso: string): string {
   return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
-interface DrawGroupData { gameType: string; drafts: PlayDraft[]; drawDate: string }
+interface DrawGroupData { gameType: string; drafts: PlayDraft[]; drawDate: string; drawLabel: string }
 
 // Mockup del décimo/ticket — pendiente imagen real del número desde backend
 function TicketMockupModal({ number, gameType, label, onClose }: {
@@ -330,10 +330,14 @@ export function LotteryCartPanel() {
   const isOverBalance = effectiveBalance < total;
   const totalDecimos = lotteryDrafts.reduce((s, d) => s + d.quantity, 0);
 
+  // Agrupar por la fecha REAL del sorteo (draft.drawDate), no por la etiqueta
+  // genérica (draft.selection.drawLabel, p.ej. "Jueves") — dos sorteos
+  // distintos pueden compartir la misma etiqueta ("Jueves 27 ago" y "Jueves 3
+  // sep" son ambos "Jueves") y no deben fusionarse en un único grupo.
   const groups = lotteryDrafts.reduce<Record<string, DrawGroupData>>((acc, draft) => {
     if (draft.selection.type !== 'national') return acc;
-    const key = draft.selection.drawLabel;
-    if (!acc[key]) acc[key] = { gameType: draft.gameType, drafts: [], drawDate: draft.drawDate };
+    const key = draft.drawDate;
+    if (!acc[key]) acc[key] = { gameType: draft.gameType, drafts: [], drawDate: draft.drawDate, drawLabel: draft.selection.drawLabel };
     acc[key].drafts.push(draft);
     return acc;
   }, {} as Record<string, DrawGroupData>);
@@ -428,9 +432,9 @@ export function LotteryCartPanel() {
           {/* Scroll */}
           <div className="flex-1 overflow-y-auto px-5 pb-4 space-y-3">
 
-            {(Object.entries(groups) as Array<[string, DrawGroupData]>).map(([drawLabel, data]) => (
-              <div key={drawLabel}>
-                <DrawGroup drawLabel={drawLabel} data={data} deliveryMode={deliveryMode} onDelete={removeDraft} onQty={handleQty} />
+            {(Object.entries(groups) as Array<[string, DrawGroupData]>).map(([drawDateKey, data]) => (
+              <div key={drawDateKey}>
+                <DrawGroup drawLabel={data.drawLabel} data={data} deliveryMode={deliveryMode} onDelete={removeDraft} onQty={handleQty} />
               </div>
             ))}
 

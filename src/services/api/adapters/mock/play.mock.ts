@@ -110,9 +110,15 @@ function buildNationalMovementForSession(
   const nationalItems = items.filter((item) => item.metadata?.nationalNumber !== undefined);
   if (nationalItems.length === 0) return null;
 
+  // drawDate/drawLabel se copian tal cual de cada item — nunca se fabrican ni
+  // se sustituyen por una única fecha de pedido: si dos líneas pertenecen a
+  // sorteos distintos, cada una conserva la suya para poder desglosarse por
+  // sorteo real en el detalle del movimiento (ver MovementsPage.tsx).
   const numbers = nationalItems.map((item) => ({
     number: String(item.metadata?.nationalNumber),
     quantity: item.quantity,
+    drawDate: item.drawDate,
+    drawLabel: item.metadata?.nationalDrawLabel as string | undefined,
   }));
   // El envío pertenece al PEDIDO, no a cada línea/décimo — se suma una sola
   // vez aquí, nunca por número/ticket.
@@ -173,26 +179,19 @@ export async function submitPlaySessionMock(payload: SubmitPlaySessionRequestDto
 
       // Una sesión debe comportarse como una única operación atómica: mismo orderId en todos los tickets.
       const sessionOrderId = `mock-session-${payload.sessionId.slice(0, 10)}`;
-      const tickets = payload.items.flatMap((item) =>
-        buildTicketsForBet(mapSessionItemToBetDto(item), payload.userId, sessionOrderId)
-      );
-      // El envío se adjunta solo al primer ticket del pedido (orderTotalPrice
-      // = su propio importe de décimos + el envío completo) — el resto de
-      // tickets se quedan sin orderTotalPrice y caen a su propio `price`
-      // (ver getOrderTotal en NationalDetailContent.tsx). Sumando
-      // getOrderTotal() de TODOS los tickets del grupo se obtiene
-      // decimosTotal + shippingCost exactamente una vez, igual que ya hacen
-      // los fixtures estáticos de demo (ver tickets.mock.ts).
-      if (shippingCost > 0 && tickets[0]) {
-        tickets[0] = {
-          ...tickets[0],
-          metadata: {
-            ...tickets[0].metadata,
-            orderTotalPrice: tickets[0].price + shippingCost,
-            deliveryMode: 'shipping',
-          },
-        };
-      }
+      // El modo de entrega se elige UNA vez para todo el pedido (toggle de
+      // LotteryCartPanel, nunca por línea) — así que se aplica por igual a
+      // TODOS los tickets del pedido, no solo al primero. Antes solo se
+      // anotaba en tickets[0], dejando el resto sin `metadata.deliveryMode`
+      // (Mis Jugadas/TicketDetailPage lo leen por ticket, así que esas líneas
+      // aparecían silenciosamente como "custodia" o sin sección de entrega).
+      // El envío en sí NUNCA se sube al precio de un ticket individual — es
+      // un coste del pedido, visible una sola vez en el movimiento
+      // (buildNationalMovementForSession), nunca prorrateado por número.
+      const deliveryMode: 'custody' | 'shipping' = shippingCost > 0 ? 'shipping' : 'custody';
+      const tickets = payload.items
+        .flatMap((item) => buildTicketsForBet(mapSessionItemToBetDto(item), payload.userId, sessionOrderId))
+        .map((ticket) => ({ ...ticket, metadata: { ...ticket.metadata, deliveryMode } }));
       appendMockTickets(tickets);
 
       const movement = buildNationalMovementForSession(payload.items, payload.userId, sessionOrderId, shippingCost);
