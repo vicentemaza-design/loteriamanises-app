@@ -113,12 +113,22 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* z-[270]/[271]: este gate se abre desde GamesCartPanel/
+              LotteryCartPanel (requireReauth('purchase')) y desde el propio
+              TopUpModal (requireReauth('topUp'), z-[261]) — ambos carritos
+              (z-[200]) y la cadena de recarga (TopUpModal/AddCardFlow/
+              RedsysGateway, z-[261]/[262]/[263]) deben quedar SIEMPRE
+              debajo. z-[90]/[100] (valor original) solo funcionaba por
+              casualidad de anidación JSX en GamesCartPanel (el modal queda
+              nested dentro de su div z-[200], así que no compite con él) —
+              en LotteryCartPanel, donde es un hermano de ese div en el mismo
+              fragment, quedaba tapado y no era clicable. */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={!isBusy ? handleClose : undefined}
-            className="fixed inset-0 z-[90] bg-[#0a4792]/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[270] bg-[#0a4792]/40 backdrop-blur-sm"
           />
           <motion.div
             initial={{ y: '100%', opacity: 0 }}
@@ -128,7 +138,7 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
             role="dialog"
             aria-modal="true"
             aria-labelledby="pin-entry-title"
-            className="fixed bottom-0 left-0 right-0 z-[100] flex max-h-[calc(100dvh-0.75rem)] flex-col rounded-t-[2.5rem] bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)]"
+            className="fixed bottom-0 left-0 right-0 z-[271] flex max-h-[calc(100dvh-0.75rem)] flex-col rounded-t-[2.5rem] bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)]"
           >
             <div className="flex w-full shrink-0 justify-center pt-3 pb-2">
               <div className="h-1.5 w-12 rounded-full bg-gray-200" />
