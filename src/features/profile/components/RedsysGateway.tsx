@@ -77,7 +77,10 @@ export function RedsysGateway({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] flex flex-col bg-[#f4f6f9] overflow-y-auto"
+      // z-[263]: por encima de AddCardFlow (z-[262]) y de TopUpModal
+      // (z-[261]) cuando se abre encadenado desde la recarga inline del
+      // carrito (z-[200]) — ver comentario en TopUpModal.tsx.
+      className="fixed inset-0 z-[263] flex flex-col bg-[#f4f6f9] overflow-y-auto"
     >
       {/* Cabecera Redsys */}
       <div className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0">

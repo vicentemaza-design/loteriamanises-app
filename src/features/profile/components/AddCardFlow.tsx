@@ -71,7 +71,10 @@ export function AddCardFlow({ isOpen, onClose, onSuccess }: AddCardFlowProps) {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="fixed inset-0 z-[150] bg-white flex flex-col"
+            // z-[262]: por encima de TopUpModal (z-[261]) cuando este se abre
+            // desde ahí — ver comentario en TopUpModal.tsx sobre por qué
+            // ninguno de los dos puede quedar por debajo de z-[200] (carrito).
+            className="fixed inset-0 z-[262] bg-white flex flex-col"
           >
             {/* Cabecera */}
             <div

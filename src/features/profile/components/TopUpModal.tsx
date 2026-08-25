@@ -20,6 +20,14 @@ interface TopUpModalProps {
   onClose: () => void;
   onSuccess: (amount: number) => Promise<void>;
   currentBalance: number;
+  /**
+   * Cuando la recarga se abre porque una compra no llega a cubrirse (cesta de
+   * juegos/lotería), el contexto superior pasa a avisar del déficit en vez de
+   * mostrar el saldo actual, y el importe se preselecciona al mínimo de
+   * AMOUNTS que lo cubre — el resto del modal (métodos de pago, tarjetas,
+   * CTA) es exactamente el mismo que en Mi cuenta, sin bifurcaciones.
+   */
+  deficitAmount?: number;
 }
 
 const AMOUNTS = [5, 10, 20, 50, 100, 200];
@@ -60,7 +68,7 @@ const BANK_TRANSFER_INFO = {
   'Concepto/Ref.': 'REF-RECARGA-2026',
 } as const;
 
-export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUpModalProps) {
+export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance, deficitAmount }: TopUpModalProps) {
   const [savedCards, setSavedCards] = useState<StoredCard[]>([]);
   const [selectedAmount, setSelectedAmount] = useState<number>(10);
   const [isCustom, setIsCustom] = useState(false);
@@ -82,17 +90,39 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
   const isNewCard = selectedMethod === 'new-card';
   const canSubmit = effectiveAmount > 0 && effectiveAmount <= 500 && selectedMethod !== 'none';
 
-  // Reset del modal cada vez que se abre. Lee `isDemo` sin listarlo en deps:
-  // es el resultado de isDemoEnvironment(), invariante durante la sesión —
-  // añadirlo no cambiaría cuándo se ejecuta este efecto, solo lo haría
-  // menos legible. Intentional exclusion.
+  // Reset del modal cada vez que se abre. Lee `isDemo` e `deficitAmount` sin
+  // listarlos en deps — `isDemo` es invariante durante la sesión; `deficitAmount`
+  // SÍ cambia mientras el modal sigue abierto (en cuanto onSuccess() actualiza
+  // el saldo del carrito, el padre recalcula total-balance y baja un nuevo
+  // valor) pero solo debe fijar la preselección al ABRIRSE, nunca a mitad de
+  // un pago: listarlo forzaría este efecto a re-ejecutarse justo cuando
+  // handlePay() está esperando dentro de su propio onSuccess(), reseteando
+  // isProcessing/isSuccess y rompiendo la pantalla de éxito y el auto-cierre
+  // (reproducido en QA: el sheet volvía a su estado inicial en vez de mostrar
+  // "¡Pago completado!"). Intentional exclusion.
   useEffect(() => {
     if (isOpen) {
       const cards = readSavedCards();
       setSavedCards(cards);
-      setSelectedAmount(10);
-      setIsCustom(false);
-      setCustomValue('');
+      // Con déficit (recarga inline desde una compra): preselecciona el
+      // importe más pequeño de AMOUNTS que lo cubre, igual que hacía el
+      // flujo inline antes de unificarse aquí; si el déficit supera el
+      // mayor importe fijo, cae a "otro importe" con el valor exacto.
+      if (deficitAmount && deficitAmount > 0) {
+        const suggested = AMOUNTS.find(a => a >= deficitAmount);
+        if (suggested) {
+          setSelectedAmount(suggested);
+          setIsCustom(false);
+          setCustomValue('');
+        } else {
+          setIsCustom(true);
+          setCustomValue(deficitAmount.toFixed(2));
+        }
+      } else {
+        setSelectedAmount(10);
+        setIsCustom(false);
+        setCustomValue('');
+      }
       // Fuera de demo, la tarjeta guardada no tiene backend real que la cargue
       // (ver handlePay) — no puede quedar preseleccionada como método válido.
       setSelectedMethod(cards.length > 0 && isDemo ? 'card' : 'none');
@@ -190,12 +220,21 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
             onSuccess={handleAddCardFlowSuccess}
           />
 
+          {/* z-[260]/[261]: este modal se reutiliza también como recarga
+              inline DENTRO de GamesCartPanel/LotteryCartPanel, cuyo panel
+              raíz es z-[200] — z-[90]/[100] (valor original, correcto en su
+              único uso previo desde WalletPage, sin nada más en pantalla)
+              quedaba tapado/no-clicable detrás del carrito. Se alinea con
+              z-[250], ya usado por ShippingAddressModal/AddSorteoModal/
+              AbonarseModal para el mismo problema (modal por encima del
+              carrito) — ver AddCardFlow.tsx/RedsysGateway.tsx, subidos en
+              el mismo cambio para mantener su jerarquía relativa. */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={!isProcessing ? onClose : undefined}
-            className="fixed inset-0 z-[90] bg-[#0a4792]/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[260] bg-[#0a4792]/40 backdrop-blur-sm"
           />
           <motion.div
             ref={dialogRef}
@@ -207,7 +246,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 z-[100] bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col max-h-[calc(100dvh-0.75rem)] outline-none"
+            className="fixed bottom-0 left-0 right-0 z-[261] bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col max-h-[calc(100dvh-0.75rem)] outline-none"
           >
             <div className="w-full flex justify-center pt-3 pb-2 shrink-0">
               <div className="w-12 h-1.5 rounded-full bg-gray-200" />
@@ -234,10 +273,17 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance }: TopUp
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 id="topup-modal-title" className="text-2xl font-black text-manises-blue">Añadir fondos</h3>
-                      <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-0.5 flex items-center gap-1">
-                        <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                        Saldo actual: {formatCurrency(currentBalance)}
-                      </p>
+                      {deficitAmount && deficitAmount > 0 ? (
+                        <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mt-0.5 flex items-center gap-1">
+                          <span className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
+                          Te faltan {formatCurrency(deficitAmount)} para completar el pago
+                        </p>
+                      ) : (
+                        <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-0.5 flex items-center gap-1">
+                          <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                          Saldo actual: {formatCurrency(currentBalance)}
+                        </p>
+                      )}
                     </div>
                     {!isProcessing && (
                       <Button variant="ghost" size="icon" onClick={onClose} aria-label="Cerrar" className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500">
