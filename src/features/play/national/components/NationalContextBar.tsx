@@ -20,11 +20,11 @@ function formatContextDate(iso: string): string {
 
 export function NationalContextBar({ drawDate, delivery, method, onEdit }: NationalContextBarProps) {
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-slate-100 bg-white px-3 py-2 shadow-sm">
+    <div className="flex items-center gap-1 rounded-xl border border-slate-100 bg-white px-1.5 py-2 shadow-sm">
       {/* Fecha */}
       <div className="flex shrink-0 items-center gap-1">
         <Calendar className="h-3 w-3 text-manises-blue/50" />
-        <span className="text-[9px] font-black tracking-wide text-manises-blue">
+        <span className="text-[10px] font-black leading-none tracking-wide text-manises-blue">
           {formatContextDate(drawDate)}
         </span>
       </div>
@@ -38,7 +38,7 @@ export function NationalContextBar({ drawDate, delivery, method, onEdit }: Natio
             ) : (
               <Truck className="h-3 w-3 text-blue-500" />
             )}
-            <span className="text-[9px] font-bold text-slate-500">
+            <span className="text-[10px] font-bold leading-none text-slate-500">
               {delivery === 'custody' ? 'Digital' : 'Envío'}
             </span>
           </div>
@@ -54,7 +54,7 @@ export function NationalContextBar({ drawDate, delivery, method, onEdit }: Natio
         ) : (
           <EditPencil className="h-3 w-3 text-slate-400" />
         )}
-        <span className="text-[9px] font-bold text-slate-500">
+        <span className="text-[10px] font-bold leading-none text-slate-500">
           {method === 'aleatorio' ? 'Aleatorio' : 'Manual'}
         </span>
       </div>
