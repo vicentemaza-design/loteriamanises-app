@@ -276,7 +276,7 @@ function DrawGroup({ drawLabel, data, onDelete, onQty, deliveryMode }: {
           <p className="text-[10px] font-semibold text-slate-400">{formatDrawDate(data.drawDate)}</p>
         </div>
         <span className="rounded-full px-2.5 py-1 text-[10px] font-black text-white" style={{ backgroundColor: color }}>
-          {totalDecimos} {totalDecimos === 1 ? 'número' : 'números'}
+          {data.drafts.length} {data.drafts.length === 1 ? 'número' : 'números'}
         </span>
       </div>
       <div className="divide-y divide-slate-50 px-4">
