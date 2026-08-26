@@ -3,6 +3,7 @@ import { createApiClient } from '@/services/api/factory/createApiClient';
 import { playMapper, type BuildBetDtoInput } from '@/services/api/mappers/play.mapper';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
+import { RUNTIME_CONFIG } from '@/config/runtime';
 import type { CreateBetRequestDto } from '@/services/api/contracts/play.contracts';
 import { getFunctionalUserId } from '@/shared/lib/getFunctionalUserId';
 
@@ -22,7 +23,7 @@ export function usePlay() {
    * @param selection Raw selection and game data from the view (UI State).
    */
   const placeBet = useCallback(async (selection: BuildBetDtoInput) => {
-    if (!user && !FEATURE_FLAGS.enableDemoMode) {
+    if (!user && !RUNTIME_CONFIG.demoEnabled) {
       setError('Debes iniciar sesión para realizar una apuesta.');
       return;
     }

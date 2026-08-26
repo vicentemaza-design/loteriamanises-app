@@ -4,6 +4,7 @@ import { walletMapper } from '@/services/api/mappers/wallet.mapper';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { WalletMovement } from '@/shared/types/domain';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
+import { RUNTIME_CONFIG } from '@/config/runtime';
 
 /**
  * useMovements Hook
@@ -16,7 +17,7 @@ export function useMovements() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchMovements = useCallback(async () => {
-    if (!user && !FEATURE_FLAGS.enableDemoMode) {
+    if (!user && !RUNTIME_CONFIG.demoEnabled) {
       setMovements([]);
       setIsLoading(false);
       return;

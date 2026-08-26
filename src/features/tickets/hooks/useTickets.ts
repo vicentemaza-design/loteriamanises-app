@@ -4,6 +4,7 @@ import { ticketsMapper } from '@/services/api/mappers/tickets.mapper';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import type { Ticket } from '@/shared/types/domain';
 import { FEATURE_FLAGS } from '@/config/featureFlags';
+import { RUNTIME_CONFIG } from '@/config/runtime';
 import { getFunctionalUserId } from '@/shared/lib/getFunctionalUserId';
 
 /**
@@ -18,7 +19,7 @@ export function useTickets() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchTickets = useCallback(async () => {
-    if (!user && !FEATURE_FLAGS.enableDemoMode) {
+    if (!user && !RUNTIME_CONFIG.demoEnabled) {
       setTickets([]);
       setIsLoading(false);
       return;

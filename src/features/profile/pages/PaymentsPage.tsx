@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { MOCK_PAYMENT_CARDS } from '../data/profile.mock';
 import type { PaymentCard } from '../types/profile.types';
 import { RedsysGateway } from '../components/RedsysGateway';
+import { RUNTIME_CONFIG } from '@/config/runtime';
 
 import visaLogo from '@/assets/games/visa.svg';
 import mastercardLogo from '@/assets/games/mastercard.svg';
@@ -14,7 +15,9 @@ export function PaymentsPage() {
   const [cards, setCards] = useState<PaymentCard[]>(() => {
     const saved = localStorage.getItem('manises_payment_cards');
     const extra: PaymentCard[] = saved ? (() => { try { return JSON.parse(saved); } catch { return []; } })() : [];
-    // Los mocks siempre presentes; las tarjetas añadidas en sesión se añaden al final
+    if (!RUNTIME_CONFIG.demoEnabled) return [];
+
+    // En demo, las tarjetas mock y las añadidas durante la sesión se muestran.
     const mockIds = new Set(MOCK_PAYMENT_CARDS.map(c => c.id));
     return [...MOCK_PAYMENT_CARDS, ...extra.filter((c: PaymentCard) => !mockIds.has(c.id))];
   });

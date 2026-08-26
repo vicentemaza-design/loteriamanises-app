@@ -120,9 +120,6 @@ const QUINIELA_CALENDAR: Record<string, QuinielaFixture[]> = {
 
 };
 
-// Fallback cuando no hay datos para la fecha solicitada
-const FALLBACK_FIXTURES: QuinielaFixture[] = QUINIELA_CALENDAR['2026-07-12'];
-
 /**
  * Devuelve los partidos de la jornada para la fecha indicada.
  * La fecha puede ser cualquier día (domingo, miércoles, especial mundial…).
@@ -132,7 +129,10 @@ const FALLBACK_FIXTURES: QuinielaFixture[] = QUINIELA_CALENDAR['2026-07-12'];
  */
 export function getFixturesForDate(date: Date): QuinielaFixture[] {
   const key = date.toISOString().slice(0, 10);
-  return QUINIELA_CALENDAR[key] ?? FALLBACK_FIXTURES;
+  // Una jornada desconocida no puede reutilizar partidos de otra fecha.
+  // La UI ya contempla el estado vacío; en demo también evita presentar
+  // una jornada histórica como si correspondiera a la fecha solicitada.
+  return QUINIELA_CALENDAR[key] ?? [];
 }
 
 /**
