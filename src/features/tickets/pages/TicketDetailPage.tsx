@@ -694,7 +694,7 @@ function BoletoGroupsView({
           <BoletosGrid
             bets={bets}
             boletosSize={boletosSize}
-            result={result}
+            result={isScrutinized ? result : null}
             game={game}
             millonBoletos={millonBoletos}
             jokerBoletos={showJoker ? jokerBoletos : []}
@@ -1121,14 +1121,18 @@ function SingleDrawDetail({
         </p>
         {hasDevelopment ? (
           isMultiple ? (
-            <DevelopmentColumnsGrid bets={bets} result={result} gameType={game.type} />
+            <DevelopmentColumnsGrid bets={bets} result={isScrutinized ? result : null} gameType={game.type} />
           ) : (
             <div className="space-y-2">
               {bets.map((bet, i) => {
-                const allMatchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
-                const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
-                const reintegroMatches = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
-                const claveMatches = game.type === 'gordo' && bet.stars?.[0] != null && result?.stars?.includes(bet.stars[0]);
+                // Un ticket PENDIENTE nunca debe mostrar aciertos aunque exista
+                // ya un `result` publicado para esa misma fecha (p.ej. otro
+                // ticket independiente del mismo juego y día ya escrutado):
+                // el acierto es del ticket, no de la fecha. Ver isScrutinized.
+                const allMatchedNums = isScrutinized && result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+                const matchedStars = isScrutinized && result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
+                const reintegroMatches = isScrutinized && bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
+                const claveMatches = isScrutinized && game.type === 'gordo' && bet.stars?.[0] != null && result?.stars?.includes(bet.stars[0]);
                 const perRow = NUMBERS_PER_ROW[game.type] ?? 6;
                 const rows = bet.numbers.length > perRow
                   ? chunkArray(bet.numbers, perRow)

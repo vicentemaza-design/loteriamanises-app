@@ -534,6 +534,7 @@ export function LotteryCartPanel() {
       <InsufficientBalanceModal
         isOpen={showInsufficientBalance}
         missingAmount={total - effectiveBalance}
+        confirmLabel="Comprar"
         onClose={() => setShowInsufficientBalance(false)}
         onAddBalance={() => {
           setShowInsufficientBalance(false);

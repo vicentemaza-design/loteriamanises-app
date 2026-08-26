@@ -211,13 +211,13 @@ function GameGroup({ data, onDeleteCombo }: { data: GroupData; onDeleteCombo: (i
           className="flex w-full items-center justify-center gap-1 px-4 py-2.5 text-[11px] font-black text-slate-400 hover:text-slate-600 transition-colors">
           {expanded
             ? <><NavArrowUp className="h-3.5 w-3.5" /> Mostrar menos</>
-            : <><NavArrowDown className="h-3.5 w-3.5" /> Ver {hidden} combinación{hidden !== 1 ? 'es' : ''} más</>}
+            : <><NavArrowDown className="h-3.5 w-3.5" /> Ver {hidden} {hidden !== 1 ? 'combinaciones' : 'combinación'} más</>}
         </button>
       )}
 
       <div className="flex items-center justify-between border-t border-slate-50 px-4 py-2.5">
         <span className="text-[11px] font-semibold text-slate-400">
-          {combos.length} combinación{combos.length !== 1 ? 'es' : ''} · {uniqueDates.length} sorteo{uniqueDates.length !== 1 ? 's' : ''}
+          {combos.length} {combos.length !== 1 ? 'combinaciones' : 'combinación'} · {uniqueDates.length} sorteo{uniqueDates.length !== 1 ? 's' : ''}
         </span>
         <span className="text-[13px] font-black text-manises-blue">{formatCurrency(total)}</span>
       </div>
@@ -358,10 +358,8 @@ export function GamesCartPanel() {
         </div>
       </motion.div>
 
-      {/* Aviso previo (ya existente, reutilizado): antes de abrir la recarga
-          se explica que primero hay que añadir saldo y luego confirmar el
-          pedido — "Añadir saldo" abre la recarga, "Ahora no" vuelve a la
-          cesta sin cambios. */}
+      {/* Aviso previo de 2 pasos: recargar saldo (paso 1, abre TopUpModal) no
+          confirma la jugada — hay que volver y pulsar "Pagar" (paso 2). */}
       <InsufficientBalanceModal
         isOpen={showInsufficientBalance}
         missingAmount={total - effectiveBalance}
