@@ -51,6 +51,14 @@ export interface BuildPlayDraftsOptions {
   editingDraft?: EditableDraftRef;
   selectedReductionSystemId?: string;
   jokerEnabled?: boolean;
+  /**
+   * Optional passthrough for metadata that only a specific game needs on
+   * the persisted ticket (e.g. Quiniela's `picks`/`quinielaFixtures`/
+   * `quinielaSystem` — see QuinielaPlayPage.handlePlay). Spread last so it
+   * never collides with the fixed fields above; every other caller that
+   * doesn't pass it behaves exactly as before.
+   */
+  extraMetadata?: Record<string, unknown>;
 }
 
 function buildDraftMetadata({
@@ -67,6 +75,7 @@ function buildDraftMetadata({
   nationalFraccion,
   selectedReductionSystemId,
   jokerEnabled,
+  extraMetadata,
 }: Omit<BuildPlayDraftsOptions, 'selection' | 'unitPrice' | 'quantity' | 'mode' | 'betsCount' | 'isSubscription' | 'editingDraft'>): PlayDraftMetadataShape {
   return {
     technicalMode: game.technicalMode,
@@ -83,6 +92,7 @@ function buildDraftMetadata({
     nationalFraccion,
     reducedSystemId: selectedReductionSystemId,
     jokerEnabled: jokerEnabled ?? false,
+    ...extraMetadata,
   };
 }
 

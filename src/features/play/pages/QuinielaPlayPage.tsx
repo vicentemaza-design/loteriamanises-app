@@ -188,6 +188,13 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
           });
           if (!selection) continue;
 
+          // Ticket-detail (QuinielaDetailView) lee metadata.picks/quinielaFixtures/
+          // quinielaSystem — nunca se derivan de ticket.numbers ni se recalculan
+          // desde quiniela-fixtures.ts en el detalle. Sin esto aquí, buildTicketsForBet
+          // solo copia dto.numbers (vacío para Quiniela) y el detalle cae al
+          // fallback "Partido N / — / ?" aunque la jugada se guardase bien.
+          const picks = [...col, plena?.home && plena?.away ? `${plena.home}/${plena.away}` : ''];
+
           const drafts = buildPlayDrafts({
             game,
             selection,
@@ -205,6 +212,11 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
             selectedNationalQuantity: 0,
             selectedNationalDraw: { label: '' },
             selectedReductionSystemId: undefined,
+            extraMetadata: {
+              quinielaSystem: 'simple',
+              picks,
+              quinielaFixtures: fixtures,
+            },
           });
           allDrafts.push(...drafts);
         }
@@ -276,6 +288,14 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
       const drawDatesArr = resolution.drawDates.length > 0 ? resolution.drawDates : [drawDate];
 
       const bets = activeSummary?.bets ?? 1;
+      // Mismo motivo que en la rama 'simple' de más arriba: sin esto el
+      // detalle del ticket no tiene picks/fixtures reales que mostrar.
+      // `generatedColumns` NO se fabrica aquí — las combinaciones reales de
+      // una reducción son responsabilidad de BE (ver docs/be-handoff/
+      // ticket-bet-columns.md); sin ellas, QuinielaDetailView cae a su
+      // propio fallback ya existente (columns = [picks], una sola columna
+      // con la selección original) — honesto, no un dato inventado.
+      const picks = Array.from({ length: 15 }, (_, i) => matches.find(m => m.id === i + 1)?.value ?? '');
       const nextDrafts = buildPlayDrafts({
         game,
         selection,
@@ -293,6 +313,14 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
         selectedNationalQuantity: 0,
         selectedNationalDraw: { label: '' },
         selectedReductionSystemId: systemId,
+        extraMetadata: {
+          quinielaSystem: system,
+          picks,
+          quinielaFixtures: fixtures,
+          ...(system === 'manises' && manisesSummary?.mode === 'manises'
+            ? { quinielaModalidad: manisesSummary.modalidad }
+            : {}),
+        },
       });
 
       const result = addDrafts(nextDrafts);
