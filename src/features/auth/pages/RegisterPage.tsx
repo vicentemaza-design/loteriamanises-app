@@ -460,7 +460,12 @@ export function RegisterPage() {
                       // iOS Safari hace zoom automático de toda la página al
                       // enfocar el campo — eso es lo que se percibe como "el
                       // módulo crece y se sale de los márgenes" al interactuar.
-                      className="pl-11 h-12 w-full min-w-0 max-w-full box-border bg-white/5 border-white/10 text-white text-base placeholder:text-white/20 rounded-xl focus:ring-manises-gold [color-scheme:dark]"
+                      // Sin [color-scheme:dark]: forzaba el widget nativo de
+                      // fecha de iOS a su variante oscura, que en dispositivo
+                      // real rendería con una caja más alta y contenido poco
+                      // o nada visible sobre este fondo — no reproducible en
+                      // WebKit de escritorio, que no usa el picker nativo.
+                      className="pl-11 h-12 w-full min-w-0 max-w-full box-border bg-white/5 border-white/10 text-white text-base placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
                       value={birthDate}
                       onChange={(e) => { setBirthDate(e.target.value); clearError('birthDate'); }}
                     />

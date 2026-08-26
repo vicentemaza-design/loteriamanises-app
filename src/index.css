@@ -437,6 +437,25 @@
     overflow: visible;
   }
 
+  /* Rutas públicas (Login/Registro/Recuperar contraseña): body vuelve al
+     flujo natural de documento previo a f5819a3 — sin position:fixed, sin
+     html en overflow:hidden. AuthScreenShell (min-h-screen exterior e
+     interior, sin overflow-y-auto propio) ya asume que es el propio
+     documento quien scrollea cuando el contenido supera la pantalla (p.ej.
+     Registro paso 2). El fix de teclado de App.tsx no depende de
+     body:fixed — sigue funcionando igual con el documento scrolleable.
+     Privadas (PrivateLayout) NO se tocan: siguen con body:fixed, que ahí sí
+     evita que la bottom nav quede flotando tras cerrar el teclado. */
+  html.auth-route {
+    overflow: auto;
+  }
+  html.auth-route body {
+    position: static;
+    inset: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
   /* Animación de entrada suave para página */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(12px); }
