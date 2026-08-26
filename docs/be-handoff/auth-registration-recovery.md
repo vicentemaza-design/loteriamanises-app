@@ -140,13 +140,16 @@ sustituyen ninguna validación server-side:
   de `date-fns`), no solo `año actual − año nacimiento` — pero es **únicamente
   UX**. **BE DEBE volver a validar mayoría de edad server-side** antes de
   completar el registro (`AuthErrorCode: 'underage'`, ya modelado en el FE).
-- **Documento** (`documentNumber` + `documentType`): FE solo aplica una
-  comprobación de **formato** (`src/features/auth/lib/registerValidation.ts`:
-  NIF = 8 dígitos + letra, NIE = X/Y/Z + 7 dígitos + letra, Pasaporte =
-  alfanumérico 5–15 caracteres) — **deliberadamente sin algoritmo de letra de
-  control NIF/NIE ni ninguna librería de validación documental**. **BE DEBE
-  implementar la validación definitiva** (checksum real, unicidad, o lo que
-  determine la política del negocio).
+- **Documento** (`documentNumber` + `documentType`): FE valida
+  (`src/features/auth/lib/registerValidation.ts`) **formato + letra de
+  control** para NIF y NIE (NIF = 8 dígitos + letra, NIE = X/Y/Z + 7 dígitos +
+  letra, ambos con el checksum oficial `resto = número % 23` contra la tabla
+  `TRWAGMYFPDXBNJZSQVHLCKE`), y **solo formato** para Pasaporte (alfanumérico
+  5–15 caracteres — no existe un checksum universal aplicable a pasaportes de
+  cualquier país). **Esto sigue siendo validación de cliente, no sustituye a
+  BE**: **BE DEBE volver a validar TODO server-side** (formato, checksum
+  NIF/NIE, y además **unicidad y cualquier política documental definitiva**
+  que determine el negocio).
 - **Teléfono**: FE aplica un formato laxo para España (9 dígitos, prefijo
   opcional `+34`/`0034`) — normalización final pendiente de definir con BE.
 - **Términos obligatorios**: FE bloquea "Crear cuenta" y el botón de Google

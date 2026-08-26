@@ -133,14 +133,19 @@ export function RegisterPage() {
     if (!lastName.trim()) next.lastName = 'Los apellidos son obligatorios.';
 
     if (!documentNumber.trim()) next.documentNumber = 'El número de documento es obligatorio.';
-    // NIF con formato correcto (8 dígitos + letra) pero letra de control
-    // incorrecta: mensaje específico. NIE/PASAPORTE nunca pasan por aquí,
-    // solo verifican formato (isValidDocumentNumber === hasValidDocumentFormat
-    // para esos dos tipos).
-    else if (documentType === 'NIF' && hasValidDocumentFormat('NIF', documentNumber) && !isValidDocumentNumber('NIF', documentNumber)) {
-      next.documentNumber = 'NIF no válido';
+    // Mensaje específico por tipo de documento: distingue formato incorrecto
+    // (8 dígitos+letra para NIF, X/Y/Z+7 dígitos+letra para NIE, alfanumérico
+    // 5-15 para Pasaporte) de letra de control incorrecta (NIF/NIE con
+    // formato correcto pero checksum inválido). Pasaporte nunca llega a la
+    // segunda rama: isValidDocumentNumber === hasValidDocumentFormat para él.
+    else if (!hasValidDocumentFormat(documentType, documentNumber)) {
+      next.documentNumber = documentType === 'NIF' ? 'Formato de NIF no válido.'
+        : documentType === 'NIE' ? 'Formato de NIE no válido.'
+        : 'Formato de pasaporte no válido.';
     }
-    else if (!isValidDocumentNumber(documentType, documentNumber)) next.documentNumber = 'Formato de documento no válido.';
+    else if (!isValidDocumentNumber(documentType, documentNumber)) {
+      next.documentNumber = documentType === 'NIF' ? 'NIF no válido.' : 'NIE no válido.';
+    }
 
     if (!birthDate) next.birthDate = 'La fecha de nacimiento es obligatoria.';
     else if (!isAdult(birthDate)) next.birthDate = 'Debes ser mayor de 18 años para registrarte.';
@@ -370,7 +375,6 @@ export function RegisterPage() {
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
                     <Input
                       id="reg-firstName"
-                      placeholder="Nombre"
                       autoComplete="given-name"
                       aria-invalid={Boolean(errors.firstName)}
                       aria-describedby={errors.firstName ? 'reg-firstName-error' : undefined}
@@ -388,7 +392,6 @@ export function RegisterPage() {
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
                     <Input
                       id="reg-lastName"
-                      placeholder="Apellidos"
                       autoComplete="family-name"
                       aria-invalid={Boolean(errors.lastName)}
                       aria-describedby={errors.lastName ? 'reg-lastName-error' : undefined}
@@ -432,7 +435,6 @@ export function RegisterPage() {
                     <IdCard className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
                     <Input
                       id="reg-documentNumber"
-                      placeholder={documentType === 'PASSPORT' ? 'Número de pasaporte' : `Número de ${documentType}`}
                       autoComplete="off"
                       aria-invalid={Boolean(errors.documentNumber)}
                       aria-describedby={errors.documentNumber ? 'reg-documentNumber-error' : undefined}
@@ -494,7 +496,6 @@ export function RegisterPage() {
                     <Input
                       id="reg-phone"
                       type="tel"
-                      placeholder="Teléfono móvil"
                       autoComplete="tel"
                       aria-invalid={Boolean(errors.phone)}
                       aria-describedby={errors.phone ? 'reg-phone-error' : undefined}
