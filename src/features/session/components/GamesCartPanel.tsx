@@ -11,6 +11,7 @@ import { GameBadge } from '@/shared/ui/GameBadge';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { serializeSelection } from '../lib/session.utils';
 import { TopUpModal } from '@/features/profile/components/TopUpModal';
+import { InsufficientBalanceModal } from '@/features/play/components/InsufficientBalanceModal';
 import type { PlayDraft } from '../types/session.types';
 
 const INITIAL_VISIBLE = 3;
@@ -233,6 +234,7 @@ export function GamesCartPanel() {
   const { requireReauth, gateModal } = useSecurityGate();
 
   const [showInsufficientBalance, setShowInsufficientBalance] = useState(false);
+  const [showTopUp, setShowTopUp] = useState(false);
   const [justRecharged, setJustRecharged] = useState(false);
 
   const isOpen = reviewTarget === 'games' && (status === 'reviewing' || status === 'confirming' || status === 'failed');
@@ -257,6 +259,9 @@ export function GamesCartPanel() {
 
   const handlePagar = async () => {
     if (isOverBalance) {
+      // Aviso previo (InsufficientBalanceModal) antes de abrir la recarga:
+      // recargar y comprar son dos pasos explícitos, nunca uno automático —
+      // ver handleTopUpSuccess más arriba.
       setShowInsufficientBalance(true);
       return;
     }
@@ -353,11 +358,25 @@ export function GamesCartPanel() {
         </div>
       </motion.div>
 
+      {/* Aviso previo (ya existente, reutilizado): antes de abrir la recarga
+          se explica que primero hay que añadir saldo y luego confirmar el
+          pedido — "Añadir saldo" abre la recarga, "Ahora no" vuelve a la
+          cesta sin cambios. */}
+      <InsufficientBalanceModal
+        isOpen={showInsufficientBalance}
+        missingAmount={total - effectiveBalance}
+        onClose={() => setShowInsufficientBalance(false)}
+        onAddBalance={() => {
+          setShowInsufficientBalance(false);
+          setShowTopUp(true);
+        }}
+      />
+
       {/* Recarga inline — mismo componente que "Mi cuenta" (TopUpModal),
           solo con el contexto superior de déficit en vez de saldo actual. */}
       <TopUpModal
-        isOpen={showInsufficientBalance}
-        onClose={() => setShowInsufficientBalance(false)}
+        isOpen={showTopUp}
+        onClose={() => setShowTopUp(false)}
         onSuccess={handleTopUpSuccess}
         currentBalance={effectiveBalance}
         deficitAmount={total - effectiveBalance}

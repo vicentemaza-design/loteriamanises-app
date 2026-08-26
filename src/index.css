@@ -379,16 +379,25 @@
     text-size-adjust: 100%;
     background: var(--app-bg);
     height: 100%;
+    overflow: hidden;
   }
 
+  /* position: fixed + inset: 0 (en vez de min-height: 100dvh) fija <body> al
+     viewport y le impide desplazarse: el único scroll real de la app vive
+     dentro de <main> (ver purchase-events.ts). Sin esto, iOS Safari puede
+     desplazar el documento para mantener visible un input enfocado sobre el
+     teclado; al cerrarlo, ese desplazamiento residual deja la bottom nav
+     (position: fixed, ligada al layout viewport) flotando o un hueco en
+     blanco debajo hasta que el usuario arrastra la pantalla a mano. */
   body {
     margin: 0;
     padding: 0;
     @apply font-sans text-foreground;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-    min-height: 100dvh;
+    position: fixed;
+    inset: 0;
     background: var(--app-bg) !important;
-    overflow-x: hidden;
+    overflow: hidden;
     overscroll-behavior-y: none;
     width: 100%;
     -webkit-user-select: none;

@@ -27,11 +27,16 @@ export function InsufficientBalanceModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[120] bg-black/50 backdrop-blur-sm"
+            // z-[255]/[256]: este aviso también se abre desde dentro de
+            // LotteryCartPanel/GamesCartPanel (root z-[200]) antes de la
+            // recarga (TopUpModal, z-[260]/[261]) — por debajo del carrito
+            // quedaba invisible/no-clicable. Ver PlaySessionTray, donde este
+            // mismo modal ya funcionaba porque ahí no compite con nada > z-90.
+            className="fixed inset-0 z-[255] bg-black/50 backdrop-blur-sm"
             onClick={onClose}
           />
 
-          <div className="pointer-events-none fixed inset-0 z-[121] flex items-center justify-center p-6">
+          <div className="pointer-events-none fixed inset-0 z-[256] flex items-center justify-center p-6">
             <motion.div
               ref={dialogRef}
               role="dialog"
@@ -56,10 +61,8 @@ export function InsufficientBalanceModal({
 
               {/* Icon */}
               <div className="mb-5 flex justify-center">
-                <div className="relative flex h-[76px] w-[76px] items-center justify-center rounded-full bg-manises-blue/10">
-                  <span className="text-[2.6rem] leading-none select-none" role="img" aria-hidden>😊</span>
-                  <span className="absolute -right-1 -top-1 text-[1.1rem] leading-none select-none" role="img" aria-hidden>✨</span>
-                  <span className="absolute -left-1 bottom-1 text-[0.75rem] leading-none select-none" role="img" aria-hidden>⭐</span>
+                <div className="flex h-[76px] w-[76px] items-center justify-center rounded-full bg-manises-blue/10">
+                  <Wallet className="h-9 w-9 text-manises-blue" aria-hidden />
                 </div>
               </div>
 

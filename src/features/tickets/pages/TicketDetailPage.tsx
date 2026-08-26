@@ -44,6 +44,28 @@ function getOrderTotal(t: Ticket) {
   return typeof t.metadata?.orderTotalPrice === 'number' ? t.metadata.orderTotalPrice : t.price;
 }
 
+// `metadata.orderTotalPrice` se fija por COLUMNA en el momento de crear el
+// draft (build-play-drafts.ts) — con varias columnas, cada una lo pisa con
+// solo SU propio total, nunca la suma real del pedido. Sumar `t.price` (el
+// importe de CADA ticket individual, ya repartido por sorteo) sobre todo el
+// grupo da el total real sin depender de ese metadata potencialmente parcial.
+function getGroupOrderTotal(ticket: Ticket, groupTickets?: Ticket[]): number {
+  if (groupTickets && groupTickets.length > 1) {
+    return groupTickets.reduce((sum, t) => sum + t.price, 0);
+  }
+  return getOrderTotal(ticket);
+}
+
+// Nº de combinaciones distintas realmente jugadas en el grupo (p. ej. 2
+// columnas × 5 sorteos = 10 tickets pero solo 2 combinaciones reales).
+function getGroupColumnsCount(ticket: Ticket, groupTickets?: Ticket[]): number {
+  if (groupTickets && groupTickets.length > 1) {
+    const uniqueCombos = new Set(groupTickets.map(t => `${t.numbers.join(',')}|${(t.stars ?? []).join(',')}`));
+    return uniqueCombos.size;
+  }
+  return getBetsCount(ticket);
+}
+
 function getBetsCount(t: Ticket): number {
   return typeof t.metadata?.betsCount === 'number' ? t.metadata.betsCount : 1;
 }
@@ -296,14 +318,14 @@ function DevelopmentColumnsGrid({
 
 // ── Game detail header ─────────────────────────────────────────────────────
 
-function DetailHeader({ ticket, game }: { ticket: Ticket; game: (typeof LOTTERY_GAMES)[number] }) {
+function DetailHeader({ ticket, game, groupTickets }: { ticket: Ticket; game: (typeof LOTTERY_GAMES)[number]; groupTickets?: Ticket[] }) {
   const identity = getGameIdentity(game);
   const status = getPlayStatus(ticket);
   const statusCfg = STATUS_CONFIG[status];
   const dates = getOrderDrawDates(ticket);
   const isSemanal = dates.length > 1 && !isNationalTicket(ticket);
-  const betsCount = getBetsCount(ticket);
-  const orderTotal = getOrderTotal(ticket);
+  const betsCount = getGroupColumnsCount(ticket, groupTickets);
+  const orderTotal = getGroupOrderTotal(ticket, groupTickets);
   const prize = ticket.prize ?? 0;
   const isScrutinized = status === 'scrutinized';
 
@@ -1198,17 +1220,20 @@ function SemanalDetail({
   ticket,
   dayResults,
   game,
+  groupTickets,
 }: {
   ticket: Ticket;
   dayResults: Array<{ date: string; result: MatchResult }>;
   game: (typeof LOTTERY_GAMES)[number];
+  groupTickets?: Ticket[];
 }) {
-  const bets = getBets(ticket);
-  const betsCount = getBetsCount(ticket);
-  const hasDevelopment = bets.length > 0;
-  // Same transversal rule as SingleDrawDetail/BoletoGroupsView — section 3/7.
-  const isMultiple = isMultipleSelection(ticket, ticket.gameType);
-  const showOriginalSelection = isExpandedSelection(ticket, ticket.gameType);
+  // Un pedido semanal con varias columnas genera un ticket POR COLUMNA Y POR
+  // SORTEO (ver build-play-drafts.ts/handleMulticolumnPersist) — nunca un
+  // único ticket con todas las columnas de golpe. `ticket` es solo UN
+  // representante del grupo; sin agrupar por `drawDate` dentro de
+  // `groupTickets`, cada sorteo mostraba siempre las columnas del
+  // representante y ninguna otra ("Mi apuesta (1)" en vez de "(2)").
+  const allGroupTickets = groupTickets && groupTickets.length > 0 ? groupTickets : [ticket];
   const totalPrize = ticket.prize ?? 0;
   const boletosSize = BOLETO_SIZE[ticket.gameType];
   const millonBoletos = ticket.metadata?.millonBoletos ?? [];
@@ -1229,6 +1254,19 @@ function SemanalDetail({
         const isOpen = openDays.includes(date);
         const hasResult = !!result;
         const dayPrize = dayPrizes[date] ?? 0;
+
+        // Tickets reales de ESTE sorteo (una entrada por columna) — fallback
+        // al representante si ninguno matchea (BE aún no manda drawDate por
+        // línea, o vista de un ticket suelto sin grupo).
+        const dayTickets = allGroupTickets.filter(t => t.drawDate === date);
+        const ticketsForDay = dayTickets.length > 0 ? dayTickets : [ticket];
+        const dayRepresentative = ticketsForDay[0];
+        const bets = ticketsForDay.flatMap(t => getBets(t));
+        const betsCount = getBetsCount(dayRepresentative);
+        const hasDevelopment = bets.length > 0;
+        // Same transversal rule as SingleDrawDetail/BoletoGroupsView — section 3/7.
+        const isMultiple = isMultipleSelection(dayRepresentative, dayRepresentative.gameType);
+        const showOriginalSelection = isExpandedSelection(dayRepresentative, dayRepresentative.gameType);
 
         return (
           <div key={date} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
@@ -1296,10 +1334,10 @@ function SemanalDetail({
                 {showOriginalSelection && (
                   <div className="mb-3">
                     <p className="mb-2 text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
-                      Selección original · {ticket.numbers.length} números
+                      Selección original · {dayRepresentative.numbers.length} números
                     </p>
                     <div className="rounded-xl border border-slate-100 bg-white px-3 py-2">
-                      <SelectionRows numbers={ticket.numbers} stars={ticket.stars} gameType={game.type} />
+                      <SelectionRows numbers={dayRepresentative.numbers} stars={dayRepresentative.stars} gameType={game.type} />
                     </div>
                   </div>
                 )}
@@ -1567,14 +1605,14 @@ export function TicketDetailPage() {
         onBack={() => navigate(-1)}
       />
 
-      {!isNational && <DetailHeader ticket={ticket} game={game} />}
+      {!isNational && <DetailHeader ticket={ticket} game={game} groupTickets={groupTickets} />}
 
       {isNational ? (
         <NationalDetailContent ticket={ticket} groupTickets={groupTickets} />
       ) : ticket.gameType === 'quiniela' ? (
         <QuinielaDetailView ticket={ticket} result={dayResults[0]?.result ?? null} />
       ) : isSemanal ? (
-        <SemanalDetail ticket={ticket} dayResults={dayResults} game={game} />
+        <SemanalDetail ticket={ticket} dayResults={dayResults} game={game} groupTickets={groupTickets} />
       ) : (
         <SingleDrawDetail ticket={ticket} result={dayResults[0]?.result ?? null} game={game} groupTickets={groupTickets} />
       )}

@@ -8,38 +8,60 @@ import { ConnectionStatusBanner } from '@/shared/components/ConnectionStatusBann
 
 export default function App() {
   useEffect(() => {
-    let lastHeight = window.visualViewport?.height ?? window.innerHeight;
+    const vv = window.visualViewport;
+    // Margen sobre el que un teclado software real siempre se pasa (los
+    // más pequeños en iOS rondan 250-300px) — evita falsos positivos por
+    // fluctuaciones menores de la barra de Safari (que también mueve
+    // visualViewport.height unos pocos px al aparecer/colapsar).
+    const KEYBOARD_HEIGHT_THRESHOLD = 80;
+
+    // Único scroll "de documento" que debe existir: 0. Todo el scroll real
+    // de la app vive dentro de <main> (ver purchase-events.ts) — nunca se
+    // toca su scrollTop aquí, así que la posición del usuario dentro de la
+    // pantalla que estaba editando se conserva intacta.
+    const settleDocumentScroll = () => {
+      if (window.scrollY !== 0) window.scrollTo(0, 0);
+      if (document.documentElement.scrollTop !== 0) document.documentElement.scrollTop = 0;
+      if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
+    };
 
     const updateAppHeight = () => {
-      const height = window.visualViewport?.height ?? window.innerHeight;
+      const height = vv?.height ?? window.innerHeight;
       document.documentElement.style.setProperty('--app-height', `${height}px`);
 
-      // iOS Safari: al cerrar el teclado el visualViewport recupera su
-      // altura completa, pero el layout viewport a veces no vuelve a
-      // desplazarse a su posición original (deja una banda residual y hay
-      // que arrastrar la pantalla a mano). Si el viewport acaba de CRECER
-      // (señal de que el teclado se ha cerrado, no de que se ha abierto) y
-      // no hay ningún campo con foco, se corrige el scroll residual — nunca
-      // mientras se está editando, para no interferir con el teclado abierto.
-      const grew = height > lastHeight;
-      lastHeight = height;
-      const active = document.activeElement;
-      const isEditing = active instanceof HTMLElement &&
-        (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
-      if (grew && !isEditing && window.scrollY !== 0) {
-        window.scrollTo(0, 0);
+      // window.innerHeight (el layout viewport) NO se reduce cuando aparece
+      // el teclado en iOS Safari — solo lo hace visualViewport.height. Esa
+      // diferencia es la señal fiable de "hay teclado cubriendo pantalla
+      // ahora mismo", muy superior a comparar contra la última lectura
+      // (el fix anterior usaba height > lastHeight, sensible a los pasos
+      // intermedios del resize durante la animación de apertura/cierre).
+      //
+      // Deliberadamente NO se exige "el input activo ha perdido el foco":
+      // en iOS se puede cerrar el teclado (swipe, botón de teclado) sin
+      // que el input pierda el foco — el fix anterior gateaba la corrección
+      // con isEditing y por eso nunca llegaba a ejecutarse en ese caso,
+      // que es justo el reportado por Rafa en dispositivo real.
+      const keyboardLikelyOpen = (window.innerHeight - height) > KEYBOARD_HEIGHT_THRESHOLD;
+      if (!keyboardLikelyOpen) {
+        settleDocumentScroll();
+        // WebKit a veces reporta la geometría final del viewport 1-2 frames
+        // después de disparar el propio evento resize/scroll — un par de
+        // reintentos en rAF (no una cadena de setTimeout) asegura que la
+        // corrección no se pierda si algo la revierte mientras el layout
+        // todavía se está asentando.
+        requestAnimationFrame(() => requestAnimationFrame(settleDocumentScroll));
       }
     };
 
     updateAppHeight();
     window.addEventListener('resize', updateAppHeight);
-    window.visualViewport?.addEventListener('resize', updateAppHeight);
-    window.visualViewport?.addEventListener('scroll', updateAppHeight);
+    vv?.addEventListener('resize', updateAppHeight);
+    vv?.addEventListener('scroll', updateAppHeight);
 
     return () => {
       window.removeEventListener('resize', updateAppHeight);
-      window.visualViewport?.removeEventListener('resize', updateAppHeight);
-      window.visualViewport?.removeEventListener('scroll', updateAppHeight);
+      vv?.removeEventListener('resize', updateAppHeight);
+      vv?.removeEventListener('scroll', updateAppHeight);
     };
   }, []);
 

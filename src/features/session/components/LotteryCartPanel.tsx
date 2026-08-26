@@ -14,6 +14,7 @@ import { ShippingAddressModal, type ShippingAddress } from './lottery/ShippingAd
 import { AddSorteoModal } from './lottery/AddSorteoModal';
 import { AbonarseModal } from './lottery/AbonarseModal';
 import { TopUpModal } from '@/features/profile/components/TopUpModal';
+import { InsufficientBalanceModal } from '@/features/play/components/InsufficientBalanceModal';
 
 const DRAW_COLORS: Record<string, string> = {
   navidad: '#991b1b', nino: '#1e40af', 'loteria-nacional': '#0a4792',
@@ -310,6 +311,7 @@ export function LotteryCartPanel() {
   const [showShipping, setShowShipping] = useState(false);
   const [showAddSorteo, setShowAddSorteo] = useState(false);
   const [showInsufficientBalance, setShowInsufficientBalance] = useState(false);
+  const [showTopUp, setShowTopUp] = useState(false);
   const [justRecharged, setJustRecharged] = useState(false);
 
   const isOpen = reviewTarget === 'lottery' && (status === 'reviewing' || status === 'confirming' || status === 'failed');
@@ -356,6 +358,9 @@ export function LotteryCartPanel() {
 
   const handleComprar = async () => {
     if (isOverBalance) {
+      // Aviso previo (InsufficientBalanceModal) antes de abrir la recarga:
+      // recargar y comprar son dos pasos explícitos, nunca uno automático —
+      // ver handleTopUpSuccess más abajo.
       setShowInsufficientBalance(true);
       return;
     }
@@ -522,11 +527,25 @@ export function LotteryCartPanel() {
         </motion.div>
       </div>
 
+      {/* Aviso previo (ya existente, reutilizado): antes de abrir la recarga
+          se explica que primero hay que añadir saldo y luego confirmar el
+          pedido — "Añadir saldo" abre la recarga, "Ahora no" vuelve a la
+          cesta sin cambios. */}
+      <InsufficientBalanceModal
+        isOpen={showInsufficientBalance}
+        missingAmount={total - effectiveBalance}
+        onClose={() => setShowInsufficientBalance(false)}
+        onAddBalance={() => {
+          setShowInsufficientBalance(false);
+          setShowTopUp(true);
+        }}
+      />
+
       {/* Recarga inline — mismo componente que "Mi cuenta" (TopUpModal),
           solo con el contexto superior de déficit en vez de saldo actual. */}
       <TopUpModal
-        isOpen={showInsufficientBalance}
-        onClose={() => setShowInsufficientBalance(false)}
+        isOpen={showTopUp}
+        onClose={() => setShowTopUp(false)}
         onSuccess={handleTopUpSuccess}
         currentBalance={effectiveBalance}
         deficitAmount={total - effectiveBalance}

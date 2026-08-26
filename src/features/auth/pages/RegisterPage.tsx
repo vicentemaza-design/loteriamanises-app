@@ -443,7 +443,7 @@ export function RegisterPage() {
                 </div>
 
                 <div className="min-w-0">
-                  <label htmlFor="reg-birthDate" className="text-[10px] font-black text-white/40 uppercase tracking-[0.15em] block mb-1.5">Fecha de nacimiento</label>
+                  <label htmlFor="reg-birthDate" className="sr-only">Fecha de nacimiento</label>
                   <div className="relative min-w-0">
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
                     <Input

@@ -15,16 +15,18 @@ function AccountField({
   onChange,
   readOnly = false,
   type = 'text',
+  labelClassName = '',
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   readOnly?: boolean;
   type?: string;
+  labelClassName?: string;
 }) {
   return (
     <label className="block space-y-1.5">
-      <span className="px-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">{label}</span>
+      <span className={labelClassName || 'px-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400'}>{label}</span>
       <input
         type={type}
         readOnly={readOnly}
@@ -221,8 +223,23 @@ export function AccountPage() {
               <p className="px-1 text-[10px] font-black uppercase tracking-[0.16em] text-red-500">Los emails no coinciden</p>
             )}
             <div className="grid grid-cols-2 gap-3 items-end">
-              <AccountField label="Teléfono principal" value={formData.phone} onChange={(value) => updateField('phone', value)} />
-              <AccountField label="Teléfono alternativo" value={formData.alternatePhone} onChange={(value) => updateField('alternatePhone', value)} />
+              {/* tracking reducido solo por debajo de 375px: a 320px la
+                  columna del grid mide ~117px y "Tel. alternativo" con el
+                  tracking-[0.16em] estándar (igual que el resto de labels)
+                  no cabe en una línea — de 375px en adelante mantiene el
+                  mismo tracking que el resto de campos. */}
+              <AccountField
+                label="Tel. principal"
+                value={formData.phone}
+                onChange={(value) => updateField('phone', value)}
+                labelClassName="px-1 text-[10px] font-black uppercase tracking-[0.02em] min-[375px]:tracking-[0.16em] text-slate-400 whitespace-nowrap"
+              />
+              <AccountField
+                label="Tel. alternativo"
+                value={formData.alternatePhone}
+                onChange={(value) => updateField('alternatePhone', value)}
+                labelClassName="px-1 text-[10px] font-black uppercase tracking-[0.02em] min-[375px]:tracking-[0.16em] text-slate-400 whitespace-nowrap"
+              />
             </div>
           </div>
         </PremiumSectionCard>

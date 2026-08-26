@@ -36,8 +36,13 @@ export function AuthScreenShell({
       {/* Luces sutiles estáticas para profundidad */}
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,rgba(245,197,24,0.10),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_30%)]" />
       
-      {/* Contenedor de layout estándar */}
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-10">
+      {/* Contenedor de layout estándar — scroll interno propio (h-dvh +
+          overflow-y-auto), igual que <main> en PrivateLayout: <body> ahora
+          es position:fixed/overflow:hidden (fix de teclado/viewport), así
+          que ya no puede desplazarse para revelar contenido más alto que la
+          pantalla (p. ej. el paso 2 del registro). El fondo sigue fijo en
+          el div exterior (overflow-hidden), solo este contenedor scrollea. */}
+      <div className="relative z-10 mx-auto flex h-dvh w-full max-w-md flex-col overflow-y-auto px-6 py-10">
         <div
           className={cn(
             'flex flex-1 flex-col items-center pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]',
