@@ -41,12 +41,9 @@ export function NavidadPlayPage({ game }: NavidadPlayPageProps) {
   const handlePreFlowConfirm = (delivery: DeliveryMode, method: NationalMethod) => {
     setSelectedDelivery(delivery);
     setSelectedMethod(method);
-    if (method === 'aleatorio') {
-      // Navidad: añade 1 décimo aleatorio directo a la sesión y muestra toast
-      handleAleatorioConfirm(1, 0);
-    } else {
-      setFlowScreen('manual');
-    }
+    // Mismo patrón que Lotería Jueves/Sábado: Aleatorio abre la pantalla de
+    // cantidades (NationalAleatorioFlow) — nunca añade un décimo directo.
+    setFlowScreen(method === 'aleatorio' ? 'aleatorio' : 'manual');
   };
 
   const handleBack = () => {

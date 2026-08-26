@@ -41,11 +41,9 @@ export function NinoPlayPage({ game }: NinoPlayPageProps) {
   const handlePreFlowConfirm = (delivery: DeliveryMode, method: NationalMethod) => {
     setSelectedDelivery(delivery);
     setSelectedMethod(method);
-    if (method === 'aleatorio') {
-      handleAleatorioConfirm(1, 0);
-    } else {
-      setFlowScreen('manual');
-    }
+    // Mismo patrón que Lotería Jueves/Sábado: Aleatorio abre la pantalla de
+    // cantidades (NationalAleatorioFlow) — nunca añade un décimo directo.
+    setFlowScreen(method === 'aleatorio' ? 'aleatorio' : 'manual');
   };
 
   const handleBack = () => {
