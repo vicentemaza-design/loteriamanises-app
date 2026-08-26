@@ -32,15 +32,7 @@ export function PrivateLayout() {
 
   return (
     <PlaySessionProvider>
-      {/* h-app (height: var(--app-height)) en vez de h-dvh: --app-height lo
-          recalcula App.tsx en vivo a partir de visualViewport.height, la
-          señal más fiable de la altura real disponible en iOS — la unidad
-          CSS 100dvh puede quedarse momentáneamente corta cuando la barra de
-          Safari colapsa/expande, dejando ver el fondo de html/body (casi
-          blanco) por debajo de la bottom nav hasta que el propio dvh se
-          repinta. min-height:-webkit-fill-available (.app-shell) se
-          mantiene como segunda red de seguridad. */}
-      <div className="app-shell h-app font-sans text-manises-blue flex flex-col overflow-hidden">
+      <div className="app-shell h-dvh font-sans text-manises-blue flex flex-col overflow-hidden">
         <AnimatePresence>
           {isLocked && (
             <AppLock onUnlock={() => setIsLocked(false)} />

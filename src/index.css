@@ -379,25 +379,25 @@
     text-size-adjust: 100%;
     background: var(--app-bg);
     height: 100%;
-    overflow: hidden;
   }
 
-  /* position: fixed + inset: 0 (en vez de min-height: 100dvh) fija <body> al
-     viewport y le impide desplazarse: el único scroll real de la app vive
-     dentro de <main> (ver purchase-events.ts). Sin esto, iOS Safari puede
-     desplazar el documento para mantener visible un input enfocado sobre el
-     teclado; al cerrarlo, ese desplazamiento residual deja la bottom nav
-     (position: fixed, ligada al layout viewport) flotando o un hueco en
-     blanco debajo hasta que el usuario arrastra la pantalla a mano. */
+  /* Geometría de body restaurada a la baseline estable del 25/08 (ver
+     73d12db): sin position:fixed/inset:0/overflow:hidden — ese modelo
+     (introducido el 26/08) dejaba, en iPhone real, una franja blanca del
+     fondo de html/body bajo la bottom nav cuando .app-shell terminaba de
+     recalcular su altura tras colapsar/expandir la barra de Safari.
+     El scroll de documento residual que ese cambio pretendía evitar
+     (bottom nav flotando tras cerrar el teclado) lo corrige ahora la lógica
+     de teclado de App.tsx (settleDocumentScroll, activa en privadas) en
+     vez de impedir que el documento pueda desplazarse en absoluto. */
   body {
     margin: 0;
     padding: 0;
     @apply font-sans text-foreground;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-    position: fixed;
-    inset: 0;
+    min-height: 100dvh;
     background: var(--app-bg) !important;
-    overflow: hidden;
+    overflow-x: hidden;
     overscroll-behavior-y: none;
     width: 100%;
     -webkit-user-select: none;
@@ -444,8 +444,9 @@
      documento quien scrollea cuando el contenido supera la pantalla (p.ej.
      Registro paso 2). El fix de teclado de App.tsx no depende de
      body:fixed — sigue funcionando igual con el documento scrolleable.
-     Privadas (PrivateLayout) NO se tocan: siguen con body:fixed, que ahí sí
-     evita que la bottom nav quede flotando tras cerrar el teclado. */
+     Nota: body ya no es fixed tampoco en privadas (revertido a la baseline
+     de 73d12db — ver regla `body` más arriba); esta excepción queda como
+     no-op inofensivo para público, sin tocarla más. */
   html.auth-route {
     overflow: auto;
   }
@@ -464,6 +465,27 @@
   input#reg-birthDate::-webkit-date-and-time-value {
     text-align: left;
     color: inherit;
+    min-width: 0;
+  }
+
+  /* input#reg-birthDate — geometría: en iOS real el widget nativo de fecha
+     puede desbordar el ancho del propio <input> si sus partes internas
+     (datetime-edit / fields-wrapper / date-and-time-value) no reciben
+     min-width:0 explícito — un elemento reemplazado dentro de un ancestro
+     flex/min-w-0 no siempre encoge solo por heredar la regla del padre.
+     Solo geometría: no toca type/value/onChange/validación. */
+  input#reg-birthDate {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  input#reg-birthDate::-webkit-datetime-edit {
+    min-width: 0;
+    overflow: hidden;
+  }
+  input#reg-birthDate::-webkit-datetime-edit-fields-wrapper {
+    min-width: 0;
   }
 
   /* Animación de entrada suave para página */
