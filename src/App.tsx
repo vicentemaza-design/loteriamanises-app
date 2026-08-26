@@ -14,15 +14,69 @@ export default function App() {
     // fluctuaciones menores de la barra de Safari (que también mueve
     // visualViewport.height unos pocos px al aparecer/colapsar).
     const KEYBOARD_HEIGHT_THRESHOLD = 80;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let keyboardWasOpen = false;
+    let recoveryTimerIds: number[] = [];
+    let recoveryFrameIds: number[] = [];
+
+    const isPrivateRoute = () => !document.documentElement.classList.contains('auth-route');
+    const keyboardIsOpen = (height: number) =>
+      window.innerHeight - height > KEYBOARD_HEIGHT_THRESHOLD;
 
     // Único scroll "de documento" que debe existir: 0. Todo el scroll real
     // de la app vive dentro de <main> (ver purchase-events.ts) — nunca se
     // toca su scrollTop aquí, así que la posición del usuario dentro de la
     // pantalla que estaba editando se conserva intacta.
     const settleDocumentScroll = () => {
-      if (window.scrollY !== 0) window.scrollTo(0, 0);
-      if (document.documentElement.scrollTop !== 0) document.documentElement.scrollTop = 0;
-      if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
+      // Ejecutar siempre el scrollTo, aunque WebKit ya exponga scrollY = 0:
+      // el gesto físico que corrige el bug también fuerza una recomposición.
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
+    };
+
+    const cancelViewportRecovery = () => {
+      recoveryTimerIds.forEach(window.clearTimeout);
+      recoveryFrameIds.forEach(window.cancelAnimationFrame);
+      recoveryTimerIds = [];
+      recoveryFrameIds = [];
+    };
+
+    const recoverIOSPrivateViewport = () => {
+      const height = vv?.height ?? window.innerHeight;
+      if (!isIOS || !isPrivateRoute() || !keyboardWasOpen || keyboardIsOpen(height)) return;
+
+      document.documentElement.style.setProperty('--app-height', `${height}px`);
+      settleDocumentScroll();
+    };
+
+    const scheduleViewportRecovery = () => {
+      if (!isIOS || !isPrivateRoute() || !keyboardWasOpen) return;
+
+      cancelViewportRecovery();
+      recoverIOSPrivateViewport();
+
+      const firstFrameId = requestAnimationFrame(() => {
+        recoverIOSPrivateViewport();
+        recoveryFrameIds = recoveryFrameIds.filter(id => id !== firstFrameId);
+
+        const secondFrameId = requestAnimationFrame(() => {
+          recoverIOSPrivateViewport();
+          recoveryFrameIds = recoveryFrameIds.filter(id => id !== secondFrameId);
+        });
+        recoveryFrameIds.push(secondFrameId);
+      });
+      recoveryFrameIds.push(firstFrameId);
+      [100, 250, 500].forEach(delay => {
+        const timerId = window.setTimeout(() => {
+          recoverIOSPrivateViewport();
+          recoveryTimerIds = recoveryTimerIds.filter(id => id !== timerId);
+          if (delay === 500) keyboardWasOpen = false;
+        }, delay);
+        recoveryTimerIds.push(timerId);
+      });
     };
 
     const updateAppHeight = () => {
@@ -51,7 +105,11 @@ export default function App() {
       // comportamiento no cambia: 0 sigue siendo el único scroll de
       // documento válido.
       const isAuthRoute = document.documentElement.classList.contains('auth-route');
-      const keyboardLikelyOpen = (window.innerHeight - height) > KEYBOARD_HEIGHT_THRESHOLD;
+      const keyboardLikelyOpen = keyboardIsOpen(height);
+      if (isIOS && keyboardLikelyOpen) {
+        keyboardWasOpen = true;
+        cancelViewportRecovery();
+      }
       if (!keyboardLikelyOpen && !isAuthRoute) {
         settleDocumentScroll();
         // WebKit a veces reporta la geometría final del viewport 1-2 frames
@@ -61,17 +119,37 @@ export default function App() {
         // todavía se está asentando.
         requestAnimationFrame(() => requestAnimationFrame(settleDocumentScroll));
       }
+
+      if (isIOS && !keyboardLikelyOpen && keyboardWasOpen) {
+        scheduleViewportRecovery();
+      }
+    };
+
+    const handleFocusIn = () => {
+      if (!isIOS) return;
+      cancelViewportRecovery();
+      keyboardWasOpen = true;
+    };
+
+    const handleFocusOut = () => {
+      if (!isIOS) return;
+      scheduleViewportRecovery();
     };
 
     updateAppHeight();
     window.addEventListener('resize', updateAppHeight);
     vv?.addEventListener('resize', updateAppHeight);
     vv?.addEventListener('scroll', updateAppHeight);
+    window.addEventListener('focusin', handleFocusIn, { passive: true });
+    window.addEventListener('focusout', handleFocusOut, { passive: true });
 
     return () => {
+      cancelViewportRecovery();
       window.removeEventListener('resize', updateAppHeight);
       vv?.removeEventListener('resize', updateAppHeight);
       vv?.removeEventListener('scroll', updateAppHeight);
+      window.removeEventListener('focusin', handleFocusIn);
+      window.removeEventListener('focusout', handleFocusOut);
     };
   }, []);
 
