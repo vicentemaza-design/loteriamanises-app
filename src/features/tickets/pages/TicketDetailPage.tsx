@@ -439,6 +439,7 @@ function BoletosGrid({
   millonBoletos,
   jokerBoletos,
   largeBalls = false,
+  compactRows = false,
 }: {
   bets: Array<{ numbers: number[]; stars?: number[]; reintegro?: number }>;
   boletosSize: number;
@@ -447,6 +448,14 @@ function BoletosGrid({
   millonBoletos: Array<{ codeFrom: string; codeTo: string }>;
   jokerBoletos: Array<{ jokerNumber: string }>;
   largeBalls?: boolean;
+  // Reducidas/sistemas genuinos (isExpandedSelection) cuyo desarrollo supera
+  // un boleto completo (ver BoletoGroupsView) cambian la fila-por-columna a
+  // ancho completo por una rejilla compacta de 2 columnas por boleto — misma
+  // densidad que DevelopmentColumnsGrid (Bonoloto/Gordo/EuroDreams). Nunca
+  // se activa en multicolumna directa (p. ej. demo-primitiva-12, Joker):
+  // isExpandedSelection es false ahí, así que el layout ancho ya validado
+  // no cambia.
+  compactRows?: boolean;
 }) {
   const hasJoker = jokerBoletos.length > 0;
   const boletoGroups = groupIntoBoletos(bets, boletosSize);
@@ -483,53 +492,89 @@ function BoletosGrid({
               )}
             </div>
 
-            {/* Filas de columnas */}
-            <div className="divide-y divide-slate-50 px-2">
-              {groupBets.map((bet, betIdx) => {
-                const colNum = colFrom + betIdx;
-                const allMatchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
-                const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
-                const reintegroMatch = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
-                const perRow = NUMBERS_PER_ROW[game.type] ?? 6;
-                const rows = largeBalls && bet.numbers.length > perRow
-                  ? chunkArray(bet.numbers, perRow)
-                  : [bet.numbers];
-                return (
-                  <div key={betIdx} className="py-1.5">
-                    {rows.map((rowNums, rowIdx) => {
-                      const isLast = rowIdx === rows.length - 1;
-                      const rowMatchedNums = allMatchedNums.filter(n => rowNums.includes(n));
-                      return (
-                        <div key={rowIdx} className={cn('flex items-center gap-1.5', rowIdx > 0 && 'mt-1')}>
-                          <span className="w-5 shrink-0 text-right text-[9px] font-black text-slate-300 tabular-nums">
-                            {rowIdx === 0 ? colNum : ''}
-                          </span>
-                          <BallSelection
-                            numbers={rowNums}
-                            stars={isLast ? bet.stars : undefined}
-                            matchedNumbers={rowMatchedNums}
-                            matchedStars={isLast ? matchedStars : []}
-                            type={game.type}
-                            large={largeBalls}
-                          />
-                          {isLast && bet.reintegro != null && (
-                            <div className="ml-auto shrink-0 flex items-center gap-0.5">
-                              <span className={cn('text-[11px] leading-none', reintegroMatch ? 'text-emerald-400' : 'text-amber-400')}>★</span>
-                              <span className={cn(
-                                'w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black',
-                                reintegroMatch ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-50 text-amber-600 border border-amber-200'
-                              )}>
-                                {bet.reintegro}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
+            {/* Filas de columnas — ancho completo (multicolumna directa /
+                reducida pequeña) o rejilla compacta de 2 (reducida grande,
+                ver compactRows más arriba) */}
+            {compactRows ? (
+              <div className="grid grid-cols-1 min-[375px]:grid-cols-2 gap-1.5 p-2">
+                {groupBets.map((bet, betIdx) => {
+                  const colNum = colFrom + betIdx;
+                  const matchedNumbers = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+                  const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
+                  const reintegroMatch = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
+                  return (
+                    <div key={betIdx} className="rounded-xl border border-slate-100 bg-white px-1.5 pb-1.5 pt-1 shadow-sm">
+                      <span className="mb-0.5 block pl-1 text-[8px] font-black leading-none tabular-nums text-slate-300">
+                        {colNum}
+                      </span>
+                      <BallSelection
+                        numbers={bet.numbers}
+                        stars={bet.stars}
+                        matchedNumbers={matchedNumbers}
+                        matchedStars={matchedStars}
+                        type={game.type}
+                        compact
+                      />
+                      {bet.reintegro != null && (
+                        <span className={cn(
+                          'mt-1 inline-block rounded-md px-1.5 py-0.5 text-[9px] font-black',
+                          reintegroMatch ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-manises-blue'
+                        )}>
+                          R:{bet.reintegro}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-50 px-2">
+                {groupBets.map((bet, betIdx) => {
+                  const colNum = colFrom + betIdx;
+                  const allMatchedNums = result ? bet.numbers.filter(n => result.numbers.map(Number).includes(n)) : [];
+                  const matchedStars = result && bet.stars ? bet.stars.filter(s => result.stars?.includes(s)) : [];
+                  const reintegroMatch = bet.reintegro != null && result?.reintegro != null && bet.reintegro === result.reintegro;
+                  const perRow = NUMBERS_PER_ROW[game.type] ?? 6;
+                  const rows = largeBalls && bet.numbers.length > perRow
+                    ? chunkArray(bet.numbers, perRow)
+                    : [bet.numbers];
+                  return (
+                    <div key={betIdx} className="py-1.5">
+                      {rows.map((rowNums, rowIdx) => {
+                        const isLast = rowIdx === rows.length - 1;
+                        const rowMatchedNums = allMatchedNums.filter(n => rowNums.includes(n));
+                        return (
+                          <div key={rowIdx} className={cn('flex items-center gap-1.5', rowIdx > 0 && 'mt-1')}>
+                            <span className="w-5 shrink-0 text-right text-[9px] font-black text-slate-300 tabular-nums">
+                              {rowIdx === 0 ? colNum : ''}
+                            </span>
+                            <BallSelection
+                              numbers={rowNums}
+                              stars={isLast ? bet.stars : undefined}
+                              matchedNumbers={rowMatchedNums}
+                              matchedStars={isLast ? matchedStars : []}
+                              type={game.type}
+                              large={largeBalls}
+                            />
+                            {isLast && bet.reintegro != null && (
+                              <div className="ml-auto shrink-0 flex items-center gap-0.5">
+                                <span className={cn('text-[11px] leading-none', reintegroMatch ? 'text-emerald-400' : 'text-amber-400')}>★</span>
+                                <span className={cn(
+                                  'w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black',
+                                  reintegroMatch ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-50 text-amber-600 border border-amber-200'
+                                )}>
+                                  {bet.reintegro}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Códigos de El Millón (Euromillones) — al final de cada boleto */}
             {millonData && (
@@ -699,6 +744,12 @@ function BoletoGroupsView({
             millonBoletos={millonBoletos}
             jokerBoletos={showJoker ? jokerBoletos : []}
             largeBalls
+            // Reducida/sistema genuino (showOriginalSelection ==
+            // isExpandedSelection) cuyo desarrollo supera un boleto
+            // completo → rejilla compacta de 2 columnas por boleto en vez
+            // de una fila ancha por columna (ver BoletosGrid). Nunca se
+            // activa en multicolumna directa (showOriginalSelection false).
+            compactRows={showOriginalSelection && bets.length > boletosSize}
           />
         )}
       </div>
@@ -1362,6 +1413,7 @@ function SemanalDetail({
                     game={game}
                     millonBoletos={millonBoletos}
                     jokerBoletos={jokerBoletos}
+                    compactRows={showOriginalSelection && bets.length > boletosSize}
                   />
                 ) : isMultiple ? (
                   <DevelopmentColumnsGrid bets={bets} result={result} gameType={game.type} />

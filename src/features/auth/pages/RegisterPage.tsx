@@ -363,9 +363,9 @@ export function RegisterPage() {
 
             {/* ═══════════════════ PASO 2 — DATOS PERSONALES ═══════════════════ */}
             {step === 'personal' && (
-              <div className="space-y-3.5">
+              <div className="space-y-1.5">
                 <div>
-                  <label htmlFor="reg-firstName" className="sr-only">Nombre</label>
+                  <label htmlFor="reg-firstName" className="mb-0.5 block text-[9.5px] font-black uppercase tracking-[0.15em] text-white/40">Nombre</label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
                     <Input
@@ -374,7 +374,7 @@ export function RegisterPage() {
                       autoComplete="given-name"
                       aria-invalid={Boolean(errors.firstName)}
                       aria-describedby={errors.firstName ? 'reg-firstName-error' : undefined}
-                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
+                      className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
                       value={firstName}
                       onChange={(e) => { setFirstName(e.target.value); clearError('firstName'); }}
                     />
@@ -383,7 +383,7 @@ export function RegisterPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="reg-lastName" className="sr-only">Apellidos</label>
+                  <label htmlFor="reg-lastName" className="mb-0.5 block text-[9.5px] font-black uppercase tracking-[0.15em] text-white/40">Apellidos</label>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
                     <Input
@@ -392,7 +392,7 @@ export function RegisterPage() {
                       autoComplete="family-name"
                       aria-invalid={Boolean(errors.lastName)}
                       aria-describedby={errors.lastName ? 'reg-lastName-error' : undefined}
-                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
+                      className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
                       value={lastName}
                       onChange={(e) => { setLastName(e.target.value); clearError('lastName'); }}
                     />
@@ -401,12 +401,12 @@ export function RegisterPage() {
                 </div>
 
                 <fieldset>
-                  <legend className="text-[10px] font-black text-white/40 uppercase tracking-[0.15em] mb-2">Tipo de documento</legend>
+                  <legend className="mb-0.5 text-[9.5px] font-black text-white/40 uppercase tracking-[0.15em]">Tipo de documento</legend>
                   <div className="flex gap-2">
                     {(Object.keys(DOCUMENT_TYPE_LABELS) as DocumentType[]).map((type) => (
                       <label
                         key={type}
-                        className={`flex-1 text-center cursor-pointer rounded-xl border px-2 py-2.5 text-[12px] font-bold transition-colors ${
+                        className={`flex-1 text-center cursor-pointer rounded-xl border px-2 py-1.5 text-[12px] font-bold transition-colors ${
                           documentType === type ? 'border-manises-gold/60 bg-manises-gold/10 text-white' : 'border-white/10 bg-white/5 text-white/50'
                         }`}
                       >
@@ -425,7 +425,9 @@ export function RegisterPage() {
                 </fieldset>
 
                 <div>
-                  <label htmlFor="reg-documentNumber" className="sr-only">Número de documento</label>
+                  <label htmlFor="reg-documentNumber" className="mb-0.5 block text-[9.5px] font-black uppercase tracking-[0.15em] text-white/40">
+                    {documentType === 'PASSPORT' ? 'Número de pasaporte' : `Número de ${documentType}`}
+                  </label>
                   <div className="relative">
                     <IdCard className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
                     <Input
@@ -434,7 +436,7 @@ export function RegisterPage() {
                       autoComplete="off"
                       aria-invalid={Boolean(errors.documentNumber)}
                       aria-describedby={errors.documentNumber ? 'reg-documentNumber-error' : undefined}
-                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
+                      className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
                       value={documentNumber}
                       onChange={(e) => { setDocumentNumber(e.target.value); clearError('documentNumber'); }}
                     />
@@ -443,7 +445,7 @@ export function RegisterPage() {
                 </div>
 
                 <div className="min-w-0">
-                  <label htmlFor="reg-birthDate" className="sr-only">Fecha de nacimiento</label>
+                  <label htmlFor="reg-birthDate" className="mb-0.5 block text-[9.5px] font-black uppercase tracking-[0.15em] text-white/40">Fecha de nacimiento</label>
                   {/* h-12 + overflow-hidden en el WRAPPER (no en el input): en
                       iOS real el control nativo de type="date" puede pintar
                       su contenido interno más ancho que su propia caja CSS
@@ -454,7 +456,8 @@ export function RegisterPage() {
                       garantiza el ancho visual exacto pase lo que pase
                       dentro — el input y su picker nativo siguen siendo
                       100% funcionales, solo se recorta lo que se pinta más
-                      allá de este límite. */}
+                      allá de este límite. Geometría intacta: no tocada en
+                      este cambio, solo se sacó la etiqueta fuera de la caja. */}
                   <div className="relative min-w-0 h-12 overflow-hidden rounded-xl">
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none z-10" aria-hidden="true" />
                     <Input
@@ -485,7 +488,7 @@ export function RegisterPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="reg-phone" className="sr-only">Teléfono móvil</label>
+                  <label htmlFor="reg-phone" className="mb-0.5 block text-[9.5px] font-black uppercase tracking-[0.15em] text-white/40">Teléfono móvil</label>
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
                     <Input
@@ -495,7 +498,7 @@ export function RegisterPage() {
                       autoComplete="tel"
                       aria-invalid={Boolean(errors.phone)}
                       aria-describedby={errors.phone ? 'reg-phone-error' : undefined}
-                      className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
+                      className="pl-11 h-11 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl focus:ring-manises-gold"
                       value={phone}
                       onChange={(e) => { setPhone(e.target.value); clearError('phone'); }}
                     />
@@ -503,7 +506,7 @@ export function RegisterPage() {
                   {errors.phone && <p id="reg-phone-error" role="alert" className="text-[11px] text-red-300 font-semibold mt-1 pl-1">{errors.phone}</p>}
                 </div>
 
-                <div className="flex gap-2 pt-1">
+                <div className="flex gap-2 pt-0.5">
                   <Button
                     type="button"
                     variant="outline"
@@ -642,7 +645,7 @@ export function RegisterPage() {
               </div>
             )}
 
-            <p className="text-center text-[11px] text-white/40 mt-6 font-medium">
+            <p className="text-center text-[11px] text-white/40 mt-4 font-medium">
               Si ya tienes cuenta,{' '}
               <button
                 onClick={() => navigate('/login')}
