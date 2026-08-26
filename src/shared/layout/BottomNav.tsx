@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect } from 'react';
 import { Home, ViewGrid, Trophy, JournalPage, User, NavArrowRight, CreditCard } from 'iconoir-react/regular';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn, formatCurrency } from '@/shared/lib/utils';
@@ -17,50 +17,7 @@ const navItems = [
 const CART_SECTION_REM = 3; // approx height of the compact cart buttons row
 const NAV_BASE_REM = 5;
 
-function useIOSBottomFixed(navRef: RefObject<HTMLElement | null>) {
-  useEffect(() => {
-    const visualViewport = window.visualViewport;
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-    if (!isIOS || !visualViewport || !navRef.current) return;
-
-    let firstFrame = 0;
-    let secondFrame = 0;
-
-    const restorePosition = () => {
-      cancelAnimationFrame(firstFrame);
-      cancelAnimationFrame(secondFrame);
-      firstFrame = requestAnimationFrame(() => {
-        if (!navRef.current) return;
-        navRef.current.style.transform = 'translateY(0)';
-        secondFrame = requestAnimationFrame(() => {
-          if (navRef.current) navRef.current.style.transform = 'translateY(0)';
-        });
-      });
-    };
-
-    const restoreWhenKeyboardClosed = () => {
-      if (window.innerHeight - visualViewport.height <= 80) restorePosition();
-    };
-
-    window.addEventListener('focusout', restorePosition, { passive: true });
-    visualViewport.addEventListener('resize', restoreWhenKeyboardClosed, { passive: true });
-    visualViewport.addEventListener('scroll', restoreWhenKeyboardClosed, { passive: true });
-
-    return () => {
-      window.removeEventListener('focusout', restorePosition);
-      visualViewport.removeEventListener('resize', restoreWhenKeyboardClosed);
-      visualViewport.removeEventListener('scroll', restoreWhenKeyboardClosed);
-      cancelAnimationFrame(firstFrame);
-      cancelAnimationFrame(secondFrame);
-      navRef.current?.style.removeProperty('transform');
-    };
-  }, [navRef]);
-}
-
 export function BottomNav() {
-  const navRef = useRef<HTMLElement | null>(null);
   const location = useLocation();
   const { gameDrafts, lotteryDrafts, openGameReview, openLotteryReview } = usePlaySession();
 
@@ -69,8 +26,6 @@ export function BottomNav() {
   const hasGames = gameDrafts.length > 0;
   const hasLottery = lotteryDrafts.length > 0;
   const hasCart = hasGames || hasLottery;
-
-  useIOSBottomFixed(navRef);
 
   // Ajusta --nav-height para que pb-nav-safe tenga siempre el espacio correcto
   useEffect(() => {
@@ -83,7 +38,6 @@ export function BottomNav() {
 
   return (
     <nav
-      ref={navRef}
       className="fixed bottom-0 left-0 right-0 z-60 bg-[#0a4792]/80 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
