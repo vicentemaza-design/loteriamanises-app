@@ -6,6 +6,10 @@
 export type ApiProviderType = 'mock' | 'firebase' | 'http';
 
 export const RUNTIME_CONFIG = {
+  // DEMO BRANCH ONLY — NEVER MERGE THIS RUNTIME OVERRIDE TO MAIN.
+  // This branch exists solely to exercise the iOS BottomNav prototype.
+  apiProvider: 'mock' as ApiProviderType,
+
   // Controlled via VITE_API_PROVIDER env var (.env / .env.production / .env.local)
   // 'mock'    → datos locales simulados (demo)
   // 'firebase'→ Firestore en producción
@@ -14,8 +18,6 @@ export const RUNTIME_CONFIG = {
   // not a security/visibility flag. Do not use this to gate demo-only UI
   // (see demoEnabled below) — an unconfigured production build would
   // otherwise silently expose demo-only affordances.
-  apiProvider: ((import.meta.env.VITE_API_PROVIDER as ApiProviderType) || 'mock'),
-
   // Environment detection
   isDev: import.meta.env.DEV,
   isProd: import.meta.env.PROD,
@@ -31,7 +33,7 @@ export const RUNTIME_CONFIG = {
    * exposes demo-only UI just because the data adapter happens to be mock.
    * Set VITE_ENABLE_DEMO_ACCESS=true only for the Vercel demo/QA deployment.
    */
-  demoEnabled: import.meta.env.VITE_ENABLE_DEMO_ACCESS === 'true',
+  demoEnabled: true,
 
   // App Version
   version: '2.5.0-industrial',
