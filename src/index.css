@@ -234,6 +234,17 @@
   .h-app {
     height: var(--app-height);
   }
+  /* Suelo de altura para el contenido de páginas privadas con poco
+     contenido (p. ej. Mis cuentas bancarias / Retirada con pocos elementos):
+     min-h-full (min-height:100%) encadenado más de un nivel dentro de
+     <main> no se resuelve de forma fiable — un min-height no cuenta como
+     "altura definida" para que SUS PROPIOS hijos calculen % contra él, solo
+     funciona el primer nivel. Este calc usa las mismas variables que ya
+     reserva <main> (--header-height, --nav-height) directamente contra el
+     viewport, sin depender de esa cadena de porcentajes. */
+  .min-h-page-content {
+    min-height: calc(var(--app-height) - var(--header-height) - var(--nav-height));
+  }
 
   /* Gradientes de marca */
   .gradient-manises {

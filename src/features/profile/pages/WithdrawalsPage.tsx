@@ -172,6 +172,11 @@ export function WithdrawalsPage() {
   useEffect(() => {
     if (autoContinueAfterVerify && verification.status === 'verified') {
       setAutoContinueAfterVerify(false);
+      // Limpia el panel transitorio de "Cuenta verificada" — ya cumplió su
+      // propósito (el usuario ya avanza a revisión); sin esto quedaba
+      // huérfano en el paso 1 y reaparecía duplicado junto al badge
+      // permanente "Verificada" de la cuenta si el usuario volvía atrás.
+      verification.reset();
       setStep(2);
     }
   }, [autoContinueAfterVerify, verification.status]);
@@ -230,24 +235,24 @@ export function WithdrawalsPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-background">
+    <div className="flex min-h-page-content flex-col bg-background">
       <ProfileSubHeader title="Cobrar Premios" subtitle="Retirada de saldo" />
 
-      <div className="flex flex-col gap-5 p-4 pb-24">
+      <div className="flex flex-col gap-4 p-4 pb-20">
 
         {/* Saldo actual header */}
         <section className="px-1 flex items-center justify-between">
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <p className="text-[10px] font-black text-manises-blue/40 uppercase tracking-[0.2em]">Saldo actual</p>
             <div className="flex items-baseline gap-2">
-              <p className="text-3xl font-black text-emerald-600 tracking-tight tabular-nums">
+              <p className="text-2xl font-black text-emerald-600 tracking-tight tabular-nums">
                 {formatCurrency(balance)}
               </p>
               <span className="text-[10px] font-black text-emerald-600/40 uppercase tracking-widest animate-pulse">Disponible</span>
             </div>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
-            <Landmark className="w-6 h-6 text-emerald-600/60" />
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center border border-emerald-100 shrink-0">
+            <Landmark className="w-5 h-5 text-emerald-600/60" />
           </div>
         </section>
 
@@ -375,10 +380,10 @@ export function WithdrawalsPage() {
 
           {/* ── PASO 1: Importe + Cuenta de destino ──────────────── */}
           {step === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
-              
+            <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+
               {/* Importe */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest pl-1">Importe a retirar</p>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-manises-blue font-black text-lg">€</span>
@@ -388,7 +393,7 @@ export function WithdrawalsPage() {
                     placeholder="0.00"
                     value={amount}
                     onChange={e => { setAmount(e.target.value); setAmountError(''); }}
-                    className={`w-full h-14 pl-9 pr-4 rounded-2xl border-2 text-manises-blue font-black text-xl outline-none transition-all tabular-nums ${
+                    className={`w-full h-12 pl-9 pr-4 rounded-2xl border-2 text-manises-blue font-black text-xl outline-none transition-all tabular-nums ${
                       amountError ? 'border-red-400 bg-red-50' : 'border-manises-blue/10 bg-slate-50 focus:border-manises-blue focus:bg-white'
                     }`}
                   />
@@ -493,7 +498,7 @@ export function WithdrawalsPage() {
 
           {/* ── PASO 2: Revisión ───────────────────────────────── */}
           {step === 2 && (
-            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
+            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
               <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
                 <div className="p-4 border-b border-border/50 bg-slate-50/50">
                   <p className="text-[10px] font-black text-manises-blue uppercase tracking-widest">Resumen de la solicitud</p>
@@ -558,7 +563,7 @@ export function WithdrawalsPage() {
 
 function SummaryRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className="flex items-center justify-between px-4 py-3">
+    <div className="flex items-center justify-between px-4 py-2.5">
       <span className="text-[11px] font-semibold text-muted-foreground">{label}</span>
       <span className={`text-[12px] font-black ${highlight ? 'text-emerald-600' : 'text-manises-blue'}`}>{value}</span>
     </div>

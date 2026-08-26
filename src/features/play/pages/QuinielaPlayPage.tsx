@@ -150,7 +150,16 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
 
       if (system === 'simple' && simpleSummary) {
         const drawDate = getBusinessDate(selectedDrawDate.toISOString());
-        let totalAdded = 0;
+        // Build every column's draft first and call addDrafts() ONCE with the
+        // full batch. addDrafts() closes over the session state from the
+        // last render — calling it once per column in a loop (as before)
+        // made every call after the first dispatch a "replaceDrafts" against
+        // that SAME stale `session.drafts` snapshot (no re-render happens
+        // between synchronous calls), so only the last column's draft ever
+        // survived even though every call reported addedCount:1. A single
+        // batched call has no such race: all columns are deduped/added
+        // together against one consistent snapshot.
+        const allDrafts = [];
         for (let ci = 0; ci < simpleSummary.columns.length; ci++) {
           const col   = simpleSummary.columns[ci];
           const plena = simpleSummary.plenas[ci];
@@ -197,11 +206,15 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
             selectedNationalDraw: { label: '' },
             selectedReductionSystemId: undefined,
           });
-          const result = addDrafts(drafts);
-          totalAdded += result.addedCount;
+          allDrafts.push(...drafts);
         }
-        if (totalAdded > 0) {
-          notifyAddedToCart({ addedCount: totalAdded, duplicateCount: 0 }, openReview);
+        if (allDrafts.length > 0) {
+          const result = addDrafts(allDrafts);
+          if (result.addedCount > 0) {
+            notifyAddedToCart(result, openReview);
+          } else if (result.duplicateCount > 0) {
+            toast.error('Ya tenías esa jugada en la sesión.');
+          }
         }
         return;
       }
@@ -527,7 +540,16 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
         <PurchaseBottomBar
           availableBalance={availableBalance}
           totalPrice={totalPrice}
-          canContinue={isValid && totalPrice <= availableBalance}
+          // Solo la validez del pronóstico bloquea el CTA — el saldo NUNCA
+          // debe hacerlo aquí (mismo criterio que canPlay en
+          // NumericGamePlayPage; GamePlayBottomMenu ya está diseñado para
+          // esto: "el saldo insuficiente ya no bloquea el botón, se muestra
+          // el importe que falta"). El flujo de 2 pasos por saldo
+          // insuficiente vive en la cesta/checkout (InsufficientBalanceModal
+          // en GamesCartPanel/LotteryCartPanel/PlaySessionTray) — bloquear
+          // aquí impedía siquiera añadir la jugada a la cesta y por tanto
+          // llegar a ese flujo.
+          canContinue={isValid}
           ctaLabel={playCta}
           onContinue={handlePlay}
           activeColor={game.color}

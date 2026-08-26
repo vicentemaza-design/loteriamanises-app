@@ -77,8 +77,8 @@ export function WithdrawalStatusPanel({ createStatus, withdrawal, errorMessage, 
     completed: {
       icon: <CheckCircle2 className="w-8 h-8 text-emerald-500" aria-hidden="true" />,
       iconWrap: 'bg-emerald-50 border-emerald-100',
-      title: 'Retirada completada',
-      description: 'La operación se ha completado.',
+      title: 'Solicitud de retirada procesada',
+      description: 'Tu banco ha confirmado la transferencia. El importe puede tardar en reflejarse en tu cuenta.',
     },
     rejected: {
       icon: <XCircle className="w-8 h-8 text-red-500" aria-hidden="true" />,

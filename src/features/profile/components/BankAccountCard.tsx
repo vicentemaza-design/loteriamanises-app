@@ -19,13 +19,13 @@ export const BankAccountCard = React.forwardRef<HTMLButtonElement, BankAccountCa
         type="button"
         onClick={onSelect}
         aria-pressed={selected}
-        className={`w-full flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-manises-blue/40 ${
+        className={`w-full flex items-center justify-between gap-3 p-3 rounded-2xl border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-manises-blue/40 ${
           selected ? 'border-emerald-500 bg-emerald-50/40' : 'border-slate-100 bg-white'
         }`}
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selected ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
-            <Landmark className="w-5 h-5" aria-hidden="true" />
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${selected ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+            <Landmark className="w-4.5 h-4.5" aria-hidden="true" />
           </div>
           <div className="text-left min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -36,10 +36,10 @@ export const BankAccountCard = React.forwardRef<HTMLButtonElement, BankAccountCa
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-slate-500 font-mono font-semibold tracking-tight" aria-label={`Terminada en ${account.ibanMasked.slice(-4)}`}>
-              {account.ibanMasked}
-            </p>
-            <div className="mt-0.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-[11px] text-slate-500 font-mono font-semibold tracking-tight" aria-label={`Terminada en ${account.ibanMasked.slice(-4)}`}>
+                {account.ibanMasked}
+              </p>
               <BankAccountStatusBadge status={account.verificationStatus} />
             </div>
           </div>

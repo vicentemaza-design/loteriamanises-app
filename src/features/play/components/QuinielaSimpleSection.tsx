@@ -5,7 +5,7 @@ import type { QuinielaResult } from '../lib/quiniela-data';
 import type { QuinielaFixture } from '../lib/quiniela-fixtures';
 
 const PRICE_PER_COL = 0.75;
-const MIN_COLS = 2;
+const MIN_COLS = 1;
 const MAX_COLS = 8;
 const REGULAR_SIGNS = ['1', 'X', '2'] as const;
 const PLENA_SIGNS   = ['0', '1', '2', 'M'] as const;
@@ -41,8 +41,8 @@ export function QuinielaSimpleSection({ fixtures, drawDate, onSummaryChange }: P
     const s = drawDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
     return s.charAt(0).toUpperCase() + s.slice(1);
   })();
-  const [columns, setColumns]   = useState<Column[]>([makeEmptyColumn(), makeEmptyColumn()]);
-  const [plenas, setPlenas]     = useState<PlenaCol[]>([makeEmptyPlena(), makeEmptyPlena()]);
+  const [columns, setColumns]   = useState<Column[]>([makeEmptyColumn()]);
+  const [plenas, setPlenas]     = useState<PlenaCol[]>([makeEmptyPlena()]);
   const [activeIdx, setActiveIdx] = useState(0);
 
   const regularFixtures = fixtures.filter(f => f.id !== 15);

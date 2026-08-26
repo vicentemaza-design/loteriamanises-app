@@ -40,10 +40,10 @@ const BankAccountManageRow: React.FC<BankAccountManageRowProps> = ({
 
   return (
     <div className="overflow-hidden rounded-2xl border-2 border-slate-100 bg-white">
-      <div className="flex items-center justify-between gap-3 p-3.5">
+      <div className="flex items-center justify-between gap-3 p-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${account.isDefault ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
-            <Landmark className="w-5 h-5" aria-hidden="true" />
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${account.isDefault ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+            <Landmark className="w-4.5 h-4.5" aria-hidden="true" />
           </div>
           <div className="text-left min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -54,10 +54,10 @@ const BankAccountManageRow: React.FC<BankAccountManageRowProps> = ({
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-slate-500 font-mono font-semibold tracking-tight" aria-label={`Terminada en ${account.ibanMasked.slice(-4)}`}>
-              {account.ibanMasked}
-            </p>
-            <div className="mt-0.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-[11px] text-slate-500 font-mono font-semibold tracking-tight" aria-label={`Terminada en ${account.ibanMasked.slice(-4)}`}>
+                {account.ibanMasked}
+              </p>
               <BankAccountStatusBadge status={account.verificationStatus} />
             </div>
           </div>
@@ -150,7 +150,7 @@ export function BankAccountsPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-background pb-20">
+    <div className="flex min-h-page-content flex-col bg-background pb-20">
       <ProfileSubHeader title="Mis cuentas bancarias" subtitle="Gestiona tus cuentas de cobro" />
 
       <div className="flex flex-col gap-3 p-4">
