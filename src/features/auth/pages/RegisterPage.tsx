@@ -283,13 +283,12 @@ export function RegisterPage() {
                   noValidate
                 >
                   <div>
-                    <label htmlFor="reg-email" className="sr-only">Email</label>
+                    <label htmlFor="reg-email" className="mb-0.5 block text-[9.5px] font-black uppercase tracking-[0.15em] text-white/40">Email</label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
                       <Input
                         id="reg-email"
                         type="email"
-                        placeholder="Email"
                         autoComplete="email"
                         aria-invalid={Boolean(errors.email)}
                         aria-describedby={errors.email ? 'reg-email-error' : undefined}
@@ -302,13 +301,12 @@ export function RegisterPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="reg-password" className="sr-only">Contraseña</label>
+                    <label htmlFor="reg-password" className="mb-0.5 block text-[9.5px] font-black uppercase tracking-[0.15em] text-white/40">Contraseña</label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
                       <Input
                         id="reg-password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="Crea una contraseña"
                         autoComplete="new-password"
                         aria-invalid={Boolean(errors.password)}
                         aria-describedby={errors.password ? 'reg-password-error' : undefined}
@@ -330,13 +328,12 @@ export function RegisterPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="reg-repeat-password" className="sr-only">Repetir contraseña</label>
+                    <label htmlFor="reg-repeat-password" className="mb-0.5 block text-[9.5px] font-black uppercase tracking-[0.15em] text-white/40">Repetir contraseña</label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
                       <Input
                         id="reg-repeat-password"
                         type={showRepeatPassword ? 'text' : 'password'}
-                        placeholder="Repite la contraseña"
                         autoComplete="new-password"
                         aria-invalid={Boolean(errors.repeatPassword)}
                         aria-describedby={errors.repeatPassword ? 'reg-repeat-password-error' : undefined}

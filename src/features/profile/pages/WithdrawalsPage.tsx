@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Landmark, Plus, ChevronLeft, Clock, Shield, AlertCircle, MapPin, Building, Home, Check, ShieldCheck } from 'lucide-react';
+import { Landmark, Plus, ChevronLeft, Clock, Shield, AlertCircle, MapPin, Building, Home, Check } from 'lucide-react';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { Button } from '@/shared/ui/Button';
@@ -58,9 +58,9 @@ export function WithdrawalsPage() {
   // Formulario de nueva cuenta bancaria
   const [isAddingAccount, setIsAddingAccount] = useState(false);
 
-  // Marca que la verificación en curso se disparó desde "Continuar" (retirada),
-  // no desde el botón suelto "Verificar titularidad" — solo en ese caso
-  // avanzamos automáticamente al paso 2 cuando el resultado sea 'verified'.
+  // Marca que la verificación en curso se disparó desde "Continuar" (retirada)
+  // — solo en ese caso avanzamos automáticamente al paso 2 cuando el
+  // resultado sea 'verified'.
   const [autoContinueAfterVerify, setAutoContinueAfterVerify] = useState(false);
 
   const parsedAmount = parseFloat(amount) || 0;
@@ -157,9 +157,8 @@ export function WithdrawalsPage() {
     toast.success('Cuenta bancaria añadida. Pendiente de verificar.');
   };
 
-  // Único punto que llama a verifyOwnership() — reutilizado tanto por el
-  // botón suelto "Verificar titularidad" como por "Continuar" (goToStep2)
-  // y por el reintento del panel. No existe una segunda implementación.
+  // Único punto que llama a verifyOwnership() — reutilizado por "Continuar"
+  // (goToStep2) y por el reintento del panel. No existe una segunda implementación.
   const handleVerifyOwnership = async () => {
     if (!account) return;
     const updated = await verification.verify(account.id);
@@ -427,17 +426,6 @@ export function WithdrawalsPage() {
                           onSelect={() => { setSelectedAccount(acc.id); setAutoContinueAfterVerify(false); verification.reset(); }}
                         />
                       ))}
-
-                      {account && account.verificationStatus === 'unverified' && verification.status === 'idle' && (
-                        <button
-                          type="button"
-                          onClick={handleVerifyOwnership}
-                          className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl border border-manises-blue/15 bg-manises-blue/5 text-manises-blue text-[11px] font-black uppercase tracking-wider hover:bg-manises-blue/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-manises-blue/40"
-                        >
-                          <ShieldCheck className="w-4 h-4" aria-hidden="true" />
-                          Verificar titularidad
-                        </button>
-                      )}
 
                       {verification.status !== 'idle' && (
                         <BankAccountVerificationPanel
