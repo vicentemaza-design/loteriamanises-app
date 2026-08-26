@@ -472,7 +472,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance, deficit
                     <Button
                       onClick={handlePay}
                       disabled={isProcessing || !canSubmit}
-                      className={`w-full h-14 rounded-2xl text-white font-black text-lg transition-all shadow-md ${btnBg}`}
+                      className={`w-full h-14 rounded-2xl text-white font-black text-base min-[375px]:text-lg transition-all shadow-md ${btnBg}`}
                     >
                       {isProcessing ? (
                         <><Loader2 className="w-6 h-6 mr-2 animate-spin" /> Verificando...</>
