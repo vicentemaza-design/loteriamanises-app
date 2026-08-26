@@ -21,8 +21,8 @@ export function AuthScreenShell({
        Esto evita que iOS renderice la imagen y el fondo en capas separadas 
        con alturas distintas durante el cold-boot de la PWA.
     */
-    <div 
-      className="relative min-h-screen w-full overflow-hidden text-white bg-[#052a5a]"
+    <div
+      className="relative h-dvh w-full overflow-hidden text-white bg-[#052a5a]"
       style={{
         backgroundImage: `
           linear-gradient(180deg, rgba(5,42,90,0.72) 0%, rgba(10,71,146,0.78) 45%, rgba(5,42,90,0.88) 100%),
@@ -41,7 +41,14 @@ export function AuthScreenShell({
           es position:fixed/overflow:hidden (fix de teclado/viewport), así
           que ya no puede desplazarse para revelar contenido más alto que la
           pantalla (p. ej. el paso 2 del registro). El fondo sigue fijo en
-          el div exterior (overflow-hidden), solo este contenedor scrollea. */}
+          el div exterior (overflow-hidden), solo este contenedor scrollea.
+          Exterior e interior usan la MISMA unidad (h-dvh, no min-h-screen):
+          un exterior en 100vh (viewport grande/estático) y un interior en
+          100dvh (viewport dinámico/pequeño) dejaban una franja del fondo
+          del exterior visible bajo el contenido en iOS Safari real cuando
+          la barra de direcciones está expandida — invisible en emuladores
+          de escritorio (WebKit incluido) porque ahí 100vh === 100dvh al no
+          existir una barra de navegador dinámica que colapsar. */}
       <div className="relative z-10 mx-auto flex h-dvh w-full max-w-md flex-col overflow-y-auto px-6 py-10">
         <div
           className={cn(
