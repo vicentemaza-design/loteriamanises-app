@@ -41,8 +41,18 @@ export default function App() {
       // que el input pierda el foco — el fix anterior gateaba la corrección
       // con isEditing y por eso nunca llegaba a ejecutarse en ese caso,
       // que es justo el reportado por Rafa en dispositivo real.
+      // Rutas públicas (.auth-route, ver PublicLayout/index.css): el
+      // documento vuelve a ser el scroller real (body ya no es
+      // position:fixed ahí), así que window.scrollY > 0 es un estado
+      // legítimo mientras el usuario recorre un formulario más alto que la
+      // pantalla (p.ej. Registro paso 2) — forzarlo a 0 aquí lo "enganchaba"
+      // de vuelta arriba en cualquier resize/scroll de visualViewport. En
+      // privadas (body:fixed, scroll solo dentro de <main>) el
+      // comportamiento no cambia: 0 sigue siendo el único scroll de
+      // documento válido.
+      const isAuthRoute = document.documentElement.classList.contains('auth-route');
       const keyboardLikelyOpen = (window.innerHeight - height) > KEYBOARD_HEIGHT_THRESHOLD;
-      if (!keyboardLikelyOpen) {
+      if (!keyboardLikelyOpen && !isAuthRoute) {
         settleDocumentScroll();
         // WebKit a veces reporta la geometría final del viewport 1-2 frames
         // después de disparar el propio evento resize/scroll — un par de

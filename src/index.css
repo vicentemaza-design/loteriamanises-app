@@ -456,6 +456,16 @@
     overflow-y: auto;
   }
 
+  /* input#reg-birthDate (Registro paso 2): el valor/placeholder interno del
+     <input type="date"> nativo de iOS Safari se pinta en un pseudo-elemento
+     propio que no siempre hereda el `color` del host — sin este hook podía
+     quedar invisible sobre nuestro fondo oscuro. Solo afecta a este campo
+     (selector por id), no a ningún otro input de la app. */
+  input#reg-birthDate::-webkit-date-and-time-value {
+    text-align: left;
+    color: inherit;
+  }
+
   /* Animación de entrada suave para página */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(12px); }
