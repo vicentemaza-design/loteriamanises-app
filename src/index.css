@@ -241,9 +241,20 @@
      "altura definida" para que SUS PROPIOS hijos calculen % contra él, solo
      funciona el primer nivel. Este calc usa las mismas variables que ya
      reserva <main> (--header-height, --nav-height) directamente contra el
-     viewport, sin depender de esa cadena de porcentajes. */
+     viewport, sin depender de esa cadena de porcentajes.
+     IMPORTANTE (fix banda blanca en iPhone real, confirmada en dispositivo
+     físico): la primera versión usaba var(--app-height) en vez de 100dvh.
+     --app-height es un valor puesto por JS (App.tsx, a partir de
+     visualViewport.height) que solo se actualiza cuando disparan los
+     listeners de resize/scroll — en iOS real puede quedarse "congelado" un
+     par de frames por detrás de la geometría real del viewport (el mismo
+     retraso de repintado que .app-shell ya documenta más abajo). 100dvh es
+     una unidad CSS nativa que el motor recalcula él solo, sin depender de
+     que JS haya tenido tiempo de reaccionar — mismo criterio que ya usa
+     .app-shell (h-dvh) y por el que este cálculo debe seguir su ejemplo en
+     vez de introducir una vía distinta basada en JS. */
   .min-h-page-content {
-    min-height: calc(var(--app-height) - var(--header-height) - var(--nav-height));
+    min-height: calc(100dvh - var(--header-height) - var(--nav-height));
   }
 
   /* Gradientes de marca */

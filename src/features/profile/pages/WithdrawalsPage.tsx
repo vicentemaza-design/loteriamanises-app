@@ -487,7 +487,7 @@ export function WithdrawalsPage() {
                   <Button
                     onClick={goToStep2}
                     disabled={!account || verification.status === 'verifying'}
-                    className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-lg shadow-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                    className="w-full h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base shadow-md transition-all disabled:opacity-40 disabled:pointer-events-none"
                   >
                     {verification.status === 'verifying' ? 'Verificando cuenta...' : 'Continuar →'}
                   </Button>
