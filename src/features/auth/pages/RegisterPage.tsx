@@ -444,8 +444,19 @@ export function RegisterPage() {
 
                 <div className="min-w-0">
                   <label htmlFor="reg-birthDate" className="sr-only">Fecha de nacimiento</label>
-                  <div className="relative min-w-0">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" aria-hidden="true" />
+                  {/* h-12 + overflow-hidden en el WRAPPER (no en el input): en
+                      iOS real el control nativo de type="date" puede pintar
+                      su contenido interno más ancho que su propia caja CSS
+                      (min-width:0/max-width:100% en el input no lo evitan —
+                      es un desbordamiento de pintado del widget nativo, no
+                      un problema de layout). Poner el recorte aquí, en un
+                      ancestro de tamaño fijo idéntico al resto de inputs,
+                      garantiza el ancho visual exacto pase lo que pase
+                      dentro — el input y su picker nativo siguen siendo
+                      100% funcionales, solo se recorta lo que se pinta más
+                      allá de este límite. */}
+                  <div className="relative min-w-0 h-12 overflow-hidden rounded-xl">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none z-10" aria-hidden="true" />
                     <Input
                       id="reg-birthDate"
                       type="date"
