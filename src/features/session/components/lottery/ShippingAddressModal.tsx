@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react';
+import { useState, useEffect, useRef, type ChangeEvent } from 'react';
 import { motion } from 'motion/react';
 import { Xmark, MapPin, Phone, Mail, User, Trash, EditPencil, NavArrowRight } from 'iconoir-react/regular';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -86,6 +86,35 @@ export function ShippingAddressModal({ isOpen, onClose, onSave, savedAddress }: 
   const [editing, setEditing] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const dialogRef = useDialogA11y<HTMLDivElement>({ active: isOpen, onClose });
+
+  // iOS Safari: este modal se abre APILADO sobre otro `position:fixed`
+  // (el sheet de LotteryCartPanel, ver `fixed inset-0` allí). Si el
+  // usuario enfoca un input aquí (teclado abierto) y luego cierra este
+  // modal, el sheet de detrás puede quedarse con su `inset:0` calculado
+  // contra la geometría de viewport que tenía mientras ESTE teclado
+  // anidado estaba abierto — WebKit no siempre re-sincroniza el layout de
+  // los `position:fixed` apilados solo porque este modal se desmonte.
+  // Un scroll real (aunque sea de 0→1→0, en el mismo frame, sin mover
+  // nada visible) fuerza esa re-sincronización; `window.scrollTo(0, 0)`
+  // cuando ya está en 0 no sirve porque no hay delta real que WebKit deba
+  // procesar. `wasOpen` evita disparar este nudge en el montaje inicial
+  // (isOpen=false la primera vez) — solo corre en una transición real
+  // true→false. Esto es local a este modal — no toca App.tsx ni el
+  // scroll global.
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (isOpen) {
+      wasOpen.current = true;
+      return;
+    }
+    if (!wasOpen.current) return;
+    wasOpen.current = false;
+    const frame = requestAnimationFrame(() => {
+      window.scrollTo(0, 1);
+      requestAnimationFrame(() => window.scrollTo(0, 0));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
