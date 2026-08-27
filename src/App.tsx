@@ -58,31 +58,33 @@ export default function App() {
       pushDebug('baseline-captured', { height });
     };
 
-    // Segundo experimento: el primero (scrollTo(y,y+1)->scrollTo(y,y))
-    // se demostró en dispositivo real que SÍ se ejecuta pero NO hace que
-    // WebKit recomponga el viewport — un scroll por script no dispara la
-    // misma recomposición que un scroll táctil real. Esta variante no
-    // toca el scroll en absoluto: fuerza un reflow síncrono mutando una
-    // propiedad de caja inocua (padding, no transform/filter/perspective,
-    // que cambiarían el containing block de BottomNav al ser `fixed`) y
-    // leyendo una propiedad de layout justo después para obligar al
-    // motor a vaciar su cola de reflow pendiente antes de continuar.
-    const forceReflowNudge = () => {
+    // Tercer experimento. Los dos anteriores (scrollTo(y,y+1)->scrollTo(y,y)
+    // y el reflow forzado vía padding+offsetHeight) se demostraron en
+    // dispositivo real: ambos SE EJECUTAN pero NINGUNO hace que WebKit
+    // recomponga el viewport. Esta variante no toca scroll ni layout de
+    // nuestros elementos — ataca directamente el propio cálculo del
+    // viewport reescribiendo momentáneamente <meta name="viewport"> para
+    // forzar a WebKit a reparsearlo y recalcular desde cero.
+    const forceViewportMetaNudge = () => {
       if (recoveryNudgeUsed) {
-        pushDebug('reflow-skip-already-used');
+        pushDebug('meta-skip-already-used');
+        return;
+      }
+
+      const meta = document.querySelector('meta[name="viewport"]');
+      if (!meta) {
+        pushDebug('meta-not-found');
         return;
       }
 
       recoveryNudgeUsed = true;
-      pushDebug('reflow-attempt');
-      const body = document.body;
-      const previousPaddingBottom = body.style.paddingBottom;
-      const bump = (parseFloat(previousPaddingBottom || '0') || 0) + 0.01;
-      body.style.paddingBottom = `${bump}px`;
-      void body.offsetHeight; // fuerza el primer reflow síncrono
-      body.style.paddingBottom = previousPaddingBottom;
-      void body.offsetHeight; // fuerza el segundo reflow síncrono (restaurado)
-      pushDebug('reflow-restore-complete');
+      const original = meta.getAttribute('content') ?? '';
+      pushDebug('meta-attempt', { original });
+      meta.setAttribute('content', `${original}, maximum-scale=1.0`);
+      requestAnimationFrame(() => {
+        meta.setAttribute('content', original);
+        pushDebug('meta-restore-complete');
+      });
     };
 
     // Único scroll "de documento" que debe existir: 0. Todo el scroll real
@@ -164,7 +166,7 @@ export default function App() {
       }
 
       if (isIOS && viewportClosedIncomplete) {
-        forceReflowNudge();
+        forceViewportMetaNudge();
       }
 
       if (keyboardHasClosed) {
