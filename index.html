@@ -76,6 +76,17 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
+         mergear a main): rectángulo de prueba totalmente aislado de la
+         app — HTML plano, sin React, sin Tailwind, sin safe-area, sin
+         backdrop-filter, sin transform, directamente hermano de #root
+         bajo <body>. Solo pregunta si position:fixed;bottom:0 en sí
+         mismo llega al borde físico real de la pantalla en este
+         dispositivo/PWA. Eliminar tras la prueba. -->
+    <div
+      id="probe-rect"
+      style="position: fixed; left: 0; right: 0; bottom: 0; height: 64px; background: #ff00ff; z-index: 2147483647;"
+    ></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
