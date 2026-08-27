@@ -40,20 +40,8 @@ export default function App() {
     let keyboardBaselineHeight: number | null = null;
     let smallestKeyboardHeight: number | null = null;
     let keyboardWasObservedOpen = false;
-    let recoveryNudgeUsed = false;
 
-    // Séptimo experimento (Vía 3). Los seis anteriores intentaban CURAR el
-    // fallo después de que el teclado se cerrara — todos fallaron. Esta
-    // variante es la primera que intenta PREVENIRLO: en el instante del
-    // focus, antes de que iOS decida desplazar el documento para revelar
-    // el input, se fija la altura de <body> al valor actual del
-    // visualViewport y se oculta el overflow un instante, para intentar
-    // que iOS no necesite hacer el pan de documento que dispara el bug
-    // (visto en las capturas reales: scrollY pasa de 0 a un valor >0 justo
-    // en ese momento). Se revierte a los 25ms.
-    const PRE_ADJUST_RESTORE_DELAY = 25;
-
-    const startKeyboardCycle = (event: FocusEvent) => {
+    const startKeyboardCycle = () => {
       if (!isIOS) return;
 
       const height = vv?.height ?? window.innerHeight;
@@ -65,23 +53,7 @@ export default function App() {
       keyboardBaselineHeight = height;
       smallestKeyboardHeight = null;
       keyboardWasObservedOpen = false;
-      recoveryNudgeUsed = false;
       pushDebug('baseline-captured', { height });
-
-      const target = event.target as HTMLElement | null;
-      if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA')) return;
-
-      const body = document.body;
-      const previousHeight = body.style.height;
-      const previousOverflow = body.style.overflow;
-      pushDebug('pre-adjust-focus-attempt', { height });
-      body.style.height = `${height}px`;
-      body.style.overflow = 'hidden';
-      window.setTimeout(() => {
-        body.style.height = previousHeight;
-        body.style.overflow = previousOverflow;
-        pushDebug('pre-adjust-focus-restore-complete');
-      }, PRE_ADJUST_RESTORE_DELAY);
     };
 
     // Único scroll "de documento" que debe existir: 0. Todo el scroll real

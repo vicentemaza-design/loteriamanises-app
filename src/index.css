@@ -401,25 +401,33 @@
     text-size-adjust: 100%;
     background: var(--app-bg);
     height: 100%;
+    overflow: hidden;
   }
 
-  /* Geometría de body restaurada a la baseline estable del 25/08 (ver
-     73d12db): sin position:fixed/inset:0/overflow:hidden — ese modelo
-     (introducido el 26/08) dejaba, en iPhone real, una franja blanca del
-     fondo de html/body bajo la bottom nav cuando .app-shell terminaba de
-     recalcular su altura tras colapsar/expandir la barra de Safari.
-     El scroll de documento residual que ese cambio pretendía evitar
-     (bottom nav flotando tras cerrar el teclado) lo corrige ahora la lógica
-     de teclado de App.tsx (settleDocumentScroll, activa en privadas) en
-     vez de impedir que el documento pueda desplazarse en absoluto. */
+  /* EXPERIMENTO (rama debug/ios-keyboard-scroll-recovery, no en main):
+     body vuelve a position:fixed/inset:0/overflow:hidden — el modelo que
+     existió brevemente el 26/08 (commit f5819a3) y que, según el propio
+     historial de este archivo, SÍ evitaba que BottomNav quedara flotando
+     tras cerrar el teclado en rutas privadas (ver comentario de adf2134,
+     hoy sustituido). Se revirtió ese día por un bug DISTINTO (franja
+     blanca al colapsar la barra de Safari en .app-shell), no porque esto
+     fallara para el teclado — y los siete intentos de "curar" el fallo
+     después del cierre (probados hoy en esta misma rama) no funcionaron.
+     Hipótesis: al no poder desplazarse body/html, iOS debe recurrir a
+     desplazar <main> (el único overflow:auto real) para revelar el input
+     enfocado, evitando el scrollY de documento que dispara el bug — sin
+     necesitar ningún nudge/reflow/hack posterior.
+     La excepción html.auth-route (más abajo) ya restaura el documento
+     como scroller real en rutas públicas — no se toca. */
   body {
     margin: 0;
     padding: 0;
     @apply font-sans text-foreground;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-    min-height: 100dvh;
+    position: fixed;
+    inset: 0;
     background: var(--app-bg) !important;
-    overflow-x: hidden;
+    overflow: hidden;
     overscroll-behavior-y: none;
     width: 100%;
     -webkit-user-select: none;
