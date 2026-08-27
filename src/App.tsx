@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/app/providers/AuthProvider';
@@ -6,9 +6,28 @@ import { AppRouter } from '@/app/router/AppRouter';
 import { ErrorBoundary } from '@/app/components/ErrorBoundary';
 import { ConnectionStatusBanner } from '@/shared/components/ConnectionStatusBanner';
 
+// DEBUG TEMPORAL — rama debug/ios-keyboard-scroll-recovery, no mergear a
+// main. Registra cada transición del ciclo de teclado (no solo las
+// medidas genéricas de viewport que ya capturaba la herramienta anterior)
+// para poder confirmar, con una sola captura física, si el nudge de
+// recuperación llega a ejecutarse o no.
+interface KeyboardDebugEntry {
+  t: number;
+  event: string;
+  [key: string]: unknown;
+}
+
 export default function App() {
+  const debugLogRef = useRef<KeyboardDebugEntry[]>([]);
+  const [copyLabel, setCopyLabel] = useState('Copiar diagnóstico');
+
   useEffect(() => {
     const vv = window.visualViewport;
+    const pushDebug = (event: string, extra?: Record<string, unknown>) => {
+      const log = debugLogRef.current;
+      log.push({ t: Math.round(performance.now()), event, ...extra });
+      if (log.length > 300) log.shift();
+    };
     // Margen sobre el que un teclado software real siempre se pasa (los
     // más pequeños en iOS rondan 250-300px) — evita falsos positivos por
     // fluctuaciones menores de la barra de Safari (que también mueve
@@ -40,27 +59,36 @@ export default function App() {
       if (!isIOS) return;
 
       const height = vv?.height ?? window.innerHeight;
-      if ((window.innerHeight - height) > KEYBOARD_HEIGHT_THRESHOLD) return;
+      if ((window.innerHeight - height) > KEYBOARD_HEIGHT_THRESHOLD) {
+        pushDebug('baseline-skip-keyboard-already-open', { height, innerHeight: window.innerHeight });
+        return;
+      }
 
       cancelRecoveryNudge();
       keyboardBaselineHeight = height;
       smallestKeyboardHeight = null;
       keyboardWasObservedOpen = false;
       recoveryNudgeUsed = false;
+      pushDebug('baseline-captured', { height });
     };
 
     const forceRelativeViewportNudge = () => {
-      if (recoveryNudgeUsed) return;
+      if (recoveryNudgeUsed) {
+        pushDebug('nudge-skip-already-used');
+        return;
+      }
 
       recoveryNudgeUsed = true;
       const scrollX = window.scrollX;
       const scrollY = window.scrollY;
       recoveryScrollPosition = { x: scrollX, y: scrollY };
+      pushDebug('nudge-attempt', { scrollX, scrollY });
       window.scrollTo(scrollX, scrollY + 1);
       recoveryFrameId = window.requestAnimationFrame(() => {
         window.scrollTo(scrollX, scrollY);
         recoveryFrameId = null;
         recoveryScrollPosition = null;
+        pushDebug('nudge-restore-complete', { scrollX, scrollY });
       });
     };
 
@@ -103,10 +131,14 @@ export default function App() {
       const keyboardLikelyOpen = (window.innerHeight - height) > KEYBOARD_HEIGHT_THRESHOLD;
 
       if (isIOS && keyboardLikelyOpen) {
+        const wasAlreadyOpen = keyboardWasObservedOpen;
         keyboardWasObservedOpen = true;
         smallestKeyboardHeight = smallestKeyboardHeight === null
           ? height
           : Math.min(smallestKeyboardHeight, height);
+        if (!wasAlreadyOpen) {
+          pushDebug('keyboard-open-detected', { height, scrollY: window.scrollY, offsetTop: vv?.offsetTop ?? null });
+        }
       }
 
       if (!keyboardLikelyOpen && !isAuthRoute) {
@@ -127,6 +159,16 @@ export default function App() {
       const viewportClosedIncomplete = keyboardHasClosed
         && keyboardBaselineHeight !== null
         && height < keyboardBaselineHeight - VIEWPORT_HEIGHT_TOLERANCE;
+
+      if (keyboardHasClosed) {
+        pushDebug('keyboard-closed-detected', {
+          height,
+          baseline: keyboardBaselineHeight,
+          smallestKeyboardHeight,
+          scrollY: window.scrollY,
+          incomplete: viewportClosedIncomplete,
+        });
+      }
 
       if (isIOS && viewportClosedIncomplete) {
         forceRelativeViewportNudge();
@@ -154,6 +196,22 @@ export default function App() {
     };
   }, []);
 
+  const handleCopyDebugLog = async () => {
+    const payload = {
+      capturedAt: new Date().toISOString(),
+      location: window.location.href,
+      userAgent: navigator.userAgent,
+      log: debugLogRef.current,
+    };
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+      setCopyLabel('Copiado ✓');
+    } catch {
+      setCopyLabel('Error al copiar');
+    }
+    window.setTimeout(() => setCopyLabel('Copiar diagnóstico'), 1500);
+  };
+
   return (
     <ErrorBoundary>
       <ConnectionStatusBanner />
@@ -176,6 +234,29 @@ export default function App() {
           />
         </BrowserRouter>
       </AuthProvider>
+
+      {/* DEBUG TEMPORAL — rama debug/ios-keyboard-scroll-recovery, no
+          mergear a main. Botón absolute (no fixed/transform), no forma
+          parte del layout ni interfiere con BottomNav/carrito. */}
+      <button
+        type="button"
+        onClick={handleCopyDebugLog}
+        style={{
+          position: 'absolute',
+          top: 'calc(env(safe-area-inset-top, 0px) + 8px)',
+          right: 8,
+          zIndex: 999999,
+          fontSize: 11,
+          fontWeight: 700,
+          padding: '6px 10px',
+          borderRadius: 8,
+          background: 'rgba(10,71,146,0.92)',
+          color: '#fff',
+          border: 'none',
+        }}
+      >
+        {copyLabel}
+      </button>
     </ErrorBoundary>
   );
 }
