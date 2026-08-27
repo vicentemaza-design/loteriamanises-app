@@ -25,6 +25,28 @@ export default function App() {
       if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
     };
 
+    // Bug de WebKit iOS (ya diagnosticado y parcheado localmente en
+    // ShippingAddressModal para el sheet de LotteryCartPanel): una capa
+    // `position:fixed` (aquí, BottomNav) no siempre recompone su posición
+    // contra la geometría final del visualViewport solo porque el teclado
+    // se cierre — el compositor de capas fixed solo recalcula con un
+    // evento de scroll con delta real. `window.scrollTo(0, 0)` cuando ya
+    // está en 0 (caso normal tras settleDocumentScroll) no genera ese
+    // delta. Este nudge fuerza un desplazamiento real de un frame (0→1→0)
+    // para que WebKit recomponga BottomNav contra el viewport ya asentado.
+    const nudgeFixedLayerRecompose = () => {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, 1);
+        requestAnimationFrame(() => window.scrollTo(0, 0));
+      });
+    };
+
+    // Recuerda si el teclado estaba abierto en la lectura anterior para
+    // detectar solo la transición real abierto→cerrado — no queremos
+    // disparar el nudge en cada resize mientras el teclado permanece
+    // cerrado (sería trabajo redundante) ni mientras sigue abierto.
+    let keyboardWasOpen = false;
+
     const updateAppHeight = () => {
       const height = vv?.height ?? window.innerHeight;
       document.documentElement.style.setProperty('--app-height', `${height}px`);
@@ -60,7 +82,13 @@ export default function App() {
         // corrección no se pierda si algo la revierte mientras el layout
         // todavía se está asentando.
         requestAnimationFrame(() => requestAnimationFrame(settleDocumentScroll));
+
+        if (keyboardWasOpen) {
+          nudgeFixedLayerRecompose();
+        }
       }
+
+      keyboardWasOpen = keyboardLikelyOpen;
     };
 
     updateAppHeight();
