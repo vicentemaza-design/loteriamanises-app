@@ -41,19 +41,6 @@ export default function App() {
     let smallestKeyboardHeight: number | null = null;
     let keyboardWasObservedOpen = false;
     let recoveryNudgeUsed = false;
-    let recoveryFrameId: number | null = null;
-    let recoveryScrollPosition: { x: number; y: number } | null = null;
-
-    const cancelRecoveryNudge = () => {
-      if (recoveryFrameId !== null) {
-        window.cancelAnimationFrame(recoveryFrameId);
-        recoveryFrameId = null;
-      }
-      if (recoveryScrollPosition) {
-        window.scrollTo(recoveryScrollPosition.x, recoveryScrollPosition.y);
-        recoveryScrollPosition = null;
-      }
-    };
 
     const startKeyboardCycle = () => {
       if (!isIOS) return;
@@ -64,7 +51,6 @@ export default function App() {
         return;
       }
 
-      cancelRecoveryNudge();
       keyboardBaselineHeight = height;
       smallestKeyboardHeight = null;
       keyboardWasObservedOpen = false;
@@ -72,24 +58,31 @@ export default function App() {
       pushDebug('baseline-captured', { height });
     };
 
-    const forceRelativeViewportNudge = () => {
+    // Segundo experimento: el primero (scrollTo(y,y+1)->scrollTo(y,y))
+    // se demostró en dispositivo real que SÍ se ejecuta pero NO hace que
+    // WebKit recomponga el viewport — un scroll por script no dispara la
+    // misma recomposición que un scroll táctil real. Esta variante no
+    // toca el scroll en absoluto: fuerza un reflow síncrono mutando una
+    // propiedad de caja inocua (padding, no transform/filter/perspective,
+    // que cambiarían el containing block de BottomNav al ser `fixed`) y
+    // leyendo una propiedad de layout justo después para obligar al
+    // motor a vaciar su cola de reflow pendiente antes de continuar.
+    const forceReflowNudge = () => {
       if (recoveryNudgeUsed) {
-        pushDebug('nudge-skip-already-used');
+        pushDebug('reflow-skip-already-used');
         return;
       }
 
       recoveryNudgeUsed = true;
-      const scrollX = window.scrollX;
-      const scrollY = window.scrollY;
-      recoveryScrollPosition = { x: scrollX, y: scrollY };
-      pushDebug('nudge-attempt', { scrollX, scrollY });
-      window.scrollTo(scrollX, scrollY + 1);
-      recoveryFrameId = window.requestAnimationFrame(() => {
-        window.scrollTo(scrollX, scrollY);
-        recoveryFrameId = null;
-        recoveryScrollPosition = null;
-        pushDebug('nudge-restore-complete', { scrollX, scrollY });
-      });
+      pushDebug('reflow-attempt');
+      const body = document.body;
+      const previousPaddingBottom = body.style.paddingBottom;
+      const bump = (parseFloat(previousPaddingBottom || '0') || 0) + 0.01;
+      body.style.paddingBottom = `${bump}px`;
+      void body.offsetHeight; // fuerza el primer reflow síncrono
+      body.style.paddingBottom = previousPaddingBottom;
+      void body.offsetHeight; // fuerza el segundo reflow síncrono (restaurado)
+      pushDebug('reflow-restore-complete');
     };
 
     // Único scroll "de documento" que debe existir: 0. Todo el scroll real
@@ -171,7 +164,7 @@ export default function App() {
       }
 
       if (isIOS && viewportClosedIncomplete) {
-        forceRelativeViewportNudge();
+        forceReflowNudge();
       }
 
       if (keyboardHasClosed) {
@@ -188,7 +181,6 @@ export default function App() {
     window.addEventListener('focusin', startKeyboardCycle, { passive: true });
 
     return () => {
-      cancelRecoveryNudge();
       window.removeEventListener('resize', updateAppHeight);
       vv?.removeEventListener('resize', updateAppHeight);
       vv?.removeEventListener('scroll', updateAppHeight);
