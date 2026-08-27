@@ -14,104 +14,15 @@ export default function App() {
     // fluctuaciones menores de la barra de Safari (que también mueve
     // visualViewport.height unos pocos px al aparecer/colapsar).
     const KEYBOARD_HEIGHT_THRESHOLD = 80;
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    let keyboardWasOpen = false;
-    let repaintNudgeUsed = false;
-    let repaintNudgePending = false;
-    let recoveryTimerIds: number[] = [];
-    let recoveryFrameIds: number[] = [];
-
-    const isPrivateRoute = () => !document.documentElement.classList.contains('auth-route');
-    const keyboardIsOpen = (height: number) =>
-      window.innerHeight - height > KEYBOARD_HEIGHT_THRESHOLD;
 
     // Único scroll "de documento" que debe existir: 0. Todo el scroll real
     // de la app vive dentro de <main> (ver purchase-events.ts) — nunca se
     // toca su scrollTop aquí, así que la posición del usuario dentro de la
     // pantalla que estaba editando se conserva intacta.
     const settleDocumentScroll = () => {
-      // Ejecutar siempre el scrollTo, aunque WebKit ya exponga scrollY = 0:
-      // el gesto físico que corrige el bug también fuerza una recomposición.
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-      if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
-    };
-
-    const captureViewportRecoveryState = () => ({
-      windowScrollY: window.scrollY,
-      documentScrollTop: document.scrollingElement?.scrollTop ?? 0,
-      visualViewportHeight: vv?.height ?? window.innerHeight,
-      visualViewportOffsetTop: vv?.offsetTop ?? 0,
-    });
-
-    const cancelViewportRecovery = () => {
-      recoveryTimerIds.forEach(window.clearTimeout);
-      recoveryFrameIds.forEach(window.cancelAnimationFrame);
-      recoveryTimerIds = [];
-      recoveryFrameIds = [];
-      if (repaintNudgePending) {
-        settleDocumentScroll();
-        repaintNudgePending = false;
-      }
-    };
-
-    const forceSingleViewportRecomposition = () => {
-      if (repaintNudgeUsed) return;
-
-      repaintNudgeUsed = true;
-      repaintNudgePending = true;
-      window.scrollTo(0, 1);
-      const nudgeFrameId = requestAnimationFrame(() => {
-        settleDocumentScroll();
-        repaintNudgePending = false;
-        recoveryFrameIds = recoveryFrameIds.filter(id => id !== nudgeFrameId);
-      });
-      recoveryFrameIds.push(nudgeFrameId);
-    };
-
-    const recoverIOSPrivateViewport = () => {
-      const height = vv?.height ?? window.innerHeight;
-      if (!isIOS || !isPrivateRoute() || !keyboardWasOpen || keyboardIsOpen(height)) return;
-
-      document.documentElement.style.setProperty('--app-height', `${height}px`);
-      settleDocumentScroll();
-      // Capturar las métricas después del reset permite observar un posible
-      // pan residual de WebKit sin intentar escribir en offsetTop, que es
-      // read-only. El nudge se limita a una vez por ciclo de teclado.
-      const recoveryState = captureViewportRecoveryState();
-      const hasResidualVisualPan = Math.abs(recoveryState.visualViewportOffsetTop) > 2;
-      if (hasResidualVisualPan || recoveryState.windowScrollY === 0) {
-        forceSingleViewportRecomposition();
-      }
-    };
-
-    const scheduleViewportRecovery = () => {
-      if (!isIOS || !isPrivateRoute() || !keyboardWasOpen) return;
-
-      cancelViewportRecovery();
-      recoverIOSPrivateViewport();
-
-      const firstFrameId = requestAnimationFrame(() => {
-        recoverIOSPrivateViewport();
-        recoveryFrameIds = recoveryFrameIds.filter(id => id !== firstFrameId);
-
-        const secondFrameId = requestAnimationFrame(() => {
-          recoverIOSPrivateViewport();
-          recoveryFrameIds = recoveryFrameIds.filter(id => id !== secondFrameId);
-        });
-        recoveryFrameIds.push(secondFrameId);
-      });
-      recoveryFrameIds.push(firstFrameId);
-      [100, 250, 500].forEach(delay => {
-        const timerId = window.setTimeout(() => {
-          recoverIOSPrivateViewport();
-          recoveryTimerIds = recoveryTimerIds.filter(id => id !== timerId);
-          if (delay === 500) keyboardWasOpen = false;
-        }, delay);
-        recoveryTimerIds.push(timerId);
-      });
+      if (window.scrollY !== 0) window.scrollTo(0, 0);
+      if (document.documentElement.scrollTop !== 0) document.documentElement.scrollTop = 0;
+      if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
     };
 
     const updateAppHeight = () => {
@@ -140,12 +51,7 @@ export default function App() {
       // comportamiento no cambia: 0 sigue siendo el único scroll de
       // documento válido.
       const isAuthRoute = document.documentElement.classList.contains('auth-route');
-      const keyboardLikelyOpen = keyboardIsOpen(height);
-      if (isIOS && keyboardLikelyOpen) {
-        keyboardWasOpen = true;
-        repaintNudgeUsed = false;
-        cancelViewportRecovery();
-      }
+      const keyboardLikelyOpen = (window.innerHeight - height) > KEYBOARD_HEIGHT_THRESHOLD;
       if (!keyboardLikelyOpen && !isAuthRoute) {
         settleDocumentScroll();
         // WebKit a veces reporta la geometría final del viewport 1-2 frames
@@ -155,38 +61,17 @@ export default function App() {
         // todavía se está asentando.
         requestAnimationFrame(() => requestAnimationFrame(settleDocumentScroll));
       }
-
-      if (isIOS && !keyboardLikelyOpen && keyboardWasOpen) {
-        scheduleViewportRecovery();
-      }
-    };
-
-    const handleFocusIn = () => {
-      if (!isIOS) return;
-      cancelViewportRecovery();
-      keyboardWasOpen = true;
-      repaintNudgeUsed = false;
-    };
-
-    const handleFocusOut = () => {
-      if (!isIOS) return;
-      scheduleViewportRecovery();
     };
 
     updateAppHeight();
     window.addEventListener('resize', updateAppHeight);
     vv?.addEventListener('resize', updateAppHeight);
     vv?.addEventListener('scroll', updateAppHeight);
-    window.addEventListener('focusin', handleFocusIn, { passive: true });
-    window.addEventListener('focusout', handleFocusOut, { passive: true });
 
     return () => {
-      cancelViewportRecovery();
       window.removeEventListener('resize', updateAppHeight);
       vv?.removeEventListener('resize', updateAppHeight);
       vv?.removeEventListener('scroll', updateAppHeight);
-      window.removeEventListener('focusin', handleFocusIn);
-      window.removeEventListener('focusout', handleFocusOut);
     };
   }, []);
 
