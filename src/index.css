@@ -273,16 +273,20 @@
   .app-shell {
     background: var(--shell-gradient);
     position: relative;
-    /* Red de seguridad para un bug conocido de iOS Safari: cuando la barra
-       de Safari se colapsa/expande tras una interacción (tap/foco, no solo
-       scroll), el valor en vivo de 100dvh a veces tarda en repintarse,
-       dejando el shell momentáneamente más corto que el viewport real y
-       revelando el fondo de <body> (--app-bg, casi blanco) por debajo — la
-       "franja blanca" que desaparece al hacer scroll (eso sí fuerza el
-       repintado). min-height con -webkit-fill-available usa un cálculo de
-       altura distinto en WebKit, no sujeto al mismo retraso, y actúa como
-       suelo cuando el h-dvh en vivo se queda corto momentáneamente. */
+    /* EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
+       confirmado, no mergear a main): 100dvh puede tardar en repintarse
+       tras el colapso/expansión de la barra de Safari, dejando el shell
+       más corto que el viewport físico real y revelando el fondo de
+       <body> por debajo ("franja blanca"). 100lvh usa la altura del
+       viewport "grande" (como si la barra estuviera siempre colapsada),
+       así que no depende de ese recálculo en vivo. min-height (no height)
+       para no pelear con el teclado: solo actúa como suelo cuando dvh se
+       queda corto, nunca reduce el shell por debajo de lo que ya
+       calculaba antes. -webkit-fill-available se mantiene como fallback
+       si 100lvh no es un valor soportado (se ignora la declaración
+       entera y queda la anterior). */
     min-height: -webkit-fill-available;
+    min-height: 100lvh;
   }
 
   .app-shell::before {
