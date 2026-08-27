@@ -101,7 +101,7 @@ export function AddBankAccountForm({ onAdd, onSuccess, onCancel }: AddBankAccoun
           <p className="text-[9px] text-slate-400 font-medium pl-0.5">Validamos el formato y el dígito de control en tu navegador. El banco confirmará el resto.</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
             <label htmlFor="new-bank-name" className="text-[9px] font-black text-slate-400 uppercase tracking-widest pl-0.5">Entidad bancaria (opcional)</label>
             <input

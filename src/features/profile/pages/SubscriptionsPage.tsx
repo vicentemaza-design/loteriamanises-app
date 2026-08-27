@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronRight, Check, Info, Sparkles, Ticket, Plus } from 'lucide-react';
 import { toast } from 'sonner';
@@ -46,6 +47,25 @@ export function SubscriptionsPage() {
   const { numbers, groupedReservations, reservations, markReservationsAsPaid } = useSubscriptions();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+
+  // --nav-height (BottomNav.tsx) reserva un margen de seguridad para el
+  // padding-bottom de <main> (pb-nav-safe) mayor que la altura real
+  // renderizada de BottomNav sin carrito abierto (NAV_BASE_REM=5rem vs la
+  // fila de iconos, que es h-14=3.5rem) — un +1.5rem intencionado ahí, pero
+  // que como offset para apilar esta barra ENCIMA de BottomNav dejaría un
+  // hueco blanco de esos mismos 24px. Medimos la altura real renderizada de
+  // BottomNav (con o sin fila de cesta) para apilar la barra exactamente
+  // pegada a su borde superior, sin tocar BottomNav.tsx.
+  const [navBarHeight, setNavBarHeight] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const nav = document.querySelector<HTMLElement>('nav[aria-label="Navegación principal"]');
+    if (!nav) return;
+    const measure = () => setNavBarHeight(nav.getBoundingClientRect().height);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, []);
 
   const tab = searchParams.get('tab') === 'numbers' ? 'numbers' : 'pending';
   const selectedLines = reservations.filter((line) => selectedIds.includes(line.id));
@@ -374,16 +394,18 @@ export function SubscriptionsPage() {
       </div>
 
       {selectedIds.length > 0 && tab === 'pending' && (
-        <PurchaseBottomBar
-          availableBalance={profile?.balance ?? 0}
-          totalPrice={selectedTotal}
-          canContinue={selectedIds.length > 0}
-          ctaLabel="Pagar seleccionados"
-          onContinue={paySelected}
-          activeColor="#f7b500"
-          summaryText={`${selectedLines.length} líneas · ${selectedNumbersCount} números · ${selectedDrawsCount} sorteos · ${selectedDecimos} décimos`}
-          className="bottom-[calc(var(--nav-height)+0.75rem)] z-[70] pb-0"
-        />
+        <div style={{ '--subs-pay-bar-bottom': `${navBarHeight ?? 0}px` } as CSSProperties}>
+          <PurchaseBottomBar
+            availableBalance={profile?.balance ?? 0}
+            totalPrice={selectedTotal}
+            canContinue={selectedIds.length > 0}
+            ctaLabel="Pagar seleccionados"
+            onContinue={paySelected}
+            activeColor="#f7b500"
+            summaryText={`${selectedLines.length} líneas · ${selectedNumbersCount} números · ${selectedDrawsCount} sorteos · ${selectedDecimos} décimos`}
+            className="bottom-[var(--subs-pay-bar-bottom)] z-[70] pb-0!"
+          />
+        </div>
       )}
     </div>
   );
