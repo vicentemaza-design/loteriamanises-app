@@ -38,7 +38,12 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-60 bg-[#0a4792]/80 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
+      // EXPERIMENTO TEMPORAL "PLAN B" (rama debug/ios-keyboard-scroll-recovery,
+      // no mergear a main): bottom:-64px en vez de bottom:0, solo para
+      // observar en dispositivo real si desplazar el nav 64px hacia abajo
+      // cierra la franja blanca o si el hueco reaparece igual más abajo
+      // (lo que indicaría que el límite lo pone WebKit, no nuestro CSS).
+      className="fixed bottom-[-64px] left-0 right-0 z-60 bg-[#0a4792]/80 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
       aria-label="Navegación principal"
