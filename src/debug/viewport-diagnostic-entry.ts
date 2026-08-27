@@ -1,3 +1,5 @@
-if (new URLSearchParams(window.location.search).get('viewportDebug') === '1') {
+import { isViewportDiagnosticEnabled } from './viewport-diagnostic-mode';
+
+if (isViewportDiagnosticEnabled()) {
   void import('./viewport-diagnostic');
 }

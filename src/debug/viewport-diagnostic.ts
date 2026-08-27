@@ -1,6 +1,6 @@
-const params = new URLSearchParams(window.location.search);
+import { isViewportDiagnosticEnabled } from './viewport-diagnostic-mode';
 
-if (params.get('viewportDebug') === '1') {
+if (isViewportDiagnosticEnabled()) {
   type RectSnapshot = {
     x: number;
     y: number;
