@@ -14,6 +14,55 @@ export default function App() {
     // fluctuaciones menores de la barra de Safari (que también mueve
     // visualViewport.height unos pocos px al aparecer/colapsar).
     const KEYBOARD_HEIGHT_THRESHOLD = 80;
+    const VIEWPORT_HEIGHT_TOLERANCE = 8;
+    const KEYBOARD_CLOSE_HEIGHT_DELTA = 40;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let keyboardBaselineHeight: number | null = null;
+    let smallestKeyboardHeight: number | null = null;
+    let keyboardWasObservedOpen = false;
+    let recoveryNudgeUsed = false;
+    let recoveryFrameId: number | null = null;
+    let recoveryScrollPosition: { x: number; y: number } | null = null;
+
+    const cancelRecoveryNudge = () => {
+      if (recoveryFrameId !== null) {
+        window.cancelAnimationFrame(recoveryFrameId);
+        recoveryFrameId = null;
+      }
+      if (recoveryScrollPosition) {
+        window.scrollTo(recoveryScrollPosition.x, recoveryScrollPosition.y);
+        recoveryScrollPosition = null;
+      }
+    };
+
+    const startKeyboardCycle = () => {
+      if (!isIOS) return;
+
+      const height = vv?.height ?? window.innerHeight;
+      if ((window.innerHeight - height) > KEYBOARD_HEIGHT_THRESHOLD) return;
+
+      cancelRecoveryNudge();
+      keyboardBaselineHeight = height;
+      smallestKeyboardHeight = null;
+      keyboardWasObservedOpen = false;
+      recoveryNudgeUsed = false;
+    };
+
+    const forceRelativeViewportNudge = () => {
+      if (recoveryNudgeUsed) return;
+
+      recoveryNudgeUsed = true;
+      const scrollX = window.scrollX;
+      const scrollY = window.scrollY;
+      recoveryScrollPosition = { x: scrollX, y: scrollY };
+      window.scrollTo(scrollX, scrollY + 1);
+      recoveryFrameId = window.requestAnimationFrame(() => {
+        window.scrollTo(scrollX, scrollY);
+        recoveryFrameId = null;
+        recoveryScrollPosition = null;
+      });
+    };
 
     // Único scroll "de documento" que debe existir: 0. Todo el scroll real
     // de la app vive dentro de <main> (ver purchase-events.ts) — nunca se
@@ -52,6 +101,14 @@ export default function App() {
       // documento válido.
       const isAuthRoute = document.documentElement.classList.contains('auth-route');
       const keyboardLikelyOpen = (window.innerHeight - height) > KEYBOARD_HEIGHT_THRESHOLD;
+
+      if (isIOS && keyboardLikelyOpen) {
+        keyboardWasObservedOpen = true;
+        smallestKeyboardHeight = smallestKeyboardHeight === null
+          ? height
+          : Math.min(smallestKeyboardHeight, height);
+      }
+
       if (!keyboardLikelyOpen && !isAuthRoute) {
         settleDocumentScroll();
         // WebKit a veces reporta la geometría final del viewport 1-2 frames
@@ -61,17 +118,39 @@ export default function App() {
         // todavía se está asentando.
         requestAnimationFrame(() => requestAnimationFrame(settleDocumentScroll));
       }
+
+      const viewportIsReset = Math.abs(vv?.offsetTop ?? 0) <= 1;
+      const keyboardHasClosed = keyboardWasObservedOpen
+        && smallestKeyboardHeight !== null
+        && height >= smallestKeyboardHeight + KEYBOARD_CLOSE_HEIGHT_DELTA
+        && viewportIsReset;
+      const viewportClosedIncomplete = keyboardHasClosed
+        && keyboardBaselineHeight !== null
+        && height < keyboardBaselineHeight - VIEWPORT_HEIGHT_TOLERANCE;
+
+      if (isIOS && viewportClosedIncomplete) {
+        forceRelativeViewportNudge();
+      }
+
+      if (keyboardHasClosed) {
+        keyboardWasObservedOpen = false;
+        smallestKeyboardHeight = null;
+        keyboardBaselineHeight = null;
+      }
     };
 
     updateAppHeight();
     window.addEventListener('resize', updateAppHeight);
     vv?.addEventListener('resize', updateAppHeight);
     vv?.addEventListener('scroll', updateAppHeight);
+    window.addEventListener('focusin', startKeyboardCycle, { passive: true });
 
     return () => {
+      cancelRecoveryNudge();
       window.removeEventListener('resize', updateAppHeight);
       vv?.removeEventListener('resize', updateAppHeight);
       vv?.removeEventListener('scroll', updateAppHeight);
+      window.removeEventListener('focusin', startKeyboardCycle);
     };
   }, []);
 
