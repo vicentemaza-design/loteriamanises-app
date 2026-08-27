@@ -18,7 +18,7 @@ import {
   NATIONAL_DRAW_CONFIG,
   DEFAULT_NATIONAL_SEARCH_STATE,
 } from '../national/mocks/national-showcase.mock';
-import type { NationalDrawId } from '../national/contracts/national-play.contract';
+import type { NationalCartLine, NationalDrawId } from '../national/contracts/national-play.contract';
 import { useNationalShowcase } from '../national/hooks/useNationalShowcase';
 import { useNationalCart } from '../national/hooks/useNationalCart';
 import { buildNationalCartDraftIntent } from '../national/application/build-national-cart-intent';
@@ -218,9 +218,9 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
     scrollMainToTop();
   });
 
-  const handlePersistNationalCart = () => {
-    if (nationalCartLines.length === 0) return;
-    const intent = buildNationalCartDraftIntent(game, nationalCartLines);
+  const persistNationalCartLines = (cartLines: NationalCartLine[], openReview = false) => {
+    if (cartLines.length === 0) return;
+    const intent = buildNationalCartDraftIntent(game, cartLines);
     const allDrafts: PlayDraft[] = [];
     let hasError = false;
 
@@ -252,6 +252,7 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
         selectedNationalDraw: { label: line.drawLabel },
         nationalSerie: line.serie,
         nationalFraccion: line.fraccion,
+        extraMetadata: { deliveryMode: line.deliveryMode },
       });
       allDrafts.push(...lineDrafts);
     });
@@ -263,15 +264,23 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
 
     const result = addDrafts(allDrafts);
     if (result.addedCount > 0) {
-      notifyAddedToCart(result, openLotteryReview, 'Décimo');
+      notifyAddedToCart(result, openReview ? undefined : openLotteryReview, 'Décimo');
       clearNationalCart();
+      if (openReview) {
+        setFlowScreen('config');
+        openLotteryReview();
+      }
     }
     if (result.duplicateCount > 0) {
       toast.error(result.duplicateCount === 1 ? '1 décimo ya estaba en tu sesión (omitido).' : `${result.duplicateCount} décimos ya estaban en tu sesión (omitidos).`);
     }
   };
 
-  // Aleatorio: añade los décimos al carrito local y va a la pantalla de números
+  const handlePersistNationalCart = () => {
+    persistNationalCartLines(nationalCartLines);
+  };
+
+  // Aleatorio: construye líneas completas y las persiste directamente en la sesión.
   const handleAleatorioConfirm = (sameCount: number, distinctCount: number) => {
     if (nationalShowcase.length === 0) {
       toast.error('No hay décimos disponibles en el escaparate demo.');
@@ -280,19 +289,33 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
 
     const drawId = isExplicitNationalProduct ? selectedNationalDrawId : 'especial';
     const usedNumbers = new Set<string>();
+    const randomLines: NationalCartLine[] = [];
+
+    const buildRandomLine = (ticket: (typeof nationalShowcase)[number], quantity: number): NationalCartLine | null => {
+      const clampedQuantity = Math.min(quantity, ticket.available);
+      if (clampedQuantity <= 0) return null;
+
+      return {
+        number: ticket.number,
+        serie: ticket.serie,
+        fraccion: ticket.fraccion,
+        drawId,
+        drawLabel: selectedNationalDraw.label,
+        drawDates: effectiveSelectedDrawDates,
+        quantity: clampedQuantity,
+        unitPrice: selectedNationalDraw.decimoPrice,
+        totalPrice: selectedNationalDraw.decimoPrice * clampedQuantity * drawsCount,
+        deliveryMode: selectedDelivery,
+        maxQuantity: ticket.available,
+      };
+    };
 
     if (sameCount > 0) {
       const lucky = nationalShowcase[0];
       if (lucky) {
         usedNumbers.add(lucky.number);
-        addOrUpdateNationalCartLine({
-          number: lucky.number, serie: lucky.serie, fraccion: lucky.fraccion,
-          drawId, drawLabel: selectedNationalDraw.label,
-          drawDates: effectiveSelectedDrawDates, quantity: sameCount,
-          unitPrice: selectedNationalDraw.decimoPrice,
-          totalPrice: selectedNationalDraw.decimoPrice * sameCount * drawsCount,
-          deliveryMode: selectedDelivery, maxQuantity: lucky.available,
-        });
+        const line = buildRandomLine(lucky, sameCount);
+        if (line) randomLines.push(line);
       }
     }
 
@@ -301,17 +324,11 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
       if (available.length === 0) break;
       const ticket = available[Math.floor(Math.random() * available.length)];
       usedNumbers.add(ticket.number);
-      addOrUpdateNationalCartLine({
-        number: ticket.number, serie: ticket.serie, fraccion: ticket.fraccion,
-        drawId, drawLabel: selectedNationalDraw.label,
-        drawDates: effectiveSelectedDrawDates, quantity: 1,
-        unitPrice: selectedNationalDraw.decimoPrice,
-        totalPrice: selectedNationalDraw.decimoPrice * drawsCount,
-        deliveryMode: selectedDelivery, maxQuantity: ticket.available,
-      });
+      const line = buildRandomLine(ticket, 1);
+      if (line) randomLines.push(line);
     }
 
-    setFlowScreen('manual');
+    persistNationalCartLines(randomLines, true);
   };
 
   const handlePreFlowConfirm = (delivery: DeliveryMode, method: NationalMethod) => {
