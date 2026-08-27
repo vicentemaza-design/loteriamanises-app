@@ -30,6 +30,25 @@ export function PrivateLayout() {
     }
   }, [location.pathname]);
 
+  // CONFIRMADO con Web Inspector remoto en dispositivo real (rama
+  // debug/ios-keyboard-scroll-recovery): con .app-shell/<main> ya
+  // alineados exactamente a innerHeight (812), sigue quedando una franja
+  // de ~62px hasta el borde físico real (874) que NINGÚN elemento
+  // position:fixed puede alcanzar — es un límite de WebKit en esta PWA
+  // instalada (viewport-fit=cover), no algo corregible ajustando alturas.
+  // Esos px "inalcanzables" muestran el fondo base de <html>, que sí
+  // llega al borde físico real. Se colorea ese fondo del mismo azul que
+  // BottomNav SOLO cuando la barra está visible, para que la franja se
+  // perciba como parte de ella en vez de un hueco — no se puede hacer que
+  // BottomNav "llegue" físicamente ahí, así que se iguala el color.
+  React.useEffect(() => {
+    const showsNav = !isLocked && !hideNav;
+    document.documentElement.classList.toggle('has-bottom-nav', showsNav);
+    return () => {
+      document.documentElement.classList.remove('has-bottom-nav');
+    };
+  }, [isLocked, hideNav]);
+
   return (
     <PlaySessionProvider>
       <div className="app-shell h-dvh font-sans text-manises-blue flex flex-col overflow-hidden">

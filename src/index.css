@@ -410,6 +410,19 @@
     overflow: hidden;
   }
 
+  /* CONFIRMADO con Web Inspector remoto en dispositivo real (rama
+     debug/ios-keyboard-scroll-recovery): con .app-shell/<main> alineados
+     exactamente a innerHeight, queda una franja de ~62px hasta el borde
+     físico real que ningún position:fixed puede alcanzar (límite de
+     WebKit en esta PWA instalada con viewport-fit=cover) — se ve el
+     fondo de <html>, que sí llega hasta ahí. Se colorea igual que
+     BottomNav solo mientras está visible (clase puesta por
+     PrivateLayout), para que esa franja inalcanzable se perciba como
+     parte de la barra en vez de un hueco. */
+  html.has-bottom-nav {
+    background: #0a4792;
+  }
+
   /* EXPERIMENTO (rama debug/ios-keyboard-scroll-recovery, no en main):
      body vuelve a position:fixed/inset:0/overflow:hidden — el modelo que
      existió brevemente el 26/08 (commit f5819a3) y que, según el propio
