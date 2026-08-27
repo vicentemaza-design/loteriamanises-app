@@ -120,6 +120,65 @@ const QUINIELA_CALENDAR: Record<string, QuinielaFixture[]> = {
 
 };
 
+// ── DEMO — jornada sintética ─────────────────────────────────
+// `getUpcomingJornadaDates` (más abajo) rellena fechas sintéticas en DEMO
+// cuando `from` cae más allá de la última jornada real del calendario de
+// arriba. Sin partidos para esas fechas, Quiniela se quedaba solo con el
+// Pleno al 15. Estos equipos son explícitamente ficticios de demo — nunca
+// se reutiliza una jornada real haciéndola pasar por la fecha sintética.
+// Solo se usan cuando RUNTIME_CONFIG.demoEnabled es true; en producción
+// real getFixturesForDate nunca los genera (ver más abajo).
+const DEMO_TEAM_POOL = [
+  'CD Manises', 'Unión Turia', 'Atlético Alboraya', 'Real Paterna',
+  'CF Mislata', 'Deportivo Quart', 'Torrent CF', 'CD Catarroja',
+  'Alfafar UD', 'Silla FC', 'Massanassa CF', 'CD Picassent',
+  'Ribarroja CF', 'Xirivella UD', 'CD Aldaia', 'Manises Atlético',
+  'Turia FC', 'CD Horta', 'Camp de Túria', 'Vega Baja CF',
+  'Costa Blanca FC', 'CD Marina Alta', 'Ribera Baixa CF', 'Huerta CF',
+  'CD Els Poblets', 'Serranía FC', 'CD Requena', 'Utiel CF',
+  'CD Buñol', 'Chiva Atlético',
+];
+
+// Hash + PRNG deterministas: la misma fecha (`key`) siempre produce el
+// mismo seed y por tanto el mismo barajado — nada de Math.random() en
+// render, para que la jornada sintética no cambie entre renders/recargas.
+function hashDateKey(key: string): number {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = (Math.imul(hash, 31) + key.charCodeAt(i)) | 0;
+  }
+  return hash >>> 0;
+}
+
+function mulberry32(seed: number) {
+  let state = seed;
+  return () => {
+    state = (state + 0x6d2b79f5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seededShuffle<T>(items: T[], seed: number): T[] {
+  const random = mulberry32(seed);
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function buildDemoFixturesForDate(key: string): QuinielaFixture[] {
+  const shuffled = seededShuffle(DEMO_TEAM_POOL, hashDateKey(key));
+  const fixtures: QuinielaFixture[] = [];
+  for (let i = 0; i < 15; i++) {
+    fixtures.push({ id: i + 1, home: shuffled[i * 2], away: shuffled[i * 2 + 1] });
+  }
+  return fixtures;
+}
+
 /**
  * Devuelve los partidos de la jornada para la fecha indicada.
  * La fecha puede ser cualquier día (domingo, miércoles, especial mundial…).
@@ -129,10 +188,20 @@ const QUINIELA_CALENDAR: Record<string, QuinielaFixture[]> = {
  */
 export function getFixturesForDate(date: Date): QuinielaFixture[] {
   const key = date.toISOString().slice(0, 10);
+  const real = QUINIELA_CALENDAR[key];
+  if (real) {
+    return real;
+  }
+
   // Una jornada desconocida no puede reutilizar partidos de otra fecha.
-  // La UI ya contempla el estado vacío; en demo también evita presentar
-  // una jornada histórica como si correspondiera a la fecha solicitada.
-  return QUINIELA_CALENDAR[key] ?? [];
+  // En producción real no se fabrica nada — la UI ya contempla el estado
+  // vacío. Solo en demo se generan fixtures sintéticos (ver arriba) para
+  // las fechas que getUpcomingJornadaDates rellena más allá del calendario.
+  if (!RUNTIME_CONFIG.demoEnabled) {
+    return [];
+  }
+
+  return buildDemoFixturesForDate(key);
 }
 
 /**
