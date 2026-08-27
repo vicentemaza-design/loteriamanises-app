@@ -20,6 +20,8 @@ interface KeyboardDebugEntry {
 export default function App() {
   const debugLogRef = useRef<KeyboardDebugEntry[]>([]);
   const [copyLabel, setCopyLabel] = useState('Copiar diagnóstico');
+  const [showFixButton, setShowFixButton] = useState(false);
+  const fixScrollPositionRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const vv = window.visualViewport;
@@ -55,36 +57,27 @@ export default function App() {
       smallestKeyboardHeight = null;
       keyboardWasObservedOpen = false;
       recoveryNudgeUsed = false;
+      setShowFixButton(false);
       pushDebug('baseline-captured', { height });
     };
 
-    // Tercer experimento. Los dos anteriores (scrollTo(y,y+1)->scrollTo(y,y)
-    // y el reflow forzado vía padding+offsetHeight) se demostraron en
-    // dispositivo real: ambos SE EJECUTAN pero NINGUNO hace que WebKit
-    // recomponga el viewport. Esta variante no toca scroll ni layout de
-    // nuestros elementos — ataca directamente el propio cálculo del
-    // viewport reescribiendo momentáneamente <meta name="viewport"> para
-    // forzar a WebKit a reparsearlo y recalcular desde cero.
-    const forceViewportMetaNudge = () => {
+    // Cuarto experimento. Los tres anteriores (scroll, reflow forzado,
+    // reparse de meta viewport) se demostraron en dispositivo real: los
+    // tres SE EJECUTAN pero NINGUNO hace que WebKit recomponga el
+    // viewport, siempre disparados automáticamente desde un evento de
+    // resize. Esta variante prueba una hipótesis distinta: que WebKit solo
+    // permite la recomposición dentro de una activación de usuario real
+    // (un tap), no en código disparado automáticamente. En vez de
+    // intentarlo solos, mostramos un botón y el propio nudge de scroll se
+    // dispara dentro del onClick real del usuario (ver handleManualFix).
+    const showManualFixButton = () => {
       if (recoveryNudgeUsed) {
-        pushDebug('meta-skip-already-used');
+        pushDebug('manual-fix-skip-already-shown');
         return;
       }
-
-      const meta = document.querySelector('meta[name="viewport"]');
-      if (!meta) {
-        pushDebug('meta-not-found');
-        return;
-      }
-
       recoveryNudgeUsed = true;
-      const original = meta.getAttribute('content') ?? '';
-      pushDebug('meta-attempt', { original });
-      meta.setAttribute('content', `${original}, maximum-scale=1.0`);
-      requestAnimationFrame(() => {
-        meta.setAttribute('content', original);
-        pushDebug('meta-restore-complete');
-      });
+      pushDebug('manual-fix-button-shown');
+      setShowFixButton(true);
     };
 
     // Único scroll "de documento" que debe existir: 0. Todo el scroll real
@@ -166,7 +159,7 @@ export default function App() {
       }
 
       if (isIOS && viewportClosedIncomplete) {
-        forceViewportMetaNudge();
+        showManualFixButton();
       }
 
       if (keyboardHasClosed) {
@@ -189,6 +182,29 @@ export default function App() {
       window.removeEventListener('focusin', startKeyboardCycle);
     };
   }, []);
+
+  const pushDebugFromComponent = (event: string, extra?: Record<string, unknown>) => {
+    const log = debugLogRef.current;
+    log.push({ t: Math.round(performance.now()), event, ...extra });
+    if (log.length > 300) log.shift();
+  };
+
+  // Disparado desde un tap real del usuario (onClick), no automáticamente
+  // desde un listener de resize — esto es justo lo que distingue este
+  // cuarto experimento de los tres anteriores.
+  const handleManualFix = () => {
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    fixScrollPositionRef.current = { x: scrollX, y: scrollY };
+    pushDebugFromComponent('manual-fix-tap-attempt', { scrollX, scrollY });
+    window.scrollTo(scrollX, scrollY + 1);
+    requestAnimationFrame(() => {
+      window.scrollTo(scrollX, scrollY);
+      fixScrollPositionRef.current = null;
+      pushDebugFromComponent('manual-fix-tap-restore-complete', { scrollX, scrollY });
+    });
+    setShowFixButton(false);
+  };
 
   const handleCopyDebugLog = async () => {
     const payload = {
@@ -251,6 +267,30 @@ export default function App() {
       >
         {copyLabel}
       </button>
+
+      {showFixButton && (
+        <button
+          type="button"
+          onClick={handleManualFix}
+          style={{
+            position: 'absolute',
+            left: '50%',
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 100px)',
+            transform: 'translateX(-50%)',
+            zIndex: 999999,
+            fontSize: 13,
+            fontWeight: 800,
+            padding: '10px 18px',
+            borderRadius: 999,
+            background: '#f7b500',
+            color: '#0a4792',
+            border: 'none',
+            boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
+          }}
+        >
+          Toca para corregir
+        </button>
+      )}
     </ErrorBoundary>
   );
 }
