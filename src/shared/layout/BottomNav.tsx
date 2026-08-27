@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Home, ViewGrid, Trophy, JournalPage, User, NavArrowRight, CreditCard } from 'iconoir-react/regular';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn, formatCurrency } from '@/shared/lib/utils';
@@ -14,12 +14,10 @@ const navItems = [
   { icon: User,        label: 'Perfil',      path: '/profile' },
 ];
 
-const CART_SECTION_REM = 3; // approx height of the compact cart buttons row
-const NAV_BASE_REM = 5;
-
 export function BottomNav() {
   const location = useLocation();
   const { gameDrafts, lotteryDrafts, openGameReview, openLotteryReview } = usePlaySession();
+  const navRef = useRef<HTMLElement | null>(null);
 
   const gamesTotal = gameDrafts.reduce((s, d) => s + d.totalPrice, 0);
   const lotteryTotal = lotteryDrafts.reduce((s, d) => s + d.totalPrice, 0);
@@ -27,23 +25,34 @@ export function BottomNav() {
   const hasLottery = lotteryDrafts.length > 0;
   const hasCart = hasGames || hasLottery;
 
-  // Ajusta --nav-height para que pb-nav-safe tenga siempre el espacio correcto
+  // EXPERIMENTO (rama debug/ios-keyboard-scroll-recovery): --nav-height
+  // dimensionaba pb-nav-safe con una fórmula fija en rem (NAV_BASE_REM=5)
+  // que no coincidía con la altura real renderizada del nav (la fila de
+  // iconos es h-14=3.5rem) — un desfase de ~24px ya detectado antes en
+  // esta misma sesión (barra de pago de Mis abonos). Ese sobrante
+  // normalmente queda oculto porque BottomNav, en bottom:0, lo tapa con su
+  // propio fondo opaco — pero si su posición/altura real ya no coincide
+  // con esa reserva (posible tras el bloqueo de body:fixed), el sobrante
+  // queda al descubierto como franja blanca. Aquí se mide la altura REAL
+  // renderizada del nav (ResizeObserver) en vez de calcularla con una
+  // fórmula fija, para que pb-nav-safe reserve exactamente lo que el nav
+  // ocupa, ni más ni menos.
   useEffect(() => {
-    const totalRem = hasCart ? NAV_BASE_REM + CART_SECTION_REM : NAV_BASE_REM;
-    document.documentElement.style.setProperty(
-      '--nav-height',
-      `calc(${totalRem}rem + env(safe-area-inset-bottom, 0px))`
-    );
+    const node = navRef.current;
+    if (!node) return;
+    const update = () => {
+      document.documentElement.style.setProperty('--nav-height', `${node.getBoundingClientRect().height}px`);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(node);
+    return () => observer.disconnect();
   }, [hasCart]);
 
   return (
     <nav
-      // EXPERIMENTO TEMPORAL "PLAN B" (rama debug/ios-keyboard-scroll-recovery,
-      // no mergear a main): bottom:-64px en vez de bottom:0, solo para
-      // observar en dispositivo real si desplazar el nav 64px hacia abajo
-      // cierra la franja blanca o si el hueco reaparece igual más abajo
-      // (lo que indicaría que el límite lo pone WebKit, no nuestro CSS).
-      className="fixed bottom-[-64px] left-0 right-0 z-60 bg-[#0a4792]/80 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
+      ref={navRef}
+      className="fixed bottom-0 left-0 right-0 z-60 bg-[#0a4792]/80 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
       aria-label="Navegación principal"

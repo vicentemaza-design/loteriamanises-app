@@ -207,8 +207,13 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+  /* EXPERIMENTO (rama debug/ios-keyboard-scroll-recovery): antes era un
+     valor fijo (5rem + safe-area) totalmente desconectado de --nav-height
+     — BottomNav.tsx ya mide su altura real (incluye su propio safe-area)
+     y la escribe en --nav-height; usarla aquí evita que <main> reserve más
+     o menos espacio del que el nav realmente ocupa. */
   .pb-nav-safe {
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: var(--nav-height, calc(5rem + env(safe-area-inset-bottom, 0px)));
   }
   .pb-sheet-action-safe {
     padding-bottom: calc(var(--nav-height) + 1rem);
