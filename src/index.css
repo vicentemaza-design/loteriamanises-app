@@ -435,11 +435,7 @@
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     position: fixed;
     inset: 0;
-    /* EXPERIMENTO TEMPORAL EN RAMA (debug/ios-keyboard-scroll-recovery,
-       no mergear a main): colorear cada capa para localizar en el
-       dispositivo real qué elemento pinta la franja blanca. Revertir
-       tras la prueba. */
-    background: red !important;
+    background: var(--app-bg) !important;
     overflow: hidden;
     overscroll-behavior-y: none;
     width: 100%;
@@ -451,8 +447,7 @@
 
   #root {
     min-height: 100dvh;
-    /* EXPERIMENTO TEMPORAL — ver nota en body. */
-    background: green !important;
+    background: var(--app-bg) !important;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -460,17 +455,10 @@
 
   /* contenedor principal de tu app */
   .app-shell,
-  .App {
-    min-height: 100dvh;
-    /* EXPERIMENTO TEMPORAL — ver nota en body. */
-    background: blue !important;
-    box-sizing: border-box;
-  }
-
+  .App,
   main {
     min-height: 100dvh;
-    /* EXPERIMENTO TEMPORAL — ver nota en body. */
-    background: yellow !important;
+    background: var(--app-bg) !important;
     box-sizing: border-box;
   }
 

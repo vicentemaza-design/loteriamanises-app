@@ -57,6 +57,18 @@ export function BottomNav() {
       role="navigation"
       aria-label="Navegación principal"
     >
+      {/* EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
+          mergear a main): confirmado con el experimento de colores por
+          capas que la franja blanca era <body> asomando justo debajo de
+          este <nav> — bottom:0 no llega al borde físico real de la
+          pantalla en esta PWA instalada (imprecisión de WebKit al
+          resolver la posición fija contra el viewport en standalone,
+          ver bugs.webkit.org #254868/#237961). En vez de mover el propio
+          nav (eso desplazaría --nav-height y el padding real de <main>),
+          se añade un relleno absoluto por debajo de su borde, del mismo
+          color, que cubre cualquier hueco residual sin alterar la altura
+          medida del nav ni el contenido visible. */}
+      <div aria-hidden="true" className="absolute inset-x-0 top-full h-16 bg-[#0a4792]" />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
       {/* Sección de cestas — aparece encima de los iconos de nav */}
