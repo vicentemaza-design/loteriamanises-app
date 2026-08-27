@@ -56,14 +56,25 @@ export function PrivateLayout() {
               </div>
             </main>
 
-            {!hideNav && <BottomNav />}
-
             {/* Paneles de cesta (flotan sobre todo el layout) */}
             <GamesCartPanel />
             <LotteryCartPanel />
           </>
         )}
       </div>
+
+      {/* EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
+          mergear a main): BottomNav fuera de .app-shell a propósito.
+          .app-shell tiene overflow-hidden y se dimensiona con
+          dvh/lvh (aproximado, puede quedarse corto un frame en iOS real);
+          al ser BottomNav descendiente DOM suyo, overflow-hidden lo
+          recorta por pintura aunque su containing block siga siendo el
+          viewport (esto es independiente de containing block — un
+          overflow-hidden recorta a CUALQUIER descendiente, incluido uno
+          fixed). Sacándolo aquí, solo queda recortado por <body>, que se
+          resuelve con position:fixed;inset:0 siempre exacto contra el
+          viewport real, sin la imprecisión de dvh/lvh. */}
+      {!isLocked && !hideNav && <BottomNav />}
     </PlaySessionProvider>
   );
 }
