@@ -20,8 +20,6 @@ interface KeyboardDebugEntry {
 export default function App() {
   const debugLogRef = useRef<KeyboardDebugEntry[]>([]);
   const [copyLabel, setCopyLabel] = useState('Copiar diagnóstico');
-  const [showFixButton, setShowFixButton] = useState(false);
-  const fixScrollPositionRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const vv = window.visualViewport;
@@ -57,27 +55,36 @@ export default function App() {
       smallestKeyboardHeight = null;
       keyboardWasObservedOpen = false;
       recoveryNudgeUsed = false;
-      setShowFixButton(false);
       pushDebug('baseline-captured', { height });
     };
 
-    // Cuarto experimento. Los tres anteriores (scroll, reflow forzado,
-    // reparse de meta viewport) se demostraron en dispositivo real: los
-    // tres SE EJECUTAN pero NINGUNO hace que WebKit recomponga el
-    // viewport, siempre disparados automáticamente desde un evento de
-    // resize. Esta variante prueba una hipótesis distinta: que WebKit solo
-    // permite la recomposición dentro de una activación de usuario real
-    // (un tap), no en código disparado automáticamente. En vez de
-    // intentarlo solos, mostramos un botón y el propio nudge de scroll se
-    // dispara dentro del onClick real del usuario (ver handleManualFix).
-    const showManualFixButton = () => {
+    // Quinto experimento. Los cuatro anteriores (scroll automático, reflow
+    // de padding, reparse de meta viewport, y el mismo scroll disparado
+    // dentro de un tap real del usuario) se demostraron en dispositivo
+    // real: los cuatro SE EJECUTAN pero NINGUNO hace que WebKit recomponga
+    // el viewport. Esta variante es una invalidación de layout mucho más
+    // agresiva que el reflow de padding (experimento 2): saca el <body>
+    // entero del árbol de renderizado (display:none) y lo reinserta desde
+    // cero, en vez de solo recalcular una propiedad. Referencia:
+    // https://dev.to/cederhook/fixing-the-ios-standalone-pwa-keyboard-bug-that-shrinks-your-viewport-for-good-63d
+    const forceDisplayToggleNudge = () => {
       if (recoveryNudgeUsed) {
-        pushDebug('manual-fix-skip-already-shown');
+        pushDebug('display-toggle-skip-already-used');
         return;
       }
+
       recoveryNudgeUsed = true;
-      pushDebug('manual-fix-button-shown');
-      setShowFixButton(true);
+      pushDebug('display-toggle-attempt');
+      const body = document.body;
+      const previousDisplay = body.style.display;
+      const previousOverflow = body.style.overflow;
+      body.style.display = 'none';
+      body.style.overflow = 'hidden';
+      void body.offsetHeight; // fuerza el primer reflow síncrono (body fuera del árbol)
+      body.style.display = previousDisplay;
+      body.style.overflow = previousOverflow;
+      void body.offsetHeight; // fuerza el segundo reflow síncrono (body reinsertado)
+      pushDebug('display-toggle-restore-complete');
     };
 
     // Único scroll "de documento" que debe existir: 0. Todo el scroll real
@@ -159,7 +166,7 @@ export default function App() {
       }
 
       if (isIOS && viewportClosedIncomplete) {
-        showManualFixButton();
+        forceDisplayToggleNudge();
       }
 
       if (keyboardHasClosed) {
@@ -182,29 +189,6 @@ export default function App() {
       window.removeEventListener('focusin', startKeyboardCycle);
     };
   }, []);
-
-  const pushDebugFromComponent = (event: string, extra?: Record<string, unknown>) => {
-    const log = debugLogRef.current;
-    log.push({ t: Math.round(performance.now()), event, ...extra });
-    if (log.length > 300) log.shift();
-  };
-
-  // Disparado desde un tap real del usuario (onClick), no automáticamente
-  // desde un listener de resize — esto es justo lo que distingue este
-  // cuarto experimento de los tres anteriores.
-  const handleManualFix = () => {
-    const scrollX = window.scrollX;
-    const scrollY = window.scrollY;
-    fixScrollPositionRef.current = { x: scrollX, y: scrollY };
-    pushDebugFromComponent('manual-fix-tap-attempt', { scrollX, scrollY });
-    window.scrollTo(scrollX, scrollY + 1);
-    requestAnimationFrame(() => {
-      window.scrollTo(scrollX, scrollY);
-      fixScrollPositionRef.current = null;
-      pushDebugFromComponent('manual-fix-tap-restore-complete', { scrollX, scrollY });
-    });
-    setShowFixButton(false);
-  };
 
   const handleCopyDebugLog = async () => {
     const payload = {
@@ -267,30 +251,6 @@ export default function App() {
       >
         {copyLabel}
       </button>
-
-      {showFixButton && (
-        <button
-          type="button"
-          onClick={handleManualFix}
-          style={{
-            position: 'absolute',
-            left: '50%',
-            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 100px)',
-            transform: 'translateX(-50%)',
-            zIndex: 999999,
-            fontSize: 13,
-            fontWeight: 800,
-            padding: '10px 18px',
-            borderRadius: 999,
-            background: '#f7b500',
-            color: '#0a4792',
-            border: 'none',
-            boxShadow: '0 6px 20px rgba(0,0,0,0.3)',
-          }}
-        >
-          Toca para corregir
-        </button>
-      )}
     </ErrorBoundary>
   );
 }
