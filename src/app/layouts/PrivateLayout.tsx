@@ -46,17 +46,32 @@ export function PrivateLayout() {
             <main
               ref={mainRef}
               className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scrollbar-hide ${
-                hideNav ? 'pt-0 pb-0' : 'pb-nav-safe'
+                hideNav ? 'pt-0 pb-0' : ''
               }`}
               style={!hideNav ? { paddingTop: 'var(--header-height)' } : undefined}
             >
               <div className="absolute inset-x-0 top-0 h-96 section-wash pointer-events-none opacity-40" />
-              <div key={location.pathname} className="relative w-full min-h-full">
-                <Outlet />
-              </div>
+              {hideNav ? (
+                <div key={location.pathname} className="relative w-full min-h-full">
+                  <Outlet />
+                </div>
+              ) : (
+                // Experimento (Vía A1): BottomNav pasa de hermano de <main>
+                // (fixed contra el viewport) a hijo suyo (sticky contra el
+                // propio scroll de <main>). El wrapper flex + min-h-full
+                // asegura que, en páginas cortas, el contenido crece para
+                // empujar el nav hasta el fondo visible; en páginas largas,
+                // sticky lo mantiene pegado al fondo del scroll de <main>
+                // en vez de <main> completo (ya no hace falta pb-nav-safe:
+                // el nav reserva su propio espacio real en el flujo).
+                <div className="flex flex-col min-h-full">
+                  <div key={location.pathname} className="relative w-full flex-1">
+                    <Outlet />
+                  </div>
+                  <BottomNav />
+                </div>
+              )}
             </main>
-
-            {!hideNav && <BottomNav />}
 
             {/* Paneles de cesta (flotan sobre todo el layout) */}
             <GamesCartPanel />
