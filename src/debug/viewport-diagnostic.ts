@@ -142,8 +142,8 @@ if (isViewportDiagnosticEnabled()) {
   button.textContent = 'Copiar diagnóstico';
   button.setAttribute('aria-label', 'Copiar diagnóstico del viewport');
   button.style.position = 'absolute';
-  button.style.top = '8px';
-  button.style.right = '8px';
+  button.style.right = 'max(12px, calc(env(safe-area-inset-right, 0px) + 12px))';
+  button.style.bottom = 'calc(var(--nav-height) + 12px)';
   button.style.zIndex = '2147483647';
   button.style.padding = '6px 8px';
   button.style.border = '1px solid #0a4792';
