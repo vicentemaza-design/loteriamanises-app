@@ -3,6 +3,10 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import { registerGlobalErrorHandlers } from '@/shared/lib/globalErrorHandlers';
 import './index.css';
+// AUTOPSIA AISLADA (rama debug/ios-keyboard-scroll-recovery, no mergear a
+// main): módulo de solo observación para la franja blanca, montado fuera
+// del árbol de React. Ver src/debug/franja-diagnostic.ts.
+import './debug/franja-diagnostic';
 
 registerGlobalErrorHandlers();
 
