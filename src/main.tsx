@@ -3,6 +3,9 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import { registerGlobalErrorHandlers } from '@/shared/lib/globalErrorHandlers';
 import './index.css';
+// AUTOPSIA AISLADA (rama debug/ios-keyboard-scroll-recovery, no mergear a
+// main): solo activa con ?viewportDebug=1. Ver src/debug/containing-block-check.ts.
+import './debug/containing-block-check';
 
 registerGlobalErrorHandlers();
 
