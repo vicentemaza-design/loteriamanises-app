@@ -124,19 +124,18 @@ const QUINIELA_CALENDAR: Record<string, QuinielaFixture[]> = {
 // `getUpcomingJornadaDates` (más abajo) rellena fechas sintéticas en DEMO
 // cuando `from` cae más allá de la última jornada real del calendario de
 // arriba. Sin partidos para esas fechas, Quiniela se quedaba solo con el
-// Pleno al 15. Estos equipos son explícitamente ficticios de demo — nunca
-// se reutiliza una jornada real haciéndola pasar por la fecha sintética.
+// Pleno al 15. Usamos nombres reales de clubes de LaLiga EA Sports 2026/27
+// para que la demo resulte creíble — pero estos NO son cruces oficiales:
+// son combinaciones plausibles generadas por fecha, nunca una jornada real
+// disfrazada de fecha sintética ni el calendario oficial de la competición.
 // Solo se usan cuando RUNTIME_CONFIG.demoEnabled es true; en producción
 // real getFixturesForDate nunca los genera (ver más abajo).
 const DEMO_TEAM_POOL = [
-  'CD Manises', 'Unión Turia', 'Atlético Alboraya', 'Real Paterna',
-  'CF Mislata', 'Deportivo Quart', 'Torrent CF', 'CD Catarroja',
-  'Alfafar UD', 'Silla FC', 'Massanassa CF', 'CD Picassent',
-  'Ribarroja CF', 'Xirivella UD', 'CD Aldaia', 'Manises Atlético',
-  'Turia FC', 'CD Horta', 'Camp de Túria', 'Vega Baja CF',
-  'Costa Blanca FC', 'CD Marina Alta', 'Ribera Baixa CF', 'Huerta CF',
-  'CD Els Poblets', 'Serranía FC', 'CD Requena', 'Utiel CF',
-  'CD Buñol', 'Chiva Atlético',
+  'Real Madrid', 'FC Barcelona', 'Atlético de Madrid', 'Athletic Club',
+  'Real Sociedad', 'Valencia CF', 'Villarreal CF', 'Sevilla FC',
+  'Real Betis', 'Celta', 'CA Osasuna', 'RCD Espanyol',
+  'Getafe CF', 'Rayo Vallecano', 'Deportivo Alavés', 'Levante UD',
+  'Elche CF', 'Málaga CF', 'Racing Club', 'RC Deportivo',
 ];
 
 // Hash + PRNG deterministas: la misma fecha (`key`) siempre produce el
@@ -171,10 +170,41 @@ function seededShuffle<T>(items: T[], seed: number): T[] {
 }
 
 function buildDemoFixturesForDate(key: string): QuinielaFixture[] {
-  const shuffled = seededShuffle(DEMO_TEAM_POOL, hashDateKey(key));
+  const seed = hashDateKey(key);
+  const matchCount = 15;
+  const slotsNeeded = matchCount * 2;
+
+  // 15 partidos necesitan 30 "huecos" de equipo, pero el pool solo tiene
+  // 20 clubes reales — algunos repiten dentro de la misma jornada (nunca
+  // dos veces en el MISMO partido, ver reparación de choques más abajo).
+  // Qué equipos repiten se decide con un seed derivado, para que también
+  // varíe de una jornada sintética a otra, no siempre los mismos 10.
+  const extraCount = slotsNeeded - DEMO_TEAM_POOL.length;
+  const extras = extraCount > 0
+    ? seededShuffle(DEMO_TEAM_POOL, seed + 1).slice(0, extraCount)
+    : [];
+  const slots = seededShuffle([...DEMO_TEAM_POOL, ...extras], seed);
+
+  // Reparación determinista: si un partido enfrentaría a un equipo consigo
+  // mismo (posible al repetir equipos para llegar a 30 huecos), se
+  // intercambia con el siguiente hueco que no genere el mismo choque.
+  for (let i = 0; i < matchCount; i++) {
+    const homeIdx = i * 2;
+    const awayIdx = i * 2 + 1;
+    if (slots[homeIdx] === slots[awayIdx]) {
+      let swapIdx = awayIdx + 1;
+      while (swapIdx < slots.length && slots[swapIdx] === slots[homeIdx]) {
+        swapIdx += 1;
+      }
+      if (swapIdx < slots.length) {
+        [slots[awayIdx], slots[swapIdx]] = [slots[swapIdx], slots[awayIdx]];
+      }
+    }
+  }
+
   const fixtures: QuinielaFixture[] = [];
-  for (let i = 0; i < 15; i++) {
-    fixtures.push({ id: i + 1, home: shuffled[i * 2], away: shuffled[i * 2 + 1] });
+  for (let i = 0; i < matchCount; i++) {
+    fixtures.push({ id: i + 1, home: slots[i * 2], away: slots[i * 2 + 1] });
   }
   return fixtures;
 }
