@@ -3,7 +3,7 @@
   "name": "Lotería Manises",
   "short_name": "Manises",
   "description": "Compra tus loterías online con seguridad.",
-  "start_url": "/",
+  "start_url": "/?viewportDebug=1",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
