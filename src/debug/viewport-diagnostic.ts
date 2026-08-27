@@ -16,8 +16,12 @@ if (isViewportDiagnosticEnabled()) {
 
   const snapshots: Snapshot[] = [];
   const visualViewport = window.visualViewport;
+  const VIEWPORT_HEIGHT_TOLERANCE = 8;
   let keyboardCycleActive = false;
+  let keyboardWasObservedOpen = false;
+  let keyboardBaselineHeight: number | null = null;
   let awaitingRecoveryGesture = false;
+  let recoveryGestureObserved = false;
 
   const toRect = (element: Element | null): RectSnapshot | null => {
     if (!element) return null;
@@ -184,43 +188,71 @@ if (isViewportDiagnosticEnabled()) {
 
   document.addEventListener('focusin', () => {
     keyboardCycleActive = true;
+    keyboardWasObservedOpen = false;
+    keyboardBaselineHeight = visualViewport?.height ?? window.innerHeight;
     awaitingRecoveryGesture = false;
+    recoveryGestureObserved = false;
     record('focusin', 'A');
   });
 
   document.addEventListener('focusout', () => {
     record('focusout');
-    if (keyboardCycleActive) {
-      requestAnimationFrame(() => {
-        if (!likelyKeyboardOpen()) {
-          awaitingRecoveryGesture = true;
-          record('keyboard-closed-observed', 'B');
-        }
-      });
-    }
   });
 
   window.addEventListener('resize', () => record('window.resize'));
   window.addEventListener('scroll', () => record('window.scroll'));
 
-  visualViewport?.addEventListener('resize', () => record('visualViewport.resize'));
+  visualViewport?.addEventListener('resize', () => {
+    record('visualViewport.resize');
+
+    if (!keyboardCycleActive || !visualViewport || awaitingRecoveryGesture) return;
+
+    if (likelyKeyboardOpen()) {
+      keyboardWasObservedOpen = true;
+      return;
+    }
+
+    const viewportIsReset = Math.abs(visualViewport.offsetTop) <= 1;
+    if (!keyboardWasObservedOpen || !viewportIsReset) return;
+
+    const viewportClosedIncomplete = keyboardBaselineHeight !== null
+      && visualViewport.height < keyboardBaselineHeight - VIEWPORT_HEIGHT_TOLERANCE;
+
+    if (viewportClosedIncomplete) {
+      awaitingRecoveryGesture = true;
+      recoveryGestureObserved = false;
+      record('keyboard-closed-incomplete-viewport', 'B');
+      return;
+    }
+
+    keyboardCycleActive = false;
+    keyboardWasObservedOpen = false;
+    keyboardBaselineHeight = null;
+    record('keyboard-closed-restored');
+  });
   visualViewport?.addEventListener('scroll', () => record('visualViewport.scroll'));
 
   document.addEventListener('touchstart', () => {
     record('touchstart', awaitingRecoveryGesture ? 'B' : undefined);
   }, { passive: true });
 
-  document.addEventListener('touchmove', () => record('touchmove'), { passive: true });
+  document.addEventListener('touchmove', () => {
+    if (awaitingRecoveryGesture) recoveryGestureObserved = true;
+    record('touchmove');
+  }, { passive: true });
 
   document.addEventListener('touchend', () => {
-    if (awaitingRecoveryGesture) {
+    if (awaitingRecoveryGesture && recoveryGestureObserved) {
       record('touchend', 'C');
       requestAnimationFrame(() => record('touchend-raf', 'C'));
       awaitingRecoveryGesture = false;
+      recoveryGestureObserved = false;
       keyboardCycleActive = false;
+      keyboardWasObservedOpen = false;
+      keyboardBaselineHeight = null;
       return;
     }
 
-    record('touchend');
+    record('touchend', awaitingRecoveryGesture ? 'B' : undefined);
   }, { passive: true });
 }
