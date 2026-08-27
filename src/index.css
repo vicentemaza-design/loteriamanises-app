@@ -268,16 +268,20 @@
   .app-shell {
     background: var(--shell-gradient);
     position: relative;
-    /* Red de seguridad para un bug conocido de iOS Safari: cuando la barra
-       de Safari se colapsa/expande tras una interacción (tap/foco, no solo
-       scroll), el valor en vivo de 100dvh a veces tarda en repintarse,
-       dejando el shell momentáneamente más corto que el viewport real y
-       revelando el fondo de <body> (--app-bg, casi blanco) por debajo — la
-       "franja blanca" que desaparece al hacer scroll (eso sí fuerza el
-       repintado). min-height con -webkit-fill-available usa un cálculo de
-       altura distinto en WebKit, no sujeto al mismo retraso, y actúa como
-       suelo cuando el h-dvh en vivo se queda corto momentáneamente. */
-    min-height: -webkit-fill-available;
+    /* EXPERIMENTO (rama debug/ios-keyboard-scroll-recovery): antes, esta
+       regla solo ponía `min-height: -webkit-fill-available` como red de
+       seguridad, dejando que la utilidad `h-dvh` de Tailwind (className en
+       PrivateLayout.tsx) siguiera fijando el `height` real. Un min-height
+       solo actúa como suelo — si el propio -webkit-fill-available también
+       queda momentáneamente desincronizado (mismo tipo de retraso que
+       dvh), la red de seguridad no corrige nada. Ahora `height` se declara
+       aquí directamente (quitado `h-dvh` del className) para que
+       -webkit-fill-available sea la autoridad real en WebKit, no un suelo
+       secundario. 100dvh sigue de fallback para motores que no entienden
+       -webkit-fill-available (una propiedad con valor no soportado se
+       ignora entera, conservando la declaración anterior). */
+    height: 100dvh;
+    height: -webkit-fill-available;
   }
 
   .app-shell::before {
