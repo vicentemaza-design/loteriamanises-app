@@ -32,7 +32,7 @@ export function PrivateLayout() {
 
   return (
     <PlaySessionProvider>
-      <div className="app-shell font-sans text-manises-blue flex flex-col overflow-hidden">
+      <div className="app-shell h-dvh font-sans text-manises-blue flex flex-col overflow-hidden">
         <AnimatePresence>
           {isLocked && (
             <AppLock onUnlock={() => setIsLocked(false)} />
