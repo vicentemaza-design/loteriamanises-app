@@ -76,6 +76,11 @@
   </head>
   <body>
     <div id="root"></div>
+    <script type="module">
+      if (new URLSearchParams(window.location.search).get('viewportDebug') === '1') {
+        import('/src/debug/viewport-diagnostic.ts');
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
