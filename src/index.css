@@ -436,13 +436,28 @@
     position: fixed;
     inset: 0;
     background: var(--app-bg) !important;
-    overflow: hidden;
+    /* EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no mergear
+       a main): confirmado con el rectángulo de prueba aislado que
+       position:fixed SÍ llega al borde físico real en rutas públicas
+       (documento con scroll real), pero se queda corto en rutas privadas
+       (body totalmente bloqueado, sin scroll posible en absoluto). Se
+       deja el documento técnicamente desplazable por un margen ínfimo
+       (ver body::after) para que WebKit siga el mismo cálculo correcto
+       — el listener en index.html lo devuelve a 0 al instante si llega
+       a moverse, así que no debería notarse visualmente. */
+    overflow: auto;
     overscroll-behavior-y: none;
     width: 100%;
     -webkit-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+  }
+
+  html:not(.auth-route) body::after {
+    content: '';
+    display: block;
+    height: 2px;
   }
 
   #root {

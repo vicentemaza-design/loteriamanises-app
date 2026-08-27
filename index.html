@@ -70,6 +70,26 @@
         }
       })();
     </script>
+    <script>
+      (function () {
+        // EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
+        // mergear a main): en rutas privadas, <body> ahora es
+        // técnicamente desplazable por 2px (ver body::after en
+        // index.css) para que WebKit calcule bien el área segura de
+        // position:fixed — confirmado con el rectángulo de prueba
+        // aislado que esto solo falla cuando el documento no puede
+        // desplazarse en absoluto. Este listener devuelve body.scrollTop
+        // a 0 al instante ante cualquier intento real de scroll, para
+        // que el usuario nunca llegue a percibir ese margen. En rutas
+        // públicas (auth-route) el documento sí debe desplazarse de
+        // verdad — no se toca ahí.
+        function resetPhantomScroll() {
+          if (document.documentElement.classList.contains('auth-route')) return;
+          if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
+        }
+        document.addEventListener('scroll', resetPhantomScroll, { capture: true, passive: true });
+      })();
+    </script>
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
