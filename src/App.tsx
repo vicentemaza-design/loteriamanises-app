@@ -17,6 +17,8 @@ export default function App() {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
       || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     let keyboardWasOpen = false;
+    let repaintNudgeUsed = false;
+    let repaintNudgePending = false;
     let recoveryTimerIds: number[] = [];
     let recoveryFrameIds: number[] = [];
 
@@ -37,11 +39,36 @@ export default function App() {
       if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
     };
 
+    const captureViewportRecoveryState = () => ({
+      windowScrollY: window.scrollY,
+      documentScrollTop: document.scrollingElement?.scrollTop ?? 0,
+      visualViewportHeight: vv?.height ?? window.innerHeight,
+      visualViewportOffsetTop: vv?.offsetTop ?? 0,
+    });
+
     const cancelViewportRecovery = () => {
       recoveryTimerIds.forEach(window.clearTimeout);
       recoveryFrameIds.forEach(window.cancelAnimationFrame);
       recoveryTimerIds = [];
       recoveryFrameIds = [];
+      if (repaintNudgePending) {
+        settleDocumentScroll();
+        repaintNudgePending = false;
+      }
+    };
+
+    const forceSingleViewportRecomposition = () => {
+      if (repaintNudgeUsed) return;
+
+      repaintNudgeUsed = true;
+      repaintNudgePending = true;
+      window.scrollTo(0, 1);
+      const nudgeFrameId = requestAnimationFrame(() => {
+        settleDocumentScroll();
+        repaintNudgePending = false;
+        recoveryFrameIds = recoveryFrameIds.filter(id => id !== nudgeFrameId);
+      });
+      recoveryFrameIds.push(nudgeFrameId);
     };
 
     const recoverIOSPrivateViewport = () => {
@@ -50,6 +77,14 @@ export default function App() {
 
       document.documentElement.style.setProperty('--app-height', `${height}px`);
       settleDocumentScroll();
+      // Capturar las métricas después del reset permite observar un posible
+      // pan residual de WebKit sin intentar escribir en offsetTop, que es
+      // read-only. El nudge se limita a una vez por ciclo de teclado.
+      const recoveryState = captureViewportRecoveryState();
+      const hasResidualVisualPan = Math.abs(recoveryState.visualViewportOffsetTop) > 2;
+      if (hasResidualVisualPan || recoveryState.windowScrollY === 0) {
+        forceSingleViewportRecomposition();
+      }
     };
 
     const scheduleViewportRecovery = () => {
@@ -108,6 +143,7 @@ export default function App() {
       const keyboardLikelyOpen = keyboardIsOpen(height);
       if (isIOS && keyboardLikelyOpen) {
         keyboardWasOpen = true;
+        repaintNudgeUsed = false;
         cancelViewportRecovery();
       }
       if (!keyboardLikelyOpen && !isAuthRoute) {
@@ -129,6 +165,7 @@ export default function App() {
       if (!isIOS) return;
       cancelViewportRecovery();
       keyboardWasOpen = true;
+      repaintNudgeUsed = false;
     };
 
     const handleFocusOut = () => {
