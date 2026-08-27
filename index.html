@@ -2,12 +2,23 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-visual" />
+    <!-- EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
+         mergear a main): viewport-fit=cover quitado — confirmado
+         visualmente en dispositivo real (tras desinstalar/reinstalar la
+         PWA) que sin él BottomNav llega correctamente al borde físico
+         real y desaparece la franja inferior inalcanzable. La
+         contrapartida: la app deja de extenderse bajo la barra de
+         estado/Dynamic Island, así que black-translucent (pensado para
+         contenido detrás translúcido) ya no tiene sentido — se cambia a
+         black (opaca) para que esa zona superior sea intencional en vez
+         de un hueco sin controlar. Requiere desinstalar y reinstalar la
+         PWA para que surta efecto. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual" />
     <meta name="theme-color" content="#0a4792" />
     <meta name="color-scheme" content="light" />
     <meta name="description" content="Lotería Manises — Administración de Loterías nº 3. Compra tus loterías online con total seguridad. Euromillones, Primitiva, Bonoloto y más." />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="Lotería Manises" />
     <link rel="manifest" href="/manifest.json" />
     <title>Lotería Manises — Administración nº 3</title>
