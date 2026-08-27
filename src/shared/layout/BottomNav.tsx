@@ -50,25 +50,40 @@ export function BottomNav() {
   }, [hasCart]);
 
   return (
-    <nav
-      ref={navRef}
-      className="fixed bottom-0 left-0 right-0 z-60 bg-[#0a4792]/80 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-      role="navigation"
-      aria-label="Navegación principal"
-    >
+    <>
       {/* EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
           mergear a main): confirmado con el experimento de colores por
           capas que la franja blanca era <body> asomando justo debajo de
-          este <nav> — bottom:0 no llega al borde físico real de la
-          pantalla en esta PWA instalada (imprecisión de WebKit al
-          resolver la posición fija contra el viewport en standalone,
-          ver bugs.webkit.org #254868/#237961). En vez de mover el propio
-          nav (eso desplazaría --nav-height y el padding real de <main>),
-          se añade un relleno absoluto por debajo de su borde, del mismo
-          color, que cubre cualquier hueco residual sin alterar la altura
-          medida del nav ni el contenido visible. */}
-      <div aria-hidden="true" className="absolute inset-x-0 top-full h-16 bg-[#0a4792]" />
+          <nav>. Un primer intento de relleno como HIJO de <nav> no
+          funcionó en el dispositivo real — <nav> tiene backdrop-blur-3xl,
+          que en WebKit promociona el elemento a su propia capa compuesta,
+          y un hijo absoluto que se desborda del padre puede quedar
+          recortado por los límites de esa capa (bug de compositing
+          distinto del layout, no reproducible en el proxy de escritorio).
+          Este relleno ahora es HERMANO de <nav>, con su propio
+          position:fixed, fuera de esa capa compuesta — usa --nav-height
+          (la altura real medida por el ResizeObserver de abajo) para que
+          su borde superior coincida exactamente con el de <nav>, y se
+          extiende 64px más abajo como margen de seguridad. */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: '-64px',
+          height: 'calc(var(--nav-height, 90px) + 64px)',
+          background: '#0a4792',
+          zIndex: 59,
+        }}
+      />
+      <nav
+        ref={navRef}
+        className="fixed bottom-0 left-0 right-0 z-60 bg-[#0a4792]/80 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        role="navigation"
+        aria-label="Navegación principal"
+      >
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
       {/* Sección de cestas — aparece encima de los iconos de nav */}
@@ -173,6 +188,7 @@ export function BottomNav() {
           );
         })}
       </div>
-    </nav>
+      </nav>
+    </>
   );
 }
