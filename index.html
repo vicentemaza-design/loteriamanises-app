@@ -70,43 +70,12 @@
         }
       })();
     </script>
-    <script>
-      (function () {
-        // EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
-        // mergear a main): en rutas privadas, <body> ahora es
-        // técnicamente desplazable por 2px (ver body::after en
-        // index.css) para que WebKit calcule bien el área segura de
-        // position:fixed — confirmado con el rectángulo de prueba
-        // aislado que esto solo falla cuando el documento no puede
-        // desplazarse en absoluto. Este listener devuelve body.scrollTop
-        // a 0 al instante ante cualquier intento real de scroll, para
-        // que el usuario nunca llegue a percibir ese margen. En rutas
-        // públicas (auth-route) el documento sí debe desplazarse de
-        // verdad — no se toca ahí.
-        function resetPhantomScroll() {
-          if (document.documentElement.classList.contains('auth-route')) return;
-          if (document.body.scrollTop !== 0) document.body.scrollTop = 0;
-        }
-        document.addEventListener('scroll', resetPhantomScroll, { capture: true, passive: true });
-      })();
-    </script>
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   </head>
   <body>
     <div id="root"></div>
-    <!-- EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
-         mergear a main): rectángulo de prueba totalmente aislado de la
-         app — HTML plano, sin React, sin Tailwind, sin safe-area, sin
-         backdrop-filter, sin transform, directamente hermano de #root
-         bajo <body>. Solo pregunta si position:fixed;bottom:0 en sí
-         mismo llega al borde físico real de la pantalla en este
-         dispositivo/PWA. Eliminar tras la prueba. -->
-    <div
-      id="probe-rect"
-      style="position: fixed; left: 0; right: 0; bottom: 0; height: 64px; background: #ff00ff; z-index: 2147483647;"
-    ></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
