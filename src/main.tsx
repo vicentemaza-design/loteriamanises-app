@@ -3,9 +3,6 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import { registerGlobalErrorHandlers } from '@/shared/lib/globalErrorHandlers';
 import './index.css';
-// AUTOPSIA AISLADA (rama debug/ios-keyboard-scroll-recovery, no mergear a
-// main): solo activa con ?viewportDebug=1. Ver src/debug/containing-block-check.ts.
-import './debug/containing-block-check';
 
 registerGlobalErrorHandlers();
 
@@ -46,8 +43,14 @@ if (!window.hasOwnProperty('__app_vh_initialized')) {
   stabilizeAppVh();
   window.addEventListener('load', () => stabilizeAppVh());
   window.addEventListener('pageshow', () => stabilizeAppVh());
-  window.addEventListener('resize', setAppVh);
-  window.visualViewport?.addEventListener('resize', setAppVh);
+  // Antes solo se actualizaba la variable CSS (setAppVh) en cada resize.
+  // Cuando Safari expande/colapsa su propia barra de direcciones,
+  // window.innerHeight cambia igual que al abrir/cerrar el teclado, pero
+  // sin el reflow forzado (scrollTo + doble rAF) que sí soluciona el caso
+  // del teclado, WebKit puede dejar el pintado de los elementos fixed
+  // desfasado respecto a la nueva altura real.
+  window.addEventListener('resize', stabilizeAppVh);
+  window.visualViewport?.addEventListener('resize', stabilizeAppVh);
   (window as any).__app_vh_initialized = true;
 }
 
