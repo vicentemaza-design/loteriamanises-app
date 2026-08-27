@@ -1,11 +1,13 @@
 /**
  * AUTOPSIA AISLADA — franja blanca / containing block de BottomNav.
- * Solo se activa con ?viewportDebug=1. No modifica layout, scroll, foco ni
- * ningún componente de la aplicación; únicamente observa y permite copiar
- * un snapshot de la cadena de ancestros de BottomNav.
+ * Siempre activo en esta rama (una PWA instalada no tiene barra de
+ * direcciones para añadir query params) — nunca se mergea a main. No
+ * modifica layout, scroll, foco ni ningún componente de la aplicación;
+ * únicamente observa y permite copiar un snapshot de la cadena de
+ * ancestros de BottomNav.
  */
 
-const debugEnabled = new URLSearchParams(window.location.search).get('viewportDebug') === '1';
+const debugEnabled = true;
 
 interface AncestorInfo {
   depth: number;
