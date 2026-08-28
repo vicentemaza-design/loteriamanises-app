@@ -431,7 +431,7 @@
   }
 
   html.layer-debug body {
-    background: #ff0000 !important;
+    background: rgba(10, 71, 146, 0.8) !important;
   }
 
   html.layer-debug #root {
@@ -443,11 +443,11 @@
   }
 
   html.layer-debug main {
-    background: #ffff00 !important;
+    background: #ffffff !important;
   }
 
   html.layer-debug nav[role='navigation'] {
-    background: #0000ff !important;
+    background: rgba(10, 71, 146, 0.8) !important;
   }
 
   /* EXPERIMENTO (rama debug/ios-keyboard-scroll-recovery, no en main):
