@@ -117,7 +117,7 @@ export function BottomNav() {
 
       {/* Superficie azul de navegación; la cesta queda fuera de esta capa visual. */}
       <div
-        className="relative bg-manises-blue/90 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl"
+        className="relative bg-manises-blue/80 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}
       >
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
