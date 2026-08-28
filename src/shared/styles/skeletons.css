@@ -30,10 +30,3 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
-
-/* iOS PWA validation: restore the approved private-shell background only
-   while BottomNav is present. Higher specificity keeps this isolated from
-   the later base rule without touching viewport, safe-area or navigation. */
-html.has-bottom-nav.has-bottom-nav {
-  background: #0A4792CC;
-}
