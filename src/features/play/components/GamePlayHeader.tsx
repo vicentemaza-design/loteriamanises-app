@@ -1,6 +1,6 @@
 import { Button } from '@/shared/ui/Button';
 import { GameBadge } from '@/shared/ui/GameBadge';
-import { NavArrowLeft, InfoCircle, ShoppingBag } from 'iconoir-react/regular';
+import { NavArrowLeft, InfoCircle, ShoppingBag, ViewGrid } from 'iconoir-react/regular';
 import { formatDrawTime } from '@/shared/lib/utils';
 import type { LotteryGame } from '@/shared/types/domain';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
@@ -11,11 +11,18 @@ interface GamePlayHeaderProps {
   onBack: () => void;
   onInfo: () => void;
   titleOverride?: string;
+  /**
+   * When set, replaces the default back arrow with a labeled exit action
+   * (icon + text) using this label — e.g. "Juegos". Left undefined, the
+   * header renders exactly as before (plain back arrow). Piloted on
+   * Bonoloto only; every other caller omits this prop.
+   */
+  exitLabel?: string;
 }
 
 const NATIONAL_LOTTERY_TYPES = new Set(['loteria-nacional', 'navidad', 'nino']);
 
-export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride }: GamePlayHeaderProps) {
+export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, exitLabel }: GamePlayHeaderProps) {
   const { gameDrafts, lotteryDrafts, openGameReview, openLotteryReview } = usePlaySession();
   const isLotteryGame = NATIONAL_LOTTERY_TYPES.has(game.type);
   const count = isLotteryGame ? lotteryDrafts.length : gameDrafts.length;
@@ -32,15 +39,27 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride }
     >
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white/80 hover:text-white hover:bg-white/15 w-9 h-9 rounded-xl"
-            onClick={onBack}
-            aria-label="Volver"
-          >
-            <NavArrowLeft className="w-5 h-5" />
-          </Button>
+          {exitLabel ? (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label={exitLabel}
+              className="flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-white/90 transition-all hover:bg-white/15 hover:text-white active:scale-95"
+            >
+              <ViewGrid className="h-4.5 w-4.5" />
+              <span className="text-[11px] font-bold">{exitLabel}</span>
+            </button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white/80 hover:text-white hover:bg-white/15 w-9 h-9 rounded-xl"
+              onClick={onBack}
+              aria-label="Volver"
+            >
+              <NavArrowLeft className="w-5 h-5" />
+            </Button>
+          )}
           <div className="flex items-center gap-2">
             <GameBadge game={game} size="sm" className="w-8 h-8 rounded-lg shadow-none bg-white/10" />
             <div>
