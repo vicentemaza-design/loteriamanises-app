@@ -52,9 +52,12 @@ export function PrivateLayout() {
   // BottomNav "llegue" físicamente ahí, así que se iguala el color.
   React.useEffect(() => {
     const showsNav = !isLocked && !hideNav;
+    const showsPlaySurface = !isLocked && hideNav;
     document.documentElement.classList.toggle('has-bottom-nav', showsNav);
+    document.documentElement.classList.toggle('play-surface', showsPlaySurface);
     return () => {
       document.documentElement.classList.remove('has-bottom-nav');
+      document.documentElement.classList.remove('play-surface');
     };
   }, [isLocked, hideNav]);
 
