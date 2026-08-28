@@ -128,7 +128,7 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={!isBusy ? handleClose : undefined}
-            className="fixed inset-0 z-[270] bg-[#0a4792]/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[270] bg-manises-blue/40 backdrop-blur-sm"
           />
           <motion.div
             initial={{ y: '100%', opacity: 0 }}

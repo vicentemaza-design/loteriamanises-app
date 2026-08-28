@@ -262,7 +262,7 @@ export function ResultDetailModal({ isOpen, onClose, result }: ResultDetailModal
           >
             {/* Top Prize Banner — padding-top absorbs the safe-area so content sits below status bar */}
             <div
-              className="w-full bg-[#0a4792] text-white px-5 pb-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider shrink-0 select-none"
+              className="w-full bg-manises-blue text-white px-5 pb-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider shrink-0 select-none"
               style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.5rem)' }}
             >
               <Trophy className="w-3.5 h-3.5 text-manises-gold shrink-0" />

@@ -52,7 +52,7 @@ export function GamePlayBottomMenu({
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-[#0a4792]/88 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl',
+        'fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-manises-blue/88 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl',
         className
       )}
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}

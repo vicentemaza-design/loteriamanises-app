@@ -1224,7 +1224,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                           />
                         </div>
                         <div className="w-px self-stretch bg-gray-100/80 shrink-0 mt-5" />
-                        <div className="w-[80px] shrink-0">
+                        <div className="w-20 shrink-0">
                           <StarsGrid
                             compact
                             gridCols={game.type === 'primitiva' ? 1 : 2}

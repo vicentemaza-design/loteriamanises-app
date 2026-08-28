@@ -150,7 +150,7 @@ export function NationalAleatorioFlow({
 
       {/* Barra inferior */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-10 overflow-hidden border-t border-slate-100 bg-[#0a4792] shadow-[0_-4px_24px_rgba(0,0,0,0.08)]"
+        className="fixed bottom-0 left-0 right-0 z-10 overflow-hidden border-t border-slate-100 bg-manises-blue shadow-[0_-4px_24px_rgba(0,0,0,0.08)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div

@@ -321,7 +321,7 @@ export function NavidadCheckoutFlow({
                       >
                         <NationalTicketThumbnail
                           drawId={drawId}
-                          className="w-[100px] rounded-sm shadow-md"
+                          className="w-25 rounded-sm shadow-md"
                         />
 
                         {!isActive && (
@@ -418,7 +418,7 @@ export function NavidadCheckoutFlow({
 
         {/* Barra de acción: total + CONTINUAR */}
         <div
-          className="bg-[#0a4792]/88"
+          className="bg-manises-blue/88"
           style={{ backdropFilter: 'blur(24px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
           <div className="mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white">

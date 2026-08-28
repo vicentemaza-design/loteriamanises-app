@@ -465,7 +465,7 @@ export function GamesPage() {
             <span className="text-[10px] font-black text-manises-blue/40 tracking-[0.25em] uppercase whitespace-nowrap">
               Todos los sorteos
             </span>
-            <div className="h-[1px] bg-slate-100 flex-1" />
+            <div className="h-px bg-slate-100 flex-1" />
           </div>
         </motion.div>
 

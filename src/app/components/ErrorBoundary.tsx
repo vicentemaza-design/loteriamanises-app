@@ -53,7 +53,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
           <AlertTriangle className="h-8 w-8 text-red-500" />
         </div>
         <h1 id="error-boundary-title" className="text-xl font-black uppercase tracking-tight text-manises-blue">Algo ha ido mal</h1>
-        <p className="mt-2 max-w-[280px] text-sm font-medium text-muted-foreground">
+        <p className="mt-2 max-w-70 text-sm font-medium text-muted-foreground">
           Ha ocurrido un problema inesperado. Puedes intentar recargar la aplicación para continuar.
         </p>
         <Button className="mt-8 rounded-xl bg-manises-blue px-8 text-white hover:brightness-110" onClick={this.handleReload}>

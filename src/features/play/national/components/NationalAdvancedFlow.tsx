@@ -382,7 +382,7 @@ export function NationalAdvancedFlow({
                       >
                         <NationalTicketThumbnail
                           drawId={line.drawId}
-                          className="w-[100px] rounded-sm shadow-md"
+                          className="w-25 rounded-sm shadow-md"
                         />
 
                         {/* Número flotante */}
@@ -505,7 +505,7 @@ export function NationalAdvancedFlow({
 
         {/* Barra de acción */}
         <div
-          className="bg-[#0a4792]/88"
+          className="bg-manises-blue/88"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
         <div className="mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white">
