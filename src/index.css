@@ -420,7 +420,7 @@
      PrivateLayout), para que esa franja inalcanzable se perciba como
      parte de la barra en vez de un hueco. */
   html.has-bottom-nav {
-    background: var(--app-bg);
+    background: #0A4792CC;
   }
 
   /* Prueba visual temporal: activar solo con ?layerDebug=1. No cambia
