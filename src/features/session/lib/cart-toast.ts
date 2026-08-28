@@ -28,6 +28,11 @@ export function notifyAddedToCart(result: AddDraftResult, openReview?: () => voi
   toast.success(title, {
     description: randomLuckMessage(),
     action: openReview ? { label: 'Ver cesta', onClick: openReview } : undefined,
+    style: {
+      background: 'rgba(10, 71, 146, 0.94)',
+      borderColor: 'rgba(255, 255, 255, 0.18)',
+      color: '#ffffff',
+    },
   });
 }
 
