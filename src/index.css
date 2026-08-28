@@ -405,7 +405,7 @@
     @apply font-sans;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    background: #285C9C;
+    background: var(--app-bg);
     height: 100%;
     overflow: hidden;
   }

@@ -52,13 +52,13 @@ export function GamePlayBottomMenu({
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-manises-blue/88 pt-7 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl',
+        'fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-manises-blue/88 pt-9 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl',
         className
       )}
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      <div className="-translate-y-[24px] mx-auto grid min-h-14 w-full max-w-screen-sm grid-cols-[minmax(min-content,1fr)_minmax(min-content,1fr)_minmax(5.5rem,2.15fr)] text-white">
+      <div className="-translate-y-[30px] mx-auto grid min-h-14 w-full max-w-screen-sm grid-cols-[minmax(min-content,1fr)_minmax(min-content,1fr)_minmax(5.5rem,2.15fr)] text-white">
         <div className="relative flex min-w-0 flex-col items-center justify-center border-r border-white/12 px-1">
           <div className="absolute inset-x-1.5 inset-y-1.5 rounded-xl bg-white/[0.035]" />
           <p className={cn('relative text-[1.05rem] font-black leading-none tracking-normal', isOverBalance ? 'text-red-300' : 'text-manises-gold')}>
