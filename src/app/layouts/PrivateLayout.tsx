@@ -39,21 +39,6 @@ export function PrivateLayout() {
     viewportMeta.setAttribute('content', content);
   }, []);
 
-  // Superficie base de la PWA privada. En iOS instalado hay zonas físicas
-  // reservadas que pueden mostrar el fondo de <html>; mantenerlo azul evita
-  // que aparezca una franja clara en las rutas privadas, incluidas /play/*.
-  // Este comentario también sirve para retrigger de preview sin alterar lógica.
-  // Se restaura al desmontar para no contaminar Login/Registro.
-  React.useEffect(() => {
-    const html = document.documentElement;
-    const previousBackground = html.style.background;
-    html.style.background = '#3B6CA8';
-
-    return () => {
-      html.style.background = previousBackground;
-    };
-  }, []);
-
   // CONFIRMADO con Web Inspector remoto en dispositivo real (rama
   // debug/ios-keyboard-scroll-recovery): con .app-shell/<main> ya
   // alineados exactamente a innerHeight (812), sigue quedando una franja
