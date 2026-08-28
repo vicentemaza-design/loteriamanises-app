@@ -52,16 +52,10 @@ export function BottomNav() {
   return (
     <nav
       ref={navRef}
-      className={cn(
-        'fixed bottom-0 left-0 right-0 z-60 bg-manises-blue/90 pt-0 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]',
-        !hasCart && 'pt-2'
-      )}
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}
+      className="fixed bottom-0 left-0 right-0 z-60 bg-transparent"
       role="navigation"
       aria-label="Navegación principal"
     >
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
       {/* Sección de cestas — aparece encima de los iconos de nav */}
       <AnimatePresence>
         {hasCart && (
@@ -121,11 +115,15 @@ export function BottomNav() {
         )}
       </AnimatePresence>
 
-      {/* Iconos de navegación */}
-      <div className={cn(
-        '-translate-y-[6px] flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2',
-        !hasCart && '-translate-y-[8px]'
-      )}>
+      {/* Superficie azul de navegación; la cesta queda fuera de esta capa visual. */}
+      <div
+        className="relative bg-manises-blue/90 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}
+      >
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+        {/* Iconos de navegación */}
+        <div className="flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = path === '/home'
             ? location.pathname === '/home' || location.pathname === '/'
@@ -166,6 +164,7 @@ export function BottomNav() {
             </PremiumTouchInteraction>
           );
         })}
+        </div>
       </div>
     </nav>
   );
