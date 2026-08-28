@@ -119,7 +119,7 @@ export function BottomNav() {
       </AnimatePresence>
 
       {/* Iconos de navegación */}
-      <div className="flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
+      <div className="-translate-y-1 flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = path === '/home'
             ? location.pathname === '/home' || location.pathname === '/'
