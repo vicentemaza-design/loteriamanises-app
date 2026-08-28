@@ -35,6 +35,10 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
   const [firstPin, setFirstPin] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [viewport, setViewport] = useState<{ height: number | null; offsetTop: number }>({
+    height: null,
+    offsetTop: 0,
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -44,6 +48,27 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
       setError(null);
       setIsBusy(false);
     }
+  }, [isOpen]);
+
+  // Mientras el modal está abierto, sigue el visualViewport para que el
+  // teclado numérico de iOS no tape los 4 dígitos ni el mensaje de error —
+  // sin esto, el modal (fixed bottom-0) queda anclado al viewport de layout,
+  // que no se reduce cuando aparece el teclado en iOS Safari/PWA. Listeners
+  // solo mientras isOpen; se retiran al cerrar/desmontar para no acumular.
+  useEffect(() => {
+    if (!isOpen || !window.visualViewport) return;
+
+    const vv = window.visualViewport;
+    const updateViewport = () => {
+      setViewport({ height: vv.height, offsetTop: vv.offsetTop });
+    };
+    updateViewport();
+    vv.addEventListener('resize', updateViewport);
+    vv.addEventListener('scroll', updateViewport);
+    return () => {
+      vv.removeEventListener('resize', updateViewport);
+      vv.removeEventListener('scroll', updateViewport);
+    };
   }, [isOpen]);
 
   const handleClose = () => {
@@ -139,6 +164,14 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
             aria-modal="true"
             aria-labelledby="pin-entry-title"
             className="fixed bottom-0 left-0 right-0 z-[271] flex max-h-[calc(100dvh-0.75rem)] flex-col rounded-t-[2.5rem] bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)]"
+            style={{
+              bottom: viewport.height != null
+                ? `${Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)}px`
+                : undefined,
+              maxHeight: viewport.height != null
+                ? `${Math.max(viewport.height - 12, 240)}px`
+                : 'calc(100dvh - 0.75rem)',
+            }}
           >
             <div className="flex w-full shrink-0 justify-center pt-3 pb-2">
               <div className="h-1.5 w-12 rounded-full bg-gray-200" />
