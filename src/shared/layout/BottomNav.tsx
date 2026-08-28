@@ -52,7 +52,7 @@ export function BottomNav() {
   return (
     <nav
       ref={navRef}
-      className="fixed bottom-0 left-0 right-0 z-60 bg-manises-blue/90 pt-2 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
+      className="fixed bottom-0 left-0 right-0 z-60 bg-manises-blue/90 pt-0 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}
       role="navigation"
       aria-label="Navegación principal"
@@ -68,7 +68,7 @@ export function BottomNav() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-            className="overflow-hidden bg-white/96 border-b border-slate-200/60"
+            className="overflow-hidden bg-transparent"
           >
             <div className={`grid gap-2 px-2 pt-2 pb-2 ${hasGames && hasLottery ? 'grid-cols-2' : 'grid-cols-1'}`}>
               {hasGames && (
@@ -119,7 +119,7 @@ export function BottomNav() {
       </AnimatePresence>
 
       {/* Iconos de navegación */}
-      <div className="-translate-y-[10px] flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
+      <div className="-translate-y-[6px] flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = path === '/home'
             ? location.pathname === '/home' || location.pathname === '/'
