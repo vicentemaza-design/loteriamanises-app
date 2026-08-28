@@ -124,7 +124,7 @@ export function BottomNav() {
       {/* Iconos de navegación */}
       <div className={cn(
         '-translate-y-[6px] flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2',
-        !hasCart && '-translate-y-[14px]'
+        !hasCart && '-translate-y-[8px]'
       )}>
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = path === '/home'
