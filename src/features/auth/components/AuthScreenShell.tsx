@@ -22,7 +22,7 @@ export function AuthScreenShell({
        con alturas distintas durante el cold-boot de la PWA.
     */
     <div
-      className="relative min-h-screen w-full overflow-hidden text-white bg-[#052a5a]"
+      className="relative min-h-dvh w-full overflow-hidden text-white bg-[#052a5a]"
       style={{
         backgroundImage: `
           linear-gradient(180deg, rgba(5,42,90,0.72) 0%, rgba(10,71,146,0.78) 45%, rgba(5,42,90,0.88) 100%),
@@ -47,7 +47,7 @@ export function AuthScreenShell({
           nativa SOLO en rutas públicas (html.auth-route, ver index.css);
           el fix de teclado de App.tsx no depende de body:fixed y sigue
           intacto. Privadas mantienen su body:fixed sin cambios. */}
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-6 py-10">
+      <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 py-10">
         <div
           className={cn(
             'flex flex-1 flex-col items-center pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]',
