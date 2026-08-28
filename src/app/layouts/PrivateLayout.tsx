@@ -30,6 +30,34 @@ export function PrivateLayout() {
     }
   }, [location.pathname]);
 
+  React.useEffect(() => {
+    const viewportMeta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+    if (!viewportMeta) return;
+
+    const content = viewportMeta.content
+      .replace(/,?\s*viewport-fit=(?:cover|contain|auto)/, '');
+    viewportMeta.setAttribute('content', content);
+  }, []);
+
+  // CONFIRMADO con Web Inspector remoto en dispositivo real (rama
+  // debug/ios-keyboard-scroll-recovery): con .app-shell/<main> ya
+  // alineados exactamente a innerHeight (812), sigue quedando una franja
+  // de ~62px hasta el borde físico real (874) que NINGÚN elemento
+  // position:fixed puede alcanzar — es un límite de WebKit en esta PWA
+  // instalada (viewport-fit=cover), no algo corregible ajustando alturas.
+  // Esos px "inalcanzables" muestran el fondo base de <html>, que sí
+  // llega al borde físico real. Se colorea ese fondo del mismo azul que
+  // BottomNav SOLO cuando la barra está visible, para que la franja se
+  // perciba como parte de ella en vez de un hueco — no se puede hacer que
+  // BottomNav "llegue" físicamente ahí, así que se iguala el color.
+  React.useEffect(() => {
+    const showsNav = !isLocked && !hideNav;
+    document.documentElement.classList.toggle('has-bottom-nav', showsNav);
+    return () => {
+      document.documentElement.classList.remove('has-bottom-nav');
+    };
+  }, [isLocked, hideNav]);
+
   return (
     <PlaySessionProvider>
       <div className="app-shell h-dvh font-sans text-manises-blue flex flex-col overflow-hidden">
@@ -56,14 +84,25 @@ export function PrivateLayout() {
               </div>
             </main>
 
-            {!hideNav && <BottomNav />}
-
             {/* Paneles de cesta (flotan sobre todo el layout) */}
             <GamesCartPanel />
             <LotteryCartPanel />
           </>
         )}
       </div>
+
+      {/* EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
+          mergear a main): BottomNav fuera de .app-shell a propósito.
+          .app-shell tiene overflow-hidden y se dimensiona con
+          dvh/lvh (aproximado, puede quedarse corto un frame en iOS real);
+          al ser BottomNav descendiente DOM suyo, overflow-hidden lo
+          recorta por pintura aunque su containing block siga siendo el
+          viewport (esto es independiente de containing block — un
+          overflow-hidden recorta a CUALQUIER descendiente, incluido uno
+          fixed). Sacándolo aquí, solo queda recortado por <body>, que se
+          resuelve con position:fixed;inset:0 siempre exacto contra el
+          viewport real, sin la imprecisión de dvh/lvh. */}
+      {!isLocked && !hideNav && <BottomNav />}
     </PlaySessionProvider>
   );
 }

@@ -2,6 +2,17 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <!-- EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
+         mergear a main): viewport-fit=cover quitado — confirmado
+         visualmente en dispositivo real (tras desinstalar/reinstalar la
+         PWA) que sin él BottomNav llega correctamente al borde físico
+         real y desaparece la franja inferior inalcanzable. La
+         contrapartida: la app deja de extenderse bajo la barra de
+         estado/Dynamic Island, así que black-translucent (pensado para
+         contenido detrás translúcido) ya no tiene sentido — se cambia a
+         black (opaca) para que esa zona superior sea intencional en vez
+         de un hueco sin controlar. Requiere desinstalar y reinstalar la
+         PWA para que surta efecto. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual" />
     <meta name="theme-color" content="#285C9C" />
     <meta name="color-scheme" content="light" />
@@ -68,6 +79,9 @@
         if (isAuthRoute) {
           document.documentElement.classList.add('auth-route');
         }
+
+        // Diagnóstico visual temporal activo en esta rama de laboratorio.
+        document.documentElement.classList.add('layer-debug');
       })();
     </script>
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />

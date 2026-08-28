@@ -207,8 +207,13 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+  /* EXPERIMENTO (rama debug/ios-keyboard-scroll-recovery): antes era un
+     valor fijo (5rem + safe-area) totalmente desconectado de --nav-height
+     — BottomNav.tsx ya mide su altura real (incluye su propio safe-area)
+     y la escribe en --nav-height; usarla aquí evita que <main> reserve más
+     o menos espacio del que el nav realmente ocupa. */
   .pb-nav-safe {
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: var(--nav-height, calc(5rem + env(safe-area-inset-bottom, 0px)));
   }
   .pb-sheet-action-safe {
     padding-bottom: calc(var(--nav-height) + 1rem);
@@ -268,16 +273,17 @@
   .app-shell {
     background: var(--shell-gradient);
     position: relative;
-    /* Red de seguridad para un bug conocido de iOS Safari: cuando la barra
-       de Safari se colapsa/expande tras una interacción (tap/foco, no solo
-       scroll), el valor en vivo de 100dvh a veces tarda en repintarse,
-       dejando el shell momentáneamente más corto que el viewport real y
-       revelando el fondo de <body> (--app-bg, casi blanco) por debajo — la
-       "franja blanca" que desaparece al hacer scroll (eso sí fuerza el
-       repintado). min-height con -webkit-fill-available usa un cálculo de
-       altura distinto en WebKit, no sujeto al mismo retraso, y actúa como
-       suelo cuando el h-dvh en vivo se queda corto momentáneamente. */
-    min-height: -webkit-fill-available;
+    /* CONFIRMADO con Web Inspector remoto en dispositivo real (rama
+       debug/ios-keyboard-scroll-recovery): innerHeight=812 (referencia
+       real de position:fixed;bottom:0, donde se ancla <nav>) pero
+       100lvh/-webkit-fill-available resuelven a 874 en este dispositivo
+       — 62px MÁS que esa referencia, no menos. El min-height de abajo
+       (experimento previo, revertido) estiraba .app-shell (y <main>,
+       flex-1 dentro de él) 62px de más, dejando ver el fondo blanco
+       propio de <main> justo en ese sobrante, por debajo de donde <nav>
+       llega. height:100dvh (clase h-dvh en el elemento) debe ser la
+       única autoridad de altura aquí, sin min-height compitiendo, para
+       que coincida exactamente con la referencia de <nav>. */
   }
 
   .app-shell::before {
@@ -401,25 +407,75 @@
     text-size-adjust: 100%;
     background: var(--app-bg);
     height: 100%;
+    overflow: hidden;
   }
 
-  /* Geometría de body restaurada a la baseline estable del 25/08 (ver
-     73d12db): sin position:fixed/inset:0/overflow:hidden — ese modelo
-     (introducido el 26/08) dejaba, en iPhone real, una franja blanca del
-     fondo de html/body bajo la bottom nav cuando .app-shell terminaba de
-     recalcular su altura tras colapsar/expandir la barra de Safari.
-     El scroll de documento residual que ese cambio pretendía evitar
-     (bottom nav flotando tras cerrar el teclado) lo corrige ahora la lógica
-     de teclado de App.tsx (settleDocumentScroll, activa en privadas) en
-     vez de impedir que el documento pueda desplazarse en absoluto. */
+  /* CONFIRMADO con Web Inspector remoto en dispositivo real (rama
+     debug/ios-keyboard-scroll-recovery): con .app-shell/<main> alineados
+     exactamente a innerHeight, queda una franja de ~62px hasta el borde
+     físico real que ningún position:fixed puede alcanzar (límite de
+     WebKit en esta PWA instalada con viewport-fit=cover) — se ve el
+     fondo de <html>, que sí llega hasta ahí. Se colorea igual que
+     BottomNav solo mientras está visible (clase puesta por
+     PrivateLayout), para que esa franja inalcanzable se perciba como
+     parte de la barra en vez de un hueco. */
+  html.has-bottom-nav {
+    background: #0A4792CC;
+    -webkit-backdrop-filter: blur(64px);
+    backdrop-filter: blur(64px);
+  }
+
+  /* Prueba visual temporal: activar solo con ?layerDebug=1. No cambia
+     geometría ni comportamiento; colorea cada superficie para identificar
+     qué capa llega al límite CSS y qué zona queda fuera de él. */
+  html.layer-debug {
+    background: #3B6CA8 !important;
+  }
+
+  html.layer-debug body {
+    background: rgba(10, 71, 146, 0.8) !important;
+  }
+
+  html.layer-debug #root {
+    background: #00ff00 !important;
+  }
+
+  html.layer-debug .app-shell {
+    background: #ff9900 !important;
+  }
+
+  html.layer-debug main {
+    background: #ffffff !important;
+  }
+
+  html.layer-debug nav[role='navigation'] {
+    background: rgba(10, 71, 146, 0.8) !important;
+  }
+
+  /* EXPERIMENTO (rama debug/ios-keyboard-scroll-recovery, no en main):
+     body vuelve a position:fixed/inset:0/overflow:hidden — el modelo que
+     existió brevemente el 26/08 (commit f5819a3) y que, según el propio
+     historial de este archivo, SÍ evitaba que BottomNav quedara flotando
+     tras cerrar el teclado en rutas privadas (ver comentario de adf2134,
+     hoy sustituido). Se revirtió ese día por un bug DISTINTO (franja
+     blanca al colapsar la barra de Safari en .app-shell), no porque esto
+     fallara para el teclado — y los siete intentos de "curar" el fallo
+     después del cierre (probados hoy en esta misma rama) no funcionaron.
+     Hipótesis: al no poder desplazarse body/html, iOS debe recurrir a
+     desplazar <main> (el único overflow:auto real) para revelar el input
+     enfocado, evitando el scrollY de documento que dispara el bug — sin
+     necesitar ningún nudge/reflow/hack posterior.
+     La excepción html.auth-route (más abajo) ya restaura el documento
+     como scroller real en rutas públicas — no se toca. */
   body {
     margin: 0;
     padding: 0;
     @apply font-sans text-foreground;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-    min-height: 100dvh;
+    position: fixed;
+    inset: 0;
     background: var(--app-bg) !important;
-    overflow-x: hidden;
+    overflow: hidden;
     overscroll-behavior-y: none;
     width: 100%;
     -webkit-user-select: none;
