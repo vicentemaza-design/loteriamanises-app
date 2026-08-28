@@ -6,7 +6,7 @@ import { Mail, Lock, Eye, EyeClosed, ShieldCheck, Clock, PercentageCircle, Flask
 import { ScanFace } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useLogin } from '@/features/auth/hooks/useLogin';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthScreenShell } from '@/features/auth/components/AuthScreenShell';
 import { FaceIdDemoModal } from '@/features/auth/components/FaceIdDemoModal';
 import { RUNTIME_CONFIG } from '@/config/runtime';
@@ -44,6 +44,8 @@ const authItem = {
 export function LoginPage() {
   const { signInWithGoogle, signInDemo } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const legalNavState = { state: { from: `${location.pathname}${location.search}` } };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -321,11 +323,11 @@ export function LoginPage() {
         {/* Pie legal minimalista */}
         <div className="flex flex-col items-center gap-3 px-4 opacity-30">
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-            <button onClick={() => navigate('/legal/condiciones')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Términos</button>
+            <button onClick={() => navigate('/legal/condiciones', legalNavState)} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Términos</button>
             <span className="text-[8px]">•</span>
-            <button onClick={() => navigate('/legal/privacidad')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Privacidad</button>
+            <button onClick={() => navigate('/legal/privacidad', legalNavState)} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Privacidad</button>
             <span className="text-[8px]">•</span>
-            <button onClick={() => navigate('/legal/juego-responsable')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Juego responsable</button>
+            <button onClick={() => navigate('/legal/juego-responsable', legalNavState)} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Juego responsable</button>
             <span className="text-[8px]">•</span>
             <span className="text-[9px] font-bold uppercase tracking-wider">+18</span>
           </div>

@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { PublicLayout } from '@/app/layouts/PublicLayout';
 import { PrivateLayout } from '@/app/layouts/PrivateLayout';
+import { LegalLayout } from '@/app/layouts/LegalLayout';
 import { RequireAuth } from '@/app/guards/RequireAuth';
 import { Skeleton } from '@/shared/ui/Skeleton';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
@@ -103,11 +104,6 @@ export function AppRouter() {
           <Route path="/games" element={<GamesPage />} />
           <Route path="/play/:gameId" element={<GamePlayPage />} />
           <Route path="/results" element={<ResultsPage />} />
-          <Route path="/legal/condiciones" element={<CondicionesPage />} />
-          <Route path="/legal/condiciones-abonos" element={<CondicionesAbonosPage />} />
-          <Route path="/legal/privacidad" element={<PrivacidadPage />} />
-          <Route path="/legal/aviso" element={<AvisoLegalPage />} />
-          <Route path="/legal/juego-responsable" element={<JuegoResponsablePage />} />
 
           <Route element={<RequireAuth />}>
             <Route path="/tickets" element={<TicketsPage />} />
@@ -145,6 +141,21 @@ export function AppRouter() {
             <Route path="/profile/settings" element={<SettingsPage />} />
             <Route path="/profile/matrix" element={<TechnicalMatrixPage />} />
           </Route>
+        </Route>
+
+        {/*
+          /legal/* — deliberately outside PublicLayout (auto-redirects an
+          authenticated user to /home, see PublicLayout.tsx) and outside
+          PrivateLayout/RequireAuth (must render identically with or
+          without a session, and never mount the private app shell). See
+          LegalLayout.tsx.
+        */}
+        <Route element={<LegalLayout />}>
+          <Route path="/legal/condiciones" element={<CondicionesPage />} />
+          <Route path="/legal/condiciones-abonos" element={<CondicionesAbonosPage />} />
+          <Route path="/legal/privacidad" element={<PrivacidadPage />} />
+          <Route path="/legal/aviso" element={<AvisoLegalPage />} />
+          <Route path="/legal/juego-responsable" element={<JuegoResponsablePage />} />
         </Route>
 
         {/*

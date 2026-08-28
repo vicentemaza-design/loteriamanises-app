@@ -1,4 +1,6 @@
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ProfileSubHeader } from '@/features/profile/components/ProfileSubHeader';
+import { getSafeInternalPath } from '@/shared/lib/safeInternalPath';
 
 interface TableRow { sorteo: string; plazo: string; }
 interface Section {
@@ -65,9 +67,13 @@ const SECTIONS: Section[] = [
 ];
 
 export function CondicionesAbonosPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const handleBack = () => navigate(getSafeInternalPath(location.state?.from, '/'));
+
   return (
     <div className="min-h-full bg-background">
-      <ProfileSubHeader title="Condiciones de Abonos" subtitle="Servicio de abono de Lotería Nacional" />
+      <ProfileSubHeader title="Condiciones de Abonos" subtitle="Servicio de abono de Lotería Nacional" onBack={handleBack} />
 
       <div className="p-4 pb-10">
         <div className="flex flex-col gap-5">

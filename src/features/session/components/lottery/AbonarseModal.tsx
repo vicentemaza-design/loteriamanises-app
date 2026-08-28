@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Xmark, Star, InfoCircle } from 'iconoir-react/regular';
 import { LOTTERY_GAMES } from '@/shared/constants/games';
@@ -21,6 +21,7 @@ interface AbonarseModalProps {
 
 export function AbonarseModal({ isOpen, onClose, decimalNumber }: AbonarseModalProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [quantities, setQuantities] = useState<Record<string, number>>({} as Record<string, number>);
   const [accepted, setAccepted] = useState(false);
   const dialogRef = useDialogA11y<HTMLDivElement>({ active: isOpen, onClose });
@@ -107,7 +108,7 @@ export function AbonarseModal({ isOpen, onClose, decimalNumber }: AbonarseModalP
             <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)}
               className="h-4 w-4 rounded accent-manises-blue" />
             <span className="text-[12px] font-medium text-slate-600">
-              Acepto las <span onClick={() => navigate('/legal/condiciones-abonos')} className="text-manises-blue font-bold underline cursor-pointer">condiciones del abono</span>
+              Acepto las <span onClick={() => navigate('/legal/condiciones-abonos', { state: { from: `${location.pathname}${location.search}` } })} className="text-manises-blue font-bold underline cursor-pointer">condiciones del abono</span>
             </span>
           </label>
         </div>

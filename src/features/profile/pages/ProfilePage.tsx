@@ -131,9 +131,9 @@ export function ProfilePage() {
     {
       title: 'Legal',
       items: [
-        { icon: Lock,        label: 'Política de privacidad',  detail: null, color: 'text-slate-600', bg: 'bg-slate-100', onClick: () => navigate('/legal/privacidad') },
-        { icon: Page,        label: 'Condiciones generales',   detail: null, color: 'text-slate-600', bg: 'bg-slate-100', onClick: () => navigate('/legal/condiciones') },
-        { icon: InfoCircle,  label: 'Aviso legal',             detail: null, color: 'text-slate-600', bg: 'bg-slate-100', onClick: () => navigate('/legal/aviso') },
+        { icon: Lock,        label: 'Política de privacidad',  detail: null, color: 'text-slate-600', bg: 'bg-slate-100', onClick: () => navigate('/legal/privacidad', { state: { from: '/profile' } }) },
+        { icon: Page,        label: 'Condiciones generales',   detail: null, color: 'text-slate-600', bg: 'bg-slate-100', onClick: () => navigate('/legal/condiciones', { state: { from: '/profile' } }) },
+        { icon: InfoCircle,  label: 'Aviso legal',             detail: null, color: 'text-slate-600', bg: 'bg-slate-100', onClick: () => navigate('/legal/aviso', { state: { from: '/profile' } }) },
       ],
     },
   ];

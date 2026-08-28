@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useRegister } from '@/features/auth/hooks/useRegister';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthScreenShell } from '@/features/auth/components/AuthScreenShell';
 import { PasswordRequirementsList } from '@/features/auth/components/PasswordRequirementsList';
 import { isValidEmail } from '@/features/auth/lib/authValidation';
@@ -76,7 +76,9 @@ type FieldErrors = Partial<Record<
 export function RegisterPage() {
   const { signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { status: registerStatus, errorMessage: registerError, register } = useRegister();
+  const legalNavState = { state: { from: `${location.pathname}${location.search}` } };
 
   const [step, setStep] = useState<RegisterStep>('access');
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -552,8 +554,8 @@ export function RegisterPage() {
                       <span
                         role="link"
                         tabIndex={0}
-                        onClick={() => navigate('/legal/condiciones')}
-                        onKeyDown={(e) => { if (e.key === 'Enter') navigate('/legal/condiciones'); }}
+                        onClick={() => navigate('/legal/condiciones', legalNavState)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') navigate('/legal/condiciones', legalNavState); }}
                         className="text-manises-gold underline underline-offset-2 cursor-pointer"
                       >
                         Condiciones Generales
@@ -562,8 +564,8 @@ export function RegisterPage() {
                       <span
                         role="link"
                         tabIndex={0}
-                        onClick={() => navigate('/legal/condiciones')}
-                        onKeyDown={(e) => { if (e.key === 'Enter') navigate('/legal/condiciones'); }}
+                        onClick={() => navigate('/legal/condiciones', legalNavState)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') navigate('/legal/condiciones', legalNavState); }}
                         className="text-manises-gold underline underline-offset-2 cursor-pointer"
                       >
                         Términos de Uso
@@ -572,8 +574,8 @@ export function RegisterPage() {
                       <span
                         role="link"
                         tabIndex={0}
-                        onClick={() => navigate('/legal/privacidad')}
-                        onKeyDown={(e) => { if (e.key === 'Enter') navigate('/legal/privacidad'); }}
+                        onClick={() => navigate('/legal/privacidad', legalNavState)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') navigate('/legal/privacidad', legalNavState); }}
                         className="text-manises-gold underline underline-offset-2 cursor-pointer"
                       >
                         Política de Privacidad
@@ -669,11 +671,11 @@ export function RegisterPage() {
 
         <div className="flex flex-col items-center gap-3 px-4 opacity-30 mt-2">
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-            <button onClick={() => navigate('/legal/condiciones')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Términos</button>
+            <button onClick={() => navigate('/legal/condiciones', legalNavState)} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Términos</button>
             <span className="text-[8px]">•</span>
-            <button onClick={() => navigate('/legal/privacidad')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Privacidad</button>
+            <button onClick={() => navigate('/legal/privacidad', legalNavState)} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Privacidad</button>
             <span className="text-[8px]">•</span>
-            <button onClick={() => navigate('/legal/juego-responsable')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Juego responsable</button>
+            <button onClick={() => navigate('/legal/juego-responsable', legalNavState)} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Juego responsable</button>
             <span className="text-[8px]">•</span>
             <span className="text-[9px] font-bold uppercase tracking-wider">+18</span>
           </div>

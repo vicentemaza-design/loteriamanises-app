@@ -1,4 +1,6 @@
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ProfileSubHeader } from '@/features/profile/components/ProfileSubHeader';
+import { getSafeInternalPath } from '@/shared/lib/safeInternalPath';
 
 const SECTIONS = [
   {
@@ -36,9 +38,13 @@ const SECTIONS = [
 ];
 
 export function AvisoLegalPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const handleBack = () => navigate(getSafeInternalPath(location.state?.from, '/'));
+
   return (
     <div className="min-h-full bg-background">
-      <ProfileSubHeader title="Aviso Legal" subtitle="Lotería Manises, S.L." />
+      <ProfileSubHeader title="Aviso Legal" subtitle="Lotería Manises, S.L." onBack={handleBack} />
 
       <div className="p-4 pb-10">
         <p className="text-[11px] font-semibold text-slate-400 mb-6">

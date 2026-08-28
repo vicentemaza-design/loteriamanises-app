@@ -1,7 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 import { ProfileSubHeader } from '@/features/profile/components/ProfileSubHeader';
 import { RESPONSIBLE_GAMING_CONTENT } from '@/shared/data/responsible-gaming-content';
+import { getSafeInternalPath } from '@/shared/lib/safeInternalPath';
 
 /**
  * Public "Juego responsable" information page — no session required.
@@ -16,11 +17,13 @@ import { RESPONSIBLE_GAMING_CONTENT } from '@/shared/data/responsible-gaming-con
  */
 export function JuegoResponsablePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const sections = Object.values(RESPONSIBLE_GAMING_CONTENT);
+  const handleBack = () => navigate(getSafeInternalPath(location.state?.from, '/'));
 
   return (
     <div className="flex min-h-full flex-col bg-background pb-10">
-      <ProfileSubHeader title="Juego responsable" subtitle="Información y recursos" onBack={() => navigate(-1)} />
+      <ProfileSubHeader title="Juego responsable" subtitle="Información y recursos" onBack={handleBack} />
 
       <div className="flex flex-col gap-4 p-4">
         <section className="rounded-[1.6rem] bg-manises-blue p-5 text-white shadow-lg">
