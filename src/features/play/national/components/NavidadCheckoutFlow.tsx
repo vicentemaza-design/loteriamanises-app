@@ -418,7 +418,7 @@ export function NavidadCheckoutFlow({
 
         {/* Barra de acción: total + CONTINUAR */}
         <div
-          className="bg-manises-blue/80 pt-7 backdrop-blur-3xl"
+          className="bg-manises-blue/88 pt-7 backdrop-blur-3xl"
           style={{ backdropFilter: 'blur(24px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
           <div className="-translate-y-[24px] mx-auto grid min-h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white">
