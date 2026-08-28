@@ -30,3 +30,10 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
+
+/* iOS PWA: superficie raíz privada aplicada antes de montar React.
+   Replica únicamente el fondo azul que antes imponía layer-debug,
+   sin reactivar ninguna otra capa de diagnóstico. */
+html.private-app-surface {
+  background: #3B6CA8 !important;
+}
