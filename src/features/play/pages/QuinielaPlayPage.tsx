@@ -118,13 +118,10 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
     setStep('play');
   };
 
-  const handleBack = () => {
-    if (step === 'play') {
-      setStep('pick_system');
-    } else {
-      navigate(-1);
-    }
-  };
+  // El icono de cabecera ya no retrocede un paso dentro del flujo (Pleno al
+  // 15 → elegir sistema): siempre abandona el juego hacia el catálogo. No
+  // hay cleanup adicional que preservar aquí.
+  const handleExitToGames = () => navigate('/games');
 
   // Tras una compra confirmada (no solo añadida a la cesta), volver a la
   // pantalla de elección de sistema "en fresco" — al desmontar la sección
@@ -352,8 +349,9 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
         <GamePlayHeader
           game={game}
           drawTime={game.nextDraw}
-          onBack={() => navigate(-1)}
+          onBack={() => navigate('/games')}
           onInfo={() => setIsInfoOpen(true)}
+          exitAriaLabel="Ir al catálogo de juegos"
         />
         <GameInfoSheet
           game={game}
@@ -383,9 +381,10 @@ export function QuinielaPlayPage({ game }: QuinielaPlayPageProps) {
       <GamePlayHeader
         game={game}
         drawTime={game.nextDraw}
-        onBack={handleBack}
+        onBack={handleExitToGames}
         onInfo={() => setIsInfoOpen(true)}
         titleOverride={headerTitle}
+        exitAriaLabel="Ir al catálogo de juegos"
       />
 
       <GameInfoSheet

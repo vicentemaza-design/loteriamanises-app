@@ -204,10 +204,18 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   const isSupportedReducedSelection = mode !== 'reduced' || supportedReducedNumbers.length === 0 || supportedReducedNumbers.includes(selectedNumbers.length);
 
   const theme = getGameTheme(game);
-  // Piloto UX aislado a Bonoloto — cada uso de esta bandera envuelve SOLO la
-  // rama nueva; la rama existente (sin esta bandera) queda intacta para el
-  // resto de juegos numéricos que comparten este componente.
-  const isBonoloto = game.id === 'bonoloto';
+  // Generalización del piloto Bonoloto: "usa el nuevo flujo temporal
+  // multisorteo" es la capability real ya existente (supportsTimeSelection,
+  // más abajo), no una lista de juegos por nombre. Bonoloto ya cumplía esta
+  // condición; Euromillones/Primitiva/Gordo/EuroDreams comparten la misma
+  // capacidad (drawScheduleConfig.supportsMultipleDrawSelection) y ahora
+  // adoptan el mismo patrón automáticamente.
+  const usesMultiDrawFlow = supportsTimeSelection;
+  // "Toda la semana" solo tiene sentido cuando el calendario del juego
+  // tiene más de un sorteo por semana — estático por config, no depende del
+  // día actual, así que Bonoloto (7 días) siempre lo mantiene y Gordo
+  // (1 día, domingo) nunca lo muestra, sin tocar drawWeekdays/schedule.
+  const supportsFullWeekSelection = usesMultiDrawFlow && (drawScheduleConfig?.drawWeekdays.length ?? 0) > 1;
 
   const drawDateResolution = useMemo(() => resolveDrawDates({
     gameType: game.type,
@@ -299,18 +307,19 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   const areDatesEqual = (a: string[], b: string[]) =>
     a.length === b.length && a.every((v) => b.includes(v));
 
-  // Bonoloto (piloto) — fechas a mostrar como seleccionadas visualmente.
-  // "Toda la semana" es una selección real y explícita del usuario aunque
-  // selectedDrawDates se mantenga vacío (así lo resuelve resolveDrawDates,
-  // sin tocar): reflejarlo aquí es solo presentación, no cambia esa función
-  // ni effectiveSelectedDrawDates/drawsCount/pricing.
-  const bonolotoVisualSelectedDates = timeMode === 'full_week' ? currentWeekDates : selectedDrawDates;
+  // Flujo multisorteo (Bonoloto + generalización) — fechas a mostrar como
+  // seleccionadas visualmente. "Toda la semana" es una selección real y
+  // explícita del usuario aunque selectedDrawDates se mantenga vacío (así
+  // lo resuelve resolveDrawDates, sin tocar): reflejarlo aquí es solo
+  // presentación, no cambia esa función ni
+  // effectiveSelectedDrawDates/drawsCount/pricing.
+  const multiDrawVisualSelectedDates = timeMode === 'full_week' ? currentWeekDates : selectedDrawDates;
 
-  // Bonoloto (piloto) — importe a mostrar en la barra del paso de fechas.
-  // Misma fórmula que quickPickPricing (apuesta simple mínima), sin tocar
-  // resolvePlayPricing: solo cambia el número de sorteos, que aquí es la
-  // selección REAL (0 sorteos → 0,00€, nunca un importe de compra falso).
-  const bonolotoDateStepPricing = useMemo(() => resolvePlayPricing({
+  // Importe a mostrar en la barra del paso de fechas. Misma fórmula que
+  // quickPickPricing (apuesta simple mínima), sin tocar resolvePlayPricing:
+  // solo cambia el número de sorteos, que aquí es la selección REAL
+  // (0 sorteos → 0,00€, nunca un importe de compra falso).
+  const multiDrawDateStepPricing = useMemo(() => resolvePlayPricing({
     game,
     isNationalLottery: false,
     isQuiniela: false,
@@ -320,8 +329,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
     selectedReductionSystemId: '',
     selectedNationalQuantity: 1,
     selectedNationalDraw: { decimoPrice: game.price },
-    drawsCount: bonolotoVisualSelectedDates.length,
-  }), [game, bonolotoVisualSelectedDates]);
+    drawsCount: multiDrawVisualSelectedDates.length,
+  }), [game, multiDrawVisualSelectedDates]);
 
   const compatibleReducedSystems = useMemo(() => {
     if (mode !== 'reduced') return [];
@@ -787,12 +796,47 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       ? 'Completa al menos una apuesta'
       : `Elige ${maxNums - selectedNumbers.length > 0 ? maxNums - selectedNumbers.length + ' números' : ''} ${maxStars - selectedStars.length > 0 ? '+ ' + (maxStars - selectedStars.length) + ' ' + (game.type === 'eurodreams' ? 'sueño' : 'estrellas') : ''}`.trim();
 
+  // Chip de fecha individual — reutilizado tanto por el listado agrupado
+  // por semana (Bonoloto/Primitiva/Euromillones/EuroDreams) como por la
+  // secuencia plana sin agrupar (Gordo). Mismo estado visual, mismo
+  // handler de selección en ambos casos.
+  const renderDrawChip = (draw: ScheduledDraw) => {
+    // Estado visual desde la selección REAL del usuario, no desde
+    // effectiveSelectedDrawDates (que incluye el fallback del próximo sorteo).
+    const isSelected = multiDrawVisualSelectedDates.includes(draw.drawDate);
+    const chip = formatDrawChip(draw.drawDate);
+    return (
+      <button
+        key={draw.drawDate}
+        onClick={() => {
+          setTimeMode('specific_days');
+          setSelectedDrawDates((prev: string[]) =>
+            prev.includes(draw.drawDate)
+              ? prev.filter((d: string) => d !== draw.drawDate)
+              : [...prev, draw.drawDate].sort()
+          );
+          // Permanece en el paso de fechas — el avance a
+          // paso 2 lo hace únicamente el CTA "Jugar".
+        }}
+        className={cn(
+          'relative flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border min-w-[62px] px-2 py-2.5 transition-all',
+          isSelected ? 'border-transparent shadow-sm' : 'bg-white border-slate-100 hover:border-slate-200'
+        )}
+        style={isSelected ? { backgroundColor: game.color, borderColor: game.color } : undefined}
+      >
+        <span className={cn('relative z-10 text-[12px] font-semibold leading-none uppercase', isSelected ? 'text-white/70' : 'text-slate-400')}>{chip.weekday}</span>
+        <span className={cn('relative z-10 text-[20px] font-bold leading-none', isSelected ? 'text-white' : 'text-slate-700')}>{chip.day}</span>
+        <span className={cn('relative z-10 text-[12px] font-semibold leading-none uppercase', isSelected ? 'text-white/70' : 'text-slate-400')}>{chip.month}</span>
+      </button>
+    );
+  };
+
   return (
     <div
       className={cn(
         'flex min-h-full flex-col transition-[padding]',
-        isBonoloto ? 'bg-white' : 'bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)]',
-        shouldShowStickyCta || isQuickPickMode || isMulticolumnMode || (isBonoloto && onDateStep)
+        usesMultiDrawFlow ? 'bg-white' : 'bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)]',
+        shouldShowStickyCta || isQuickPickMode || isMulticolumnMode || (usesMultiDrawFlow && onDateStep)
           ? 'pb-40'
           : 'pb-6'
       )}
@@ -801,9 +845,9 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       <GamePlayHeader
         game={game}
         drawTime={game.nextDraw}
-        onBack={isBonoloto ? () => navigate('/games') : () => navigate(-1)}
+        onBack={() => navigate('/games')}
         onInfo={() => setIsInfoOpen(true)}
-        exitAriaLabel={isBonoloto ? 'Ir al catálogo de juegos' : undefined}
+        exitAriaLabel="Ir al catálogo de juegos"
       />
 
       <GameInfoSheet
@@ -864,27 +908,27 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
               </div>
 
               <div className="flex items-center gap-1.5 px-3.5 pb-2">
-                <button
-                  onClick={() => {
-                    setTimeMode('full_week');
-                    setSelectedDrawDates([]);
-                    // Bonoloto (piloto): permanece en el paso de fechas — el
-                    // avance a paso 2 lo hace únicamente el CTA "Continuar".
-                    if (!isBonoloto) setDateStepConfirmed(true);
-                  }}
-                  className={cn(
-                    'flex items-center gap-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border',
-                    isBonoloto ? 'px-3 py-1.5' : 'px-2.5 py-1',
-                    (timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates))
-                      ? 'text-white border-transparent shadow-sm'
-                      : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
-                  )}
-                  style={(timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates)) ? { backgroundColor: game.color, borderColor: game.color } : undefined}
-                >
-                  {isBonoloto && <Calendar className="h-3 w-3 shrink-0" />}
-                  {isBonoloto ? 'Seleccionar toda la semana' : 'Toda la semana'}
-                </button>
-                {(isBonoloto ? bonolotoVisualSelectedDates.length > 0 : effectiveSelectedDrawDates.length > 0) && (
+                {supportsFullWeekSelection && (
+                  <button
+                    onClick={() => {
+                      setTimeMode('full_week');
+                      setSelectedDrawDates([]);
+                      // Permanece en el paso de fechas — el avance a paso 2
+                      // lo hace únicamente el CTA "Jugar".
+                    }}
+                    className={cn(
+                      'flex items-center gap-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border px-3 py-1.5',
+                      (timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates))
+                        ? 'text-white border-transparent shadow-sm'
+                        : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
+                    )}
+                    style={(timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates)) ? { backgroundColor: game.color, borderColor: game.color } : undefined}
+                  >
+                    <Calendar className="h-3 w-3 shrink-0" />
+                    Seleccionar toda la semana
+                  </button>
+                )}
+                {multiDrawVisualSelectedDates.length > 0 && (
                   <button
                     onClick={() => { setTimeMode('specific_days'); setSelectedDrawDates([]); }}
                     className="ml-auto px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider bg-slate-50 text-slate-500 border border-slate-200 hover:border-slate-300"
@@ -895,99 +939,60 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
               </div>
 
               <div className="flex gap-2 overflow-x-auto border-t border-slate-50 px-3.5 pb-3 pt-2.5">
-                {(Object.entries(groupedAllDraws) as [string, ScheduledDraw[]][]).flatMap(([weekKey, weekDraws], weekIndex) => {
-                  const weekLabel = weekIndex === 0 ? 'Esta sem.' : weekIndex === 1 ? 'Próx. sem.' : `Sem. ${weekIndex + 1}`;
-                  const weekDates = weekDraws.map((d: ScheduledDraw) => d.drawDate);
-                  const allSelected = weekDates.length > 0 && weekDates.every((d: string) => effectiveSelectedDrawDates.includes(d));
-                  const someSelected = weekDates.some((d: string) => effectiveSelectedDrawDates.includes(d));
+                {supportsFullWeekSelection
+                  ? (Object.entries(groupedAllDraws) as [string, ScheduledDraw[]][]).flatMap(([weekKey, weekDraws], weekIndex) => {
+                      const weekLabel = weekIndex === 0 ? 'Esta sem.' : weekIndex === 1 ? 'Próx. sem.' : `Sem. ${weekIndex + 1}`;
+                      const weekDates = weekDraws.map((d: ScheduledDraw) => d.drawDate);
+                      const allSelected = weekDates.length > 0 && weekDates.every((d: string) => effectiveSelectedDrawDates.includes(d));
+                      const someSelected = weekDates.some((d: string) => effectiveSelectedDrawDates.includes(d));
 
-                  const separator = (
-                    <button
-                      key={`sep-${weekKey}`}
-                      onClick={() => {
-                        setTimeMode('specific_days');
-                        setSelectedDrawDates((prev: string[]) =>
-                          allSelected
-                            ? prev.filter((d: string) => !weekDates.includes(d))
-                            : Array.from(new Set([...prev, ...weekDates])).sort()
-                        );
-                        // Bonoloto (piloto): permanece en el paso de fechas — el
-                        // avance a paso 2 lo hace únicamente el CTA "Continuar".
-                        if (!isBonoloto) setDateStepConfirmed(true);
-                      }}
-                      className={cn(
-                        'flex shrink-0 items-center self-center rounded-lg border px-2 py-2.5 text-[9px] font-black uppercase tracking-wider transition-all',
-                        allSelected ? 'text-white border-transparent shadow-sm' :
-                        someSelected ? 'bg-slate-50 border-slate-200 text-slate-500' :
-                        'bg-slate-50 border-dashed border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'
-                      )}
-                      style={allSelected ? { backgroundColor: game.color, borderColor: game.color } : undefined}
-                    >
-                      {weekLabel}
-                    </button>
-                  );
+                      const separator = (
+                        <button
+                          key={`sep-${weekKey}`}
+                          onClick={() => {
+                            setTimeMode('specific_days');
+                            setSelectedDrawDates((prev: string[]) =>
+                              allSelected
+                                ? prev.filter((d: string) => !weekDates.includes(d))
+                                : Array.from(new Set([...prev, ...weekDates])).sort()
+                            );
+                            // Permanece en el paso de fechas — el avance a paso 2
+                            // lo hace únicamente el CTA "Jugar".
+                          }}
+                          className={cn(
+                            'flex shrink-0 items-center self-center rounded-lg border px-2 py-2.5 text-[9px] font-black uppercase tracking-wider transition-all',
+                            allSelected ? 'text-white border-transparent shadow-sm' :
+                            someSelected ? 'bg-slate-50 border-slate-200 text-slate-500' :
+                            'bg-slate-50 border-dashed border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600'
+                          )}
+                          style={allSelected ? { backgroundColor: game.color, borderColor: game.color } : undefined}
+                        >
+                          {weekLabel}
+                        </button>
+                      );
 
-                  const chips = weekDraws.map((draw: ScheduledDraw) => {
-                    // Bonoloto (piloto): estado visual desde la selección REAL del
-                    // usuario, no desde effectiveSelectedDrawDates (que incluye el
-                    // fallback del próximo sorteo). Resto de juegos: sin cambios.
-                    const isSelected = isBonoloto
-                      ? bonolotoVisualSelectedDates.includes(draw.drawDate)
-                      : effectiveSelectedDrawDates.includes(draw.drawDate);
-                    const chip = formatDrawChip(draw.drawDate);
-                    return (
-                      <button
-                        key={draw.drawDate}
-                        onClick={() => {
-                          setTimeMode('specific_days');
-                          setSelectedDrawDates((prev: string[]) =>
-                            prev.includes(draw.drawDate)
-                              ? prev.filter((d: string) => d !== draw.drawDate)
-                              : [...prev, draw.drawDate].sort()
-                          );
-                          // Bonoloto (piloto): permanece en el paso de fechas — el
-                          // avance a paso 2 lo hace únicamente el CTA "Continuar".
-                          if (!isBonoloto) setDateStepConfirmed(true);
-                        }}
-                        className={cn(
-                          'relative flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border min-w-[62px] px-2 py-2.5 transition-all',
-                          isSelected
-                            ? (isBonoloto ? 'border-transparent shadow-sm' : 'border-transparent shadow-[0_4px_12px_rgba(10,71,146,0.10)]')
-                            : 'bg-white border-slate-100 hover:border-slate-200'
-                        )}
-                        style={isSelected ? (isBonoloto ? { backgroundColor: game.color, borderColor: game.color } : { backgroundColor: `${game.color}12`, borderColor: game.color }) : undefined}
-                      >
-                        {isSelected && !isBonoloto && (
-                          <motion.div
-                            layoutId="selected-draw-chip"
-                            className="absolute inset-0 rounded-xl border-2 z-0"
-                            style={{ borderColor: game.color }}
-                            transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                          />
-                        )}
-                        <span className={cn('relative z-10 text-[12px] font-semibold leading-none uppercase', isSelected ? (isBonoloto ? 'text-white/70' : 'text-manises-blue/70') : 'text-slate-400')}>{chip.weekday}</span>
-                        <span className={cn('relative z-10 text-[20px] font-bold leading-none', isSelected ? (isBonoloto ? 'text-white' : 'text-manises-blue') : 'text-slate-700')}>{chip.day}</span>
-                        <span className={cn('relative z-10 text-[12px] font-semibold leading-none uppercase', isSelected ? (isBonoloto ? 'text-white/70' : 'text-manises-blue/70') : 'text-slate-400')}>{chip.month}</span>
-                      </button>
-                    );
-                  });
-
-                  return [separator, ...chips];
-                })}
+                      return [separator, ...weekDraws.map(renderDrawChip)];
+                    })
+                  // Gordo (y cualquier juego con 1 sorteo/semana): secuencia
+                  // plana de próximos sorteos, sin separadores "Esta sem."/
+                  // "Próx. sem." — agruparía cada sorteo en su propio grupo
+                  // de 1, sin aportar nada. Misma lista (allAvailableDraws,
+                  // getUpcomingDraws sin tocar), mismo chip, mismos handlers.
+                  : allAvailableDraws.map(renderDrawChip)}
               </div>
             </div>
 
-            {/* Bonoloto (piloto): solo mientras no haya selección REAL. Resto de juegos: sin cambios (siempre visible en este paso). */}
-            {(!isBonoloto || bonolotoVisualSelectedDates.length === 0) && (
+            {/* Solo mientras no haya selección REAL. */}
+            {multiDrawVisualSelectedDates.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-3 rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50/40 px-6 pb-2 pt-8 text-center">
                 <Calendar className="h-10 w-10 text-slate-300" />
                 <p className="text-[11px] font-black uppercase tracking-[0.08em] text-manises-blue">
-                  {isBonoloto ? 'Selecciona los sorteos en los que quieres jugar' : 'Elige la fecha del sorteo'}
+                  Selecciona los sorteos en los que quieres jugar
                 </p>
                 <p className="max-w-[230px] pb-6 text-[13px] font-medium leading-relaxed text-slate-400">
-                  {isBonoloto
+                  {supportsFullWeekSelection
                     ? 'Puedes elegir uno o varios días, o seleccionar toda la semana.'
-                    : 'Selecciona uno o varios días arriba para ver las opciones de juego disponibles.'}
+                    : 'Puedes elegir uno o varios sorteos.'}
                 </p>
               </div>
             )}
@@ -998,23 +1003,17 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
             {hasDateSelector ? (
               <button
                 onClick={() => setDateStepConfirmed(false)}
-                className={cn(
-                  'group flex w-full items-center gap-2 rounded-xl border border-slate-200/60 bg-white shadow-sm transition-all hover:border-manises-blue/20 hover:shadow-md active:scale-[0.99]',
-                  isBonoloto ? 'h-14 px-4' : 'px-3 py-2.5'
-                )}
+                className="group flex h-14 w-full items-center gap-2 rounded-xl border border-slate-200/60 bg-white px-4 shadow-sm transition-all hover:border-manises-blue/20 hover:shadow-md active:scale-[0.99]"
                 aria-label="Editar fecha del sorteo"
               >
-                <Calendar className={cn('shrink-0 text-manises-blue/50', isBonoloto ? 'h-4 w-4' : 'h-3.5 w-3.5')} />
-                <span className={cn('min-w-0 flex-1 truncate text-left font-bold text-manises-blue', isBonoloto ? 'text-[12px]' : 'text-[11px]')}>
+                <Calendar className="h-4 w-4 shrink-0 text-manises-blue/50" />
+                <span className="min-w-0 flex-1 truncate text-left text-[12px] font-bold text-manises-blue">
                   {collapsedDrawMoment}
                 </span>
-                <span className={cn(
-                  'shrink-0 font-black uppercase tracking-widest transition-colors group-hover:text-manises-blue',
-                  isBonoloto ? 'text-[10px] text-manises-blue' : 'text-[9px] text-manises-blue/50'
-                )}>
-                  {isBonoloto ? 'Editar días' : 'Cambiar'}
+                <span className="shrink-0 text-[10px] font-black uppercase tracking-widest text-manises-blue transition-colors group-hover:text-manises-blue">
+                  Editar días
                 </span>
-                <EditPencil className={cn('shrink-0 transition-colors group-hover:text-manises-blue', isBonoloto ? 'h-4 w-4 text-manises-blue/60' : 'h-3.5 w-3.5 text-manises-blue/40')} />
+                <EditPencil className="h-4 w-4 shrink-0 text-manises-blue/60 transition-colors group-hover:text-manises-blue" />
               </button>
             ) : (
               <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
@@ -1452,21 +1451,20 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
       </div>
 
       {/*
-        Bonoloto (piloto) — confirmación específica del paso de fechas.
+        Confirmación específica del paso de fechas (flujo multisorteo).
         Reutiliza el MISMO componente que el CTA final de compra (más abajo)
-        en vez de una barra visual propia — misma familia Saldo/Importe/CTA,
-        preparada para generalizarse a otros juegos sin rehacer nada. Esto
-        NO es una acción de compra: onContinue solo hace
+        en vez de una barra visual propia — misma familia Saldo/Importe/CTA.
+        Esto NO es una acción de compra: onContinue solo hace
         setDateStepConfirmed(true) — no toca carrito/drafts/pricing ni
         valida números. Importe: precio de una apuesta simple mínima
         (misma fórmula que quickPickPricing, resolvePlayPricing sin tocar)
         multiplicado por los sorteos con selección REAL — 0 sorteos → 0,00€.
       */}
-      {isBonoloto && onDateStep && (
+      {usesMultiDrawFlow && onDateStep && (
         <PurchaseBottomBar
           availableBalance={availableBalance}
-          totalPrice={bonolotoDateStepPricing.totalPrice}
-          canContinue={bonolotoVisualSelectedDates.length > 0}
+          totalPrice={multiDrawDateStepPricing.totalPrice}
+          canContinue={multiDrawVisualSelectedDates.length > 0}
           ctaLabel="Jugar"
           onContinue={() => setDateStepConfirmed(true)}
           activeColor={game.color}

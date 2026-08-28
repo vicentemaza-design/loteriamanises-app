@@ -338,13 +338,12 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
     setFlowScreen(method === 'aleatorio' ? 'aleatorio' : 'manual');
   };
 
-  const handleBack = () => {
-    if (flowScreen !== 'config') {
-      setFlowScreen('config');
-      clearNationalCart();
-    } else {
-      navigate(-1);
-    }
+  // El icono de cabecera ya no retrocede un paso dentro del flujo: siempre
+  // abandona el juego hacia el catálogo. Se conserva el cleanup que antes
+  // ejecutaba el paso intermedio (limpiar la cesta de Nacional en curso).
+  const handleExitToGames = () => {
+    clearNationalCart();
+    navigate('/games');
   };
 
   const drawId = isExplicitNationalProduct ? selectedNationalDrawId : 'especial';
@@ -366,8 +365,9 @@ export function NationalPlayPage({ game }: NationalPlayPageProps) {
       <GamePlayHeader
         game={game}
         drawTime={selectedNationalDraw.nextDraw}
-        onBack={handleBack}
+        onBack={handleExitToGames}
         onInfo={() => setIsInfoOpen(true)}
+        exitAriaLabel="Ir al catálogo de juegos"
       />
 
       <GameInfoSheet game={game} isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} content={helpContent} />

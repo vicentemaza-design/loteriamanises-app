@@ -46,13 +46,11 @@ export function NavidadPlayPage({ game }: NavidadPlayPageProps) {
     setFlowScreen(method === 'aleatorio' ? 'aleatorio' : 'manual');
   };
 
-  const handleBack = () => {
-    if (flowScreen !== 'config') {
-      setFlowScreen('config');
-    } else {
-      navigate(-1);
-    }
-  };
+  // El icono de cabecera ya no retrocede un paso dentro del flujo: siempre
+  // abandona el juego hacia el catálogo. No hay cleanup adicional que
+  // preservar aquí (a diferencia de Nacional, este flujo no acumula una
+  // cesta intermedia antes de confirmar).
+  const handleExitToGames = () => navigate('/games');
 
   // Tras una compra confirmada (no solo añadida a la cesta), volver a la
   // pantalla de entrada "en fresco".
@@ -167,8 +165,9 @@ export function NavidadPlayPage({ game }: NavidadPlayPageProps) {
       <GamePlayHeader
         game={game}
         drawTime={game.nextDraw}
-        onBack={handleBack}
+        onBack={handleExitToGames}
         onInfo={() => setIsInfoOpen(true)}
+        exitAriaLabel="Ir al catálogo de juegos"
       />
 
       <GameInfoSheet game={game} isOpen={isInfoOpen} onClose={() => setIsInfoOpen(false)} content={helpContent} />
