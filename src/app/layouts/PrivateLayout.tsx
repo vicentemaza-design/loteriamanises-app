@@ -42,6 +42,7 @@ export function PrivateLayout() {
   // Superficie base de la PWA privada. En iOS instalado hay zonas físicas
   // reservadas que pueden mostrar el fondo de <html>; mantenerlo azul evita
   // que aparezca una franja clara en las rutas privadas, incluidas /play/*.
+  // Este comentario también sirve para retrigger de preview sin alterar lógica.
   // Se restaura al desmontar para no contaminar Login/Registro.
   React.useEffect(() => {
     const html = document.documentElement;
