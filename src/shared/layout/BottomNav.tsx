@@ -52,7 +52,7 @@ export function BottomNav() {
   return (
     <nav
       ref={navRef}
-      className="fixed bottom-0 left-0 right-0 z-60 bg-manises-blue/80 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
+      className="fixed bottom-0 left-0 right-0 z-60 bg-manises-blue/90 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
       style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}
       role="navigation"
       aria-label="Navegación principal"

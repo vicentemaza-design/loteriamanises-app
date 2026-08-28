@@ -163,7 +163,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(DEMO_PROFILE);
     setIsDemo(true);
     setLoading(false);
-    toast.success('Modo demo activado 🎯');
+    toast.success('Modo demo activado 🎯', {
+      style: {
+        background: 'rgba(10, 71, 146, 0.9)',
+        borderColor: 'rgba(255, 255, 255, 0.18)',
+        color: '#ffffff',
+      },
+    });
     // Mismo saldo persistente que el resto de la app (ver wallet.mock.ts) —
     // si ya hubo actividad demo en este navegador, respeta ese saldo en vez
     // del valor inicial fijo de DEMO_PROFILE.
