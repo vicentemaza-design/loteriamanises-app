@@ -30,6 +30,15 @@ export function PrivateLayout() {
     }
   }, [location.pathname]);
 
+  React.useEffect(() => {
+    const viewportMeta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+    if (!viewportMeta) return;
+
+    const content = viewportMeta.content
+      .replace(/,?\s*viewport-fit=(?:cover|contain|auto)/, '');
+    viewportMeta.setAttribute('content', content);
+  }, []);
+
   // CONFIRMADO con Web Inspector remoto en dispositivo real (rama
   // debug/ios-keyboard-scroll-recovery): con .app-shell/<main> ya
   // alineados exactamente a innerHeight (812), sigue quedando una franja

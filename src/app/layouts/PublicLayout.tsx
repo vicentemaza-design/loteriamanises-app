@@ -10,6 +10,13 @@ export function PublicLayout() {
 
   useEffect(() => {
     document.documentElement.classList.add('auth-route');
+    const viewportMeta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+    if (viewportMeta) {
+      const content = viewportMeta.content
+        .replace(/,?\s*viewport-fit=(?:cover|contain|auto)/, '')
+        .concat(', viewport-fit=cover');
+      viewportMeta.setAttribute('content', content);
+    }
 
     return () => {
       document.documentElement.classList.remove('auth-route');
