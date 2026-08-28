@@ -107,7 +107,7 @@ export function NationalPreFlow({
 
         {/* Barra inferior fija */}
         <div
-          className="fixed bottom-0 left-0 right-0 z-10 overflow-hidden border-t border-white/5 bg-manises-blue/88 pt-7 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl"
+          className="fixed bottom-0 left-0 right-0 z-10 overflow-hidden border-t border-white/5 bg-manises-blue/80 pt-7 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
           <div className="-translate-y-[24px] mx-auto grid min-h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white">
