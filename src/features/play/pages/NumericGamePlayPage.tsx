@@ -306,6 +306,23 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   // ni effectiveSelectedDrawDates/drawsCount/pricing.
   const bonolotoVisualSelectedDates = timeMode === 'full_week' ? currentWeekDates : selectedDrawDates;
 
+  // Bonoloto (piloto) — importe a mostrar en la barra del paso de fechas.
+  // Misma fórmula que quickPickPricing (apuesta simple mínima), sin tocar
+  // resolvePlayPricing: solo cambia el número de sorteos, que aquí es la
+  // selección REAL (0 sorteos → 0,00€, nunca un importe de compra falso).
+  const bonolotoDateStepPricing = useMemo(() => resolvePlayPricing({
+    game,
+    isNationalLottery: false,
+    isQuiniela: false,
+    mode: 'simple',
+    selectedNumbersCount: game.selectionRange.numbers.min,
+    selectedStarsCount: game.selectionRange.stars?.min ?? 0,
+    selectedReductionSystemId: '',
+    selectedNationalQuantity: 1,
+    selectedNationalDraw: { decimoPrice: game.price },
+    drawsCount: bonolotoVisualSelectedDates.length,
+  }), [game, bonolotoVisualSelectedDates]);
+
   const compatibleReducedSystems = useMemo(() => {
     if (mode !== 'reduced') return [];
     return getCompatibleReducedSystems({ game, numbersCount: selectedNumbers.length });
@@ -773,12 +790,11 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   return (
     <div
       className={cn(
-        'flex min-h-full flex-col bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)] transition-[padding]',
-        shouldShowStickyCta || isQuickPickMode || isMulticolumnMode
+        'flex min-h-full flex-col transition-[padding]',
+        isBonoloto ? 'bg-white' : 'bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)]',
+        shouldShowStickyCta || isQuickPickMode || isMulticolumnMode || (isBonoloto && onDateStep)
           ? 'pb-40'
-          : isBonoloto && onDateStep && bonolotoVisualSelectedDates.length > 0
-            ? 'pb-24'
-            : 'pb-6'
+          : 'pb-6'
       )}
       style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 56px)' }}
     >
@@ -787,7 +803,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
         drawTime={game.nextDraw}
         onBack={isBonoloto ? () => navigate('/games') : () => navigate(-1)}
         onInfo={() => setIsInfoOpen(true)}
-        exitLabel={isBonoloto ? 'Juegos' : undefined}
+        exitAriaLabel={isBonoloto ? 'Ir al catálogo de juegos' : undefined}
       />
 
       <GameInfoSheet
@@ -983,19 +999,22 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
               <button
                 onClick={() => setDateStepConfirmed(false)}
                 className={cn(
-                  'group flex w-full items-center gap-2 rounded-xl border border-slate-200/60 bg-white px-3 shadow-sm transition-all hover:border-manises-blue/20 hover:shadow-md active:scale-[0.99]',
-                  isBonoloto ? 'h-[52px]' : 'py-2.5'
+                  'group flex w-full items-center gap-2 rounded-xl border border-slate-200/60 bg-white shadow-sm transition-all hover:border-manises-blue/20 hover:shadow-md active:scale-[0.99]',
+                  isBonoloto ? 'h-14 px-4' : 'px-3 py-2.5'
                 )}
                 aria-label="Editar fecha del sorteo"
               >
-                <Calendar className="h-3.5 w-3.5 shrink-0 text-manises-blue/50" />
-                <span className="min-w-0 flex-1 truncate text-left text-[11px] font-bold text-manises-blue">
+                <Calendar className={cn('shrink-0 text-manises-blue/50', isBonoloto ? 'h-4 w-4' : 'h-3.5 w-3.5')} />
+                <span className={cn('min-w-0 flex-1 truncate text-left font-bold text-manises-blue', isBonoloto ? 'text-[12px]' : 'text-[11px]')}>
                   {collapsedDrawMoment}
                 </span>
-                <span className="shrink-0 text-[9px] font-black uppercase tracking-widest text-manises-blue/50 transition-colors group-hover:text-manises-blue">
+                <span className={cn(
+                  'shrink-0 font-black uppercase tracking-widest transition-colors group-hover:text-manises-blue',
+                  isBonoloto ? 'text-[10px] text-manises-blue' : 'text-[9px] text-manises-blue/50'
+                )}>
                   {isBonoloto ? 'Editar días' : 'Cambiar'}
                 </span>
-                <EditPencil className="h-3.5 w-3.5 shrink-0 text-manises-blue/40 transition-colors group-hover:text-manises-blue" />
+                <EditPencil className={cn('shrink-0 transition-colors group-hover:text-manises-blue', isBonoloto ? 'h-4 w-4 text-manises-blue/60' : 'h-3.5 w-3.5 text-manises-blue/40')} />
               </button>
             ) : (
               <div className="rounded-[1.2rem] border border-slate-100 bg-white px-3.5 py-2.5 shadow-sm">
@@ -1434,28 +1453,25 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
 
       {/*
         Bonoloto (piloto) — confirmación específica del paso de fechas.
-        Separada a propósito de PurchaseBottomBar: esto NO es una acción de
-        compra (no toca carrito/drafts/pricing/validación de números), solo
-        confirma paso 1 → paso 2 (setDateStepConfirmed(true)). Visible solo
-        mientras se está en el paso de fechas y existe selección real
-        (chips concretos o "toda la semana").
+        Reutiliza el MISMO componente que el CTA final de compra (más abajo)
+        en vez de una barra visual propia — misma familia Saldo/Importe/CTA,
+        preparada para generalizarse a otros juegos sin rehacer nada. Esto
+        NO es una acción de compra: onContinue solo hace
+        setDateStepConfirmed(true) — no toca carrito/drafts/pricing ni
+        valida números. Importe: precio de una apuesta simple mínima
+        (misma fórmula que quickPickPricing, resolvePlayPricing sin tocar)
+        multiplicado por los sorteos con selección REAL — 0 sorteos → 0,00€.
       */}
-      {isBonoloto && onDateStep && bonolotoVisualSelectedDates.length > 0 && (
-        <div
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-black/5 bg-white/95 px-4 pt-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur-md"
-          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 0.75rem)' }}
-        >
-          <div className="mx-auto w-full max-w-screen-sm">
-            <button
-              type="button"
-              onClick={() => setDateStepConfirmed(true)}
-              className="w-full rounded-2xl py-3.5 text-[13px] font-black uppercase tracking-wider text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_6px_14px_rgba(0,0,0,0.14)] transition-all active:scale-[0.98]"
-              style={{ backgroundColor: game.color }}
-            >
-              Continuar
-            </button>
-          </div>
-        </div>
+      {isBonoloto && onDateStep && (
+        <PurchaseBottomBar
+          availableBalance={availableBalance}
+          totalPrice={bonolotoDateStepPricing.totalPrice}
+          canContinue={bonolotoVisualSelectedDates.length > 0}
+          ctaLabel="Jugar"
+          onContinue={() => setDateStepConfirmed(true)}
+          activeColor={game.color}
+          amountLabel="Desde"
+        />
       )}
 
       {shouldShowStickyCta && (

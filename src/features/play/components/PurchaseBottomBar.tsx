@@ -12,6 +12,7 @@ interface PurchaseBottomBarProps {
   summaryText?: string;
   menuItems?: GamePlayBottomMenuItem[];
   className?: string;
+  amountLabel?: string;
 }
 
 export function PurchaseBottomBar({
@@ -26,6 +27,7 @@ export function PurchaseBottomBar({
   summaryText,
   menuItems,
   className,
+  amountLabel,
 }: PurchaseBottomBarProps) {
   return (
     <GamePlayBottomMenu
@@ -40,6 +42,7 @@ export function PurchaseBottomBar({
       summaryText={summaryText}
       menuItems={menuItems}
       className={className}
+      amountLabel={amountLabel}
     />
   );
 }

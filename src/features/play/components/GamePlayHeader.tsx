@@ -12,17 +12,18 @@ interface GamePlayHeaderProps {
   onInfo: () => void;
   titleOverride?: string;
   /**
-   * When set, replaces the default back arrow with a labeled exit action
-   * (icon + text) using this label — e.g. "Juegos". Left undefined, the
+   * When set, replaces the default back arrow with a grid/catalog icon
+   * (same size/position, no visible text) using this string as its
+   * aria-label — e.g. "Ir al catálogo de juegos". Left undefined, the
    * header renders exactly as before (plain back arrow). Piloted on
    * Bonoloto only; every other caller omits this prop.
    */
-  exitLabel?: string;
+  exitAriaLabel?: string;
 }
 
 const NATIONAL_LOTTERY_TYPES = new Set(['loteria-nacional', 'navidad', 'nino']);
 
-export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, exitLabel }: GamePlayHeaderProps) {
+export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, exitAriaLabel }: GamePlayHeaderProps) {
   const { gameDrafts, lotteryDrafts, openGameReview, openLotteryReview } = usePlaySession();
   const isLotteryGame = NATIONAL_LOTTERY_TYPES.has(game.type);
   const count = isLotteryGame ? lotteryDrafts.length : gameDrafts.length;
@@ -39,15 +40,14 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, 
     >
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-1">
-          {exitLabel ? (
+          {exitAriaLabel ? (
             <button
               type="button"
               onClick={onBack}
-              aria-label={exitLabel}
-              className="flex h-9 items-center gap-1.5 rounded-xl px-2.5 text-white/90 transition-all hover:bg-white/15 hover:text-white active:scale-95"
+              aria-label={exitAriaLabel}
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-white/90 transition-all hover:bg-white/15 hover:text-white active:scale-95"
             >
-              <ViewGrid className="h-4.5 w-4.5" />
-              <span className="text-[11px] font-bold">{exitLabel}</span>
+              <ViewGrid className="h-5 w-5" />
             </button>
           ) : (
             <Button

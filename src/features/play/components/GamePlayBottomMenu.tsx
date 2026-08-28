@@ -23,6 +23,13 @@ interface GamePlayBottomMenuProps {
   summaryText?: string;
   menuItems?: GamePlayBottomMenuItem[];
   className?: string;
+  /**
+   * Etiqueta de la columna central cuando NO hay sobresaldo. Por defecto
+   * "Importe €" — pasar un valor distinto no afecta a ningún caller que no
+   * lo especifique. El mensaje de sobresaldo ("Faltan X€") no depende de
+   * este prop y no cambia.
+   */
+  amountLabel?: string;
 }
 
 export function GamePlayBottomMenu({
@@ -32,6 +39,7 @@ export function GamePlayBottomMenu({
   ctaLabel,
   onContinue,
   activeColor,
+  amountLabel = 'Importe €',
   className,
 }: GamePlayBottomMenuProps) {
   const isOverBalance = availableBalance < totalPrice;
@@ -75,7 +83,7 @@ export function GamePlayBottomMenu({
             <sup className="ml-0.5 align-super text-[0.5rem] font-black">,{total.cents}</sup>
           </p>
           <p className={cn('relative mt-1 text-[0.6rem] font-bold uppercase tracking-[0.08em] leading-none', isOverBalance ? 'text-red-300' : 'text-white/58')}>
-            {isOverBalance ? `Faltan ${formatCurrency(totalPrice - availableBalance)}` : 'Importe €'}
+            {isOverBalance ? `Faltan ${formatCurrency(totalPrice - availableBalance)}` : amountLabel}
           </p>
         </div>
 
