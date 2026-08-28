@@ -25,18 +25,9 @@ export function BottomNav() {
   const hasLottery = lotteryDrafts.length > 0;
   const hasCart = hasGames || hasLottery;
 
-  // EXPERIMENTO (rama debug/ios-keyboard-scroll-recovery): --nav-height
-  // dimensionaba pb-nav-safe con una fórmula fija en rem (NAV_BASE_REM=5)
-  // que no coincidía con la altura real renderizada del nav (la fila de
-  // iconos es h-14=3.5rem) — un desfase de ~24px ya detectado antes en
-  // esta misma sesión (barra de pago de Mis abonos). Ese sobrante
-  // normalmente queda oculto porque BottomNav, en bottom:0, lo tapa con su
-  // propio fondo opaco — pero si su posición/altura real ya no coincide
-  // con esa reserva (posible tras el bloqueo de body:fixed), el sobrante
-  // queda al descubierto como franja blanca. Aquí se mide la altura REAL
-  // renderizada del nav (ResizeObserver) en vez de calcularla con una
-  // fórmula fija, para que pb-nav-safe reserve exactamente lo que el nav
-  // ocupa, ni más ni menos.
+  // Ajusta --nav-height para que pb-nav-safe tenga siempre el espacio correcto,
+  // midiendo la altura real renderizada del nav (ResizeObserver) en vez de
+  // calcularla con una fórmula fija que puede desajustarse.
   useEffect(() => {
     const node = navRef.current;
     if (!node) return;
@@ -52,13 +43,10 @@ export function BottomNav() {
   return (
     <nav
       ref={navRef}
-      className="fixed bottom-0 left-0 right-0 z-60 bg-manises-blue/90 pt-4 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
-      style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}
+      className="fixed bottom-0 left-0 right-0 z-60 bg-transparent"
       role="navigation"
       aria-label="Navegación principal"
     >
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
       {/* Sección de cestas — aparece encima de los iconos de nav */}
       <AnimatePresence>
         {hasCart && (
@@ -68,9 +56,9 @@ export function BottomNav() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-            className="overflow-hidden bg-white/96 border-b border-slate-200/60"
+            className="overflow-hidden bg-transparent"
           >
-            <div className={`grid gap-2 px-2 pt-2 pb-2 ${hasGames && hasLottery ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            <div className={`grid gap-2 px-2 pt-2 pb-0 ${hasGames && hasLottery ? 'grid-cols-2' : 'grid-cols-1'}`}>
               {hasGames && (
                 <button
                   type="button"
@@ -118,8 +106,15 @@ export function BottomNav() {
         )}
       </AnimatePresence>
 
-      {/* Iconos de navegación */}
-      <div className="-translate-y-[18px] flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
+      {/* Superficie azul de navegación; la cesta queda fuera de esta capa visual. */}
+      <div
+        className="relative bg-manises-blue/80 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}
+      >
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+        {/* Iconos de navegación */}
+        <div className="flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = path === '/home'
             ? location.pathname === '/home' || location.pathname === '/'
@@ -160,6 +155,7 @@ export function BottomNav() {
             </PremiumTouchInteraction>
           );
         })}
+        </div>
       </div>
     </nav>
   );
