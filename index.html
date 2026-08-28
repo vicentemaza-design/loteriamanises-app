@@ -78,8 +78,12 @@
 
         if (isAuthRoute) {
           document.documentElement.classList.add('auth-route');
+        } else {
+          // Aplicar antes de que monte React la misma superficie azul raíz
+          // que en main funcionaba accidentalmente mediante layer-debug,
+          // pero sin activar ningún otro color/capa de diagnóstico.
+          document.documentElement.classList.add('private-app-surface');
         }
-
       })();
     </script>
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
