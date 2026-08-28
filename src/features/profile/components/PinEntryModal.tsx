@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ShieldCheck, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
@@ -39,6 +39,7 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
     height: null,
     offsetTop: 0,
   });
+  const sheetRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -68,6 +69,28 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
     return () => {
       vv.removeEventListener('resize', updateViewport);
       vv.removeEventListener('scroll', updateViewport);
+    };
+  }, [isOpen]);
+
+  // Foco controlado: OtpInput recibe autoFocus={false} (ver más abajo) para
+  // que iOS no dispare su propio scroll-to-reveal al enfocar automáticamente
+  // en el mount. En su lugar, se enfoca aquí con preventScroll tras un doble
+  // rAF (deja que el layout con el visualViewport ya asentado se pinte
+  // antes de enfocar), evitando que el documento se desplace al buscar el
+  // input — el modal ya está posicionado sobre el teclado por el wrapper
+  // ligado al visualViewport, no hace falta que el navegador lo revele.
+  useEffect(() => {
+    if (!isOpen) return;
+    let frame1 = 0;
+    let frame2 = 0;
+    frame1 = requestAnimationFrame(() => {
+      frame2 = requestAnimationFrame(() => {
+        sheetRef.current?.querySelector<HTMLInputElement>('input')?.focus({ preventScroll: true });
+      });
+    });
+    return () => {
+      cancelAnimationFrame(frame1);
+      cancelAnimationFrame(frame2);
     };
   }, [isOpen]);
 
@@ -155,24 +178,37 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
             onClick={!isBusy ? handleClose : undefined}
             className="fixed inset-0 z-[270] bg-manises-blue/40 backdrop-blur-sm"
           />
-          <motion.div
-            initial={{ y: '100%', opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: '100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="pin-entry-title"
-            className="fixed bottom-0 left-0 right-0 z-[271] flex max-h-[calc(100dvh-0.75rem)] flex-col rounded-t-[2.5rem] bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)]"
+          {/* Wrapper ligado al visualViewport (no al layout viewport): en
+              iOS, cuando aparece el teclado, visualViewport es el único que
+              refleja la zona realmente visible. La hoja se ancla abajo de
+              ESTE wrapper (flex items-end), no con bottom dinámico ni
+              window.innerHeight — evita el cálculo que obligaba a hacer
+              scroll manual para "revelar" el modal. pointer-events-none en
+              el wrapper para no bloquear clics fuera de la hoja; la hoja
+              recupera pointer-events-auto. */}
+          <div
+            className="fixed left-0 right-0 z-[271] flex items-end pointer-events-none"
             style={{
-              bottom: viewport.height != null
-                ? `${Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)}px`
-                : undefined,
-              maxHeight: viewport.height != null
-                ? `${Math.max(viewport.height - 12, 240)}px`
-                : 'calc(100dvh - 0.75rem)',
+              top: viewport.height != null ? `${viewport.offsetTop}px` : 0,
+              height: viewport.height != null ? `${viewport.height}px` : '100dvh',
             }}
           >
+            <motion.div
+              ref={sheetRef}
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="pin-entry-title"
+              className="pointer-events-auto flex w-full max-h-[calc(100dvh-0.75rem)] flex-col rounded-t-[2.5rem] bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)]"
+              style={{
+                maxHeight: viewport.height != null
+                  ? `${Math.max(viewport.height - 12, 240)}px`
+                  : 'calc(100dvh - 0.75rem)',
+              }}
+            >
             <div className="flex w-full shrink-0 justify-center pt-3 pb-2">
               <div className="h-1.5 w-12 rounded-full bg-gray-200" />
             </div>
@@ -215,6 +251,10 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
                   // without manually tapping a box again.
                   error={!!error}
                   ariaLabel="PIN de seguridad de 4 dígitos"
+                  // autoFocus propio desactivado: el foco lo controla este
+                  // componente (ver useEffect de arriba) con preventScroll,
+                  // para que iOS no dispare su scroll-to-reveal al enfocar.
+                  autoFocus={false}
                 />
 
                 {error && (
@@ -232,7 +272,8 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
                 )}
               </div>
             </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
