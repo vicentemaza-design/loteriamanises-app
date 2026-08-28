@@ -63,7 +63,7 @@ export function NotFoundPage() {
         <h1 className="mt-2 text-xl font-black uppercase tracking-tight text-white">
           Este número no ha salido
         </h1>
-        <p className="mt-2 max-w-[280px] text-sm font-medium text-white/60">
+        <p className="mt-2 max-w-70 text-sm font-medium text-white/60">
           Parece que esta combinación no existe. Comprueba el enlace o vuelve al inicio.
         </p>
 

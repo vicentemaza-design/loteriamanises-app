@@ -82,7 +82,7 @@ export function SecurityPage() {
           </div>
           <div>
             <h3 className="text-base font-black text-manises-blue">Protege tu cuenta con un PIN</h3>
-            <p className="text-xs text-muted-foreground mt-1 max-w-[280px] leading-relaxed mx-auto">
+            <p className="text-xs text-muted-foreground mt-1 max-w-70 leading-relaxed mx-auto">
               Elige en qué momentos quieres confirmar tu PIN de 4 dígitos antes de continuar.
             </p>
           </div>

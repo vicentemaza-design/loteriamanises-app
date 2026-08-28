@@ -56,7 +56,7 @@ export function BiometricsPage() {
           </div>
           <div>
             <h3 className="text-base font-black text-manises-blue">Autenticación biométrica del dispositivo</h3>
-            <p className="text-xs text-muted-foreground mt-1 max-w-[280px] leading-relaxed mx-auto">
+            <p className="text-xs text-muted-foreground mt-1 max-w-70 leading-relaxed mx-auto">
               En el futuro podrás acceder más rápido usando Face ID, huella dactilar u otro método seguro de tu dispositivo, sin introducir tu contraseña.
             </p>
           </div>

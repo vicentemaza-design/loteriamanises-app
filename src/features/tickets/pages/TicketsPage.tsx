@@ -335,7 +335,7 @@ export function TicketsPage() {
         )}
 
         {/* List */}
-        <section className="min-h-[400px] flex-1 px-4">
+        <section className="min-h-100 flex-1 px-4">
           {isLoading ? (
             <div className="flex flex-col gap-2">
               {Array.from({ length: 4 }).map((_, i) => <TicketCardSkeleton key={i} />)}

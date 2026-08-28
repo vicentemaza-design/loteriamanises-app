@@ -234,7 +234,7 @@ export function TopUpModal({ isOpen, onClose, onSuccess, currentBalance, deficit
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={!isProcessing ? onClose : undefined}
-            className="fixed inset-0 z-[260] bg-[#0a4792]/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[260] bg-manises-blue/40 backdrop-blur-sm"
           />
           <motion.div
             ref={dialogRef}

@@ -14,6 +14,23 @@ export default function App() {
     // fluctuaciones menores de la barra de Safari (que también mueve
     // visualViewport.height unos pocos px al aparecer/colapsar).
     const KEYBOARD_HEIGHT_THRESHOLD = 80;
+    const KEYBOARD_CLOSE_HEIGHT_DELTA = 40;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let smallestKeyboardHeight: number | null = null;
+    let keyboardWasObservedOpen = false;
+
+    const startKeyboardCycle = () => {
+      if (!isIOS) return;
+
+      const height = vv?.height ?? window.innerHeight;
+      if ((window.innerHeight - height) > KEYBOARD_HEIGHT_THRESHOLD) {
+        return;
+      }
+
+      smallestKeyboardHeight = null;
+      keyboardWasObservedOpen = false;
+    };
 
     // Único scroll "de documento" que debe existir: 0. Todo el scroll real
     // de la app vive dentro de <main> (ver purchase-events.ts) — nunca se
@@ -52,6 +69,14 @@ export default function App() {
       // documento válido.
       const isAuthRoute = document.documentElement.classList.contains('auth-route');
       const keyboardLikelyOpen = (window.innerHeight - height) > KEYBOARD_HEIGHT_THRESHOLD;
+
+      if (isIOS && keyboardLikelyOpen) {
+        keyboardWasObservedOpen = true;
+        smallestKeyboardHeight = smallestKeyboardHeight === null
+          ? height
+          : Math.min(smallestKeyboardHeight, height);
+      }
+
       if (!keyboardLikelyOpen && !isAuthRoute) {
         settleDocumentScroll();
         // WebKit a veces reporta la geometría final del viewport 1-2 frames
@@ -61,17 +86,30 @@ export default function App() {
         // todavía se está asentando.
         requestAnimationFrame(() => requestAnimationFrame(settleDocumentScroll));
       }
+
+      const viewportIsReset = Math.abs(vv?.offsetTop ?? 0) <= 1;
+      const keyboardHasClosed = keyboardWasObservedOpen
+        && smallestKeyboardHeight !== null
+        && height >= smallestKeyboardHeight + KEYBOARD_CLOSE_HEIGHT_DELTA
+        && viewportIsReset;
+
+      if (keyboardHasClosed) {
+        keyboardWasObservedOpen = false;
+        smallestKeyboardHeight = null;
+      }
     };
 
     updateAppHeight();
     window.addEventListener('resize', updateAppHeight);
     vv?.addEventListener('resize', updateAppHeight);
     vv?.addEventListener('scroll', updateAppHeight);
+    window.addEventListener('focusin', startKeyboardCycle, { passive: true });
 
     return () => {
       window.removeEventListener('resize', updateAppHeight);
       vv?.removeEventListener('resize', updateAppHeight);
       vv?.removeEventListener('scroll', updateAppHeight);
+      window.removeEventListener('focusin', startKeyboardCycle);
     };
   }, []);
 
@@ -100,4 +138,3 @@ export default function App() {
     </ErrorBoundary>
   );
 }
-// Trigger build

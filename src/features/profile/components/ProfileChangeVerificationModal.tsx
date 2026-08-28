@@ -106,7 +106,7 @@ export function ProfileChangeVerificationModal({ isOpen, onClose, email, onConfi
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={!isVerifying ? handleClose : undefined}
-            className="fixed inset-0 z-[90] bg-[#0a4792]/40 backdrop-blur-sm"
+            className="fixed inset-0 z-[90] bg-manises-blue/40 backdrop-blur-sm"
           />
           <motion.div
             initial={{ y: '100%', opacity: 0 }}

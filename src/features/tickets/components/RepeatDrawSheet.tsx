@@ -267,7 +267,7 @@ export function RepeatDrawSheet({ ticket, onClose }: RepeatDrawSheetProps) {
 
             {/* ── Barra de pago ── */}
             <div
-              className="relative shrink-0 border-t border-white/5 bg-[#0a4792]/88 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl"
+              className="relative shrink-0 border-t border-white/5 bg-manises-blue/88 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl"
               style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
             >
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />

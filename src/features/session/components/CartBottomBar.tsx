@@ -21,7 +21,7 @@ export function CartBottomBar() {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 80, opacity: 0 }}
         transition={{ type: 'spring', bounce: 0.18, duration: 0.4 }}
-        className="fixed left-0 right-0 z-[65] bg-[#0a4792]/80 backdrop-blur-3xl border-t border-white/8"
+        className="fixed left-0 right-0 z-[65] bg-manises-blue/80 backdrop-blur-3xl border-t border-white/8"
         style={{ bottom: 'var(--nav-height)' }}
       >
         <div className={`grid gap-2 px-2 py-2 ${hasGames && hasLottery ? 'grid-cols-2' : 'grid-cols-1'}`}>
