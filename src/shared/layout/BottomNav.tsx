@@ -43,7 +43,10 @@ export function BottomNav() {
   return (
     <nav
       ref={navRef}
-      className="fixed bottom-0 left-0 right-0 z-60 bg-transparent"
+      className={cn(
+        'fixed bottom-0 left-0 right-0 z-60',
+        hasCart ? 'bg-manises-blue/80' : 'bg-transparent'
+      )}
       role="navigation"
       aria-label="Navegación principal"
     >
@@ -56,7 +59,7 @@ export function BottomNav() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-            className={hasCart ? 'overflow-hidden bg-manises-blue/80' : 'overflow-hidden bg-transparent'}
+            className="overflow-hidden bg-transparent"
           >
             <div className={`grid gap-2 px-2 pt-2 pb-0 ${hasGames && hasLottery ? 'grid-cols-2' : 'grid-cols-1'}`}>
               {hasGames && (
