@@ -886,7 +886,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                   );
 
                   const chips = weekDraws.map((draw: ScheduledDraw) => {
-                    const isSelected = selectedDrawDates.includes(draw.drawDate);
+                    const isSelected = effectiveSelectedDrawDates.includes(draw.drawDate);
                     const chip = formatDrawChip(draw.drawDate);
                     return (
                       <button
@@ -902,13 +902,21 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                         }}
                         className={cn(
                           'relative flex shrink-0 flex-col items-center justify-center gap-0.5 rounded-xl border min-w-[62px] px-2 py-2.5 transition-all',
-                          isSelected ? 'border-transparent shadow-sm' : 'bg-white border-slate-100 hover:border-slate-200'
+                          isSelected ? 'border-transparent shadow-[0_4px_12px_rgba(10,71,146,0.10)]' : 'bg-white border-slate-100 hover:border-slate-200'
                         )}
-                        style={isSelected ? { backgroundColor: game.color, borderColor: game.color } : undefined}
+                        style={isSelected ? { backgroundColor: `${game.color}12`, borderColor: game.color } : undefined}
                       >
-                        <span className={cn('relative z-10 text-[12px] font-semibold leading-none uppercase', isSelected ? 'text-white/70' : 'text-slate-400')}>{chip.weekday}</span>
-                        <span className={cn('relative z-10 text-[20px] font-bold leading-none', isSelected ? 'text-white' : 'text-slate-700')}>{chip.day}</span>
-                        <span className={cn('relative z-10 text-[12px] font-semibold leading-none uppercase', isSelected ? 'text-white/70' : 'text-slate-400')}>{chip.month}</span>
+                        {isSelected && (
+                          <motion.div
+                            layoutId="selected-draw-chip"
+                            className="absolute inset-0 rounded-xl border-2 z-0"
+                            style={{ borderColor: game.color }}
+                            transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                          />
+                        )}
+                        <span className={cn('relative z-10 text-[12px] font-semibold leading-none uppercase', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>{chip.weekday}</span>
+                        <span className={cn('relative z-10 text-[20px] font-bold leading-none', isSelected ? 'text-manises-blue' : 'text-slate-700')}>{chip.day}</span>
+                        <span className={cn('relative z-10 text-[12px] font-semibold leading-none uppercase', isSelected ? 'text-manises-blue/70' : 'text-slate-400')}>{chip.month}</span>
                       </button>
                     );
                   });
