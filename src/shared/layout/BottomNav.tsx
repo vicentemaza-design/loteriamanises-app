@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Home, ViewGrid, Trophy, JournalPage, User, NavArrowRight, CreditCard } from 'iconoir-react/regular';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn, formatCurrency } from '@/shared/lib/utils';
@@ -14,12 +14,10 @@ const navItems = [
   { icon: User,        label: 'Perfil',      path: '/profile' },
 ];
 
-const CART_SECTION_REM = 3; // approx height of the compact cart buttons row
-const NAV_BASE_REM = 5;
-
 export function BottomNav() {
   const location = useLocation();
   const { gameDrafts, lotteryDrafts, openGameReview, openLotteryReview } = usePlaySession();
+  const navRef = useRef<HTMLElement | null>(null);
 
   const gamesTotal = gameDrafts.reduce((s, d) => s + d.totalPrice, 0);
   const lotteryTotal = lotteryDrafts.reduce((s, d) => s + d.totalPrice, 0);
@@ -27,24 +25,28 @@ export function BottomNav() {
   const hasLottery = lotteryDrafts.length > 0;
   const hasCart = hasGames || hasLottery;
 
-  // Ajusta --nav-height para que pb-nav-safe tenga siempre el espacio correcto
+  // Ajusta --nav-height para que pb-nav-safe tenga siempre el espacio correcto,
+  // midiendo la altura real renderizada del nav (ResizeObserver) en vez de
+  // calcularla con una fórmula fija que puede desajustarse.
   useEffect(() => {
-    const totalRem = hasCart ? NAV_BASE_REM + CART_SECTION_REM : NAV_BASE_REM;
-    document.documentElement.style.setProperty(
-      '--nav-height',
-      `calc(${totalRem}rem + env(safe-area-inset-bottom, 0px))`
-    );
+    const node = navRef.current;
+    if (!node) return;
+    const update = () => {
+      document.documentElement.style.setProperty('--nav-height', `${node.getBoundingClientRect().height}px`);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(node);
+    return () => observer.disconnect();
   }, [hasCart]);
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-60 bg-[#0a4792]/80 backdrop-blur-3xl shadow-[0_-8px_32px_rgba(0,0,0,0.25)]"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      ref={navRef}
+      className="fixed bottom-0 left-0 right-0 z-60 bg-transparent"
       role="navigation"
       aria-label="Navegación principal"
     >
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
       {/* Sección de cestas — aparece encima de los iconos de nav */}
       <AnimatePresence>
         {hasCart && (
@@ -54,9 +56,9 @@ export function BottomNav() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-            className="overflow-hidden bg-white/96 border-b border-slate-200/60"
+            className="overflow-hidden bg-transparent"
           >
-            <div className={`grid gap-2 px-2 pt-2 pb-2 ${hasGames && hasLottery ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            <div className={`grid gap-2 px-2 pt-2 pb-0 ${hasGames && hasLottery ? 'grid-cols-2' : 'grid-cols-1'}`}>
               {hasGames && (
                 <button
                   type="button"
@@ -104,8 +106,15 @@ export function BottomNav() {
         )}
       </AnimatePresence>
 
-      {/* Iconos de navegación */}
-      <div className="flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
+      {/* Superficie azul de navegación; la cesta queda fuera de esta capa visual. */}
+      <div
+        className="relative bg-manises-blue/80 shadow-[0_-8px_32px_rgba(0,0,0,0.25)] backdrop-blur-3xl"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}
+      >
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+        {/* Iconos de navegación */}
+        <div className="flex justify-around items-stretch h-14 max-w-7xl mx-auto px-2">
         {navItems.map(({ icon: Icon, label, path }) => {
           const isActive = path === '/home'
             ? location.pathname === '/home' || location.pathname === '/'
@@ -146,6 +155,7 @@ export function BottomNav() {
             </PremiumTouchInteraction>
           );
         })}
+        </div>
       </div>
     </nav>
   );

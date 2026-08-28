@@ -418,10 +418,10 @@ export function NavidadCheckoutFlow({
 
         {/* Barra de acción: total + CONTINUAR */}
         <div
-          className="bg-[#0a4792]/88"
+          className="bg-manises-blue/88 pt-7 backdrop-blur-3xl"
           style={{ backdropFilter: 'blur(24px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
-          <div className="mx-auto grid h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white">
+          <div className="-translate-y-[24px] mx-auto grid min-h-14 w-full max-w-screen-sm grid-cols-[1fr_1fr_2.15fr] text-white">
             <div className="relative flex min-w-0 flex-col items-center justify-center border-r border-white/12 px-1">
               <div className="absolute inset-x-1.5 inset-y-1.5 rounded-xl bg-white/[0.035]" />
               <motion.p
