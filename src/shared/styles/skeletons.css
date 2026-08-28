@@ -8,9 +8,9 @@
   background: #f6f7f8;
   background-image: linear-gradient(
     90deg, 
-    #f6f7f8 0%, 
-    #edeef1 20%, 
-    #f6f7f8 40%, 
+    #f6f7f8 0%,
+    #edeef1 20%,
+    #f6f7f8 40%,
     #f6f7f8 100%
   );
   background-repeat: no-repeat;
@@ -29,18 +29,4 @@
 .skeleton-circle {
   border-radius: 50%;
   flex-shrink: 0;
-}
-
-/* --- GLOBAL TOAST OVERRIDES ---
-   iOS PWA: keep success notifications on the Manises blue surface so a
-   temporary richColors success toast does not introduce a green cast over
-   the upper app/status-bar composition. Error/info semantics remain intact. */
-[data-sonner-toast][data-type="success"] {
-  background: rgba(10, 71, 146, 0.94) !important;
-  border-color: rgba(255, 255, 255, 0.18) !important;
-  color: #ffffff !important;
-}
-
-[data-sonner-toast][data-type="success"] [data-icon] {
-  color: #F5C518 !important;
 }
