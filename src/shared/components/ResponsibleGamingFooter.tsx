@@ -51,11 +51,11 @@ export function ResponsibleGamingFooter() {
 
         {/* Pie legal */}
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-1 opacity-50">
-          <button onClick={() => navigate('/legal/condiciones', legalNavState)} className="text-[8px] font-bold uppercase tracking-widest text-slate-500 transition-opacity hover:opacity-70">Condiciones</button>
+          <button onClick={() => navigate('/profile/legal/condiciones', legalNavState)} className="text-[8px] font-bold uppercase tracking-widest text-slate-500 transition-opacity hover:opacity-70">Condiciones</button>
           <span className="text-[7px] text-slate-300">·</span>
-          <button onClick={() => navigate('/legal/privacidad', legalNavState)} className="text-[8px] font-bold uppercase tracking-widest text-slate-500 transition-opacity hover:opacity-70">Privacidad</button>
+          <button onClick={() => navigate('/profile/legal/privacidad', legalNavState)} className="text-[8px] font-bold uppercase tracking-widest text-slate-500 transition-opacity hover:opacity-70">Privacidad</button>
           <span className="text-[7px] text-slate-300">·</span>
-          <button onClick={() => navigate('/legal/aviso', legalNavState)} className="text-[8px] font-bold uppercase tracking-widest text-slate-500 transition-opacity hover:opacity-70">Aviso legal</button>
+          <button onClick={() => navigate('/profile/legal/aviso', legalNavState)} className="text-[8px] font-bold uppercase tracking-widest text-slate-500 transition-opacity hover:opacity-70">Aviso legal</button>
         </div>
 
       </div>

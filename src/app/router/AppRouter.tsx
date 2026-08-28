@@ -60,6 +60,11 @@ const PrivacidadPage = lazy(() => import('@/features/legal/pages/PrivacidadPage'
 const AvisoLegalPage = lazy(() => import('@/features/legal/pages/AvisoLegalPage').then(m => ({ default: m.AvisoLegalPage })));
 const CondicionesAbonosPage = lazy(() => import('@/features/legal/pages/CondicionesAbonosPage').then(m => ({ default: m.CondicionesAbonosPage })));
 const JuegoResponsablePage = lazy(() => import('@/features/legal/pages/JuegoResponsablePage').then(m => ({ default: m.JuegoResponsablePage })));
+const CondicionesPrivatePage = lazy(() => import('@/features/legal/pages/private/CondicionesPrivatePage').then(m => ({ default: m.CondicionesPrivatePage })));
+const PrivacidadPrivatePage = lazy(() => import('@/features/legal/pages/private/PrivacidadPrivatePage').then(m => ({ default: m.PrivacidadPrivatePage })));
+const AvisoLegalPrivatePage = lazy(() => import('@/features/legal/pages/private/AvisoLegalPrivatePage').then(m => ({ default: m.AvisoLegalPrivatePage })));
+const CondicionesAbonosPrivatePage = lazy(() => import('@/features/legal/pages/private/CondicionesAbonosPrivatePage').then(m => ({ default: m.CondicionesAbonosPrivatePage })));
+const JuegoResponsablePrivatePage = lazy(() => import('@/features/legal/pages/private/JuegoResponsablePrivatePage').then(m => ({ default: m.JuegoResponsablePrivatePage })));
 
 /**
  * Fallback único y ligero para Suspense — solo se ve durante la descarga de
@@ -110,6 +115,11 @@ export function AppRouter() {
             <Route path="/tickets/:ticketId" element={<TicketDetailPage />} />
 
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/legal/condiciones" element={<CondicionesPrivatePage />} />
+            <Route path="/profile/legal/condiciones-abonos" element={<CondicionesAbonosPrivatePage />} />
+            <Route path="/profile/legal/privacidad" element={<PrivacidadPrivatePage />} />
+            <Route path="/profile/legal/aviso" element={<AvisoLegalPrivatePage />} />
+            <Route path="/profile/legal/juego-responsable" element={<JuegoResponsablePrivatePage />} />
             <Route path="/profile/account" element={<AccountPage />} />
             <Route path="/profile/account/delete" element={<AccountDeleteInfoPage />} />
             <Route path="/profile/account/delete/confirm" element={<AccountDeleteConfirmPage />} />
