@@ -918,11 +918,11 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                     }}
                     className={cn(
                       'flex items-center gap-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border px-3 py-1.5',
-                      (timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates))
+                      (timeMode === 'full_week' || areDatesEqual(multiDrawVisualSelectedDates, currentWeekDates))
                         ? 'text-white border-transparent shadow-sm'
                         : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
                     )}
-                    style={(timeMode === 'full_week' || areDatesEqual(effectiveSelectedDrawDates, currentWeekDates)) ? { backgroundColor: game.color, borderColor: game.color } : undefined}
+                    style={(timeMode === 'full_week' || areDatesEqual(multiDrawVisualSelectedDates, currentWeekDates)) ? { backgroundColor: game.color, borderColor: game.color } : undefined}
                   >
                     <Calendar className="h-3 w-3 shrink-0" />
                     Seleccionar toda la semana
