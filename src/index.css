@@ -425,10 +425,6 @@
     backdrop-filter: blur(64px);
   }
 
-  html.play-surface {
-    background: rgba(10, 71, 146, 0.8);
-  }
-
   /* Prueba visual temporal: activar solo con ?layerDebug=1. No cambia
      geometría ni comportamiento; colorea cada superficie para identificar
      qué capa llega al límite CSS y qué zona queda fuera de él. */
