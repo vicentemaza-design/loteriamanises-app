@@ -43,10 +43,7 @@ export function BottomNav() {
   return (
     <nav
       ref={navRef}
-      className={cn(
-        'fixed bottom-0 left-0 right-0 z-60',
-        hasCart ? '!bg-manises-blue/80' : 'bg-transparent'
-      )}
+      className="fixed bottom-0 left-0 right-0 z-60 bg-transparent"
       role="navigation"
       aria-label="Navegación principal"
     >
