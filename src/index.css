@@ -456,6 +456,42 @@
     background: rgba(10, 71, 146, 0.8) !important;
   }
 
+  /* Diagnóstico QA de aislamiento de superficie superior iOS/PWA —
+     independiente de layer-debug. Actívese con ?topSurface=html|body|root|
+     shell|main|nav|all. Mismo azul (#3B6CA8) en todas las variantes para
+     poder identificar visualmente, superficie por superficie, cuál es la
+     que realmente cubre la franja superior física. Solo backgrounds: no
+     cambia geometría/posicionamiento/z-index. */
+  html.qa-top-html,
+  html.qa-top-all {
+    background: #3B6CA8 !important;
+  }
+
+  html.qa-top-body body,
+  html.qa-top-all body {
+    background: #3B6CA8 !important;
+  }
+
+  html.qa-top-root #root,
+  html.qa-top-all #root {
+    background: #3B6CA8 !important;
+  }
+
+  html.qa-top-shell .app-shell,
+  html.qa-top-all .app-shell {
+    background: #3B6CA8 !important;
+  }
+
+  html.qa-top-main main,
+  html.qa-top-all main {
+    background: #3B6CA8 !important;
+  }
+
+  html.qa-top-nav nav[role='navigation'],
+  html.qa-top-all nav[role='navigation'] {
+    background: #3B6CA8 !important;
+  }
+
   /* EXPERIMENTO (rama debug/ios-keyboard-scroll-recovery, no en main):
      body vuelve a position:fixed/inset:0/overflow:hidden — el modelo que
      existió brevemente el 26/08 (commit f5819a3) y que, según el propio
