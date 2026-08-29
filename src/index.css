@@ -80,6 +80,10 @@
 /* ===== MODO CLARO (default) ===== */
 :root {
   --app-bg: #F8FAFC; /* Slate-50: Gris suave premium */
+  /* Fondo raíz productivo para iOS/PWA. Mantiene la continuidad visual del
+     área superior física fuera del viewport CSS. Validado en dispositivo
+     real. No eliminar ni cambiar sin QA física en iPhone. */
+  --pwa-root-surface: #3B6CA8;
   --app-vh: 100vh;
   --app-height: 100dvh;
   --header-height: calc(4rem + env(safe-area-inset-top, 0px));
@@ -405,7 +409,7 @@
     @apply font-sans;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    background: var(--app-bg);
+    background: var(--pwa-root-surface);
     height: 100%;
     overflow: hidden;
   }
