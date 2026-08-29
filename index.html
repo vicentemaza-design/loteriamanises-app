@@ -87,24 +87,6 @@
         if (params.get('layerDebug') === '1') {
           document.documentElement.classList.add('layer-debug');
         }
-
-        // Diagnóstico QA de aislamiento de superficie superior iOS/PWA —
-        // independiente de layer-debug (ver reglas html.qa-top-* en
-        // src/index.css). Solo se activa con ?topSurface=<html|body|root|
-        // shell|main|nav|all> en la URL, nunca por defecto.
-        var topSurfaceClasses = {
-          html: 'qa-top-html',
-          body: 'qa-top-body',
-          root: 'qa-top-root',
-          shell: 'qa-top-shell',
-          main: 'qa-top-main',
-          nav: 'qa-top-nav',
-          all: 'qa-top-all'
-        };
-        var topSurface = params.get('topSurface');
-        if (topSurface && topSurfaceClasses[topSurface]) {
-          document.documentElement.classList.add(topSurfaceClasses[topSurface]);
-        }
       })();
     </script>
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
