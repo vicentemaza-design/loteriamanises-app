@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ClipboardEvent, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type ClipboardEvent, type KeyboardEvent } from 'react';
 import { cn } from '@/shared/lib/utils';
 
 export interface OtpInputProps {
@@ -52,6 +52,12 @@ export function OtpInput({
 }: OtpInputProps) {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const digits = Array.from({ length }, (_, i) => value[i] ?? '');
+
+  // Solo para singleInputMode: no hay foco real por casilla que consultar
+  // (es un único <input>), así que el resaltado "activo" se deriva de si
+  // ESE input está enfocado + de la longitud actual de `value` — nunca de
+  // un focus() por casilla, que es justo lo que causaba el "pim, pim".
+  const [isSingleInputFocused, setIsSingleInputFocused] = useState(false);
 
   // Único cambio real de valor en singleInputMode: sin múltiples cajas no
   // hay "huecos" posibles (el navegador ya mantiene el string contiguo), así
@@ -159,20 +165,34 @@ export function OtpInput({
   // abajo son <div> puros (aria-hidden, sin tabIndex): solo pintan cada
   // carácter de `value`, no reciben foco ni participan en la accesibilidad.
   if (singleInputMode) {
+    // Índice de la próxima casilla a rellenar, acotado a la última válida
+    // (cuando value ya está completo no hay "siguiente casilla" que marcar).
+    const nextIndex = Math.min(value.length, length - 1);
+
     return (
-      <div className="relative flex items-center justify-center gap-2 rounded-2xl focus-within:ring-2 focus-within:ring-manises-gold/30">
-        {digits.map((digit, index) => (
-          <div
-            key={index}
-            aria-hidden="true"
-            className={cn(
-              'flex h-12 w-11 shrink-0 items-center justify-center rounded-sm border bg-card/50 text-lg font-black tabular-nums shadow-inner-soft',
-              error ? 'border-destructive text-destructive' : 'border-input text-manises-blue'
-            )}
-          >
-            {digit}
-          </div>
-        ))}
+      <div className="relative flex items-center justify-center gap-2">
+        {digits.map((digit, index) => {
+          const isFilled = index < value.length;
+          const isActive = !error && !isFilled && isSingleInputFocused && index === nextIndex;
+          return (
+            <div
+              key={index}
+              aria-hidden="true"
+              className={cn(
+                'flex h-12 w-11 shrink-0 items-center justify-center rounded-sm border text-lg font-black tabular-nums shadow-inner-soft',
+                error
+                  ? 'border-destructive bg-destructive/5 text-destructive'
+                  : isActive
+                    ? 'border-manises-gold ring-2 ring-manises-gold/30 bg-card/50 text-manises-blue'
+                    : isFilled
+                      ? 'border-manises-blue/30 bg-manises-blue/5 text-manises-blue'
+                      : 'border-input bg-card/50 text-manises-blue'
+              )}
+            >
+              {digit}
+            </div>
+          );
+        })}
         <input
           ref={(el) => { inputRefs.current[0] = el; }}
           type="text"
@@ -184,7 +204,8 @@ export function OtpInput({
           disabled={disabled}
           aria-label={ariaLabel}
           onChange={(e) => handleSingleChange(e.target.value)}
-          onFocus={(e) => e.currentTarget.select()}
+          onFocus={(e) => { setIsSingleInputFocused(true); e.currentTarget.select(); }}
+          onBlur={() => setIsSingleInputFocused(false)}
           className="absolute inset-0 h-full w-full cursor-default border-none bg-transparent text-transparent caret-transparent opacity-0 outline-none disabled:cursor-not-allowed"
         />
       </div>
