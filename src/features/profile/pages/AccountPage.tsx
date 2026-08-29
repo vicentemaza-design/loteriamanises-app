@@ -8,6 +8,7 @@ import { ProfileChangeVerificationModal } from '../components/ProfileChangeVerif
 import { Button } from '@/shared/ui/Button';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useSecurityGate } from '@/features/profile/hooks/useSecurityGate';
+import { useKeyboardAwareViewport } from '@/features/profile/hooks/useKeyboardAwareViewport';
 
 function AccountField({
   label,
@@ -16,6 +17,7 @@ function AccountField({
   readOnly = false,
   type = 'text',
   labelClassName = '',
+  onRegisterActiveField,
 }: {
   label: string;
   value: string;
@@ -23,6 +25,7 @@ function AccountField({
   readOnly?: boolean;
   type?: string;
   labelClassName?: string;
+  onRegisterActiveField?: (el: HTMLElement | null) => void;
 }) {
   return (
     <label className="block space-y-1.5">
@@ -32,6 +35,8 @@ function AccountField({
         readOnly={readOnly}
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onFocus={(event) => onRegisterActiveField?.(event.currentTarget)}
+        onBlur={() => onRegisterActiveField?.(null)}
         className={`h-12 w-full rounded-xl border px-4 text-sm font-semibold outline-none ${
           readOnly
             ? 'border-slate-100 bg-slate-50 text-slate-400'
@@ -85,6 +90,7 @@ export function AccountPage() {
   const [isVerificationOpen, setIsVerificationOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { requireReauth, gateModal } = useSecurityGate();
+  const { keyboardOpen, keyboardInset, registerActiveField } = useKeyboardAwareViewport();
 
   // Rellena identidad/dirección desde la sesión real una vez disponible
   // (mismo patrón que WithdrawalsPage.tsx) — solo campos que el usuario
@@ -183,7 +189,14 @@ export function AccountPage() {
   };
 
   return (
-    <div className="flex min-h-full flex-col bg-background pb-20">
+    <div
+      className="flex min-h-full flex-col bg-background pb-20"
+      // Espacio LOCAL adicional, solo mientras el teclado está abierto, para
+      // que el <main> de PrivateLayout (sin tocar) tenga contenido extra que
+      // recorrer y los últimos campos puedan subir por encima del teclado.
+      // No toca --app-height/--app-vh ni la altura de .app-shell/<main>.
+      style={keyboardOpen ? { paddingBottom: keyboardInset + 24 } : undefined}
+    >
       <ProfileSubHeader title="Datos personales" subtitle="Identidad, contacto y dirección" />
 
       <div className="flex flex-col gap-4 p-4">
@@ -202,8 +215,8 @@ export function AccountPage() {
         <PremiumSectionCard title="Información básica" eyebrow="Titular" description="Nombre y apellidos editables. NIF y fecha de nacimiento en solo lectura." tone="blue">
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <AccountField label="Nombre" value={formData.name} onChange={(value) => updateField('name', value)} />
-              <AccountField label="Apellidos" value={formData.surname} onChange={(value) => updateField('surname', value)} />
+              <AccountField label="Nombre" value={formData.name} onChange={(value) => updateField('name', value)} onRegisterActiveField={registerActiveField} />
+              <AccountField label="Apellidos" value={formData.surname} onChange={(value) => updateField('surname', value)} onRegisterActiveField={registerActiveField} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <AccountField label="NIF / NIE" value={isDemo ? DEMO_ACCOUNT_DEFAULTS.nif : 'No disponible'} onChange={() => undefined} readOnly />
@@ -216,8 +229,8 @@ export function AccountPage() {
           <div className="space-y-3">
             <AccountField label="Email actual" value={formData.currentEmail} onChange={() => undefined} readOnly />
             <div className="grid gap-3">
-              <AccountField label="Nuevo email" value={formData.newEmail} onChange={(value) => updateField('newEmail', value)} type="email" />
-              <AccountField label="Confirmar nuevo email" value={formData.confirmEmail} onChange={(value) => updateField('confirmEmail', value)} type="email" />
+              <AccountField label="Nuevo email" value={formData.newEmail} onChange={(value) => updateField('newEmail', value)} type="email" onRegisterActiveField={registerActiveField} />
+              <AccountField label="Confirmar nuevo email" value={formData.confirmEmail} onChange={(value) => updateField('confirmEmail', value)} type="email" onRegisterActiveField={registerActiveField} />
             </div>
             {!emailsMatch && (
               <p className="px-1 text-[10px] font-black uppercase tracking-[0.16em] text-red-500">Los emails no coinciden</p>
@@ -233,12 +246,14 @@ export function AccountPage() {
                 value={formData.phone}
                 onChange={(value) => updateField('phone', value)}
                 labelClassName="px-1 text-[10px] font-black uppercase tracking-[0.02em] min-[375px]:tracking-[0.16em] text-slate-400 whitespace-nowrap"
+                onRegisterActiveField={registerActiveField}
               />
               <AccountField
                 label="Tel. alternativo"
                 value={formData.alternatePhone}
                 onChange={(value) => updateField('alternatePhone', value)}
                 labelClassName="px-1 text-[10px] font-black uppercase tracking-[0.02em] min-[375px]:tracking-[0.16em] text-slate-400 whitespace-nowrap"
+                onRegisterActiveField={registerActiveField}
               />
             </div>
           </div>
@@ -246,14 +261,14 @@ export function AccountPage() {
 
         <PremiumSectionCard title="Dirección" eyebrow="Datos editables" description="La dirección se reutilizará en flujos de mensajería y pagos que la necesiten." tone="gold">
           <div className="space-y-3">
-            <AccountField label="Dirección" value={formData.address} onChange={(value) => updateField('address', value)} />
+            <AccountField label="Dirección" value={formData.address} onChange={(value) => updateField('address', value)} onRegisterActiveField={registerActiveField} />
             <div className="grid grid-cols-2 gap-3">
-              <AccountField label="Código postal" value={formData.postalCode} onChange={(value) => updateField('postalCode', value)} />
-              <AccountField label="Municipio" value={formData.municipality} onChange={(value) => updateField('municipality', value)} />
+              <AccountField label="Código postal" value={formData.postalCode} onChange={(value) => updateField('postalCode', value)} onRegisterActiveField={registerActiveField} />
+              <AccountField label="Municipio" value={formData.municipality} onChange={(value) => updateField('municipality', value)} onRegisterActiveField={registerActiveField} />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <AccountField label="Provincia" value={formData.province} onChange={(value) => updateField('province', value)} />
-              <AccountField label="País" value={formData.country} onChange={(value) => updateField('country', value)} />
+              <AccountField label="Provincia" value={formData.province} onChange={(value) => updateField('province', value)} onRegisterActiveField={registerActiveField} />
+              <AccountField label="País" value={formData.country} onChange={(value) => updateField('country', value)} onRegisterActiveField={registerActiveField} />
             </div>
           </div>
         </PremiumSectionCard>

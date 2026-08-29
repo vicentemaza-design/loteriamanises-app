@@ -17,9 +17,16 @@ interface AddBankAccountFormProps {
   onAdd: (input: AddBankAccountFormInput) => Promise<BankAccount | null>;
   onSuccess: (account: BankAccount) => void;
   onCancel: () => void;
+  /**
+   * Opcional — pásalo desde useKeyboardAwareViewport() del formulario padre
+   * (WithdrawalsPage/BankAccountsPage) para que sus campos participen en el
+   * ajuste de scroll con teclado iOS. Sin este prop, el formulario se
+   * comporta exactamente igual que antes.
+   */
+  onRegisterActiveField?: (el: HTMLElement | null) => void;
 }
 
-export function AddBankAccountForm({ onAdd, onSuccess, onCancel }: AddBankAccountFormProps) {
+export function AddBankAccountForm({ onAdd, onSuccess, onCancel, onRegisterActiveField }: AddBankAccountFormProps) {
   const [iban, setIban] = useState('');
   const [bank, setBank] = useState('');
   const [alias, setAlias] = useState('');
@@ -93,6 +100,8 @@ export function AddBankAccountForm({ onAdd, onSuccess, onCancel }: AddBankAccoun
             autoComplete="off"
             value={iban}
             onChange={(e) => handleIbanChange(e.target.value)}
+            onFocus={(e) => onRegisterActiveField?.(e.currentTarget)}
+            onBlur={() => onRegisterActiveField?.(null)}
             aria-invalid={status === 'error'}
             aria-describedby={status === 'error' ? 'new-bank-iban-error' : undefined}
             disabled={isSaving}
@@ -112,6 +121,8 @@ export function AddBankAccountForm({ onAdd, onSuccess, onCancel }: AddBankAccoun
               value={bank}
               disabled={isSaving}
               onChange={(e) => setBank(e.target.value)}
+              onFocus={(e) => onRegisterActiveField?.(e.currentTarget)}
+              onBlur={() => onRegisterActiveField?.(null)}
               className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-xs font-semibold outline-none focus:border-manises-blue disabled:opacity-60"
             />
           </div>
@@ -125,6 +136,8 @@ export function AddBankAccountForm({ onAdd, onSuccess, onCancel }: AddBankAccoun
               value={alias}
               disabled={isSaving}
               onChange={(e) => setAlias(e.target.value)}
+              onFocus={(e) => onRegisterActiveField?.(e.currentTarget)}
+              onBlur={() => onRegisterActiveField?.(null)}
               className="w-full h-11 px-3.5 rounded-xl border border-slate-200 text-xs font-semibold outline-none focus:border-manises-blue disabled:opacity-60"
             />
           </div>

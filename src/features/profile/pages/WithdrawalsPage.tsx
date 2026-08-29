@@ -18,6 +18,7 @@ import { BankAccountVerificationPanel } from '../components/BankAccountVerificat
 import { WithdrawalStatusPanel } from '../components/WithdrawalStatusPanel';
 import { WITHDRAWAL_DEMO_FEE_LABEL, WITHDRAWAL_DEMO_PROCESSING_TIME_LABEL, WITHDRAWAL_DEMO_PROCESSING_NOTE } from '../data/withdrawalDemoConfig';
 import type { BankAccount } from '../types/profile.types';
+import { useKeyboardAwareViewport } from '../hooks/useKeyboardAwareViewport';
 
 /** UX validation only — obligatorio, numérico, >0, máx. 2 decimales, sin negativos/NaN/Infinity/notación científica. BE revalida en servidor. */
 const AMOUNT_PATTERN = /^\d+(\.\d{1,2})?$/;
@@ -35,6 +36,7 @@ export function WithdrawalsPage() {
   const verification = useVerifyBankAccountOwnership();
   const withdrawalRequest = useCreateWithdrawal();
   const { requireReauth, gateModal } = useSecurityGate();
+  const { keyboardOpen, keyboardInset, registerActiveField } = useKeyboardAwareViewport();
 
   // Determinar paso inicial según completitud de datos de dirección
   const [step, setStep] = useState<Step>(() => {
@@ -234,7 +236,14 @@ export function WithdrawalsPage() {
   };
 
   return (
-    <div className="flex min-h-page-content flex-col bg-background">
+    <div
+      className="flex min-h-page-content flex-col bg-background"
+      // Espacio LOCAL adicional, solo mientras el teclado está abierto, para
+      // que el <main> de PrivateLayout (sin tocar) tenga contenido extra que
+      // recorrer y los campos de dirección puedan subir por encima del
+      // teclado. No toca --app-height/--app-vh ni la altura de .app-shell/<main>.
+      style={keyboardOpen ? { paddingBottom: keyboardInset + 24 } : undefined}
+    >
       <ProfileSubHeader title="Cobrar Premios" subtitle="Retirada de saldo" />
 
       <div className="flex flex-col gap-4 p-4 pb-20">
@@ -306,6 +315,8 @@ export function WithdrawalsPage() {
                       placeholder="Ej. Calle Colón, 23, 4º B"
                       value={address}
                       onChange={e => setAddress(e.target.value)}
+                      onFocus={e => registerActiveField(e.currentTarget)}
+                      onBlur={() => registerActiveField(null)}
                       className="w-full h-12 pl-11 pr-4 rounded-xl border border-slate-200 text-sm font-medium outline-none focus:border-manises-blue transition-all"
                     />
                   </div>
@@ -322,6 +333,8 @@ export function WithdrawalsPage() {
                       placeholder="Ej. 46940"
                       value={postalCode}
                       onChange={e => setPostalCode(e.target.value.replace(/\D/g, ''))}
+                      onFocus={e => registerActiveField(e.currentTarget)}
+                      onBlur={() => registerActiveField(null)}
                       className="w-full h-12 px-4 rounded-xl border border-slate-200 text-sm font-medium outline-none focus:border-manises-blue transition-all"
                     />
                   </div>
@@ -334,6 +347,8 @@ export function WithdrawalsPage() {
                       placeholder="Ej. Manises"
                       value={municipality}
                       onChange={e => setMunicipality(e.target.value)}
+                      onFocus={e => registerActiveField(e.currentTarget)}
+                      onBlur={() => registerActiveField(null)}
                       className="w-full h-12 px-4 rounded-xl border border-slate-200 text-sm font-medium outline-none focus:border-manises-blue transition-all"
                     />
                   </div>
@@ -352,6 +367,8 @@ export function WithdrawalsPage() {
                       placeholder="Ej. Valencia"
                       value={province}
                       onChange={e => setProvince(e.target.value)}
+                      onFocus={e => registerActiveField(e.currentTarget)}
+                      onBlur={() => registerActiveField(null)}
                       className="w-full h-12 pl-11 pr-4 rounded-xl border border-slate-200 text-sm font-medium outline-none focus:border-manises-blue transition-all"
                     />
                   </div>
@@ -454,6 +471,7 @@ export function WithdrawalsPage() {
                         onAdd={addAccount}
                         onSuccess={handleAccountAdded}
                         onCancel={() => setIsAddingAccount(false)}
+                        onRegisterActiveField={registerActiveField}
                       />
                     </motion.div>
                   )}

@@ -10,6 +10,7 @@ import { Button } from '@/shared/ui/Button';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { useBankAccounts } from '../hooks/useBankAccounts';
 import type { BankAccount } from '../types/profile.types';
+import { useKeyboardAwareViewport } from '../hooks/useKeyboardAwareViewport';
 
 // ── Fila de gestión (predeterminada / eliminar) ─────────────────────────────
 // Reutiliza el mismo lenguaje visual que BankAccountCard (icono, alias/banco,
@@ -131,6 +132,7 @@ export function BankAccountsPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const { keyboardOpen, keyboardInset, registerActiveField } = useKeyboardAwareViewport();
 
   const handleSetDefault = async (id: string) => {
     setPendingId(id);
@@ -150,7 +152,13 @@ export function BankAccountsPage() {
   };
 
   return (
-    <div className="flex min-h-page-content flex-col bg-background pb-20">
+    <div
+      className="flex min-h-page-content flex-col bg-background pb-20"
+      // Espacio LOCAL adicional, solo mientras el teclado está abierto — ver
+      // AccountPage.tsx/WithdrawalsPage.tsx para el mismo patrón. No toca
+      // --app-height/--app-vh ni la altura de .app-shell/<main>.
+      style={keyboardOpen ? { paddingBottom: keyboardInset + 24 } : undefined}
+    >
       <ProfileSubHeader title="Mis cuentas bancarias" subtitle="Gestiona tus cuentas de cobro" />
 
       <div className="flex flex-col gap-3 p-4">
@@ -211,6 +219,7 @@ export function BankAccountsPage() {
                 onAdd={addAccount}
                 onSuccess={() => setIsAdding(false)}
                 onCancel={() => setIsAdding(false)}
+                onRegisterActiveField={registerActiveField}
               />
             </motion.div>
           )}
