@@ -30,16 +30,8 @@ export const RUNTIME_CONFIG = {
    * VITE_API_PROVIDER was forgotten (defaulting to 'mock' above), never
    * exposes demo-only UI just because the data adapter happens to be mock.
    * Set VITE_ENABLE_DEMO_ACCESS=true only for the Vercel demo/QA deployment.
-   *
-   * RAMA EXPERIMENTAL SOLAMENTE (debug/ios-keyboard-scroll-recovery): el
-   * Preview de Vercel de esta rama no tiene VITE_ENABLE_DEMO_ACCESS
-   * configurado (esa variable solo está puesta en el entorno Production
-   * del proyecto), así que sin este override no aparece el botón de modo
-   * demo y no se puede entrar a probar el fix en el iPhone. Forzado a
-   * `true` aquí solo para permitir la prueba física. NUNCA mergear este
-   * override a main.
    */
-  demoEnabled: true,
+  demoEnabled: import.meta.env.VITE_ENABLE_DEMO_ACCESS === 'true',
 
   // App Version
   version: '2.5.0-industrial',

@@ -80,8 +80,13 @@
           document.documentElement.classList.add('auth-route');
         }
 
-        // Diagnóstico visual temporal activo en esta rama de laboratorio.
-        document.documentElement.classList.add('layer-debug');
+        // Diagnóstico visual opt-in (ver reglas html.layer-debug en
+        // src/index.css) — solo se activa con ?layerDebug=1 en la URL,
+        // nunca por defecto.
+        var params = new URLSearchParams(window.location.search);
+        if (params.get('layerDebug') === '1') {
+          document.documentElement.classList.add('layer-debug');
+        }
       })();
     </script>
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
