@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
@@ -54,6 +54,46 @@ const TRUST_BADGES = [
 
 type RegisterStep = 'access' | 'personal' | 'compliance';
 
+interface RegisterDraft {
+  step: RegisterStep;
+  email: string;
+  password: string;
+  repeatPassword: string;
+  firstName: string;
+  lastName: string;
+  documentType: DocumentType;
+  documentNumber: string;
+  birthDate: string;
+  phone: string;
+  acceptTerms: boolean;
+  acceptMarketing: boolean;
+  // Metadato NO sensible (la key de router de ESTA entrada de /register,
+  // nunca un dato del formulario) para poder demostrar, al montar, que el
+  // montaje actual es LITERALMENTE la misma entrada de historial de la que
+  // se salió — no una visita nueva/posterior cualquiera. Las 3 páginas
+  // legales (CondicionesPage/PrivacidadPage/JuegoResponsablePage) usan
+  // navigate(-1) para volver cuando el origen es /register (ver esos
+  // archivos), así que el "Volver" y el gesto nativo de "Atrás" son ambos
+  // una navegación POP a esta misma entrada — su location.key no cambia.
+  registerLocationKey: string;
+}
+
+// Snapshot transitorio SOLO en memoria del módulo — nunca Web Storage, nunca
+// red, nunca URL/history state. /register y /legal/* son rutas hermanas (no
+// anidadas) en AppRouter, así que navegar entre ellas desmonta y vuelve a
+// montar RegisterPage por completo; este valor es lo único que sobrevive a
+// ese ciclo, porque vive fuera del árbol de componentes. Una recarga
+// completa (F5) SÍ lo borra (nunca llegó a persistir en disco) — eso es
+// intencional, no un descuido. Se consume una única vez al montar (ver
+// useLayoutEffect más abajo) y vuelve a null inmediatamente, para que una
+// visita normal posterior a /register no reutilice datos de un registro
+// anterior en la misma pestaña. Además, solo se RESTAURA si
+// registerLocationKey coincide con la location.key actual — es decir, si el
+// montaje actual es la MISMA entrada de historial de la que se salió (ver
+// comprobación en el useLayoutEffect) — si no, el snapshot se descarta
+// igualmente.
+let pendingRegisterDraft: RegisterDraft | null = null;
+
 const STEPS: { key: RegisterStep; label: string }[] = [
   { key: 'access', label: 'Acceso' },
   { key: 'personal', label: 'Datos' },
@@ -104,6 +144,68 @@ export function RegisterPage() {
 
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const isSubmitting = registerStatus === 'submitting';
+
+  // Restaura pendingRegisterDraft (si existe) tras volver de una página
+  // legal. useLayoutEffect, no useEffect: corre antes del primer pintado,
+  // así que si hay borrador que restaurar no llega a verse un parpadeo con
+  // el formulario en blanco. Consumo único: se lee y se anula la variable de
+  // módulo dentro del propio efecto (nunca durante el render, que debe ser
+  // puro) — en StrictMode este efecto se invoca dos veces al montar, pero la
+  // segunda invocación encuentra pendingRegisterDraft ya en null y no hace
+  // nada, así que el resultado final es idéntico con o sin StrictMode.
+  useLayoutEffect(() => {
+    const draft = pendingRegisterDraft;
+    pendingRegisterDraft = null;
+    if (!draft) return;
+
+    // Retorno DIRECTO válido si, y solo si, esta es LITERALMENTE la misma
+    // entrada de historial de la que se salió (misma location.key) — las 3
+    // páginas legales usan navigate(-1) para volver cuando el origen es
+    // /register (POP a esta misma entrada, no una nueva), y el gesto nativo
+    // de "Atrás" ya era un POP a esta misma entrada. Cualquier otra
+    // location.key (visita nueva/posterior a /register, aunque sea manual)
+    // descarta el snapshot sin restaurar nada.
+    if (draft.registerLocationKey !== location.key) return;
+
+    setStep(draft.step);
+    setEmail(draft.email);
+    setPassword(draft.password);
+    setRepeatPassword(draft.repeatPassword);
+    setFirstName(draft.firstName);
+    setLastName(draft.lastName);
+    setDocumentType(draft.documentType);
+    setDocumentNumber(draft.documentNumber);
+    setBirthDate(draft.birthDate);
+    setPhone(draft.phone);
+    setAcceptTerms(draft.acceptTerms);
+    setAcceptMarketing(draft.acceptMarketing);
+    // Solo al montar — es un consumo puntual de un valor externo, no algo
+    // que deba repetirse en reacción a ningún cambio de estado.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Guarda el estado actual completo en pendingRegisterDraft justo antes de
+  // navegar a una página legal (mismo legalNavState de siempre, sin tocarlo)
+  // — es la única escritura de la variable de módulo; no se sincroniza en
+  // cada pulsación de teclado, solo en el instante de abandonar la pantalla.
+  const navigateToLegal = (path: string) => {
+    pendingRegisterDraft = {
+      step,
+      email,
+      password,
+      repeatPassword,
+      firstName,
+      lastName,
+      documentType,
+      documentNumber,
+      birthDate,
+      phone,
+      acceptTerms,
+      acceptMarketing,
+      registerLocationKey: location.key,
+    };
+    navigate(path, legalNavState);
+  };
 
   const clearError = (field: keyof FieldErrors) => {
     setErrors((prev) => {
@@ -554,8 +656,8 @@ export function RegisterPage() {
                       <span
                         role="link"
                         tabIndex={0}
-                        onClick={() => navigate('/legal/condiciones', legalNavState)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') navigate('/legal/condiciones', legalNavState); }}
+                        onClick={() => navigateToLegal('/legal/condiciones')}
+                        onKeyDown={(e) => { if (e.key === 'Enter') navigateToLegal('/legal/condiciones'); }}
                         className="text-manises-gold underline underline-offset-2 cursor-pointer"
                       >
                         Condiciones Generales
@@ -564,8 +666,8 @@ export function RegisterPage() {
                       <span
                         role="link"
                         tabIndex={0}
-                        onClick={() => navigate('/legal/condiciones', legalNavState)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') navigate('/legal/condiciones', legalNavState); }}
+                        onClick={() => navigateToLegal('/legal/condiciones')}
+                        onKeyDown={(e) => { if (e.key === 'Enter') navigateToLegal('/legal/condiciones'); }}
                         className="text-manises-gold underline underline-offset-2 cursor-pointer"
                       >
                         Términos de Uso
@@ -574,8 +676,8 @@ export function RegisterPage() {
                       <span
                         role="link"
                         tabIndex={0}
-                        onClick={() => navigate('/legal/privacidad', legalNavState)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') navigate('/legal/privacidad', legalNavState); }}
+                        onClick={() => navigateToLegal('/legal/privacidad')}
+                        onKeyDown={(e) => { if (e.key === 'Enter') navigateToLegal('/legal/privacidad'); }}
                         className="text-manises-gold underline underline-offset-2 cursor-pointer"
                       >
                         Política de Privacidad
@@ -671,11 +773,11 @@ export function RegisterPage() {
 
         <div className="flex flex-col items-center gap-3 px-4 opacity-30 mt-2">
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-            <button onClick={() => navigate('/legal/condiciones', legalNavState)} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Términos</button>
+            <button onClick={() => navigateToLegal('/legal/condiciones')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Términos</button>
             <span className="text-[8px]">•</span>
-            <button onClick={() => navigate('/legal/privacidad', legalNavState)} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Privacidad</button>
+            <button onClick={() => navigateToLegal('/legal/privacidad')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Privacidad</button>
             <span className="text-[8px]">•</span>
-            <button onClick={() => navigate('/legal/juego-responsable', legalNavState)} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Juego responsable</button>
+            <button onClick={() => navigateToLegal('/legal/juego-responsable')} className="text-[9px] font-bold uppercase tracking-wider hover:text-white transition-colors">Juego responsable</button>
             <span className="text-[8px]">•</span>
             <span className="text-[9px] font-bold uppercase tracking-wider">+18</span>
           </div>
