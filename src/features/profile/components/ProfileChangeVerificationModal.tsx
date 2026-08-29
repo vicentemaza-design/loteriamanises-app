@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ShieldCheck, Loader2, AlertTriangle, Clock, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
@@ -6,6 +6,15 @@ import { Button } from '@/shared/ui/Button';
 import { OtpInput } from '@/shared/ui/OtpInput';
 import { maskEmail } from '@/shared/lib/maskEmail';
 import { useProfileChangeVerification } from '@/features/profile/hooks/useProfileChangeVerification';
+
+// Mismas tres constantes que src/features/profile/components/PinEntryModal.tsx
+// (duplicadas a propósito, no extraídas a un módulo compartido — cambio
+// mínimo pedido, sin refactor amplio): posicionan la tarjeta en la mitad
+// superior del visualViewport visible con un margen de seguridad respecto al
+// teclado, en vez de centrarla en el punto medio exacto.
+const POPUP_TOP_BIAS_RATIO = 0.12;
+const POPUP_MIN_TOP_OFFSET_PX = 16;
+const POPUP_BOTTOM_SAFE_MARGIN_PX = 24;
 
 interface ProfileChangeVerificationModalProps {
   isOpen: boolean;
@@ -41,6 +50,11 @@ export function ProfileChangeVerificationModal({ isOpen, onClose, email, onConfi
   const [code, setCode] = useState('');
   const [isApplying, setIsApplying] = useState(false);
   const [applyError, setApplyError] = useState(false);
+  const [viewport, setViewport] = useState<{ height: number | null; offsetTop: number }>({
+    height: null,
+    offsetTop: 0,
+  });
+  const sheetRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -52,6 +66,51 @@ export function ProfileChangeVerificationModal({ isOpen, onClose, email, onConfi
     // sendCode/reset are stable (useCallback) — only re-run when the modal opens/target email changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, email]);
+
+  // Mismo patrón que PinEntryModal.tsx: sigue window.visualViewport (no el
+  // layout viewport, no window.innerHeight) para que el teclado numérico de
+  // iOS no tape el código ni el mensaje de error.
+  useEffect(() => {
+    if (!isOpen || !window.visualViewport) return;
+
+    const vv = window.visualViewport;
+    const updateViewport = () => {
+      setViewport({ height: vv.height, offsetTop: vv.offsetTop });
+    };
+    updateViewport();
+    vv.addEventListener('resize', updateViewport);
+    vv.addEventListener('scroll', updateViewport);
+    return () => {
+      vv.removeEventListener('resize', updateViewport);
+      vv.removeEventListener('scroll', updateViewport);
+    };
+  }, [isOpen]);
+
+  // Mismo patrón que PinEntryModal.tsx: OtpInput recibe autoFocus={false} y
+  // el foco se controla aquí con preventScroll tras un doble rAF, para que
+  // iOS no dispare su propio scroll-to-reveal al enfocar en el mount.
+  useEffect(() => {
+    if (!isOpen) return;
+    let frame1 = 0;
+    let frame2 = 0;
+    frame1 = requestAnimationFrame(() => {
+      frame2 = requestAnimationFrame(() => {
+        sheetRef.current?.querySelector<HTMLInputElement>('input')?.focus({ preventScroll: true });
+      });
+    });
+    return () => {
+      cancelAnimationFrame(frame1);
+      cancelAnimationFrame(frame2);
+    };
+  }, [isOpen]);
+
+  // Offset superior derivado de viewport.height (nunca de window.innerHeight):
+  // manda la tarjeta a la mitad superior de la zona visible, no al centro
+  // exacto, dejando siempre POPUP_BOTTOM_SAFE_MARGIN_PX libres respecto al
+  // borde inferior real del visualViewport (el borde superior del teclado).
+  const popupTopOffsetPx = viewport.height != null
+    ? Math.max(viewport.height * POPUP_TOP_BIAS_RATIO, POPUP_MIN_TOP_OFFSET_PX)
+    : 0;
 
   const handleClose = () => {
     if (isApplying) return; // avoid closing mid-apply
@@ -108,21 +167,37 @@ export function ProfileChangeVerificationModal({ isOpen, onClose, email, onConfi
             onClick={!isVerifying ? handleClose : undefined}
             className="fixed inset-0 z-[90] bg-manises-blue/40 backdrop-blur-sm"
           />
-          <motion.div
-            initial={{ y: '100%', opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: '100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="profile-verification-title"
-            className="fixed bottom-0 left-0 right-0 z-[100] flex max-h-[calc(100dvh-0.75rem)] flex-col rounded-t-[2.5rem] bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)]"
+          {/* Mismo wrapper que PinEntryModal.tsx: ligado al visualViewport
+              (no a window.innerHeight, no a bottom:0), tarjeta alineada
+              arriba (items-start) con paddingTop/paddingBottom derivados de
+              popupTopOffsetPx/POPUP_BOTTOM_SAFE_MARGIN_PX — mitad superior
+              de la zona visible, siempre por encima del teclado. */}
+          <div
+            className="fixed left-0 right-0 z-[100] flex items-start justify-center px-4 pointer-events-none"
+            style={{
+              top: viewport.height != null ? `${viewport.offsetTop}px` : 0,
+              height: viewport.height != null ? `${viewport.height}px` : '100dvh',
+              paddingTop: viewport.height != null ? `${popupTopOffsetPx}px` : '12vh',
+              paddingBottom: `${POPUP_BOTTOM_SAFE_MARGIN_PX}px`,
+            }}
           >
-            <div className="flex w-full shrink-0 justify-center pt-3 pb-2">
-              <div className="h-1.5 w-12 rounded-full bg-gray-200" />
-            </div>
-
-            <div className="flex-1 overflow-y-auto overscroll-contain px-5 pt-2 pb-6">
+            <motion.div
+              ref={sheetRef}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="profile-verification-title"
+              className="pointer-events-auto relative flex w-full max-w-sm flex-col rounded-[1.75rem] bg-white shadow-[0_10px_40px_rgba(0,0,0,0.15)]"
+              style={{
+                maxHeight: viewport.height != null
+                  ? `${Math.max(viewport.height - popupTopOffsetPx - POPUP_BOTTOM_SAFE_MARGIN_PX, 240)}px`
+                  : 'calc(100dvh - 12vh - 2rem)',
+              }}
+            >
+            <div className="flex-1 overflow-y-auto overscroll-contain px-5 pt-6 pb-6">
               <div className="mb-5 flex items-start justify-between">
                 <div className="flex flex-col items-center text-center w-full gap-3">
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-manises-blue/20 bg-manises-blue/10 text-manises-blue">
@@ -158,6 +233,12 @@ export function ProfileChangeVerificationModal({ isOpen, onClose, email, onConfi
                   disabled={isVerifying}
                   error={status === 'invalid_code' || status === 'expired' || applyError}
                   ariaLabel="Código de verificación de 6 dígitos"
+                  // Mismo patrón que PinEntryModal.tsx: foco controlado por
+                  // el efecto de arriba (preventScroll), único input real
+                  // superpuesto a las 6 casillas visuales — sin focus()
+                  // entre dígitos.
+                  autoFocus={false}
+                  singleInputMode
                 />
 
                 {status === 'invalid_code' && (
@@ -208,10 +289,7 @@ export function ProfileChangeVerificationModal({ isOpen, onClose, email, onConfi
               </div>
             </div>
 
-            <div
-              className="shrink-0 border-t border-gray-100 bg-white px-5 pt-3"
-              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}
-            >
+            <div className="shrink-0 border-t border-gray-100 bg-white px-5 py-3">
               <Button
                 onClick={() => handleValidate(code)}
                 disabled={!canValidate}
@@ -227,7 +305,8 @@ export function ProfileChangeVerificationModal({ isOpen, onClose, email, onConfi
                 )}
               </Button>
             </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
