@@ -276,10 +276,6 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
                   // componente (ver useEffect de arriba) con preventScroll,
                   // para que iOS no dispare su scroll-to-reveal al enfocar.
                   autoFocus={false}
-                  // El anillo dorado sin transición evita el "pim, pim" al
-                  // autoavanzar entre las 4 casillas (feedback de Rafa) —
-                  // solo aquí; el resto de OtpInput mantiene su animación.
-                  stableFocusRing
                   // Único <input> real: el foco del DOM nunca cambia de
                   // elemento entre dígitos (causa física del "pim, pim" en
                   // iOS, no solo visual) — solo aquí; ProfileChangeVerification
