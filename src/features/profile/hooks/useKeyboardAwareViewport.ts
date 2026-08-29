@@ -7,8 +7,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // App.tsx/main.tsx, que no se modifican en esta tarea.
 const KEYBOARD_HEIGHT_THRESHOLD = 80;
 
-// Margen mínimo entre el campo activo y el borde del teclado/viewport.
-const SAFE_MARGIN_PX = 24;
+// Margen mínimo entre el campo activo y el borde del teclado/viewport —
+// además del espacio real que ocupa el teclado, iOS suele mostrar encima
+// una barra de autofill/sugerencias que 24px no cubría con suficiente aire
+// visual (validado en dispositivo físico); 56px da margen a esa barra sin
+// desplazar el campo más de lo necesario.
+const SAFE_MARGIN_PX = 56;
 
 // Espera tras el último evento de resize/scroll de visualViewport antes de
 // comprobar si el campo activo sigue visible. iOS emite varios resize
