@@ -433,7 +433,6 @@
   }
 
   html.layer-debug body {
-    background: rgba(10, 71, 146, 0.8) !important;
   }
 
   html.layer-debug #root {
@@ -474,7 +473,7 @@
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     position: fixed;
     inset: 0;
-    background: var(--app-bg) !important;
+    background: #3B6CA8 !important;
     overflow: hidden;
     overscroll-behavior-y: none;
     width: 100%;
