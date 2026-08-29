@@ -13,9 +13,10 @@ export interface OtpInputProps {
   /** Passed to each box's aria-label, e.g. "Dígito 1 de 6 del código de verificación". */
   ariaLabel?: string;
   /**
-   * Opt-in, default false: drops the transition on the focus ring/border so
-   * it snaps instantly instead of animating as auto-advance moves focus
-   * between boxes. Every other consumer keeps the existing animated ring.
+   * Opt-in, default false: suppresses the per-box focus ring/border entirely
+   * (and its transition), so auto-advance doesn't show a highlight jumping
+   * between boxes. Base border/dimensions and the error state are unaffected.
+   * Every other consumer keeps the existing animated ring.
    */
   stableFocusRing?: boolean;
 }
@@ -146,8 +147,9 @@ export function OtpInput({
           onFocus={(e) => e.currentTarget.select()}
           className={cn(
             'h-12 w-11 shrink-0 rounded-sm border bg-card/50 text-center text-lg font-black tabular-nums shadow-inner-soft outline-none',
-            stableFocusRing ? undefined : 'transition-all',
-            'focus-visible:ring-2 focus-visible:ring-manises-gold/40 focus-visible:border-manises-gold',
+            stableFocusRing
+              ? undefined
+              : 'transition-all focus-visible:ring-2 focus-visible:ring-manises-gold/40 focus-visible:border-manises-gold',
             'disabled:cursor-not-allowed disabled:opacity-50',
             error ? 'border-destructive text-destructive' : 'border-input text-manises-blue'
           )}
