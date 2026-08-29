@@ -19,6 +19,17 @@ export interface OtpInputProps {
    * Every other consumer keeps the existing animated ring.
    */
   stableFocusRing?: boolean;
+  /**
+   * Opt-in, default false: renders a SINGLE real <input> (transparent,
+   * absolutely positioned over the boxes) instead of one <input> per digit.
+   * The boxes become plain non-focusable divs that only display each
+   * character of `value`. DOM focus never moves during entry — there is no
+   * per-digit focus() call to trigger iOS's own caret/scroll-to-reveal
+   * handling, which CSS-only fixes on the per-box focus ring couldn't
+   * prevent. Every other consumer keeps the current one-input-per-digit
+   * behavior untouched.
+   */
+  singleInputMode?: boolean;
 }
 
 /**
@@ -37,9 +48,23 @@ export function OtpInput({
   error = false,
   ariaLabel = 'Código de verificación',
   stableFocusRing = false,
+  singleInputMode = false,
 }: OtpInputProps) {
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const digits = Array.from({ length }, (_, i) => value[i] ?? '');
+
+  // Único cambio real de valor en singleInputMode: sin múltiples cajas no
+  // hay "huecos" posibles (el navegador ya mantiene el string contiguo), así
+  // que basta con filtrar y recortar — no hace falta el resto de handlers
+  // (avance, pegado-a-mitad, Backspace/flechas entre cajas) porque no hay
+  // ningún otro <input> al que moverse.
+  const handleSingleChange = (raw: string) => {
+    const onlyDigits = raw.replace(/\D/g, '').slice(0, length);
+    onChange(onlyDigits);
+    if (onlyDigits.length === length) {
+      onComplete?.(onlyDigits);
+    }
+  };
 
   useEffect(() => {
     if (autoFocus) {
@@ -126,6 +151,45 @@ export function OtpInput({
       inputRefs.current[index + 1]?.focus();
     }
   };
+
+  // Un único input real, transparente, superpuesto a las cajas visuales.
+  // El foco del DOM permanece siempre en este mismo elemento — nunca se
+  // llama focus() en ningún otro nodo — así que iOS no tiene ningún cambio
+  // de foco que gestionar mientras se escriben los dígitos. Las cajas de
+  // abajo son <div> puros (aria-hidden, sin tabIndex): solo pintan cada
+  // carácter de `value`, no reciben foco ni participan en la accesibilidad.
+  if (singleInputMode) {
+    return (
+      <div className="relative flex items-center justify-center gap-2 rounded-2xl focus-within:ring-2 focus-within:ring-manises-gold/30">
+        {digits.map((digit, index) => (
+          <div
+            key={index}
+            aria-hidden="true"
+            className={cn(
+              'flex h-12 w-11 shrink-0 items-center justify-center rounded-sm border bg-card/50 text-lg font-black tabular-nums shadow-inner-soft',
+              error ? 'border-destructive text-destructive' : 'border-input text-manises-blue'
+            )}
+          >
+            {digit}
+          </div>
+        ))}
+        <input
+          ref={(el) => { inputRefs.current[0] = el; }}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          autoComplete="one-time-code"
+          maxLength={length}
+          value={value}
+          disabled={disabled}
+          aria-label={ariaLabel}
+          onChange={(e) => handleSingleChange(e.target.value)}
+          onFocus={(e) => e.currentTarget.select()}
+          className="absolute inset-0 h-full w-full cursor-default border-none bg-transparent text-transparent caret-transparent opacity-0 outline-none disabled:cursor-not-allowed"
+        />
+      </div>
+    );
+  }
 
   return (
     <div role="group" aria-label={ariaLabel} className="flex items-center justify-center gap-2">

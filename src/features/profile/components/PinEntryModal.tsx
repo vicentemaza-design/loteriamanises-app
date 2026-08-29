@@ -7,6 +7,17 @@ import { createPin, verifyPin } from '@/features/profile/lib/security';
 
 const PIN_LENGTH = 4;
 
+// Posición vertical de la tarjeta dentro del visualViewport visible: no se
+// centra a partir del punto medio, se desplaza a la mitad superior (offset
+// de arriba pequeño, no pegado al borde) y se reserva un margen inferior de
+// seguridad para que, sea cual sea la altura del teclado en ese momento, la
+// tarjeta nunca llegue a tocar su borde superior. Ambos valores se restan de
+// viewport.height — nunca de window.innerHeight — así que si el teclado
+// cambia de altura, la tarjeta se recoloca dentro del rectángulo visible.
+const POPUP_TOP_BIAS_RATIO = 0.12;
+const POPUP_MIN_TOP_OFFSET_PX = 16;
+const POPUP_BOTTOM_SAFE_MARGIN_PX = 24;
+
 interface PinEntryModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -148,6 +159,14 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
     ? handleVerifyComplete
     : step === 'entry' ? handleCreateFirstComplete : handleCreateConfirmComplete;
 
+  // Offset superior derivado de viewport.height (nunca de window.innerHeight):
+  // manda la tarjeta a la mitad superior de la zona visible, no al centro
+  // exacto, dejando siempre POPUP_BOTTOM_SAFE_MARGIN_PX libres respecto al
+  // borde inferior real del visualViewport (el borde superior del teclado).
+  const popupTopOffsetPx = viewport.height != null
+    ? Math.max(viewport.height * POPUP_TOP_BIAS_RATIO, POPUP_MIN_TOP_OFFSET_PX)
+    : 0;
+
   const heading = title ?? (mode === 'verify' ? 'Confirma tu PIN' : step === 'entry' ? 'Crea un PIN de seguridad' : 'Confirma tu PIN');
   const subtext = description ?? (
     mode === 'verify'
@@ -178,42 +197,44 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
             onClick={!isBusy ? handleClose : undefined}
             className="fixed inset-0 z-[270] bg-manises-blue/40 backdrop-blur-sm"
           />
-          {/* Wrapper ligado al visualViewport (no al layout viewport): en
-              iOS, cuando aparece el teclado, visualViewport es el único que
-              refleja la zona realmente visible. La hoja se ancla abajo de
-              ESTE wrapper (flex items-end), no con bottom dinámico ni
-              window.innerHeight — evita el cálculo que obligaba a hacer
-              scroll manual para "revelar" el modal. pointer-events-none en
-              el wrapper para no bloquear clics fuera de la hoja; la hoja
+          {/* Wrapper ligado al visualViewport (no al layout viewport, no a
+              window.innerHeight, no a bottom:0): en iOS, cuando aparece el
+              teclado, visualViewport es el único que refleja la zona
+              realmente visible. La tarjeta se alinea arriba (items-start)
+              dentro de ESE rectángulo, con paddingTop = popupTopOffsetPx
+              (mitad superior, no el centro exacto) y paddingBottom =
+              POPUP_BOTTOM_SAFE_MARGIN_PX — ambos derivados de
+              viewport.height, así que si el teclado cambia de altura la
+              tarjeta se recalcula dentro de la nueva zona visible, nunca
+              pegada a su borde inferior. pointer-events-none en el wrapper
+              para no bloquear clics fuera de la tarjeta; la tarjeta
               recupera pointer-events-auto. */}
           <div
-            className="fixed left-0 right-0 z-[271] flex items-end pointer-events-none"
+            className="fixed left-0 right-0 z-[271] flex items-start justify-center px-4 pointer-events-none"
             style={{
               top: viewport.height != null ? `${viewport.offsetTop}px` : 0,
               height: viewport.height != null ? `${viewport.height}px` : '100dvh',
+              paddingTop: viewport.height != null ? `${popupTopOffsetPx}px` : '12vh',
+              paddingBottom: `${POPUP_BOTTOM_SAFE_MARGIN_PX}px`,
             }}
           >
             <motion.div
               ref={sheetRef}
-              initial={{ y: '100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               role="dialog"
               aria-modal="true"
               aria-labelledby="pin-entry-title"
-              className="pointer-events-auto flex w-full max-h-[calc(100dvh-0.75rem)] flex-col rounded-t-[2.5rem] bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)]"
+              className="pointer-events-auto relative flex w-full max-w-sm flex-col rounded-[1.75rem] bg-white shadow-[0_10px_40px_rgba(0,0,0,0.15)]"
               style={{
                 maxHeight: viewport.height != null
-                  ? `${Math.max(viewport.height - 12, 240)}px`
-                  : 'calc(100dvh - 0.75rem)',
+                  ? `${Math.max(viewport.height - popupTopOffsetPx - POPUP_BOTTOM_SAFE_MARGIN_PX, 240)}px`
+                  : 'calc(100dvh - 12vh - 2rem)',
               }}
             >
-            <div className="flex w-full shrink-0 justify-center pt-3 pb-2">
-              <div className="h-1.5 w-12 rounded-full bg-gray-200" />
-            </div>
-
-            <div className="flex-1 overflow-y-auto overscroll-contain px-5 pt-2 pb-6">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-5 pt-6 pb-6">
               <div className="mb-5 flex items-start justify-between">
                 <div className="flex flex-col items-center text-center w-full gap-3">
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-manises-blue/20 bg-manises-blue/10 text-manises-blue">
@@ -259,6 +280,11 @@ export function PinEntryModal({ isOpen, onClose, mode, title, description, onSuc
                   // autoavanzar entre las 4 casillas (feedback de Rafa) —
                   // solo aquí; el resto de OtpInput mantiene su animación.
                   stableFocusRing
+                  // Único <input> real: el foco del DOM nunca cambia de
+                  // elemento entre dígitos (causa física del "pim, pim" en
+                  // iOS, no solo visual) — solo aquí; ProfileChangeVerification
+                  // sigue con un input por casilla.
+                  singleInputMode
                 />
 
                 {error && (
