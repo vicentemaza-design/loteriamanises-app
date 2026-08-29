@@ -437,7 +437,7 @@
   }
 
   html.layer-debug #root {
-    background: #00ff00 !important;
+    background: transparent !important;
   }
 
   html.layer-debug .app-shell {
