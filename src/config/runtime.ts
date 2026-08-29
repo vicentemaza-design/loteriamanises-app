@@ -30,8 +30,15 @@ export const RUNTIME_CONFIG = {
    * VITE_API_PROVIDER was forgotten (defaulting to 'mock' above), never
    * exposes demo-only UI just because the data adapter happens to be mock.
    * Set VITE_ENABLE_DEMO_ACCESS=true only for the Vercel demo/QA deployment.
+   *
+   * TEST BRANCH ONLY — physical QA (test/release-cleanup-demo-enabled):
+   * VITE_ENABLE_DEMO_ACCESS is not configured for this branch's Preview
+   * environment, so without this override the demo button/Face ID demo/QA
+   * PIN never appear and there is no way to sign in on the physical device
+   * (the demo user has no real password). Forced to `true` here solely to
+   * unblock that physical test. DO NOT MERGE THIS OVERRIDE TO MAIN.
    */
-  demoEnabled: import.meta.env.VITE_ENABLE_DEMO_ACCESS === 'true',
+  demoEnabled: true,
 
   // App Version
   version: '2.5.0-industrial',
