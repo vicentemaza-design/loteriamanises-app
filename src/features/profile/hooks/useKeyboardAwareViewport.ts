@@ -7,12 +7,22 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 // App.tsx/main.tsx, que no se modifican en esta tarea.
 const KEYBOARD_HEIGHT_THRESHOLD = 80;
 
-// Margen mínimo entre el campo activo y el borde del teclado/viewport —
-// además del espacio real que ocupa el teclado, iOS suele mostrar encima
-// una barra de autofill/sugerencias que 24px no cubría con suficiente aire
-// visual (validado en dispositivo físico); 56px da margen a esa barra sin
-// desplazar el campo más de lo necesario.
+// Margen mínimo entre el campo activo y el borde SUPERIOR del visualViewport
+// (para no quedar pegado al header). El borde inferior (teclado/autofill)
+// usa su propio objetivo, más generoso — ver TARGET_BOTTOM_CLEARANCE_PX.
 const SAFE_MARGIN_PX = 56;
+
+// Separación objetivo entre el borde inferior del campo activo y el borde
+// inferior REAL del visualViewport (donde empieza el teclado/la barra de
+// autofill). SAFE_MARGIN_PX (56) ya bastaba para "detectar" que el campo
+// estaba demasiado bajo, pero scrollIntoView({block:'center'}) posiciona
+// respecto al centro del contenedor de scroll, no respecto al borde real
+// del visualViewport (que con teclado abierto es más pequeño que el layout
+// viewport) — de ahí que el campo siguiera terminando pegado al teclado
+// pese a que la detección ya era correcta. Validado en dispositivo físico
+// que 72px de hueco es suficiente para separarlo de la barra de
+// "Autorrellenar contacto" de iOS.
+const TARGET_BOTTOM_CLEARANCE_PX = 72;
 
 // Espera tras el último evento de resize/scroll de visualViewport antes de
 // comprobar si el campo activo sigue visible. iOS emite varios resize
@@ -59,17 +69,69 @@ export function useKeyboardAwareViewport(): KeyboardAwareViewport {
     if (!el || !el.isConnected) return;
 
     const vv = window.visualViewport;
-    const viewportTop = vv ? vv.offsetTop : 0;
-    const viewportBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
-    const rect = el.getBoundingClientRect();
 
-    const isFullyVisible =
-      rect.top >= viewportTop + SAFE_MARGIN_PX &&
-      rect.bottom <= viewportBottom - SAFE_MARGIN_PX;
-
-    if (!isFullyVisible) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Sin visualViewport (navegador sin soporte): no hay forma de calcular
+    // la posición real del teclado — mantener el comportamiento seguro
+    // anterior (scrollIntoView nativo) en vez del cálculo fino de abajo.
+    if (!vv) {
+      const rect = el.getBoundingClientRect();
+      const isFullyVisible =
+        rect.top >= SAFE_MARGIN_PX && rect.bottom <= window.innerHeight - SAFE_MARGIN_PX;
+      if (!isFullyVisible) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
     }
+
+    // Scroller real de la app (el <main> de PrivateLayout, sin tocar) —
+    // nunca window.scrollBy: body está fixed y no es el scroller real.
+    const scroller = el.closest('main');
+    if (!(scroller instanceof HTMLElement)) {
+      // No debería ocurrir en las páginas de Perfil que usan este hook,
+      // pero si el input no cuelga de un <main>, mismo fallback seguro.
+      const rect = el.getBoundingClientRect();
+      const isFullyVisible =
+        rect.top >= vv.offsetTop + SAFE_MARGIN_PX &&
+        rect.bottom <= vv.offsetTop + vv.height - SAFE_MARGIN_PX;
+      if (!isFullyVisible) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+
+    // Medido en cada llamada (nunca una posición capturada de antemano):
+    // esto es lo que hace que la función sea idempotente — si se llama de
+    // nuevo tras un scroll ya aplicado, el overflow calculado da <= 0 y no
+    // se vuelve a desplazar nada, evitando bucles/oscilaciones aunque el
+    // scroll "smooth" en curso dispare una nueva comprobación mientras
+    // todavía anima.
+    const rect = el.getBoundingClientRect();
+    const viewportTop = vv.offsetTop;
+    const viewportBottom = vv.offsetTop + vv.height;
+
+    // Borde inferior — el problema físico confirmado: el campo puede
+    // "detectarse" como demasiado bajo pero scrollIntoView(block:'center')
+    // no lo separaba lo suficiente del teclado/autofill real. Aquí se
+    // desplaza el scroller real la distancia exacta de solape contra el
+    // borde inferior REAL del visualViewport, no un centro teórico.
+    const targetBottom = viewportBottom - TARGET_BOTTOM_CLEARANCE_PX;
+    const overflowBottom = rect.bottom - targetBottom;
+    if (overflowBottom > 0) {
+      scroller.scrollBy({ top: overflowBottom, behavior: 'smooth' });
+      return;
+    }
+
+    // Borde superior — protección secundaria (no es el problema reportado
+    // hoy) para que el campo no quede pegado al header al desplazarse hacia
+    // arriba en el formulario.
+    const targetTop = viewportTop + SAFE_MARGIN_PX;
+    const overflowTop = targetTop - rect.top;
+    if (overflowTop > 0) {
+      scroller.scrollBy({ top: -overflowTop, behavior: 'smooth' });
+    }
+    // Ni overflowBottom ni overflowTop positivos: el campo ya está en zona
+    // cómoda — no se mueve nada (evita mover innecesariamente campos que
+    // ya se ven bien, p. ej. BankAccounts/IBAN).
   }, []);
 
   const registerActiveField = useCallback((el: HTMLElement | null) => {
