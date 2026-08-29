@@ -405,7 +405,7 @@
     @apply font-sans;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    background: var(--app-bg);
+    background: #3B6CA8;
     height: 100%;
     overflow: hidden;
   }
@@ -429,7 +429,6 @@
      geometría ni comportamiento; colorea cada superficie para identificar
      qué capa llega al límite CSS y qué zona queda fuera de él. */
   html.layer-debug {
-    background: #7B1FA2 !important;
   }
 
   html.layer-debug body {
