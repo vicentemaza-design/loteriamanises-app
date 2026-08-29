@@ -304,9 +304,6 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   const nextWeekDates = useMemo(() => nextWeekDraws.map((d) => d.drawDate), [nextWeekDraws]);
   const twoWeeksDates = useMemo(() => [...currentWeekDates, ...nextWeekDates], [currentWeekDates, nextWeekDates]);
 
-  const areDatesEqual = (a: string[], b: string[]) =>
-    a.length === b.length && a.every((v) => b.includes(v));
-
   // Flujo multisorteo (Bonoloto + generalización) — fechas a mostrar como
   // seleccionadas visualmente. "Toda la semana" es una selección real y
   // explícita del usuario aunque selectedDrawDates se mantenga vacío (así
@@ -916,13 +913,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                       // Permanece en el paso de fechas — el avance a paso 2
                       // lo hace únicamente el CTA "Jugar".
                     }}
-                    className={cn(
-                      'flex items-center gap-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border px-3 py-1.5',
-                      (timeMode === 'full_week' || areDatesEqual(multiDrawVisualSelectedDates, currentWeekDates))
-                        ? 'text-white border-transparent shadow-sm'
-                        : 'bg-slate-50 text-slate-500 border-slate-200 hover:border-slate-300'
-                    )}
-                    style={(timeMode === 'full_week' || areDatesEqual(multiDrawVisualSelectedDates, currentWeekDates)) ? { backgroundColor: game.color, borderColor: game.color } : undefined}
+                    className="flex items-center gap-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all border px-3 py-1.5 text-white border-transparent shadow-sm"
+                    style={{ backgroundColor: game.color, borderColor: game.color }}
                   >
                     <Calendar className="h-3 w-3 shrink-0" />
                     Seleccionar toda la semana
@@ -943,8 +935,8 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
                   ? (Object.entries(groupedAllDraws) as [string, ScheduledDraw[]][]).flatMap(([weekKey, weekDraws], weekIndex) => {
                       const weekLabel = weekIndex === 0 ? 'Esta sem.' : weekIndex === 1 ? 'Próx. sem.' : `Sem. ${weekIndex + 1}`;
                       const weekDates = weekDraws.map((d: ScheduledDraw) => d.drawDate);
-                      const allSelected = weekDates.length > 0 && weekDates.every((d: string) => effectiveSelectedDrawDates.includes(d));
-                      const someSelected = weekDates.some((d: string) => effectiveSelectedDrawDates.includes(d));
+                      const allSelected = weekDates.length > 0 && weekDates.every((d: string) => multiDrawVisualSelectedDates.includes(d));
+                      const someSelected = weekDates.some((d: string) => multiDrawVisualSelectedDates.includes(d));
 
                       const separator = (
                         <button
