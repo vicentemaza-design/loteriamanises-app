@@ -429,7 +429,7 @@
      geometría ni comportamiento; colorea cada superficie para identificar
      qué capa llega al límite CSS y qué zona queda fuera de él. */
   html.layer-debug {
-    background: #3B6CA8 !important;
+    background: #7B1FA2 !important;
   }
 
   html.layer-debug body {
