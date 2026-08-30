@@ -97,7 +97,7 @@ export function PrivateLayout() {
                 style={{
                   height: 'var(--play-top-surface-height, calc(env(safe-area-inset-top, 0px) + 64px))',
                   zIndex: 'var(--play-top-surface-z, 30)',
-                  background: 'var(--play-header-background, #3B6CA8)',
+                  background: 'var(--play-header-background, #FF00FF)',
                 }}
               >
                 {/* EXPERIMENTO — acabado visual (solo Primitiva/Navidad, ver
