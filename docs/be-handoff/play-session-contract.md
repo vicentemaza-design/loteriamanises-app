@@ -26,11 +26,13 @@ Es la representación de una línea de apuesta en el carrito.
   - `jokerEnabled?: boolean` — `true` si el usuario activó el Joker en Primitiva. Cuando está presente y es `true`, el BE debe generar un número Joker (7 dígitos) por apuesta y sumar 1,00 €/apuesta al recálculo de precio.
 
 ## Estructura de GameSelection
-Unión discriminada por el campo `type`:
+Unión discriminada por `type`, según `src/features/session/types/session.types.ts`:
 - **National**: `{ type: 'national', number: string, drawLabel: string }`
 - **Euromillones**: `{ type: 'euromillones', numbers: number[], stars: number[] }`
 - **Quiniela**: `{ type: 'quiniela', matches: { id, value }[], systemId?: string }`
-- **Primitiva/Bonoloto**: `{ type: 'primitiva', numbers: number[] }`
+- **Primitiva**: `{ type: 'primitiva', numbers: number[], reintegro: number }`
+- **Bonoloto**: `{ type: 'bonoloto', numbers: number[] }`
+- **EuroDreams**: `{ type: 'eurodreams', numbers: number[], dream: number }`
 - **Gordo**: `{ type: 'gordo', numbers: number[], key: number }`
 
 ## Transformación a DTO (Backend)
@@ -43,5 +45,5 @@ Al confirmar la sesión, el frontend mapea los drafts a un formato plano:
 ## Campos Críticos para Confirmación
 Backend DEBE ignorar el campo `totalPrice` del payload para el cobro real y utilizarlo solo para validación cruzada. El cálculo de saldo debe basarse en la lógica interna del BE.
 
-## Compatibilidad Legacy
-El campo `metadata` permite extender el contrato sin romper versiones antiguas de la PWA. Actualmente se usa para almacenar `orderDrawDates` en compras multi-sorteo.
+## Compatibilidad y autoridad
+`metadata` permite extensiones compatibles, pero BE debe aplicar una allowlist por juego. El DTO de compra incluye `selaeGameCode` y, para Nacional, `serie`/`fraccion` por línea. `totalPrice`, `unitPrice`, `betsCount`, usuario y estado del sorteo deben recalcularse o validarse server-side.

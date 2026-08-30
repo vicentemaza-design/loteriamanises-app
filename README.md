@@ -209,18 +209,18 @@ Actualmente usa **Firebase Authentication con Google Sign-In**. El flujo es:
 `src/features/profile/components/RedsysGateway.tsx` es actualmente una **UI de demostración** que simula el flujo 3DS. No realiza ninguna llamada real a Redsys.
 
 Para la integración real:
-- Ver la memoria de arquitectura en `.claude/projects/.../memory/project_be_redsys_cards.md`
+- Revisar los contratos y handoffs en `docs/be-handoff/`
 - El backend debe generar los parámetros `Ds_Merchant_*` y la firma SHA-256
 - El frontend renderiza el formulario POST hacia la URL de Redsys o embebe el JS de Redsys Sis
 
 ---
 
-## Stubs conocidos (pendiente de implementar)
+## Estado de integración conocido
 
 | Archivo | Qué falta |
 |---------|-----------|
-| `adapters/http/*.ts` | Todos los métodos — son stubs que lanzan error |
-| `adapters/firebase/play.firebase.ts` | `submitPlaySession` — carrito multi-décimo no implementado |
+| `adapters/http/http.adapter.ts` | Resultados, tickets, wallet básico, apuestas y suscripciones tienen rutas; auth email, cuentas bancarias, retirada y precio autoritativo siguen pendientes de BE |
+| `adapters/firebase/play.firebase.ts` | Operaciones monetarias/compra real y varias operaciones de auth/cuentas/retirada están deliberadamente protegidas o pendientes |
 | `features/profile/components/RedsysGateway.tsx` | Integración real con Redsys |
 | `providers/api.provider.ts` → `calculatePrice` | El precio debe ser validado en servidor |
 

@@ -375,6 +375,6 @@ con BE antes de producción — **no se ha modificado nada de esto en este hando
 - El saldo (`balance`) puede modificarse libremente desde el cliente.
 - `/play/:gameId` no está protegido por `RequireAuth`.
 - PIN de bloqueo de app con valor por defecto hardcodeado `1234`.
-- `GEMINI_API_KEY` inyectada al bundle cliente vía `vite.config.ts` (mecanismo latente, sin clave real hoy).
+- No debe existir ninguna API key secreta en el bundle cliente. La autenticación, tokens, correo y rate limiting deben permanecer server-side.
 - Configuración de Firebase de producción trackeada en git.
 - Logs verbose (`enableVerboseApiLogs`) activos también en producción.

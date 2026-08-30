@@ -4,7 +4,7 @@
 
 El flujo de juego ya soporta selección de varios sorteos (`drawDates[]`) y funciona correctamente en modo mock y Firebase.
 
-Actualmente el cálculo y la serialización de fechas usan varias conversiones basadas en `Date` y `toISOString()`. Esto es suficiente para la demo y para el comportamiento actual validado, pero deja una zona gris en torno a la normalización horaria.
+El FE define explícitamente `BUSINESS_TIMEZONE = 'Europe/Madrid'` y expone `getBusinessDate()`/`getTodayBusinessDate()` en `src/shared/lib/timezone.ts`. Aun así, algunos flujos usan `Date` o timestamps ISO para instantes, por lo que BE debe validar la semántica final del día de sorteo.
 
 ## Riesgo identificado
 
@@ -24,7 +24,7 @@ Ejemplo típico:
 
 ## Impacto actual
 
-A día de hoy esta deuda técnica no bloquea el flujo aprobado:
+A día de hoy esta deuda técnica no bloquea el flujo demo aprobado:
 
 - `build` y `lint` están en verde
 - la demo se mantiene estable
@@ -113,4 +113,4 @@ Se ha realizado una auditoría funcional exhaustiva de 10 puntos validando los s
 ### Decisión de Ciclo
 La funcionalidad multi-draw se considera **Cerrada y Válida** para la fase actual de industrialización. 
 
-El siguiente paso es la **Normalización de fechas en Europe/Madrid** para eliminar la ambigüedad de `toISOString()` y garantizar que la app sea resiliente a cambios de huso horario en el cliente, según se detalla en las recomendaciones técnicas de este documento.
+El siguiente paso es revisar los puntos restantes que serializan instantes y acordar con BE la representación canónica del día de sorteo en `Europe/Madrid`; no se debe presentar el FE como autoridad de cierre.
