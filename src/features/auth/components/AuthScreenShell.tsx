@@ -1,7 +1,11 @@
 // Final iOS PWA Layout Stabilization - Background Engine v1.0.4
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { cn } from '@/shared/lib/utils';
 import authBackground from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
+import { AuthStartupLoader } from './AuthStartupLoader';
+
+const STARTUP_FALLBACK_TIMEOUT_MS = 700;
 
 interface AuthScreenShellProps {
   children: ReactNode;
@@ -14,15 +18,44 @@ export function AuthScreenShell({
   contentClassName,
   backgroundImageSrc = authBackground,
 }: AuthScreenShellProps) {
+  const [isReady, setIsReady] = useState(false);
+  const reduceMotion = useReducedMotion();
+
+  // Precarga el fondo antes de revelar el contenido, para evitar que la
+  // foto aparezca de golpe sobre un Login ya montado. Timeout de seguridad:
+  // el Login nunca queda oculto indefinidamente aunque la imagen falle o
+  // tarde más de lo esperado.
+  useEffect(() => {
+    let settled = false;
+    const markReady = () => {
+      if (settled) return;
+      settled = true;
+      setIsReady(true);
+    };
+
+    const img = new Image();
+    img.onload = markReady;
+    img.onerror = markReady;
+    img.src = backgroundImageSrc;
+    if (img.complete) markReady();
+
+    const fallback = window.setTimeout(markReady, STARTUP_FALLBACK_TIMEOUT_MS);
+    return () => {
+      window.clearTimeout(fallback);
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, [backgroundImageSrc]);
+
   return (
-    /* 
+    /*
        CORRECCIÓN DEFINITIVA DE CLIPPING:
        Inyectamos la imagen directamente en el background del contenedor raíz.
-       Esto evita que iOS renderice la imagen y el fondo en capas separadas 
+       Esto evita que iOS renderice la imagen y el fondo en capas separadas
        con alturas distintas durante el cold-boot de la PWA.
     */
     <div
-      className="relative min-h-dvh w-full overflow-hidden text-white bg-[#052a5a]"
+      className="relative min-h-dvh w-full overflow-hidden text-white bg-[#0A4792]"
       style={{
         backgroundImage: `
           linear-gradient(180deg, rgba(5,42,90,0.72) 0%, rgba(10,71,146,0.78) 45%, rgba(5,42,90,0.88) 100%),
@@ -47,7 +80,14 @@ export function AuthScreenShell({
           nativa SOLO en rutas públicas (html.auth-route, ver index.css);
           el fix de teclado de App.tsx no depende de body:fixed y sigue
           intacto. Privadas mantienen su body:fixed sin cambios. */}
-      <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 py-10">
+      <motion.div
+        className="relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 py-10"
+        animate={{ opacity: isReady ? 1 : 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.2 }}
+        aria-hidden={!isReady}
+        inert={!isReady}
+        style={!isReady ? { pointerEvents: 'none' } : undefined}
+      >
         <div
           className={cn(
             'flex flex-1 flex-col items-center pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]',
@@ -56,7 +96,20 @@ export function AuthScreenShell({
         >
           {children}
         </div>
-      </div>
+      </motion.div>
+
+      <AnimatePresence>
+        {!isReady && (
+          <motion.div
+            key="auth-startup-loader"
+            className="absolute inset-0 z-20"
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.2 }}
+          >
+            <AuthStartupLoader />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
