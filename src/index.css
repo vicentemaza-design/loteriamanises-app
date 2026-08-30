@@ -425,17 +425,6 @@
     backdrop-filter: blur(64px);
   }
 
-  /* El fondo sólido de body (#3B6CA8, ver arriba) rompía el efecto glass
-     del BottomNav: en la franja donde este se apoya físicamente, lo que
-     hay detrás no es .app-shell/main (claros) sino body directamente, y
-     un glass azul sobre un fondo también azul se lee como placa opaca en
-     vez de vidrio translúcido. Se restaura aquí el fondo claro original
-     solo mientras hay BottomNav visible; body sigue en #3B6CA8 en el
-     resto de rutas (/play/, etc.), sin tocar esa decisión. */
-  html.has-bottom-nav body {
-    background: var(--app-bg) !important;
-  }
-
   /* Prueba visual temporal: activar solo con ?layerDebug=1. No cambia
      geometría ni comportamiento; colorea cada superficie para identificar
      qué capa llega al límite CSS y qué zona queda fuera de él. */
