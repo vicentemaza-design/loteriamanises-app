@@ -71,21 +71,29 @@ export function PrivateLayout() {
           <>
             {!hideNav && <Header />}
 
-            {/* EXPERIMENTO — canario de diagnóstico físico iOS (rama
-                test/ios-root-transparent, no mergear a main): superficie
-                fixed montada directamente aquí, fuera de <main>/<Outlet>/
-                GamePlayHeader, con z-index máximo, para comprobar si una
-                capa DOM real puede alcanzar visualmente la zona física
-                superior de iOS (hora/cobertura/Wi-Fi/batería) en /play/. */}
+            {/* PlayTopSurface (rama test/ios-root-transparent, no mergear a
+                main todavía): montada directamente aquí, fuera de
+                <main>/<Outlet>/GamePlayHeader — confirmado por QA física
+                (canario #00FF00) que solo una capa a este nivel de DOM
+                alcanza la zona física superior de iOS en /play/, algo que
+                el propio fondo fixed de GamePlayHeader (más profundo en el
+                árbol) no consigue por sí solo. Cubre EXCLUSIVAMENTE la
+                safe-area (nunca los 56px de controles) y queda por debajo
+                de GamePlayHeader (z-30 < z-40) — su misión es solo pintar
+                esa franja, nunca taparlo. Lee el mismo gradiente que
+                GamePlayHeader ya pinta, vía la variable CSS que este
+                registra (ver PLAY_HEADER_BACKGROUND_VAR en
+                GamePlayHeader.tsx) — sin colores/mapas duplicados; si esa
+                variable no está aún definida (p. ej. primer frame antes de
+                que monte), cae al azul de fallback de body/html. */}
             {hideNav && (
               <div
                 aria-hidden="true"
-                data-ios-top-canary="true"
-                className="fixed top-0 left-0 right-0 pointer-events-none"
+                data-ios-play-top-surface="true"
+                className="fixed top-0 left-0 right-0 z-30 pointer-events-none"
                 style={{
-                  height: 'calc(env(safe-area-inset-top, 0px) + 64px)',
-                  background: '#00FF00',
-                  zIndex: 2147483647,
+                  height: 'env(safe-area-inset-top, 0px)',
+                  background: 'var(--play-header-background, #3B6CA8)',
                 }}
               />
             )}
