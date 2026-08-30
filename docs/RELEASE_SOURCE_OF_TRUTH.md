@@ -28,6 +28,27 @@ El día de negocio FE usa `Europe/Madrid`. BE sigue siendo autoridad para el sor
 
 La configuración `demoEnabled: true` y el provider mock pertenecen al entorno demo/QA y deben tratarse como configuración de handoff, nunca como autorización de producción. El runtime de producción debe seleccionar un provider real y fallar cerrado cuando falten contratos o credenciales.
 
+## DEMO vs PRODUCTION
+
+### DEMO
+
+- Variante preparada para presentación, QA y recorrido funcional.
+- Puede usar `MockAdapter` y datos sintéticos o hardcodeados de demostración.
+- Permite recorrer la interfaz sin depender de backend real ni servicios externos.
+- No representa dinero real, SELAE real, Redsys real, ledger real, stock oficial ni retiradas bancarias reales.
+
+### PRODUCTION
+
+- Contiene el mismo frontend, UI, navegación, arquitectura visual y fixes funcionales aprobados que DEMO.
+- No es una aplicación visualmente distinta.
+- Está destinada a conectarse con providers/adapters reales, principalmente HTTP/Firebase según corresponda.
+- Es la base frontend/contractual para integrar autenticación, SELAE, Redsys, wallet/saldo, ledger, cuentas bancarias, retiradas, stock y validación autoritativa, precios, calendarios/cierres, idempotencia y trazabilidad.
+- PRODUCTION no debe depender del `MockAdapter` como fuente principal de autoridad de negocio.
+
+DEMO y PRODUCTION comparten el mismo código funcional y diseño aprobado; la diferencia principal es el modo de integración y la fuente/autoridad de los datos.
+
+PRODUCTION no significa que SELAE, Redsys, wallet, ledger, retiradas u otros servicios externos estén ya conectados, certificados o listos para operación real. Representa la base frontend preparada para su integración con backend y proveedores reales.
+
 ## Release decision
 
 El artefacto es entregable como frontend demo/mock y base contractual FE→BE, con pendientes BE y QA físico explícitos. No debe presentarse como producción transaccional real hasta completar la integración server-side y validación legal/operativa.
