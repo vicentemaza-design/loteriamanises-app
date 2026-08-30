@@ -97,7 +97,7 @@ export function PrivateLayout() {
                 style={{
                   height: 'var(--play-top-surface-height, calc(env(safe-area-inset-top, 0px) + 64px))',
                   zIndex: 'var(--play-top-surface-z, 30)',
-                  background: 'var(--play-header-background, #FF00FF)',
+                  background: 'var(--play-header-background, #3B6CA8)',
                 }}
               >
                 {/* EXPERIMENTO — acabado visual (solo Primitiva/Navidad, ver
@@ -115,15 +115,15 @@ export function PrivateLayout() {
                     className="absolute inset-0 bg-cover bg-center"
                     style={{
                       backgroundImage: 'var(--play-top-surface-image, none)',
-                      opacity: 0.15,
-                      filter: 'grayscale(0.82) brightness(0.5)',
+                      opacity: 0.10,
+                      filter: 'grayscale(0.65) brightness(0.75)',
                     }}
                   />
                   <div
                     className="absolute inset-0"
-                    style={{ background: 'var(--play-header-background, #3B6CA8)', mixBlendMode: 'multiply', opacity: 0.8 }}
+                    style={{ background: 'var(--play-header-background, #3B6CA8)', mixBlendMode: 'multiply', opacity: 0.35 }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/58 via-black/18 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-black/8 to-transparent" />
                 </div>
               </div>
             )}
