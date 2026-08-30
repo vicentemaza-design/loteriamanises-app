@@ -831,7 +831,7 @@ export function NumericGamePlayPage({ game }: NumericGamePlayPageProps) {
   return (
     <div
       className={cn(
-        'flex min-h-full flex-col transition-[padding]',
+        'flex min-h-dvh flex-col transition-[padding]',
         usesMultiDrawFlow ? 'bg-white' : 'bg-[linear-gradient(180deg,#f8fafc_0%,#ffffff_12%,#f8fafc_100%)]',
         shouldShowStickyCta || isQuickPickMode || isMulticolumnMode || (usesMultiDrawFlow && onDateStep)
           ? 'pb-40'
