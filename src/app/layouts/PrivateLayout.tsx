@@ -71,24 +71,20 @@ export function PrivateLayout() {
           <>
             {!hideNav && <Header />}
 
-            {/* PlayTopSurface (rama test/ios-root-transparent, no mergear a
-                main todavía): montada directamente aquí, fuera de
-                <main>/<Outlet>/GamePlayHeader — confirmado por QA física
-                (canario #00FF00) que solo una capa a este nivel de DOM
-                alcanza la zona física superior de iOS en /play/, algo que
-                el propio fondo fixed de GamePlayHeader (más profundo en el
-                árbol) no consigue por sí solo. Por defecto (todos los
-                juegos salvo el experimento actual) queda por debajo de
-                GamePlayHeader (30 < 40) con altura safe-area + 64px. Lee el
-                mismo gradiente que GamePlayHeader ya pinta, vía la variable
-                CSS que este registra (ver PLAY_HEADER_BACKGROUND_VAR en
-                GamePlayHeader.tsx) — sin colores/mapas duplicados; si esa
-                variable no está aún definida (p. ej. primer frame antes de
-                que monte), cae al azul de fallback de body/html. Altura y
-                z-index también leen variables CSS opt-in (ver
+            {/* PlayTopSurface: superficie visual superior de todos los /play/,
+                montada directamente aquí, fuera de <main>/<Outlet>/
+                GamePlayHeader — confirmado por QA física (canario #00FF00)
+                que solo una capa a este nivel de DOM alcanza la zona física
+                superior de iOS en /play/, algo que el propio fondo fixed de
+                GamePlayHeader (más profundo en el árbol) no consigue por sí
+                solo. Altura 54px y z-index 1 para todos los juegos (ver
                 PLAY_TOP_SURFACE_HEIGHT_VAR/PLAY_TOP_SURFACE_Z_VAR en
-                GamePlayHeader.tsx) — sin registrar, se usan estos mismos
-                valores por defecto de siempre. */}
+                GamePlayHeader.tsx). Lee el mismo gradiente que GamePlayHeader
+                ya pinta, vía la variable CSS que este registra (ver
+                PLAY_HEADER_BACKGROUND_VAR en GamePlayHeader.tsx) — sin
+                colores/mapas duplicados; si esa variable no está aún
+                definida (p. ej. primer frame antes de que monte), cae al
+                azul de fallback de body/html. */}
             {hideNav && (
               <div
                 aria-hidden="true"
@@ -100,13 +96,15 @@ export function PrivateLayout() {
                   background: 'var(--play-header-background, #3B6CA8)',
                 }}
               >
-                {/* EXPERIMENTO — acabado visual (solo Primitiva/Navidad, ver
+                {/* Acabado visual del artwork, para todos los juegos (ver
                     PLAY_TOP_SURFACE_ARTWORK_VAR/PLAY_TOP_SURFACE_IMAGE_VAR en
-                    GamePlayHeader.tsx): reutiliza tal cual la receta de
-                    GameCardRow en GamesPage.tsx (imagen 0.15 + grayscale/brightness,
-                    tinte multiply 0.8 sobre el mismo gradiente del juego, velo
-                    direccional). Sin registrar (todos los demás juegos), queda a
-                    opacity:0 — invisible, cero cambio visual para ellos. */}
+                    GamePlayHeader.tsx): reutiliza tal cual la misma fuente de
+                    imagen que GameCardRow en GamesPage.tsx, con una
+                    composición más sutil (imagen 0.10 + grayscale(0.65)/
+                    brightness(0.75), tinte multiply 0.35 sobre el mismo
+                    gradiente del juego, velo direccional suave) para que la
+                    imagen quede subordinada al gradiente en la franja de
+                    54px. */}
                 <div
                   className="absolute inset-0"
                   style={{ opacity: 'var(--play-top-surface-artwork, 0)' }}

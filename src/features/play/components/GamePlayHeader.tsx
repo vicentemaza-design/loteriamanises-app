@@ -7,8 +7,13 @@ import type { LotteryGame } from '@/shared/types/domain';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 // Mismos assets que src/features/catalog/pages/GamesPage.tsx (imageMap de
 // GameCardRow) — reutilizados tal cual, no duplicados como nuevo arte.
+import joySecondary from '@/assets/images/joy_secondary.png';
 import primitivaJoy from '@/assets/images/primitiva_joy.png';
+import loteriaNacionalHero from '@/assets/images/loteria_nacional.jpg';
+import loteriaJuevesLuck from '@/assets/images/loteria_jueves_luck.jpg';
 import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
+import headerWinner from '@/assets/images/header_winner.jpg';
+import primitivaJoyV2 from '@/assets/images/primitiva_joy_v2.jpg';
 
 /** Read by PrivateLayout's play-only top surface (see PlayTopSurface there)
  *  so the same gradient painted here continues into the physical iOS status
@@ -17,26 +22,29 @@ import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
  *  this component paints itself, nothing duplicated/hardcoded elsewhere. */
 const PLAY_HEADER_BACKGROUND_VAR = '--play-header-background';
 
-/** EXPERIMENTO — solo La Primitiva y Navidad: overrides opt-in de la altura
- *  (54px exactos) y el z-index (1) de PlayTopSurface. Sin registrar (todos
- *  los demás juegos), PlayTopSurface usa sus valores por defecto — la altura
- *  y el z-index existentes no cambian para nadie más. */
+/** Altura (54px exactos) y z-index (1) de PlayTopSurface, para todos los
+ *  juegos que usan GamePlayHeader — ver PrivateLayout.tsx. */
 const PLAY_TOP_SURFACE_HEIGHT_VAR = '--play-top-surface-height';
 const PLAY_TOP_SURFACE_Z_VAR = '--play-top-surface-z';
 
-/** EXPERIMENTO — acabado visual (solo Primitiva/Navidad): activa en
- *  PlayTopSurface el mismo arte del juego que ya usa el catálogo (imagen +
- *  tinte multiply + velo direccional, valores idénticos a GameCardRow en
- *  GamesPage.tsx). Sin registrar, esa capa queda a opacity:0 — invisible
- *  para el resto de juegos, sin ningún cambio visual para ellos. */
+/** Activa en PlayTopSurface el mismo arte del juego que ya usa el catálogo
+ *  (imagen + tinte multiply + velo direccional, misma fuente que GameCardRow
+ *  en GamesPage.tsx), para todos los juegos que usan GamePlayHeader. */
 const PLAY_TOP_SURFACE_ARTWORK_VAR = '--play-top-surface-artwork';
 const PLAY_TOP_SURFACE_IMAGE_VAR = '--play-top-surface-image';
 
-/** Mismas claves/valores que imageMap en GamesPage.tsx, recortado a los dos
- *  juegos de este experimento — no se inventa ninguna imagen nueva. */
-const UNIFIED_TOP_SURFACE_IMAGES: Record<string, string> = {
+/** Mismas claves/valores que imageMap en GamesPage.tsx — no se inventa
+ *  ninguna imagen nueva. Cualquier juego sin entrada específica (p. ej.
+ *  Euromillones, EuroDreams) cae al mismo fallback que usa el catálogo. */
+const PLAY_TOP_SURFACE_IMAGE_MAP: Record<string, string> = {
   primitiva: primitivaJoy,
+  bonoloto: joySecondary,
+  gordo: primitivaJoyV2,
+  quiniela: headerWinner,
+  'loteria-nacional-jueves': loteriaJuevesLuck,
+  'loteria-nacional-sabado': loteriaNacionalHero,
   'loteria-navidad': loteriaNavidadHero,
+  'loteria-nino': loteriaNavidadHero,
 };
 
 interface GamePlayHeaderProps {
@@ -57,16 +65,6 @@ interface GamePlayHeaderProps {
 
 const NATIONAL_LOTTERY_TYPES = new Set(['loteria-nacional', 'navidad', 'nino']);
 
-/** EXPERIMENTO — solo La Primitiva y Navidad (rama test/ios-root-transparent,
- *  no mergear a main): PlayTopSurface (PrivateLayout.tsx) ya pinta, para
- *  TODOS los juegos y sin cambios, el mismo gradiente a una altura
- *  (safe-area + 64px) que ya excede la altura real de este header (56px) —
- *  solo queda oculta detrás del propio fondo opaco de este componente. Para
- *  estos dos juegos, dejar transparente el fondo propio deja ver esa
- *  superficie ya correcta a través suyo, sin duplicar color/lógica alguna.
- *  El resto de juegos conserva su fondo dinámico exactamente igual. */
-const UNIFIED_TOP_SURFACE_TYPES = new Set(['primitiva', 'navidad']);
-
 export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, exitAriaLabel }: GamePlayHeaderProps) {
   const { gameDrafts, lotteryDrafts, openGameReview, openLotteryReview } = usePlaySession();
   const isLotteryGame = NATIONAL_LOTTERY_TYPES.has(game.type);
@@ -78,7 +76,6 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, 
   };
 
   const background = `linear-gradient(135deg, ${game.color}, ${game.colorEnd ?? game.color})`;
-  const useUnifiedTopSurface = UNIFIED_TOP_SURFACE_TYPES.has(game.type);
 
   // Synchronous (pre-paint) registration — a plain useEffect would let the
   // fallback color show for one frame before the real gradient landed.
@@ -89,23 +86,15 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, 
     const previousBackground = root.style.getPropertyValue(PLAY_HEADER_BACKGROUND_VAR);
     root.style.setProperty(PLAY_HEADER_BACKGROUND_VAR, background);
 
-    let previousHeight = '';
-    let previousZ = '';
-    let previousArtwork = '';
-    let previousImage = '';
-    const image = UNIFIED_TOP_SURFACE_IMAGES[game.id];
-    if (useUnifiedTopSurface) {
-      previousHeight = root.style.getPropertyValue(PLAY_TOP_SURFACE_HEIGHT_VAR);
-      previousZ = root.style.getPropertyValue(PLAY_TOP_SURFACE_Z_VAR);
-      previousArtwork = root.style.getPropertyValue(PLAY_TOP_SURFACE_ARTWORK_VAR);
-      previousImage = root.style.getPropertyValue(PLAY_TOP_SURFACE_IMAGE_VAR);
-      root.style.setProperty(PLAY_TOP_SURFACE_HEIGHT_VAR, '54px');
-      root.style.setProperty(PLAY_TOP_SURFACE_Z_VAR, '1');
-      root.style.setProperty(PLAY_TOP_SURFACE_ARTWORK_VAR, '1');
-      if (image) {
-        root.style.setProperty(PLAY_TOP_SURFACE_IMAGE_VAR, `url(${image})`);
-      }
-    }
+    const image = PLAY_TOP_SURFACE_IMAGE_MAP[game.id] ?? joySecondary;
+    const previousHeight = root.style.getPropertyValue(PLAY_TOP_SURFACE_HEIGHT_VAR);
+    const previousZ = root.style.getPropertyValue(PLAY_TOP_SURFACE_Z_VAR);
+    const previousArtwork = root.style.getPropertyValue(PLAY_TOP_SURFACE_ARTWORK_VAR);
+    const previousImage = root.style.getPropertyValue(PLAY_TOP_SURFACE_IMAGE_VAR);
+    root.style.setProperty(PLAY_TOP_SURFACE_HEIGHT_VAR, '54px');
+    root.style.setProperty(PLAY_TOP_SURFACE_Z_VAR, '1');
+    root.style.setProperty(PLAY_TOP_SURFACE_ARTWORK_VAR, '1');
+    root.style.setProperty(PLAY_TOP_SURFACE_IMAGE_VAR, `url(${image})`);
 
     return () => {
       if (previousBackground) {
@@ -113,37 +102,33 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, 
       } else {
         root.style.removeProperty(PLAY_HEADER_BACKGROUND_VAR);
       }
-      if (useUnifiedTopSurface) {
-        if (previousHeight) {
-          root.style.setProperty(PLAY_TOP_SURFACE_HEIGHT_VAR, previousHeight);
-        } else {
-          root.style.removeProperty(PLAY_TOP_SURFACE_HEIGHT_VAR);
-        }
-        if (previousZ) {
-          root.style.setProperty(PLAY_TOP_SURFACE_Z_VAR, previousZ);
-        } else {
-          root.style.removeProperty(PLAY_TOP_SURFACE_Z_VAR);
-        }
-        if (previousArtwork) {
-          root.style.setProperty(PLAY_TOP_SURFACE_ARTWORK_VAR, previousArtwork);
-        } else {
-          root.style.removeProperty(PLAY_TOP_SURFACE_ARTWORK_VAR);
-        }
-        if (image) {
-          if (previousImage) {
-            root.style.setProperty(PLAY_TOP_SURFACE_IMAGE_VAR, previousImage);
-          } else {
-            root.style.removeProperty(PLAY_TOP_SURFACE_IMAGE_VAR);
-          }
-        }
+      if (previousHeight) {
+        root.style.setProperty(PLAY_TOP_SURFACE_HEIGHT_VAR, previousHeight);
+      } else {
+        root.style.removeProperty(PLAY_TOP_SURFACE_HEIGHT_VAR);
+      }
+      if (previousZ) {
+        root.style.setProperty(PLAY_TOP_SURFACE_Z_VAR, previousZ);
+      } else {
+        root.style.removeProperty(PLAY_TOP_SURFACE_Z_VAR);
+      }
+      if (previousArtwork) {
+        root.style.setProperty(PLAY_TOP_SURFACE_ARTWORK_VAR, previousArtwork);
+      } else {
+        root.style.removeProperty(PLAY_TOP_SURFACE_ARTWORK_VAR);
+      }
+      if (previousImage) {
+        root.style.setProperty(PLAY_TOP_SURFACE_IMAGE_VAR, previousImage);
+      } else {
+        root.style.removeProperty(PLAY_TOP_SURFACE_IMAGE_VAR);
       }
     };
-  }, [background, useUnifiedTopSurface, game.id]);
+  }, [background, game.id]);
 
   return (
     <div
-      className={`fixed top-0 left-0 right-0 ${useUnifiedTopSurface ? 'z-60' : 'z-40'} text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+56px)] flex flex-col justify-end`}
-      style={{ background: useUnifiedTopSurface ? 'transparent' : background }}
+      className="fixed top-0 left-0 right-0 z-60 text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+56px)] flex flex-col justify-end"
+      style={{ background: 'transparent' }}
     >
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-1">
