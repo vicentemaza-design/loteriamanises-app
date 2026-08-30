@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '@/shared/ui/Button';
 import { Input } from '@/shared/ui/Input';
@@ -182,6 +182,47 @@ export function RegisterPage() {
     // Solo al montar — es un consumo puntual de un valor externo, no algo
     // que deba repetirse en reacción a ningún cambio de estado.
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // iOS no reposiciona lo suficiente el documento cuando el teclado (y a
+  // veces la barra de Autorrellenar contacto) tapa el campo enfocado en el
+  // paso ACCESO. Validado físicamente en iPhone: medir el campo activo
+  // contra visualViewport y desplazar con scroll suave nativo si sobresale
+  // del límite visible inferior.
+  useEffect(() => {
+    const REVEAL_FIELD_IDS = new Set(['reg-email', 'reg-password', 'reg-repeat-password']);
+
+    const revealActiveField = () => {
+      const el = document.activeElement;
+      if (!(el instanceof HTMLElement) || !REVEAL_FIELD_IDS.has(el.id)) return;
+
+      const vv = window.visualViewport;
+      if (!vv) return;
+
+      const rect = el.getBoundingClientRect();
+      const visibleBottom = vv.offsetTop + vv.height - 32;
+      const overlap = rect.bottom - visibleBottom;
+
+      if (overlap > 0) {
+        window.scrollBy({ top: overlap + 24, left: 0, behavior: 'smooth' });
+      }
+    };
+
+    const handleFocusIn = (event: FocusEvent) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement) || !REVEAL_FIELD_IDS.has(target.id)) return;
+      requestAnimationFrame(revealActiveField);
+    };
+
+    document.addEventListener('focusin', handleFocusIn);
+    window.visualViewport?.addEventListener('resize', revealActiveField);
+    window.visualViewport?.addEventListener('scroll', revealActiveField);
+
+    return () => {
+      document.removeEventListener('focusin', handleFocusIn);
+      window.visualViewport?.removeEventListener('resize', revealActiveField);
+      window.visualViewport?.removeEventListener('scroll', revealActiveField);
+    };
   }, []);
 
   // Guarda el estado actual completo en pendingRegisterDraft justo antes de
