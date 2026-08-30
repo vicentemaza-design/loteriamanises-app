@@ -6,7 +6,7 @@ Este paquete de documentación define los contratos, reglas de negocio y validac
 Asegurar que el BE no se limite a persistir lo enviado por el FE, sino que replique las validaciones críticas de precio, combinatoria y calendario para evitar fraudes o errores de datos.
 
 ## Orden Recomendado de Revisión
-1. **[Endpoints REST esperados](api-endpoints.md)**: Todos los endpoints que el FE consumirá, con shapes completos.
+1. **[Endpoints REST esperados](api-endpoints.md)**: Endpoints esperados/contractuales por el FE; algunos están implementados parcialmente o permanecen pendientes de BE, según se indica en cada documento.
 2. **[Contrato de Sesión y Draft](play-session-contract.md)**: Estructura de datos persistida y enviada.
 3. **[Validación de Precios](pricing-validation.md)**: Lógica de cálculo que BE debe recalcular.
 4. **[Calendario y Sorteos](draw-dates-scheduling.md)**: Validación de fechas y estados de sorteo.
@@ -36,3 +36,5 @@ Para implementar las validaciones en BE, se recomienda consultar:
 - **Multi-columna**: el FE ya dispone de flujo multi-columna. BE debe recalcular `betsCount`, precio y combinatoria; los valores del cliente no son autoridad de cobro.
 - **Timezone**: el FE fija `Europe/Madrid` para el día de negocio; BE es la autoridad final para calendario, cierres y persistencia.
 - **Validación estricta**: BE debe validar `gameType`, `selaeGameCode`, selección, metadata permitida, fechas y usuario autenticado mediante esquema cerrado.
+
+Demo/Mock no es autoridad de producción. HTTP y Firebase pueden contener implementaciones parciales o stubs; BE debe ser autoridad para autenticación, precio, saldo, calendario, idempotencia, SELAE, Redsys, ledger y retiradas. La configuración `demoEnabled: true` y el provider mock deben permanecer explícitamente limitados al entorno demo/QA.

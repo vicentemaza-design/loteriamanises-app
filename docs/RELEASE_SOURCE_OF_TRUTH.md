@@ -2,7 +2,9 @@
 
 ## Baseline y alcance
 
-- Release funcional integrado: `f8741dc054b82d98a86bc7f1e5a2480d22f2a15b`.
+- Baseline funcional aprobado: `f8741dc054b82d98a86bc7f1e5a2480d22f2a15b`.
+- Cierre documental anterior: `9ad8667fe926ba9ab56a61be54feb8f906b20fd8`.
+- SHA final de documentación/entrega: el `HEAD` de `main` que contiene este documento; queda registrado por Git y en el manifest del paquete de entrega.
 - Se llegó desde `origin/main` mediante fast-forward y después desde `origin/test/ios-root-transparent` mediante fast-forward.
 - `experiment/unify-gameplay-bottom-menu` no forma parte de esta entrega.
 - Mock/demo es válido para QA y presentación; no representa dinero, SELAE, Redsys, ledger, stock ni retirada reales.
@@ -23,6 +25,8 @@ El día de negocio FE usa `Europe/Madrid`. BE sigue siendo autoridad para el sor
 ## iOS/PWA y layer-debug
 
 `layer-debug` es un mecanismo histórico de diagnóstico visual, no una dependencia funcional actual. No se elimina ni se reactiva como parte de una integración sin QA físico iOS/PWA. Las pruebas desktop no cierran teclado, safe-area, viewport, Withdrawals ni `ShippingAddressModal` en dispositivo real.
+
+La configuración `demoEnabled: true` y el provider mock pertenecen al entorno demo/QA y deben tratarse como configuración de handoff, nunca como autorización de producción. El runtime de producción debe seleccionar un provider real y fallar cerrado cuando falten contratos o credenciales.
 
 ## Release decision
 
