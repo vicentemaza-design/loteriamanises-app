@@ -201,7 +201,7 @@ La autenticación (Google OAuth) va por Firebase SDK directamente. No hay endpoi
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | `POST` | `/play-sessions` | Confirmar sesión de compra completa (Fase 1) |
-| `POST` | `/bets` | Apuesta individual (Fase 2 — uso futuro) |
+| `POST` | `/bets` | Apuesta individual; ruta disponible en `HttpAdapter`, pendiente de backend operativo y validación server-side |
 
 **Submit session request (`SubmitPlaySessionRequestDto`):**
 ```ts
@@ -229,7 +229,7 @@ La autenticación (Google OAuth) va por Firebase SDK directamente. No hay endpoi
 - BE debe rechazar si saldo insuficiente antes de procesar ítems.
 - BE debe recalcular `totalAmount` independientemente — no confiar en el valor del FE.
 - `failures` permite confirmación parcial: el FE lo gestiona con `resolveConfirmPartial`.
-- `calculatePrice` en HttpAdapter devuelve `0` — es un stub. **El precio real lo calcula el BE** antes de cobrar. Ver tabla de fases — `POST /play/quote` queda para Fase 2.
+- `calculatePrice` en HttpAdapter devuelve `0` — es un stub de cotización. **El precio real lo calcula el BE** antes de cobrar; `POST /play/quote` debe definirse/activarse cuando BE confirme el contrato.
 
 ---
 

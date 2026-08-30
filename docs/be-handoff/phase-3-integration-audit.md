@@ -43,7 +43,7 @@ El frontend de Lotería Manises está en estado de integración avanzada. La arq
 src/config/runtime.ts → RUNTIME_CONFIG.apiProvider = 'mock'
 ```
 
-El switch de adaptador es una línea de configuración. Cambiar a `'http'` activa el `HttpAdapter` — que actualmente lanza excepción (stub). No hacer este cambio hasta que el `HttpAdapter` esté implementado.
+El switch de adaptador es una línea de configuración. Cambiar a `'http'` activa el `HttpAdapter`: algunas lecturas/escrituras y suscripciones tienen rutas, mientras que auth email, cuentas bancarias, retirada y precio autoritativo siguen siendo pendientes explícitos. No activar producción hasta completar esas operaciones y la validación BE.
 
 ### Application layer — funciones puras no modificar
 
@@ -400,9 +400,9 @@ El `MockAdapter` gestiona tickets en un singleton de módulo. Con `FirebaseAdapt
 
 La pantalla de confirmación del FE muestra el `orderId` del ticket. Si el backend no lo incluye en la respuesta, el campo aparece vacío en la UI. Recomendado incluirlo desde el principio.
 
-### R7 — Múltiples draw dates en un solo draft (riesgo futuro)
+### R7 — Múltiples draw dates y multi-columna
 
-El documento `README.md` del handoff menciona que la Fase 2 requiere soportar arrays de selecciones independientes dentro de un draft. En la fase actual cada draft tiene exactamente una selección lógica. No adelantar este cambio de contrato.
+El FE ya soporta múltiples fechas y dispone de flujo multi-columna. Cada draft conserva una selección lógica; BE debe validar la expansión, `betsCount`, precio y calendario, sin confiar en valores calculados por el cliente.
 
 ---
 
