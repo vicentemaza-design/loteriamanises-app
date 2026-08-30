@@ -71,6 +71,25 @@ export function PrivateLayout() {
           <>
             {!hideNav && <Header />}
 
+            {/* EXPERIMENTO — canario de diagnóstico físico iOS (rama
+                test/ios-root-transparent, no mergear a main): superficie
+                fixed montada directamente aquí, fuera de <main>/<Outlet>/
+                GamePlayHeader, con z-index máximo, para comprobar si una
+                capa DOM real puede alcanzar visualmente la zona física
+                superior de iOS (hora/cobertura/Wi-Fi/batería) en /play/. */}
+            {hideNav && (
+              <div
+                aria-hidden="true"
+                data-ios-top-canary="true"
+                className="fixed top-0 left-0 right-0 pointer-events-none"
+                style={{
+                  height: 'calc(env(safe-area-inset-top, 0px) + 64px)',
+                  background: '#00FF00',
+                  zIndex: 2147483647,
+                }}
+              />
+            )}
+
             <main
               ref={mainRef}
               className={`min-h-0 flex-1 w-full relative overflow-y-auto overflow-x-hidden scrollbar-hide ${
