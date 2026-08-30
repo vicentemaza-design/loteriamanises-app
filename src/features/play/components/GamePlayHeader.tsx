@@ -76,7 +76,7 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, 
       previousHeight = root.style.getPropertyValue(PLAY_TOP_SURFACE_HEIGHT_VAR);
       previousZ = root.style.getPropertyValue(PLAY_TOP_SURFACE_Z_VAR);
       root.style.setProperty(PLAY_TOP_SURFACE_HEIGHT_VAR, '54px');
-      root.style.setProperty(PLAY_TOP_SURFACE_Z_VAR, '50');
+      root.style.setProperty(PLAY_TOP_SURFACE_Z_VAR, 'auto');
     }
 
     return () => {
