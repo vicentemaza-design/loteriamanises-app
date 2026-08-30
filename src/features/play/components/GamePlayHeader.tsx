@@ -18,7 +18,7 @@ import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
 const PLAY_HEADER_BACKGROUND_VAR = '--play-header-background';
 
 /** EXPERIMENTO — solo La Primitiva y Navidad: overrides opt-in de la altura
- *  (54px exactos) y el z-index (50) de PlayTopSurface. Sin registrar (todos
+ *  (54px exactos) y el z-index (1) de PlayTopSurface. Sin registrar (todos
  *  los demás juegos), PlayTopSurface usa sus valores por defecto — la altura
  *  y el z-index existentes no cambian para nadie más. */
 const PLAY_TOP_SURFACE_HEIGHT_VAR = '--play-top-surface-height';
@@ -100,7 +100,7 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, 
       previousArtwork = root.style.getPropertyValue(PLAY_TOP_SURFACE_ARTWORK_VAR);
       previousImage = root.style.getPropertyValue(PLAY_TOP_SURFACE_IMAGE_VAR);
       root.style.setProperty(PLAY_TOP_SURFACE_HEIGHT_VAR, '54px');
-      root.style.setProperty(PLAY_TOP_SURFACE_Z_VAR, 'auto');
+      root.style.setProperty(PLAY_TOP_SURFACE_Z_VAR, '1');
       root.style.setProperty(PLAY_TOP_SURFACE_ARTWORK_VAR, '1');
       if (image) {
         root.style.setProperty(PLAY_TOP_SURFACE_IMAGE_VAR, `url(${image})`);
