@@ -425,28 +425,13 @@
     backdrop-filter: blur(64px);
   }
 
-  /* Prueba visual temporal: activar solo con ?layerDebug=1. No cambia
-     geometría ni comportamiento; colorea cada superficie para identificar
-     qué capa llega al límite CSS y qué zona queda fuera de él. */
-  html.layer-debug {
-  }
-
-  html.layer-debug body {
-  }
-
-  html.layer-debug #root {
-    background: transparent !important;
-  }
-
-  html.layer-debug .app-shell {
-    background: #ff9900 !important;
-  }
-
-  html.layer-debug main {
-    background: #ffffff !important;
-  }
-
-  html.layer-debug nav[role='navigation'] {
+  /* Confirmado físicamente en iPhone: esta superficie azul detrás del
+     propio <nav> (distinta de la de html.has-bottom-nav, que cubre la
+     franja inalcanzable por debajo) es necesaria para que la capa glass
+     de BottomNav (bg-[rgba(10,71,146,0.42)] + backdrop-blur-3xl) lea
+     correctamente durante el scroll. Condicionada a has-bottom-nav, no
+     global. */
+  html.has-bottom-nav nav[role='navigation'] {
     background: rgba(10, 71, 146, 0.8) !important;
   }
 
