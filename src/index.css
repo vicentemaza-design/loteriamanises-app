@@ -435,21 +435,11 @@
     background: rgba(10, 71, 146, 0.8) !important;
   }
 
-  /* EXPERIMENTO (rama debug/ios-keyboard-scroll-recovery, no en main):
-     body vuelve a position:fixed/inset:0/overflow:hidden — el modelo que
-     existió brevemente el 26/08 (commit f5819a3) y que, según el propio
-     historial de este archivo, SÍ evitaba que BottomNav quedara flotando
-     tras cerrar el teclado en rutas privadas (ver comentario de adf2134,
-     hoy sustituido). Se revirtió ese día por un bug DISTINTO (franja
-     blanca al colapsar la barra de Safari en .app-shell), no porque esto
-     fallara para el teclado — y los siete intentos de "curar" el fallo
-     después del cierre (probados hoy en esta misma rama) no funcionaron.
-     Hipótesis: al no poder desplazarse body/html, iOS debe recurrir a
-     desplazar <main> (el único overflow:auto real) para revelar el input
-     enfocado, evitando el scrollY de documento que dispara el bug — sin
-     necesitar ningún nudge/reflow/hack posterior.
-     La excepción html.auth-route (más abajo) ya restaura el documento
-     como scroller real en rutas públicas — no se toca. */
+  /* body fijo al viewport (position:fixed/inset:0/overflow:hidden): evita
+     que el documento se desplace en rutas privadas — <main> es el único
+     scroller real, y es quien se desplaza para revelar el input enfocado
+     por el teclado. html.auth-route (más abajo) restaura el documento
+     como scroller real en rutas públicas. */
   body {
     margin: 0;
     padding: 0;

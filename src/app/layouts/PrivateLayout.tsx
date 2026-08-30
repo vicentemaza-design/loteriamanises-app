@@ -72,27 +72,25 @@ export function PrivateLayout() {
             {!hideNav && <Header />}
 
             {/* PlayTopSurface: superficie visual superior de todos los /play/,
-                montada directamente aquí, fuera de <main>/<Outlet>/
-                GamePlayHeader — confirmado por QA física (canario #00FF00)
-                que solo una capa a este nivel de DOM alcanza la zona física
-                superior de iOS en /play/, algo que el propio fondo fixed de
-                GamePlayHeader (más profundo en el árbol) no consigue por sí
-                solo. Altura 54px y z-index 1 para todos los juegos (ver
-                PLAY_TOP_SURFACE_HEIGHT_VAR/PLAY_TOP_SURFACE_Z_VAR en
-                GamePlayHeader.tsx). Lee el mismo gradiente que GamePlayHeader
-                ya pinta, vía la variable CSS que este registra (ver
-                PLAY_HEADER_BACKGROUND_VAR en GamePlayHeader.tsx) — sin
-                colores/mapas duplicados; si esa variable no está aún
-                definida (p. ej. primer frame antes de que monte), cae al
-                azul de fallback de body/html. */}
+                montada aquí a nivel de PrivateLayout, fuera de <main>/
+                <Outlet>/GamePlayHeader, para extender el gradiente/artwork
+                del juego a la zona física superior de iOS (status bar).
+                Altura 54px y z-index 1 (ver PLAY_TOP_SURFACE_HEIGHT_VAR/
+                PLAY_TOP_SURFACE_Z_VAR en GamePlayHeader.tsx). Lee el mismo
+                gradiente que GamePlayHeader registra en
+                PLAY_HEADER_BACKGROUND_VAR — sin colores/mapas duplicados;
+                si esa variable no está aún definida (p. ej. primer frame
+                antes de que monte), cae al azul de fallback de body/html.
+                GamePlayHeader permanece transparente por encima, con sus
+                controles y texto. */}
             {hideNav && (
               <div
                 aria-hidden="true"
                 data-ios-play-top-surface="true"
                 className="fixed top-0 left-0 right-0 pointer-events-none overflow-hidden"
                 style={{
-                  height: 'var(--play-top-surface-height, calc(env(safe-area-inset-top, 0px) + 64px))',
-                  zIndex: 'var(--play-top-surface-z, 30)',
+                  height: 'var(--play-top-surface-height, 54px)',
+                  zIndex: 'var(--play-top-surface-z, 1)',
                   background: 'var(--play-header-background, #3B6CA8)',
                 }}
               >
@@ -146,17 +144,15 @@ export function PrivateLayout() {
         )}
       </div>
 
-      {/* EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
-          mergear a main): BottomNav fuera de .app-shell a propósito.
-          .app-shell tiene overflow-hidden y se dimensiona con
-          dvh/lvh (aproximado, puede quedarse corto un frame en iOS real);
-          al ser BottomNav descendiente DOM suyo, overflow-hidden lo
-          recorta por pintura aunque su containing block siga siendo el
-          viewport (esto es independiente de containing block — un
-          overflow-hidden recorta a CUALQUIER descendiente, incluido uno
-          fixed). Sacándolo aquí, solo queda recortado por <body>, que se
-          resuelve con position:fixed;inset:0 siempre exacto contra el
-          viewport real, sin la imprecisión de dvh/lvh. */}
+      {/* BottomNav vive fuera de .app-shell a propósito: .app-shell tiene
+          overflow-hidden y se dimensiona con dvh/lvh (aproximado, puede
+          quedarse corto un frame en iOS real); al ser BottomNav
+          descendiente suyo, ese overflow-hidden lo recortaría por pintura
+          aunque su containing block siga siendo el viewport. Sacándolo
+          aquí, solo queda acotado por <body>, resuelto con
+          position:fixed;inset:0 siempre exacto contra el viewport real —
+          así el nav alcanza correctamente la superficie inferior en
+          iOS. */}
       {!isLocked && !hideNav && <BottomNav />}
     </PlaySessionProvider>
   );

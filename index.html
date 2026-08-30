@@ -2,17 +2,13 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <!-- EXPERIMENTO EN RAMA (debug/ios-keyboard-scroll-recovery, no
-         mergear a main): viewport-fit=cover quitado — confirmado
-         visualmente en dispositivo real (tras desinstalar/reinstalar la
-         PWA) que sin él BottomNav llega correctamente al borde físico
-         real y desaparece la franja inferior inalcanzable. La
-         contrapartida: la app deja de extenderse bajo la barra de
-         estado/Dynamic Island. apple-mobile-web-app-status-bar-style
-         sigue en black-translucent (sin cambiar en este commit); el
-         chrome físico estable de la PWA lo da ahora el azul #3B6CA8 de
-         html/body (ver src/index.css) y este mismo theme-color. Requiere
-         desinstalar y reinstalar la PWA para que surta efecto. -->
+    <!-- Sin viewport-fit=cover: la app no se extiende bajo la barra de
+         estado/Dynamic Island. El chrome físico estable de la PWA (barra
+         de estado y franjas no cubiertas por contenido) se apoya en el
+         azul #3B6CA8 de html/body (ver src/index.css) y en este mismo
+         theme-color. Configuración validada en dispositivo real; requiere
+         desinstalar y reinstalar la PWA para que un cambio aquí surta
+         efecto. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual" />
     <meta name="theme-color" content="#3B6CA8" />
     <meta name="color-scheme" content="light" />

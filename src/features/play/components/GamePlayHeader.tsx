@@ -15,11 +15,9 @@ import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
 import headerWinner from '@/assets/images/header_winner.jpg';
 import primitivaJoyV2 from '@/assets/images/primitiva_joy_v2.jpg';
 
-/** Read by PrivateLayout's play-only top surface (see PlayTopSurface there)
- *  so the same gradient painted here continues into the physical iOS status
- *  area, which this element's own fixed/z-40 background cannot reach on its
- *  own (confirmed by physical device QA). Single source of truth: whatever
- *  this component paints itself, nothing duplicated/hardcoded elsewhere. */
+/** Registra el gradiente del juego para que PlayTopSurface (PrivateLayout.tsx)
+ *  pinte con él la superficie visual superior — este header (fixed, z-60)
+ *  queda transparente y solo aporta controles/texto por encima. */
 const PLAY_HEADER_BACKGROUND_VAR = '--play-header-background';
 
 /** Altura (54px exactos) y z-index (1) de PlayTopSurface, para todos los
