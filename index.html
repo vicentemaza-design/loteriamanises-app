@@ -8,13 +8,13 @@
          PWA) que sin él BottomNav llega correctamente al borde físico
          real y desaparece la franja inferior inalcanzable. La
          contrapartida: la app deja de extenderse bajo la barra de
-         estado/Dynamic Island, así que black-translucent (pensado para
-         contenido detrás translúcido) ya no tiene sentido — se cambia a
-         black (opaca) para que esa zona superior sea intencional en vez
-         de un hueco sin controlar. Requiere desinstalar y reinstalar la
-         PWA para que surta efecto. -->
+         estado/Dynamic Island. apple-mobile-web-app-status-bar-style
+         sigue en black-translucent (sin cambiar en este commit); el
+         chrome físico estable de la PWA lo da ahora el azul #3B6CA8 de
+         html/body (ver src/index.css) y este mismo theme-color. Requiere
+         desinstalar y reinstalar la PWA para que surta efecto. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-visual" />
-    <meta name="theme-color" content="#FF1493" />
+    <meta name="theme-color" content="#3B6CA8" />
     <meta name="color-scheme" content="light" />
     <meta name="description" content="Lotería Manises — Administración de Loterías nº 3. Compra tus loterías online con total seguridad. Euromillones, Primitiva, Bonoloto y más." />
     <meta name="apple-mobile-web-app-capable" content="yes" />
