@@ -13,6 +13,13 @@ import { usePlaySession } from '@/features/session/hooks/usePlaySession';
  *  this component paints itself, nothing duplicated/hardcoded elsewhere. */
 const PLAY_HEADER_BACKGROUND_VAR = '--play-header-background';
 
+/** EXPERIMENTO — solo La Primitiva y Navidad: overrides opt-in de la altura
+ *  (54px exactos) y el z-index (50) de PlayTopSurface. Sin registrar (todos
+ *  los demás juegos), PlayTopSurface usa sus valores por defecto — la altura
+ *  y el z-index existentes no cambian para nadie más. */
+const PLAY_TOP_SURFACE_HEIGHT_VAR = '--play-top-surface-height';
+const PLAY_TOP_SURFACE_Z_VAR = '--play-top-surface-z';
+
 interface GamePlayHeaderProps {
   game: LotteryGame;
   drawTime: string;
@@ -60,20 +67,42 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, 
   // page (unmount) never leaves a stale gradient behind for the next one.
   useLayoutEffect(() => {
     const root = document.documentElement;
-    const previous = root.style.getPropertyValue(PLAY_HEADER_BACKGROUND_VAR);
+    const previousBackground = root.style.getPropertyValue(PLAY_HEADER_BACKGROUND_VAR);
     root.style.setProperty(PLAY_HEADER_BACKGROUND_VAR, background);
+
+    let previousHeight = '';
+    let previousZ = '';
+    if (useUnifiedTopSurface) {
+      previousHeight = root.style.getPropertyValue(PLAY_TOP_SURFACE_HEIGHT_VAR);
+      previousZ = root.style.getPropertyValue(PLAY_TOP_SURFACE_Z_VAR);
+      root.style.setProperty(PLAY_TOP_SURFACE_HEIGHT_VAR, '54px');
+      root.style.setProperty(PLAY_TOP_SURFACE_Z_VAR, '50');
+    }
+
     return () => {
-      if (previous) {
-        root.style.setProperty(PLAY_HEADER_BACKGROUND_VAR, previous);
+      if (previousBackground) {
+        root.style.setProperty(PLAY_HEADER_BACKGROUND_VAR, previousBackground);
       } else {
         root.style.removeProperty(PLAY_HEADER_BACKGROUND_VAR);
       }
+      if (useUnifiedTopSurface) {
+        if (previousHeight) {
+          root.style.setProperty(PLAY_TOP_SURFACE_HEIGHT_VAR, previousHeight);
+        } else {
+          root.style.removeProperty(PLAY_TOP_SURFACE_HEIGHT_VAR);
+        }
+        if (previousZ) {
+          root.style.setProperty(PLAY_TOP_SURFACE_Z_VAR, previousZ);
+        } else {
+          root.style.removeProperty(PLAY_TOP_SURFACE_Z_VAR);
+        }
+      }
     };
-  }, [background]);
+  }, [background, useUnifiedTopSurface]);
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-40 text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+56px)] flex flex-col justify-end"
+      className={`fixed top-0 left-0 right-0 ${useUnifiedTopSurface ? 'z-60' : 'z-40'} text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+56px)] flex flex-col justify-end`}
       style={{ background: useUnifiedTopSurface ? 'transparent' : background }}
     >
       <div className="flex items-center justify-between px-3 py-2">

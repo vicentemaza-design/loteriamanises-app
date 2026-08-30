@@ -77,22 +77,26 @@ export function PrivateLayout() {
                 (canario #00FF00) que solo una capa a este nivel de DOM
                 alcanza la zona física superior de iOS en /play/, algo que
                 el propio fondo fixed de GamePlayHeader (más profundo en el
-                árbol) no consigue por sí solo. Cubre EXCLUSIVAMENTE la
-                safe-area (nunca los 56px de controles) y queda por debajo
-                de GamePlayHeader (z-30 < z-40) — su misión es solo pintar
-                esa franja, nunca taparlo. Lee el mismo gradiente que
-                GamePlayHeader ya pinta, vía la variable CSS que este
-                registra (ver PLAY_HEADER_BACKGROUND_VAR en
+                árbol) no consigue por sí solo. Por defecto (todos los
+                juegos salvo el experimento actual) queda por debajo de
+                GamePlayHeader (30 < 40) con altura safe-area + 64px. Lee el
+                mismo gradiente que GamePlayHeader ya pinta, vía la variable
+                CSS que este registra (ver PLAY_HEADER_BACKGROUND_VAR en
                 GamePlayHeader.tsx) — sin colores/mapas duplicados; si esa
                 variable no está aún definida (p. ej. primer frame antes de
-                que monte), cae al azul de fallback de body/html. */}
+                que monte), cae al azul de fallback de body/html. Altura y
+                z-index también leen variables CSS opt-in (ver
+                PLAY_TOP_SURFACE_HEIGHT_VAR/PLAY_TOP_SURFACE_Z_VAR en
+                GamePlayHeader.tsx) — sin registrar, se usan estos mismos
+                valores por defecto de siempre. */}
             {hideNav && (
               <div
                 aria-hidden="true"
                 data-ios-play-top-surface="true"
-                className="fixed top-0 left-0 right-0 z-30 pointer-events-none"
+                className="fixed top-0 left-0 right-0 pointer-events-none"
                 style={{
-                  height: 'calc(env(safe-area-inset-top, 0px) + 64px)',
+                  height: 'var(--play-top-surface-height, calc(env(safe-area-inset-top, 0px) + 64px))',
+                  zIndex: 'var(--play-top-surface-z, 30)',
                   background: 'var(--play-header-background, #3B6CA8)',
                 }}
               />
