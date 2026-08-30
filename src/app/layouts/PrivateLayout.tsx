@@ -92,7 +92,7 @@ export function PrivateLayout() {
                 data-ios-play-top-surface="true"
                 className="fixed top-0 left-0 right-0 z-30 pointer-events-none"
                 style={{
-                  height: 'env(safe-area-inset-top, 0px)',
+                  height: 'calc(env(safe-area-inset-top, 0px) + 64px)',
                   background: 'var(--play-header-background, #3B6CA8)',
                 }}
               />
