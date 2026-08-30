@@ -31,6 +31,16 @@ interface GamePlayHeaderProps {
 
 const NATIONAL_LOTTERY_TYPES = new Set(['loteria-nacional', 'navidad', 'nino']);
 
+/** EXPERIMENTO — solo La Primitiva y Navidad (rama test/ios-root-transparent,
+ *  no mergear a main): PlayTopSurface (PrivateLayout.tsx) ya pinta, para
+ *  TODOS los juegos y sin cambios, el mismo gradiente a una altura
+ *  (safe-area + 64px) que ya excede la altura real de este header (56px) —
+ *  solo queda oculta detrás del propio fondo opaco de este componente. Para
+ *  estos dos juegos, dejar transparente el fondo propio deja ver esa
+ *  superficie ya correcta a través suyo, sin duplicar color/lógica alguna.
+ *  El resto de juegos conserva su fondo dinámico exactamente igual. */
+const UNIFIED_TOP_SURFACE_TYPES = new Set(['primitiva', 'navidad']);
+
 export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, exitAriaLabel }: GamePlayHeaderProps) {
   const { gameDrafts, lotteryDrafts, openGameReview, openLotteryReview } = usePlaySession();
   const isLotteryGame = NATIONAL_LOTTERY_TYPES.has(game.type);
@@ -42,6 +52,7 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, 
   };
 
   const background = `linear-gradient(135deg, ${game.color}, ${game.colorEnd ?? game.color})`;
+  const useUnifiedTopSurface = UNIFIED_TOP_SURFACE_TYPES.has(game.type);
 
   // Synchronous (pre-paint) registration — a plain useEffect would let the
   // fallback color show for one frame before the real gradient landed.
@@ -63,7 +74,7 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, 
   return (
     <div
       className="fixed top-0 left-0 right-0 z-40 text-white pt-safe shadow-lg h-[calc(env(safe-area-inset-top,0px)+56px)] flex flex-col justify-end"
-      style={{ background }}
+      style={{ background: useUnifiedTopSurface ? 'transparent' : background }}
     >
       <div className="flex items-center justify-between px-3 py-2">
         <div className="flex items-center gap-1">
