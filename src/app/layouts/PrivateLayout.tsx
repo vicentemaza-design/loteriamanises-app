@@ -93,13 +93,39 @@ export function PrivateLayout() {
               <div
                 aria-hidden="true"
                 data-ios-play-top-surface="true"
-                className="fixed top-0 left-0 right-0 pointer-events-none"
+                className="fixed top-0 left-0 right-0 pointer-events-none overflow-hidden"
                 style={{
                   height: 'var(--play-top-surface-height, calc(env(safe-area-inset-top, 0px) + 64px))',
                   zIndex: 'var(--play-top-surface-z, 30)',
                   background: 'var(--play-header-background, #3B6CA8)',
                 }}
-              />
+              >
+                {/* EXPERIMENTO — acabado visual (solo Primitiva/Navidad, ver
+                    PLAY_TOP_SURFACE_ARTWORK_VAR/PLAY_TOP_SURFACE_IMAGE_VAR en
+                    GamePlayHeader.tsx): reutiliza tal cual la receta de
+                    GameCardRow en GamesPage.tsx (imagen 0.15 + grayscale/brightness,
+                    tinte multiply 0.8 sobre el mismo gradiente del juego, velo
+                    direccional). Sin registrar (todos los demás juegos), queda a
+                    opacity:0 — invisible, cero cambio visual para ellos. */}
+                <div
+                  className="absolute inset-0"
+                  style={{ opacity: 'var(--play-top-surface-artwork, 0)' }}
+                >
+                  <div
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                      backgroundImage: 'var(--play-top-surface-image, none)',
+                      opacity: 0.15,
+                      filter: 'grayscale(0.82) brightness(0.5)',
+                    }}
+                  />
+                  <div
+                    className="absolute inset-0"
+                    style={{ background: 'var(--play-header-background, #3B6CA8)', mixBlendMode: 'multiply', opacity: 0.8 }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/58 via-black/18 to-transparent" />
+                </div>
+              </div>
             )}
 
             <main

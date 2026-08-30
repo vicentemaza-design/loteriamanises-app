@@ -5,6 +5,10 @@ import { NavArrowLeft, InfoCircle, ShoppingBag, ViewGrid } from 'iconoir-react/r
 import { formatDrawTime } from '@/shared/lib/utils';
 import type { LotteryGame } from '@/shared/types/domain';
 import { usePlaySession } from '@/features/session/hooks/usePlaySession';
+// Mismos assets que src/features/catalog/pages/GamesPage.tsx (imageMap de
+// GameCardRow) — reutilizados tal cual, no duplicados como nuevo arte.
+import primitivaJoy from '@/assets/images/primitiva_joy.png';
+import loteriaNavidadHero from '@/assets/images/loteria_navidad_hero.jpg';
 
 /** Read by PrivateLayout's play-only top surface (see PlayTopSurface there)
  *  so the same gradient painted here continues into the physical iOS status
@@ -19,6 +23,21 @@ const PLAY_HEADER_BACKGROUND_VAR = '--play-header-background';
  *  y el z-index existentes no cambian para nadie más. */
 const PLAY_TOP_SURFACE_HEIGHT_VAR = '--play-top-surface-height';
 const PLAY_TOP_SURFACE_Z_VAR = '--play-top-surface-z';
+
+/** EXPERIMENTO — acabado visual (solo Primitiva/Navidad): activa en
+ *  PlayTopSurface el mismo arte del juego que ya usa el catálogo (imagen +
+ *  tinte multiply + velo direccional, valores idénticos a GameCardRow en
+ *  GamesPage.tsx). Sin registrar, esa capa queda a opacity:0 — invisible
+ *  para el resto de juegos, sin ningún cambio visual para ellos. */
+const PLAY_TOP_SURFACE_ARTWORK_VAR = '--play-top-surface-artwork';
+const PLAY_TOP_SURFACE_IMAGE_VAR = '--play-top-surface-image';
+
+/** Mismas claves/valores que imageMap en GamesPage.tsx, recortado a los dos
+ *  juegos de este experimento — no se inventa ninguna imagen nueva. */
+const UNIFIED_TOP_SURFACE_IMAGES: Record<string, string> = {
+  primitiva: primitivaJoy,
+  'loteria-navidad': loteriaNavidadHero,
+};
 
 interface GamePlayHeaderProps {
   game: LotteryGame;
@@ -72,11 +91,20 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, 
 
     let previousHeight = '';
     let previousZ = '';
+    let previousArtwork = '';
+    let previousImage = '';
+    const image = UNIFIED_TOP_SURFACE_IMAGES[game.id];
     if (useUnifiedTopSurface) {
       previousHeight = root.style.getPropertyValue(PLAY_TOP_SURFACE_HEIGHT_VAR);
       previousZ = root.style.getPropertyValue(PLAY_TOP_SURFACE_Z_VAR);
+      previousArtwork = root.style.getPropertyValue(PLAY_TOP_SURFACE_ARTWORK_VAR);
+      previousImage = root.style.getPropertyValue(PLAY_TOP_SURFACE_IMAGE_VAR);
       root.style.setProperty(PLAY_TOP_SURFACE_HEIGHT_VAR, '54px');
       root.style.setProperty(PLAY_TOP_SURFACE_Z_VAR, 'auto');
+      root.style.setProperty(PLAY_TOP_SURFACE_ARTWORK_VAR, '1');
+      if (image) {
+        root.style.setProperty(PLAY_TOP_SURFACE_IMAGE_VAR, `url(${image})`);
+      }
     }
 
     return () => {
@@ -96,9 +124,21 @@ export function GamePlayHeader({ game, drawTime, onBack, onInfo, titleOverride, 
         } else {
           root.style.removeProperty(PLAY_TOP_SURFACE_Z_VAR);
         }
+        if (previousArtwork) {
+          root.style.setProperty(PLAY_TOP_SURFACE_ARTWORK_VAR, previousArtwork);
+        } else {
+          root.style.removeProperty(PLAY_TOP_SURFACE_ARTWORK_VAR);
+        }
+        if (image) {
+          if (previousImage) {
+            root.style.setProperty(PLAY_TOP_SURFACE_IMAGE_VAR, previousImage);
+          } else {
+            root.style.removeProperty(PLAY_TOP_SURFACE_IMAGE_VAR);
+          }
+        }
       }
     };
-  }, [background, useUnifiedTopSurface]);
+  }, [background, useUnifiedTopSurface, game.id]);
 
   return (
     <div
