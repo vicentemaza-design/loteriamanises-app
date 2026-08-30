@@ -477,8 +477,8 @@
   html.auth-route,
   html.auth-route body,
   html.auth-route #root {
-    --app-bg: #052a5a !important;
-    background: #052a5a !important;
+    --app-bg: #0A4792 !important;
+    background: #0A4792 !important;
     background-image: none !important;
     height: auto;
     min-height: 100dvh;
