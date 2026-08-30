@@ -31,6 +31,8 @@ export function PrivateLayout() {
   }, [location.pathname]);
 
   React.useEffect(() => {
+    document.documentElement.classList.remove('auth-route');
+
     const viewportMeta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
     if (!viewportMeta) return;
 

@@ -67,6 +67,7 @@
       (function () {
         var path = window.location.pathname;
         var isAuthRoute =
+          path === '/' ||
           path === '/login' ||
           path === '/register' ||
           path.startsWith('/login/') ||
