@@ -1,6 +1,6 @@
 // Final iOS PWA Layout Stabilization - Background Engine v1.0.4
 import { useEffect, useState, type ReactNode } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { cn } from '@/shared/lib/utils';
 import authBackground from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
 import { AuthStartupLoader } from './AuthStartupLoader';
@@ -83,7 +83,7 @@ export function AuthScreenShell({
       <motion.div
         className="relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 py-10"
         animate={{ opacity: isReady ? 1 : 0 }}
-        transition={{ duration: reduceMotion ? 0 : 0.2 }}
+        transition={{ duration: reduceMotion ? 0 : 0.18 }}
         aria-hidden={!isReady}
         inert={!isReady}
         style={!isReady ? { pointerEvents: 'none' } : undefined}
@@ -98,18 +98,16 @@ export function AuthScreenShell({
         </div>
       </motion.div>
 
-      <AnimatePresence>
-        {!isReady && (
-          <motion.div
-            key="auth-startup-loader"
-            className="absolute inset-0 z-20"
-            exit={{ opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0 : 0.2 }}
-          >
-            <AuthStartupLoader />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Retirada directa (sin animación de salida): si el overlay también
+          se desvaneciera a la vez que el contenido aparece, habría un
+          tramo con ambas capas semitransparentes y el Login se vería
+          mezclado con el azul del splash. Se desmonta de golpe y solo el
+          contenido hace el fade corto de arriba. */}
+      {!isReady && (
+        <div className="absolute inset-0 z-20">
+          <AuthStartupLoader />
+        </div>
+      )}
     </div>
   );
 }
