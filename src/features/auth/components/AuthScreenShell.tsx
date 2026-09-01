@@ -1,10 +1,11 @@
 // Final iOS PWA Layout Stabilization - Background Engine v1.0.4
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { cn } from '@/shared/lib/utils';
 import authBackground from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
 
 const STARTUP_FALLBACK_TIMEOUT_MS = 1200;
-const FIRST_PAINT_HANDOFF_MS = 240;
+const MIN_BRAND_VISIBLE_MS = 650;
+const FIRST_PAINT_HANDOFF_MS = 300;
 
 interface AuthScreenShellProps {
   children: ReactNode;
@@ -18,18 +19,30 @@ export function AuthScreenShell({
   backgroundImageSrc = authBackground,
 }: AuthScreenShellProps) {
   const [isReady, setIsReady] = useState(false);
+  const mountTimeRef = useRef(Date.now());
 
-  // Prepare the approved Auth background before handing the pre-React branded
-  // first paint over to the real application surface. There is deliberately
-  // no artificial minimum splash duration: as soon as the actual Auth scene
-  // is ready, the browser can continue directly into it.
+  // Prepare the approved Auth background first. The branded first-paint layer
+  // now has a short minimum presence so cached launches do not collapse into
+  // a flash. This minimum starts at React mount; on a cold launch, a slower
+  // real asset load remains the controlling condition instead of adding a
+  // second artificial wait after the image is ready.
   useEffect(() => {
     let handled = false;
+    let revealTimer: number | undefined;
+
+    const reveal = () => setIsReady(true);
 
     const markReady = () => {
       if (handled) return;
       handled = true;
-      setIsReady(true);
+
+      const elapsed = Date.now() - mountTimeRef.current;
+      const remaining = MIN_BRAND_VISIBLE_MS - elapsed;
+      if (remaining > 0) {
+        revealTimer = window.setTimeout(reveal, remaining);
+      } else {
+        reveal();
+      }
     };
 
     const img = new Image();
@@ -41,15 +54,18 @@ export function AuthScreenShell({
     const fallback = window.setTimeout(markReady, STARTUP_FALLBACK_TIMEOUT_MS);
     return () => {
       window.clearTimeout(fallback);
+      if (revealTimer !== undefined) window.clearTimeout(revealTimer);
       img.onload = null;
       img.onerror = null;
     };
   }, [backgroundImageSrc]);
 
-  // The overlay in index.html exists before React and provides the first web
-  // paint. Once the real Auth surface is ready, fade that layer away without
-  // replacing it with another splash component. The final Login DOM/layout is
-  // left untouched underneath.
+  // Overlapping handoff experiment: when the real Auth scene is ready, it is
+  // already rendered underneath the pre-React branded layer. Fading only the
+  // top layer exposes that same scene progressively instead of sequencing a
+  // separate splash exit and Login entrance. If the physical-device result is
+  // not convincing, this overlap can be removed without changing the Auth
+  // layout or first-paint architecture.
   useEffect(() => {
     if (!isReady) return;
 
