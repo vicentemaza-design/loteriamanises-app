@@ -3,9 +3,9 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { cn } from '@/shared/lib/utils';
 import authBackground from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
 
-const STARTUP_FALLBACK_TIMEOUT_MS = 1200;
-const MIN_BRAND_VISIBLE_MS = 950;
-const FIRST_PAINT_HANDOFF_MS = 300;
+const STARTUP_FALLBACK_TIMEOUT_MS = 1600;
+const MIN_BRAND_VISIBLE_MS = 1650;
+const FIRST_PAINT_HANDOFF_MS = 650;
 
 interface AuthScreenShellProps {
   children: ReactNode;
@@ -21,10 +21,10 @@ export function AuthScreenShell({
   const [isReady, setIsReady] = useState(false);
   const mountTimeRef = useRef(Date.now());
 
-  // Prepare the approved Auth background first. The centered isotipo remains
-  // visible for at least 950 ms so its liquid fill can complete before the
-  // Login surface is revealed. Slow real asset loading still wins over the
-  // minimum instead of adding a second artificial wait afterwards.
+  // Prepare the approved Auth background first. Physical iPhone QA showed that
+  // a longer branded state reads more fluidly than a fast handoff. The loader
+  // now has enough time for the black -> blue surface transition, isotipo entry
+  // and liquid fill before Login is revealed.
   useEffect(() => {
     let handled = false;
     let revealTimer: number | undefined;
@@ -59,10 +59,8 @@ export function AuthScreenShell({
     };
   }, [backgroundImageSrc]);
 
-  // The isotipo is intentionally independent from the final Login logo.
-  // Once the 950 ms branded state and background readiness are satisfied,
-  // the whole first-paint surface simply fades away. No positional handoff,
-  // measurement or logo movement is performed.
+  // Keep the loader as a fixed branded surface and dissolve it slowly over the
+  // already-rendered Login. No logo movement or positional handoff is used.
   useEffect(() => {
     if (!isReady) return;
 
@@ -79,12 +77,6 @@ export function AuthScreenShell({
   }, [isReady]);
 
   return (
-    /*
-       CORRECCIÓN DEFINITIVA DE CLIPPING:
-       Inyectamos la imagen directamente en el background del contenedor raíz.
-       Esto evita que iOS renderice la imagen y el fondo en capas separadas
-       con alturas distintas durante el cold-boot de la PWA.
-    */
     <div
       className="relative min-h-dvh w-full overflow-hidden text-white bg-[#0A4792]"
       style={{
@@ -97,20 +89,8 @@ export function AuthScreenShell({
         backgroundRepeat: 'no-repeat',
       }}
     >
-      {/* Luces sutiles estáticas para profundidad */}
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,rgba(245,197,24,0.10),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_30%)]" />
 
-      {/* Flujo natural de documento (arquitectura estable previa a f5819a3,
-          ver c5c53b4): exterior e interior en min-h-screen, sin scroll
-          interno propio. El intento de "scroll interno + body fijo" (h-dvh
-          + overflow-y-auto aquí, body position:fixed en index.css) generó
-          una franja de fondo residual en iOS Safari real que persistía
-          incluso igualando las unidades de exterior/interior — la propia
-          combinación "body fijo + scroll anidado" es la que fallaba, no
-          solo el mismatch vh/dvh. body vuelve a ser scrolleable de forma
-          nativa SOLO en rutas públicas (html.auth-route, ver index.css);
-          el fix de teclado de App.tsx no depende de body:fixed y sigue
-          intacto. Privadas mantienen su body:fixed sin cambios. */}
       <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 py-10">
         <div
           className={cn(
