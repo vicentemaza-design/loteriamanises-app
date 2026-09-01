@@ -5,6 +5,7 @@ import authBackground from '@/assets/images/group-people-celebrating-financial-s
 
 const STARTUP_FALLBACK_TIMEOUT_MS = 1200;
 const MIN_BRAND_VISIBLE_MS = 650;
+const BRAND_ALIGN_MS = 180;
 const FIRST_PAINT_HANDOFF_MS = 300;
 
 interface AuthScreenShellProps {
@@ -60,22 +61,45 @@ export function AuthScreenShell({
     };
   }, [backgroundImageSrc]);
 
-  // Overlapping handoff experiment: when the real Auth scene is ready, it is
-  // already rendered underneath the pre-React branded layer. Fading only the
-  // top layer exposes that same scene progressively instead of sequencing a
-  // separate splash exit and Login entrance. If the physical-device result is
-  // not convincing, this overlap can be removed without changing the Auth
-  // layout or first-paint architecture.
+  // Handoff rule: the pre-React logo must first align with the actual rendered
+  // Auth logo, then the branded layer can fade. This removes the need to guess
+  // a shared top offset across iOS launch/relaunch viewport states.
   useEffect(() => {
     if (!isReady) return;
 
     const firstPaint = document.getElementById('auth-first-paint');
+    const firstBrand = firstPaint?.querySelector<HTMLElement>('.auth-first-brand');
+    const firstLogo = firstPaint?.querySelector<HTMLImageElement>('img');
+    const renderedLogo = document.querySelector<HTMLImageElement>(
+      '#root img[src="/assets/branding/logo-white.png"]'
+    );
+
     if (!firstPaint) return;
 
-    firstPaint.classList.add('is-handing-off');
-    const removeTimer = window.setTimeout(() => firstPaint.remove(), FIRST_PAINT_HANDOFF_MS);
+    let alignTimer: number | undefined;
+    let removeTimer: number | undefined;
 
-    return () => window.clearTimeout(removeTimer);
+    const startFade = () => {
+      firstPaint.classList.add('is-handing-off');
+      removeTimer = window.setTimeout(() => firstPaint.remove(), FIRST_PAINT_HANDOFF_MS);
+    };
+
+    if (firstBrand && firstLogo && renderedLogo) {
+      const firstRect = firstLogo.getBoundingClientRect();
+      const targetRect = renderedLogo.getBoundingClientRect();
+      const deltaX = targetRect.left - firstRect.left;
+      const deltaY = targetRect.top - firstRect.top;
+
+      firstBrand.style.transform = `translateX(calc(-50% + ${deltaX}px)) translateY(${deltaY}px)`;
+      alignTimer = window.setTimeout(startFade, BRAND_ALIGN_MS);
+    } else {
+      startFade();
+    }
+
+    return () => {
+      if (alignTimer !== undefined) window.clearTimeout(alignTimer);
+      if (removeTimer !== undefined) window.clearTimeout(removeTimer);
+    };
   }, [isReady]);
 
   return (
