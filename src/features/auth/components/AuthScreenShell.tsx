@@ -4,7 +4,7 @@ import { cn } from '@/shared/lib/utils';
 import authBackground from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
 
 const STARTUP_FALLBACK_TIMEOUT_MS = 1200;
-const MIN_BRAND_VISIBLE_MS = 650;
+const MIN_BRAND_VISIBLE_MS = 850;
 const BRAND_ALIGN_MS = 180;
 const FIRST_PAINT_HANDOFF_MS = 300;
 
