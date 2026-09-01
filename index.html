@@ -107,56 +107,80 @@
       html.auth-route #auth-first-paint.is-handing-off {
         opacity: 0;
       }
-      html.auth-route .auth-first-brand {
+      html.auth-route .auth-first-mark {
         position: absolute;
-        top: 6rem;
+        top: 50%;
         left: 50%;
-        width: 200px;
-        transform: translateX(-50%);
-        text-align: center;
-        transition: transform 180ms cubic-bezier(.22,1,.36,1);
-        will-change: transform;
+        width: 108px;
+        height: 108px;
+        transform: translate(-50%, -50%);
       }
-      html.auth-route #auth-first-paint img {
-        display: block;
-        width: auto;
-        height: 3.5rem;
-        max-width: 200px;
-        margin: 0 auto;
-      }
-      html.auth-route .auth-first-progress {
-        position: relative;
-        width: 92px;
-        height: 2px;
-        margin: 22px auto 0;
-        overflow: hidden;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.14);
-      }
-      html.auth-route .auth-first-progress::after {
-        content: '';
+      html.auth-route .auth-first-mark img {
         position: absolute;
-        top: 0;
-        bottom: 0;
-        left: -42%;
-        width: 42%;
-        border-radius: inherit;
-        background: #F5C518;
-        box-shadow: 0 0 10px rgba(245,197,24,0.35);
-        animation: auth-progress-glide 850ms cubic-bezier(.45,0,.2,1) infinite;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
       }
-      @keyframes auth-progress-glide {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(338%); }
+      html.auth-route .auth-first-mark-base {
+        filter: brightness(0) invert(1);
+      }
+      html.auth-route .auth-first-mark-fill {
+        filter: brightness(0) saturate(100%) invert(82%) sepia(91%) saturate(1221%) hue-rotate(355deg) brightness(99%) contrast(94%);
+        clip-path: polygon(
+          0 100%, 16% 100%, 33% 100%, 50% 100%, 66% 100%, 83% 100%, 100% 100%,
+          100% 100%, 0 100%
+        );
+        animation: auth-isotipo-liquid-fill 950ms cubic-bezier(.35,.02,.2,1) forwards;
+        will-change: clip-path;
+      }
+      @keyframes auth-isotipo-liquid-fill {
+        0% {
+          clip-path: polygon(
+            0 100%, 16% 100%, 33% 100%, 50% 100%, 66% 100%, 83% 100%, 100% 100%,
+            100% 100%, 0 100%
+          );
+        }
+        22% {
+          clip-path: polygon(
+            0 82%, 16% 78%, 33% 82%, 50% 77%, 66% 81%, 83% 78%, 100% 81%,
+            100% 100%, 0 100%
+          );
+        }
+        48% {
+          clip-path: polygon(
+            0 56%, 16% 51%, 33% 55%, 50% 50%, 66% 54%, 83% 50%, 100% 54%,
+            100% 100%, 0 100%
+          );
+        }
+        74% {
+          clip-path: polygon(
+            0 29%, 16% 24%, 33% 28%, 50% 23%, 66% 27%, 83% 23%, 100% 27%,
+            100% 100%, 0 100%
+          );
+        }
+        92% {
+          clip-path: polygon(
+            0 9%, 16% 5%, 33% 8%, 50% 4%, 66% 7%, 83% 4%, 100% 7%,
+            100% 100%, 0 100%
+          );
+        }
+        100% {
+          clip-path: polygon(
+            0 0, 16% 0, 33% 0, 50% 0, 66% 0, 83% 0, 100% 0,
+            100% 100%, 0 100%
+          );
+        }
       }
       @media (prefers-reduced-motion: reduce) {
         html.auth-route #auth-first-paint { transition: none; }
-        html.auth-route .auth-first-brand { transition: none; }
-        html.auth-route .auth-first-progress::after {
-          left: 0;
-          width: 100%;
+        html.auth-route .auth-first-mark-fill {
           animation: none;
-          opacity: .65;
+          clip-path: polygon(
+            0 0, 16% 0, 33% 0, 50% 0, 66% 0, 83% 0, 100% 0,
+            100% 100%, 0 100%
+          );
         }
       }
     </style>
@@ -166,9 +190,9 @@
   </head>
   <body>
     <div id="auth-first-paint" aria-hidden="true">
-      <div class="auth-first-brand">
-        <img src="/assets/branding/logo-white.png" alt="" />
-        <div class="auth-first-progress"></div>
+      <div class="auth-first-mark">
+        <img class="auth-first-mark-base" src="/src/assets/brand/manises-isotipo.png" alt="" />
+        <img class="auth-first-mark-fill" src="/src/assets/brand/manises-isotipo.png" alt="" />
       </div>
     </div>
     <div id="root"></div>
