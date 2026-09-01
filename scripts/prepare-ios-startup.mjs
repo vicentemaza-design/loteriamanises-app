@@ -15,17 +15,16 @@ copyFileSync(isotipoSourcePath, isotipoPublicPath);
 
 let html = readFileSync(indexPath, 'utf8');
 
-// Remove the experimental native iOS startup-image declarations. On the
-// physical iPhone they removed the long black launch surface but introduced
-// a visible system -> PNG -> WebKit handoff flash. We prefer the native iOS
-// launch surface and make the first web frame start from black instead.
+// Remove the experimental native iOS startup-image declarations. Physical
+// iPhone QA showed that the custom PNG introduced a visible handoff flash.
+// We intentionally keep the native iOS launch surface instead.
 const startMarker = '    <!-- IOS_STARTUP_IMAGES:BEGIN -->';
 const endMarker = '    <!-- IOS_STARTUP_IMAGES:END -->';
 const existingStartup = new RegExp(`${startMarker}[\\s\\S]*?${endMarker}\\n?`, 'm');
 html = html.replace(existingStartup, '');
 
 // Use the real isotipo as a public PNG so iOS decodes a normal file instead
-// of scaling the old embedded data URL.
+// of the old embedded data URL.
 html = html.replace(
   /<img class="auth-first-mark-base" src="(?:data:image\/png;base64,[^"]+|\/startup\/manises-isotipo\.png)" alt="" \/>/,
   '<img class="auth-first-mark-base" src="/startup/manises-isotipo.png" alt="" />'
@@ -42,38 +41,35 @@ html = html.replace(continuityExisting, '');
 
 const continuityBlock = `${continuityStart}
     <style>
-      /* Physical iPhone QA: native iOS black is smoother than the custom
-         apple-touch-startup-image handoff. Match that native surface first,
-         then ease into Manises blue before revealing the brand. */
+      /* Match the native iOS black surface first, then move into the Manises
+         blue deliberately. This avoids trying to hide the system handoff. */
       html.auth-route #auth-first-paint {
         background: #000000;
-        transition: opacity 650ms cubic-bezier(.22,1,.36,1);
-        animation: auth-startup-surface 420ms cubic-bezier(.22,1,.36,1) 80ms forwards;
+        transition: opacity 780ms cubic-bezier(.22,1,.36,1);
+        animation: auth-startup-surface 720ms cubic-bezier(.22,1,.36,1) 120ms forwards;
       }
       @keyframes auth-startup-surface {
         from { background: #000000; }
         to { background: #0A4792; }
       }
 
-      /* Keep the 48:60 source ratio and render it closer to native size so
-         its raster edges remain clean on iPhone. */
+      /* Source asset is exactly 48x60 px. Until a vector version is supplied,
+         render it 1:1 with no CSS upscaling so its raster edges stay intact. */
       html.auth-route .auth-first-mark {
-        width: 72px;
-        height: 90px;
+        width: 48px;
+        height: 60px;
         opacity: 0;
-        animation: auth-isotipo-enter 260ms cubic-bezier(.22,1,.36,1) 260ms forwards;
+        animation: auth-isotipo-enter 320ms cubic-bezier(.22,1,.36,1) 760ms forwards;
       }
       @keyframes auth-isotipo-enter {
         from { opacity: 0; }
         to { opacity: 1; }
       }
 
-      /* Slow the liquid fill so the loader reads as an intentional branded
-         state instead of a flash. The original keyframes remain unchanged;
-         only timing is overridden here. */
+      /* Let the blue surface settle before the liquid fill begins. */
       html.auth-route .auth-first-mark-fill {
-        animation-duration: 1300ms;
-        animation-delay: 260ms;
+        animation-duration: 1350ms;
+        animation-delay: 760ms;
         animation-timing-function: cubic-bezier(.32,.02,.18,1);
       }
 
@@ -97,4 +93,4 @@ ${continuityEnd}`;
 html = html.replace('  </head>', `${continuityBlock}\n  </head>`);
 writeFileSync(indexPath, html);
 
-console.log('Prepared native-black-to-Manises auth startup with the real isotipo asset.');
+console.log('Prepared native iOS launch continuity with the isotipo at its native 48x60 scale.');
