@@ -26,68 +26,46 @@
             window.innerHeight || 0,
             document.documentElement ? document.documentElement.clientHeight : 0
           ].filter(Boolean);
-
           return Math.max.apply(null, candidates);
         }
-
         function setAppVh() {
           var vh = getRealViewportHeight();
           document.documentElement.style.setProperty('--app-vh', vh + 'px');
         }
-
         function nudgeViewport() {
           setAppVh();
           window.scrollTo(0, 0);
           document.documentElement.offsetHeight;
         }
-
         function stabilizeAppVh() {
           nudgeViewport();
           requestAnimationFrame(function () {
             nudgeViewport();
-            requestAnimationFrame(function () {
-              nudgeViewport();
-            });
+            requestAnimationFrame(function () { nudgeViewport(); });
           });
           setTimeout(nudgeViewport, 120);
           setTimeout(nudgeViewport, 350);
         }
-
         stabilizeAppVh();
         window.addEventListener('load', stabilizeAppVh);
         window.addEventListener('pageshow', stabilizeAppVh);
         window.addEventListener('resize', setAppVh);
-        if (window.visualViewport) {
-          window.visualViewport.addEventListener('resize', setAppVh);
-        }
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', setAppVh);
       })();
     </script>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <script>
       (function () {
         var path = window.location.pathname;
-        var isAuthRoute =
-          path === '/' ||
-          path === '/login' ||
-          path === '/register' ||
-          path.startsWith('/login/') ||
-          path.startsWith('/register/');
-
-        if (isAuthRoute) {
-          document.documentElement.classList.add('auth-route');
-        }
+        var isAuthRoute = path === '/' || path === '/login' || path === '/register' || path.startsWith('/login/') || path.startsWith('/register/');
+        if (isAuthRoute) document.documentElement.classList.add('auth-route');
       })();
     </script>
-    <!-- Auth first paint: deterministic branded web surface before React. -->
     <style>
       html.auth-route,
       html.auth-route body,
-      html.auth-route #root {
-        background: #0A4792 !important;
-      }
-      #auth-first-paint {
-        display: none;
-      }
+      html.auth-route #root { background: #0A4792 !important; }
+      #auth-first-paint { display: none; }
       html.auth-route #auth-first-paint {
         position: absolute;
         top: 0;
@@ -104,9 +82,7 @@
         transition: opacity 300ms cubic-bezier(.22,1,.36,1);
         contain: layout paint;
       }
-      html.auth-route #auth-first-paint.is-handing-off {
-        opacity: 0;
-      }
+      html.auth-route #auth-first-paint.is-handing-off { opacity: 0; }
       html.auth-route .auth-first-mark {
         position: absolute;
         top: 50%;
@@ -123,64 +99,26 @@
         height: 100%;
         object-fit: contain;
       }
-      html.auth-route .auth-first-mark-base {
-        filter: brightness(0) invert(1);
-      }
+      html.auth-route .auth-first-mark-base { filter: brightness(0) invert(1); }
       html.auth-route .auth-first-mark-fill {
         filter: brightness(0) saturate(100%) invert(82%) sepia(91%) saturate(1221%) hue-rotate(355deg) brightness(99%) contrast(94%);
-        clip-path: polygon(
-          0 100%, 16% 100%, 33% 100%, 50% 100%, 66% 100%, 83% 100%, 100% 100%,
-          100% 100%, 0 100%
-        );
+        clip-path: polygon(0 100%,16% 100%,33% 100%,50% 100%,66% 100%,83% 100%,100% 100%,100% 100%,0 100%);
         animation: auth-isotipo-liquid-fill 950ms cubic-bezier(.35,.02,.2,1) forwards;
         will-change: clip-path;
       }
       @keyframes auth-isotipo-liquid-fill {
-        0% {
-          clip-path: polygon(
-            0 100%, 16% 100%, 33% 100%, 50% 100%, 66% 100%, 83% 100%, 100% 100%,
-            100% 100%, 0 100%
-          );
-        }
-        22% {
-          clip-path: polygon(
-            0 82%, 16% 78%, 33% 82%, 50% 77%, 66% 81%, 83% 78%, 100% 81%,
-            100% 100%, 0 100%
-          );
-        }
-        48% {
-          clip-path: polygon(
-            0 56%, 16% 51%, 33% 55%, 50% 50%, 66% 54%, 83% 50%, 100% 54%,
-            100% 100%, 0 100%
-          );
-        }
-        74% {
-          clip-path: polygon(
-            0 29%, 16% 24%, 33% 28%, 50% 23%, 66% 27%, 83% 23%, 100% 27%,
-            100% 100%, 0 100%
-          );
-        }
-        92% {
-          clip-path: polygon(
-            0 9%, 16% 5%, 33% 8%, 50% 4%, 66% 7%, 83% 4%, 100% 7%,
-            100% 100%, 0 100%
-          );
-        }
-        100% {
-          clip-path: polygon(
-            0 0, 16% 0, 33% 0, 50% 0, 66% 0, 83% 0, 100% 0,
-            100% 100%, 0 100%
-          );
-        }
+        0% { clip-path: polygon(0 100%,16% 100%,33% 100%,50% 100%,66% 100%,83% 100%,100% 100%,100% 100%,0 100%); }
+        22% { clip-path: polygon(0 82%,16% 78%,33% 82%,50% 77%,66% 81%,83% 78%,100% 81%,100% 100%,0 100%); }
+        48% { clip-path: polygon(0 56%,16% 51%,33% 55%,50% 50%,66% 54%,83% 50%,100% 54%,100% 100%,0 100%); }
+        74% { clip-path: polygon(0 29%,16% 24%,33% 28%,50% 23%,66% 27%,83% 23%,100% 27%,100% 100%,0 100%); }
+        92% { clip-path: polygon(0 9%,16% 5%,33% 8%,50% 4%,66% 7%,83% 4%,100% 7%,100% 100%,0 100%); }
+        100% { clip-path: polygon(0 0,16% 0,33% 0,50% 0,66% 0,83% 0,100% 0,100% 100%,0 100%); }
       }
       @media (prefers-reduced-motion: reduce) {
         html.auth-route #auth-first-paint { transition: none; }
         html.auth-route .auth-first-mark-fill {
           animation: none;
-          clip-path: polygon(
-            0 0, 16% 0, 33% 0, 50% 0, 66% 0, 83% 0, 100% 0,
-            100% 100%, 0 100%
-          );
+          clip-path: polygon(0 0,16% 0,33% 0,50% 0,66% 0,83% 0,100% 0,100% 100%,0 100%);
         }
       }
     </style>
@@ -191,8 +129,8 @@
   <body>
     <div id="auth-first-paint" aria-hidden="true">
       <div class="auth-first-mark">
-        <img class="auth-first-mark-base" src="/src/assets/brand/manises-isotipo.png" alt="" />
-        <img class="auth-first-mark-fill" src="/src/assets/brand/manises-isotipo.png" alt="" />
+        <img class="auth-first-mark-base" src="data:image/png;base64,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" alt="" />
+        <img class="auth-first-mark-fill" src="data:image/png;base64,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" alt="" />
       </div>
     </div>
     <div id="root"></div>
