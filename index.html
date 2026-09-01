@@ -114,6 +114,8 @@
         width: 200px;
         transform: translateX(-50%);
         text-align: center;
+        transition: transform 180ms cubic-bezier(.22,1,.36,1);
+        will-change: transform;
       }
       html.auth-route #auth-first-paint img {
         display: block;
@@ -149,6 +151,7 @@
       }
       @media (prefers-reduced-motion: reduce) {
         html.auth-route #auth-first-paint { transition: none; }
+        html.auth-route .auth-first-brand { transition: none; }
         html.auth-route .auth-first-progress::after {
           left: 0;
           width: 100%;
