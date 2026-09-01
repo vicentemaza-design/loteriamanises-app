@@ -1,5 +1,5 @@
 import { deflateSync } from 'node:zlib';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,6 +8,8 @@ const root = join(__dirname, '..');
 const publicDir = join(root, 'public');
 const startupDir = join(publicDir, 'startup');
 const indexPath = join(root, 'index.html');
+const isotipoSourcePath = join(root, 'src', 'assets', 'brand', 'manises-isotipo.png');
+const isotipoPublicPath = join(startupDir, 'manises-isotipo.png');
 const BACKGROUND = [0x0a, 0x47, 0x92, 0xff];
 
 const devices = [
@@ -79,6 +81,7 @@ function createSolidPng(width, height) {
 }
 
 mkdirSync(startupDir, { recursive: true });
+copyFileSync(isotipoSourcePath, isotipoPublicPath);
 
 for (const device of devices) {
   const filename = `apple-launch-${device.width}x${device.height}.png`;
@@ -104,6 +107,51 @@ if (!html.includes(anchor)) {
   throw new Error('Could not find apple-mobile-web-app-title anchor in index.html');
 }
 html = html.replace(anchor, `${anchor}\n${block}`);
+
+// Keep the native launch surface and the very first web frame visually identical:
+// both are plain #0A4792. The real isotipo then enters softly after WebKit owns
+// the frame, avoiding a hard PNG -> loader composition change.
+html = html.replace(
+  /<img class="auth-first-mark-base" src="data:image\/png;base64,[^"]+" alt="" \/>/,
+  '<img class="auth-first-mark-base" src="/startup/manises-isotipo.png" alt="" />'
+);
+html = html.replace(
+  /<img class="auth-first-mark-fill" src="data:image\/png;base64,[^"]+" alt="" \/>/,
+  '<img class="auth-first-mark-fill" src="/startup/manises-isotipo.png" alt="" />'
+);
+
+const continuityStart = '    <!-- AUTH_STARTUP_CONTINUITY:BEGIN -->';
+const continuityEnd = '    <!-- AUTH_STARTUP_CONTINUITY:END -->';
+const continuityExisting = new RegExp(`${continuityStart}[\\s\\S]*?${continuityEnd}\\n?`, 'm');
+html = html.replace(continuityExisting, '');
+
+const continuityBlock = `${continuityStart}
+    <style>
+      /* The startup PNG is intentionally plain blue. Once the HTML frame is
+         active, reveal the same Manises isotipo used by the app as a real
+         public PNG instead of a data URL. This keeps cold-start decoding
+         deterministic on iOS and avoids the broken/tiny placeholder seen
+         on device. */
+      html.auth-route .auth-first-mark {
+        width: 96px;
+        height: 120px;
+        opacity: 0;
+        animation: auth-isotipo-enter 140ms cubic-bezier(.22,1,.36,1) 40ms forwards;
+      }
+      @keyframes auth-isotipo-enter {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html.auth-route .auth-first-mark {
+          opacity: 1;
+          animation: none;
+        }
+      }
+    </style>
+${continuityEnd}`;
+
+html = html.replace('  </head>', `${continuityBlock}\n  </head>`);
 writeFileSync(indexPath, html);
 
-console.log(`Prepared ${devices.length} iOS portrait startup images using #0A4792.`);
+console.log(`Prepared ${devices.length} iOS portrait startup images using #0A4792 and a deterministic public isotipo asset.`);
