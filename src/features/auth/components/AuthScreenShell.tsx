@@ -4,8 +4,7 @@ import { cn } from '@/shared/lib/utils';
 import authBackground from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
 
 const STARTUP_FALLBACK_TIMEOUT_MS = 1200;
-const MIN_BRAND_VISIBLE_MS = 850;
-const BRAND_ALIGN_MS = 180;
+const MIN_BRAND_VISIBLE_MS = 950;
 const FIRST_PAINT_HANDOFF_MS = 300;
 
 interface AuthScreenShellProps {
@@ -22,11 +21,10 @@ export function AuthScreenShell({
   const [isReady, setIsReady] = useState(false);
   const mountTimeRef = useRef(Date.now());
 
-  // Prepare the approved Auth background first. The branded first-paint layer
-  // now has a short minimum presence so cached launches do not collapse into
-  // a flash. This minimum starts at React mount; on a cold launch, a slower
-  // real asset load remains the controlling condition instead of adding a
-  // second artificial wait after the image is ready.
+  // Prepare the approved Auth background first. The centered isotipo remains
+  // visible for at least 950 ms so its liquid fill can complete before the
+  // Login surface is revealed. Slow real asset loading still wins over the
+  // minimum instead of adding a second artificial wait afterwards.
   useEffect(() => {
     let handled = false;
     let revealTimer: number | undefined;
@@ -61,43 +59,21 @@ export function AuthScreenShell({
     };
   }, [backgroundImageSrc]);
 
-  // Handoff rule: the pre-React logo must first align with the actual rendered
-  // Auth logo, then the branded layer can fade. This removes the need to guess
-  // a shared top offset across iOS launch/relaunch viewport states.
+  // The isotipo is intentionally independent from the final Login logo.
+  // Once the 950 ms branded state and background readiness are satisfied,
+  // the whole first-paint surface simply fades away. No positional handoff,
+  // measurement or logo movement is performed.
   useEffect(() => {
     if (!isReady) return;
 
     const firstPaint = document.getElementById('auth-first-paint');
-    const firstBrand = firstPaint?.querySelector<HTMLElement>('.auth-first-brand');
-    const firstLogo = firstPaint?.querySelector<HTMLImageElement>('img');
-    const renderedLogo = document.querySelector<HTMLImageElement>(
-      '#root img[src="/assets/branding/logo-white.png"]'
-    );
-
     if (!firstPaint) return;
 
-    let alignTimer: number | undefined;
     let removeTimer: number | undefined;
-
-    const startFade = () => {
-      firstPaint.classList.add('is-handing-off');
-      removeTimer = window.setTimeout(() => firstPaint.remove(), FIRST_PAINT_HANDOFF_MS);
-    };
-
-    if (firstBrand && firstLogo && renderedLogo) {
-      const firstRect = firstLogo.getBoundingClientRect();
-      const targetRect = renderedLogo.getBoundingClientRect();
-      const deltaX = targetRect.left - firstRect.left;
-      const deltaY = targetRect.top - firstRect.top;
-
-      firstBrand.style.transform = `translateX(calc(-50% + ${deltaX}px)) translateY(${deltaY}px)`;
-      alignTimer = window.setTimeout(startFade, BRAND_ALIGN_MS);
-    } else {
-      startFade();
-    }
+    firstPaint.classList.add('is-handing-off');
+    removeTimer = window.setTimeout(() => firstPaint.remove(), FIRST_PAINT_HANDOFF_MS);
 
     return () => {
-      if (alignTimer !== undefined) window.clearTimeout(alignTimer);
       if (removeTimer !== undefined) window.clearTimeout(removeTimer);
     };
   }, [isReady]);
