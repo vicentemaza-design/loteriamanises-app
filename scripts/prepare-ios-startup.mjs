@@ -29,9 +29,14 @@ html = html.replace(
   /<img class="auth-first-mark-base" src="(?:data:image\/png;base64,[^"]+|\/startup\/manises-isotipo\.png)" alt="" \/>/,
   '<img class="auth-first-mark-base" src="/startup/manises-isotipo.png" alt="" />'
 );
+
+// Remove the legacy second raster layer completely. That node carried the old
+// yellow CSS filter and could still become visible during the first paint.
+// The new fill is drawn only by ::after using the PNG alpha mask, so yellow is
+// no longer present anywhere in the rendered loader stack.
 html = html.replace(
-  /<img class="auth-first-mark-fill" src="(?:data:image\/png;base64,[^"]+|\/startup\/manises-isotipo\.png)" alt="" \/>/,
-  '<img class="auth-first-mark-fill" src="/startup/manises-isotipo.png" alt="" />'
+  /\s*<img class="auth-first-mark-fill" src="(?:data:image\/png;base64,[^"]+|\/startup\/manises-isotipo\.png)" alt="" \/>/,
+  ''
 );
 
 // Add a restrained brand signature to the loader only. It is injected at
@@ -50,8 +55,6 @@ html = html.replace(continuityExisting, '');
 
 const continuityBlock = `${continuityStart}
     <style>
-      /* Match the native iOS black surface first, then move into the Manises
-         blue deliberately. This avoids trying to hide the system handoff. */
       html.auth-route #auth-first-paint {
         background: #000000;
         transition: opacity 780ms cubic-bezier(.22,1,.36,1);
@@ -62,8 +65,6 @@ const continuityBlock = `${continuityStart}
         to { background: #0A4792; }
       }
 
-      /* Source asset is exactly 48x60 px. Until a vector version is supplied,
-         render it 1:1 with no CSS upscaling so its raster edges stay intact. */
       html.auth-route .auth-first-mark {
         width: 48px;
         height: 60px;
@@ -75,12 +76,12 @@ const continuityBlock = `${continuityStart}
         to { opacity: 1; }
       }
 
-      /* Keep the original white raster as the base. The liquid layer uses
-         the same alpha mask at native scale with an exact #9DB5D3 fill — the
-         perceptual result of white at 60% over #0A4792. */
-      html.auth-route .auth-first-mark-fill {
-        display: none;
+      /* Base is explicitly white from the first visible frame. */
+      html.auth-route .auth-first-mark-base {
+        filter: brightness(0) invert(1) !important;
       }
+
+      /* Only fill layer: exact perceptual tone of white at 60% over #0A4792. */
       html.auth-route .auth-first-mark::after {
         content: '';
         position: absolute;
@@ -141,4 +142,4 @@ ${continuityEnd}`;
 html = html.replace('  </head>', `${continuityBlock}\n  </head>`);
 writeFileSync(indexPath, html);
 
-console.log('Prepared native iOS launch continuity with native-scale isotipo, matched blue fill and footer brand signature.');
+console.log('Prepared loader with white base, blue-only liquid fill and no legacy yellow raster layer.');
