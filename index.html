@@ -92,31 +92,37 @@
         position: fixed;
         inset: 0;
         z-index: 2147483647;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
+        display: block;
         box-sizing: border-box;
-        padding-top: 6rem;
         background: #0A4792;
         pointer-events: none;
         opacity: 1;
         transition: opacity 300ms cubic-bezier(.22,1,.36,1);
+        contain: layout paint;
       }
       html.auth-route #auth-first-paint.is-handing-off {
         opacity: 0;
+      }
+      html.auth-route .auth-first-brand {
+        position: absolute;
+        top: 6rem;
+        left: 50%;
+        width: 200px;
+        transform: translateX(-50%);
+        text-align: center;
       }
       html.auth-route #auth-first-paint img {
         display: block;
         width: auto;
         height: 3.5rem;
         max-width: 200px;
+        margin: 0 auto;
       }
       html.auth-route .auth-first-progress {
         position: relative;
         width: 92px;
         height: 2px;
-        margin-top: 22px;
+        margin: 22px auto 0;
         overflow: hidden;
         border-radius: 999px;
         background: rgba(255,255,255,0.14);
@@ -153,8 +159,10 @@
   </head>
   <body>
     <div id="auth-first-paint" aria-hidden="true">
-      <img src="/assets/branding/logo-white.png" alt="" />
-      <div class="auth-first-progress"></div>
+      <div class="auth-first-brand">
+        <img src="/assets/branding/logo-white.png" alt="" />
+        <div class="auth-first-progress"></div>
+      </div>
     </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
