@@ -78,13 +78,7 @@
         }
       })();
     </script>
-    <!--
-      Auth first-paint experiment: this tiny critical layer exists before the
-      CSS bundle and React. It does not replace the native iOS launch screen;
-      it gives WebKit a deterministic branded first web paint to hand off to
-      AuthScreenShell without a blank intermediate frame. It is scoped to the
-      auth routes already detected above and removed by AuthScreenShell.
-    -->
+    <!-- Auth first paint: deterministic branded web surface before React. -->
     <style>
       html.auth-route,
       html.auth-route body,
@@ -99,14 +93,15 @@
         inset: 0;
         z-index: 2147483647;
         display: flex;
-        align-items: flex-start;
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
         box-sizing: border-box;
         padding-top: 6rem;
         background: #0A4792;
         pointer-events: none;
         opacity: 1;
-        transition: opacity 220ms ease-out;
+        transition: opacity 300ms cubic-bezier(.22,1,.36,1);
       }
       html.auth-route #auth-first-paint.is-handing-off {
         opacity: 0;
@@ -117,9 +112,38 @@
         height: 3.5rem;
         max-width: 200px;
       }
+      html.auth-route .auth-first-progress {
+        position: relative;
+        width: 92px;
+        height: 2px;
+        margin-top: 22px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.14);
+      }
+      html.auth-route .auth-first-progress::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -42%;
+        width: 42%;
+        border-radius: inherit;
+        background: #F5C518;
+        box-shadow: 0 0 10px rgba(245,197,24,0.35);
+        animation: auth-progress-glide 850ms cubic-bezier(.45,0,.2,1) infinite;
+      }
+      @keyframes auth-progress-glide {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(338%); }
+      }
       @media (prefers-reduced-motion: reduce) {
-        html.auth-route #auth-first-paint {
-          transition: none;
+        html.auth-route #auth-first-paint { transition: none; }
+        html.auth-route .auth-first-progress::after {
+          left: 0;
+          width: 100%;
+          animation: none;
+          opacity: .65;
         }
       }
     </style>
@@ -130,6 +154,7 @@
   <body>
     <div id="auth-first-paint" aria-hidden="true">
       <img src="/assets/branding/logo-white.png" alt="" />
+      <div class="auth-first-progress"></div>
     </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
