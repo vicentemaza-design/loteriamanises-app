@@ -3,9 +3,9 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { cn } from '@/shared/lib/utils';
 import authBackground from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
 
-const STARTUP_FALLBACK_TIMEOUT_MS = 1600;
-const MIN_BRAND_VISIBLE_MS = 1650;
-const FIRST_PAINT_HANDOFF_MS = 650;
+const STARTUP_FALLBACK_TIMEOUT_MS = 2100;
+const MIN_BRAND_VISIBLE_MS = 2200;
+const FIRST_PAINT_HANDOFF_MS = 780;
 
 interface AuthScreenShellProps {
   children: ReactNode;
@@ -21,10 +21,9 @@ export function AuthScreenShell({
   const [isReady, setIsReady] = useState(false);
   const mountTimeRef = useRef(Date.now());
 
-  // Prepare the approved Auth background first. Physical iPhone QA showed that
-  // a longer branded state reads more fluidly than a fast handoff. The loader
-  // now has enough time for the black -> blue surface transition, isotipo entry
-  // and liquid fill before Login is revealed.
+  // Keep the branded startup state long enough for the native-black -> blue
+  // continuity, isotipo entry and liquid fill to read as one deliberate motion.
+  // Real background readiness still wins over the minimum when it is slower.
   useEffect(() => {
     let handled = false;
     let revealTimer: number | undefined;
@@ -59,8 +58,8 @@ export function AuthScreenShell({
     };
   }, [backgroundImageSrc]);
 
-  // Keep the loader as a fixed branded surface and dissolve it slowly over the
-  // already-rendered Login. No logo movement or positional handoff is used.
+  // Dissolve the startup surface over the Login that is already rendered
+  // underneath. This keeps the handoff as a crossfade rather than a swap.
   useEffect(() => {
     if (!isReady) return;
 
