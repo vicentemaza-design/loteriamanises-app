@@ -1,14 +1,10 @@
 // Final iOS PWA Layout Stabilization - Background Engine v1.0.4
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { cn } from '@/shared/lib/utils';
 import authBackground from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
-import { AuthStartupLoader } from './AuthStartupLoader';
 
-// Duración mínima visible del splash: sin esto, con la imagen ya cacheada
-// isReady se resolvía en el primer frame y el splash no llegaba a verse.
-const MIN_SPLASH_MS = 400;
 const STARTUP_FALLBACK_TIMEOUT_MS = 1200;
+const FIRST_PAINT_HANDOFF_MS = 240;
 
 interface AuthScreenShellProps {
   children: ReactNode;
@@ -22,37 +18,18 @@ export function AuthScreenShell({
   backgroundImageSrc = authBackground,
 }: AuthScreenShellProps) {
   const [isReady, setIsReady] = useState(false);
-  const reduceMotion = useReducedMotion();
-  const mountTimeRef = useRef(Date.now());
 
-  // Precarga el fondo antes de revelar el contenido, para evitar que la
-  // foto aparezca de golpe sobre un Login ya montado, y aplica MIN_SPLASH_MS
-  // para que el splash se vea el mismo tiempo mínimo tanto en frío como con
-  // la imagen cacheada. Timeout de seguridad: el Login nunca queda oculto
-  // indefinidamente aunque la imagen falle o tarde. Con reduced-motion no
-  // se aplica el mínimo — se revela en cuanto el fondo esté listo.
+  // Prepare the approved Auth background before handing the pre-React branded
+  // first paint over to the real application surface. There is deliberately
+  // no artificial minimum splash duration: as soon as the actual Auth scene
+  // is ready, the browser can continue directly into it.
   useEffect(() => {
     let handled = false;
-    let revealTimer: number | undefined;
-
-    const reveal = () => setIsReady(true);
 
     const markReady = () => {
       if (handled) return;
       handled = true;
-
-      if (reduceMotion) {
-        reveal();
-        return;
-      }
-
-      const elapsed = Date.now() - mountTimeRef.current;
-      const remaining = MIN_SPLASH_MS - elapsed;
-      if (remaining > 0) {
-        revealTimer = window.setTimeout(reveal, remaining);
-      } else {
-        reveal();
-      }
+      setIsReady(true);
     };
 
     const img = new Image();
@@ -64,11 +41,26 @@ export function AuthScreenShell({
     const fallback = window.setTimeout(markReady, STARTUP_FALLBACK_TIMEOUT_MS);
     return () => {
       window.clearTimeout(fallback);
-      if (revealTimer !== undefined) window.clearTimeout(revealTimer);
       img.onload = null;
       img.onerror = null;
     };
-  }, [backgroundImageSrc, reduceMotion]);
+  }, [backgroundImageSrc]);
+
+  // The overlay in index.html exists before React and provides the first web
+  // paint. Once the real Auth surface is ready, fade that layer away without
+  // replacing it with another splash component. The final Login DOM/layout is
+  // left untouched underneath.
+  useEffect(() => {
+    if (!isReady) return;
+
+    const firstPaint = document.getElementById('auth-first-paint');
+    if (!firstPaint) return;
+
+    firstPaint.classList.add('is-handing-off');
+    const removeTimer = window.setTimeout(() => firstPaint.remove(), FIRST_PAINT_HANDOFF_MS);
+
+    return () => window.clearTimeout(removeTimer);
+  }, [isReady]);
 
   return (
     /*
@@ -103,14 +95,7 @@ export function AuthScreenShell({
           nativa SOLO en rutas públicas (html.auth-route, ver index.css);
           el fix de teclado de App.tsx no depende de body:fixed y sigue
           intacto. Privadas mantienen su body:fixed sin cambios. */}
-      <motion.div
-        className="relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 py-10"
-        animate={{ opacity: isReady ? 1 : 0 }}
-        transition={{ duration: reduceMotion ? 0 : 0.18 }}
-        aria-hidden={!isReady}
-        inert={!isReady}
-        style={!isReady ? { pointerEvents: 'none' } : undefined}
-      >
+      <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 py-10">
         <div
           className={cn(
             'flex flex-1 flex-col items-center pb-[calc(env(safe-area-inset-bottom,0px)+1rem)]',
@@ -119,26 +104,7 @@ export function AuthScreenShell({
         >
           {children}
         </div>
-      </motion.div>
-
-      {/* Cross-fade simultáneo: el splash se desvanece a la vez que el
-          Login aparece (mismo frame, misma duración) — con MIN_SPLASH_MS
-          garantizando arriba un mínimo visible, esto es lo que hace que la
-          transición se perciba fluida tanto en frío como con la imagen ya
-          cacheada. AnimatePresence mantiene el splash montado mientras dura
-          su propia animación de salida y lo desmonta justo al terminar. */}
-      <AnimatePresence>
-        {!isReady && (
-          <motion.div
-            key="auth-startup-loader"
-            className="absolute inset-0 z-20 pointer-events-none"
-            exit={{ opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0 : 0.18 }}
-          >
-            <AuthStartupLoader />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </div>
     </div>
   );
 }
