@@ -101,6 +101,32 @@ export function ShippingAddressModal({ isOpen, onClose, onSave, savedAddress }: 
   // (isOpen=false la primera vez) — solo corre en una transición real
   // true→false. Esto es local a este modal — no toca App.tsx ni el
   // scroll global.
+  // Mismo patrón que PinEntryModal.tsx: mientras el modal está abierto se
+  // sigue el visualViewport, porque en iOS es el único que refleja la zona
+  // realmente visible cuando aparece el teclado. El layout viewport (y con
+  // él las unidades vh) NO se reduce, que es justo por lo que la hoja se
+  // quedaba midiendo casi la pantalla entera y sus últimos campos —Código
+  // postal, Población— acababan por debajo del teclado. Listeners solo
+  // mientras isOpen.
+  const [viewport, setViewport] = useState<{ height: number | null; offsetTop: number }>({
+    height: null,
+    offsetTop: 0,
+  });
+
+  useEffect(() => {
+    if (!isOpen || !window.visualViewport) return;
+
+    const vv = window.visualViewport;
+    const updateViewport = () => setViewport({ height: vv.height, offsetTop: vv.offsetTop });
+    updateViewport();
+    vv.addEventListener('resize', updateViewport);
+    vv.addEventListener('scroll', updateViewport);
+    return () => {
+      vv.removeEventListener('resize', updateViewport);
+      vv.removeEventListener('scroll', updateViewport);
+    };
+  }, [isOpen]);
+
   const wasOpen = useRef(false);
   useEffect(() => {
     if (isOpen) {
@@ -128,8 +154,20 @@ export function ShippingAddressModal({ isOpen, onClose, onSave, savedAddress }: 
   };
 
   return (
-    <div className="fixed inset-0 z-[250] flex flex-col">
+    <div className="fixed inset-0 z-[250]">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      {/* Wrapper ligado al visualViewport, no a inset-0: así `mt-auto` ancla
+          la hoja al borde inferior de lo VISIBLE (justo encima del teclado)
+          en vez de al del viewport de layout, que queda tapado. El
+          pointer-events-none deja pasar los clics al backdrop; la hoja los
+          recupera. */}
+      <div
+        className="fixed left-0 right-0 flex flex-col pointer-events-none"
+        style={{
+          top: viewport.height != null ? `${viewport.offsetTop}px` : 0,
+          height: viewport.height != null ? `${viewport.height}px` : '100dvh',
+        }}
+      >
       <motion.div
         ref={dialogRef}
         role="dialog"
@@ -137,7 +175,7 @@ export function ShippingAddressModal({ isOpen, onClose, onSave, savedAddress }: 
         aria-labelledby="shipping-address-title"
         tabIndex={-1}
         initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-        className="relative mt-auto flex max-h-[92vh] flex-col rounded-t-3xl bg-[#f6f8fb] shadow-2xl outline-none">
+        className="pointer-events-auto relative mt-auto flex max-h-[92%] flex-col rounded-t-3xl bg-[#f6f8fb] shadow-2xl outline-none">
 
         <div className="flex items-center justify-between px-5 pb-3 pt-5">
           <p id="shipping-address-title" className="text-[16px] font-black text-manises-blue">Datos de envío</p>
@@ -190,6 +228,7 @@ export function ShippingAddressModal({ isOpen, onClose, onSave, savedAddress }: 
           )}
         </div>
       </motion.div>
+      </div>
     </div>
   );
 }
