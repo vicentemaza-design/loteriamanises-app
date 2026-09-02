@@ -12,6 +12,7 @@ import type { PlayDraft } from '../types/session.types';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
 import { ShippingAddressModal, type ShippingAddress } from './lottery/ShippingAddressModal';
 import { AddSorteoModal } from './lottery/AddSorteoModal';
+import { getDeliveryMode, saveDeliveryMode, type LotteryDeliveryMode } from '../lib/delivery-preference';
 import { AbonarseModal } from './lottery/AbonarseModal';
 import { TopUpModal } from '@/features/profile/components/TopUpModal';
 import { InsufficientBalanceModal } from '@/features/play/components/InsufficientBalanceModal';
@@ -306,7 +307,15 @@ export function LotteryCartPanel() {
   const { confirm, isSubmitting } = usePlaySessionConfirm({ draftFilter: 'lottery' });
   const { balance, topUp } = useWallet();
   const { requireReauth, gateModal } = useSecurityGate();
-  const [deliveryMode, setDeliveryMode] = useState<'custodia' | 'mensajeria'>('custodia');
+  // Arranca en lo último que el usuario eligió, no siempre en custodia: este
+  // panel se desmonta al cerrar la cesta, así que un valor fijo aquí borraba
+  // su elección en cada apertura (ver lib/delivery-preference.ts).
+  const [deliveryMode, setDeliveryMode] = useState<LotteryDeliveryMode>(getDeliveryMode);
+
+  const chooseDeliveryMode = (mode: LotteryDeliveryMode) => {
+    setDeliveryMode(mode);
+    saveDeliveryMode(mode);
+  };
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(null);
   const [showShipping, setShowShipping] = useState(false);
   const [showAddSorteo, setShowAddSorteo] = useState(false);
@@ -395,7 +404,7 @@ export function LotteryCartPanel() {
           {/* Selector Custodia/Mensajería */}
           <div className="mx-5 mb-3 flex rounded-xl border border-slate-200 bg-white p-1">
             {(['custodia', 'mensajeria'] as const).map((mode) => (
-              <button key={mode} type="button" onClick={() => setDeliveryMode(mode)}
+              <button key={mode} type="button" onClick={() => chooseDeliveryMode(mode)}
                 className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-black uppercase tracking-wider transition-all ${
                   deliveryMode === mode ? 'bg-manises-blue text-white shadow-sm' : 'text-slate-400 hover:text-slate-600'
                 }`}>

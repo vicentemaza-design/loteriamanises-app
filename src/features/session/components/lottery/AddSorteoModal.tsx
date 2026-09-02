@@ -4,6 +4,7 @@ import { LOTTERY_GAMES } from '@/shared/constants/games';
 import { GameBadge } from '@/shared/ui/GameBadge';
 import { useNavigate } from 'react-router-dom';
 import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
+import { usePlaySession } from '@/features/session/hooks/usePlaySession';
 
 const NATIONAL_GAME_IDS = [
   'loteria-navidad',
@@ -20,15 +21,28 @@ interface AddSorteoModalProps {
 
 export function AddSorteoModal({ isOpen, onClose, deliveryMode }: AddSorteoModalProps) {
   const navigate = useNavigate();
+  const { closeReview } = usePlaySession();
   const dialogRef = useDialogA11y<HTMLDivElement>({ active: isOpen, onClose });
+
+  // Salir de aquí es salir de la cesta: hay que cerrar TAMBIÉN el panel de
+  // revisión, no solo este modal. `onClose` cierra este diálogo, pero
+  // LotteryCartPanel sigue montado sobre `fixed inset-0`, así que la ruta
+  // cambiaba correctamente y el juego quedaba tapado por la cesta — el
+  // usuario no veía el sorteo nuevo y el siguiente toque (la equis o el atrás
+  // de la cabecera) lo mandaba al catálogo. `closeReview` NO vacía la cesta:
+  // conserva los décimos y solo suelta el panel (ver PlaySessionProvider).
+  const leaveCartTo = (path: string) => {
+    onClose();
+    closeReview();
+    navigate(path);
+  };
 
   if (!isOpen) return null;
 
   const games = LOTTERY_GAMES.filter((g) => NATIONAL_GAME_IDS.includes(g.id));
 
   const handleSelect = (gameId: string) => {
-    onClose();
-    navigate(`/play/${gameId}`);
+    leaveCartTo(`/play/${gameId}`);
   };
 
   return (
@@ -84,7 +98,7 @@ export function AddSorteoModal({ isOpen, onClose, deliveryMode }: AddSorteoModal
             <button
               type="button"
               className="flex w-full items-center gap-4 rounded-2xl border border-slate-100 bg-white px-4 py-3.5 shadow-sm transition-all hover:border-manises-blue/20 hover:shadow-md active:scale-[0.99]"
-              onClick={() => { onClose(); navigate('/games'); }}
+              onClick={() => leaveCartTo('/games')}
             >
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-manises-gold/10 border border-manises-gold/20">
                 <Star className="h-4 w-4 text-manises-gold" />
