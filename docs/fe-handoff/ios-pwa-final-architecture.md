@@ -94,6 +94,17 @@ Fondo computado de `html`, con el bundle ya aplicado:
 
 `body` es `#3B6CA8` salvo en auth, y `#root` debe acabar `visible` en todas.
 
+### `npm run dev` NO reproduce el arranque
+
+Comprobado: en dev **no existe nada de esto**. Ni el `<style>` crítico, ni el
+loader, ni la compuerta de `#root`. `scripts/prepare-ios-startup.mjs` solo corre
+en `npm run build` (ver `package.json`), y el desbloqueo de la hoja de estilos no
+tiene nada que transformar porque en dev Vite inyecta el CSS por JS.
+
+No es un fallo: es que el arranque solo existe en un build de producción. Quien
+trabaje en dev y eche en falta el loader, que no lo "arregle" — no está roto.
+Para verlo: `npm run build` y servir `dist/`.
+
 ### QA
 
 - **Medir el SEGUNDO arranque.** El primero tras instalar paga la red igualmente:
