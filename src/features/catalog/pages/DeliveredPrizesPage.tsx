@@ -20,6 +20,7 @@ import gordo2018Img from '@/assets/images/quienes-somos/historia-premios.jpg';
 import gordo2022Img from '@/assets/images/gordos/gordo-navidad-2022.jpg';
 import gordo2023Img from '@/assets/images/quienes-somos/gordo2023-celebracion.webp';
 import manisesElArteImg from '@/assets/images/quienes-somos/manises-el-arte.jpg';
+import mostradorImg from '@/assets/images/quienes-somos/mostrador.webp';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import { GameIcon } from '@/shared/ui/GameIcon';
 import type { GameType } from '@/shared/types/domain';
@@ -162,6 +163,71 @@ function GordoCard({ gordo, active }: { gordo: typeof GORDOS_NAVIDAD[number]; ac
   );
 }
 
+/**
+ * Tarjeta de cierre del carrusel. Cumple dos funciones a la vez:
+ *
+ * 1. Geometría. Sin ella el recorrido del scroll acababa en 570 y el anclaje
+ *    del último gordo (4 * 188 = 752) quedaba fuera: el índice 4 era
+ *    inalcanzable arrastrando y solo lo alcanzaban las flechas, que fijan el
+ *    estado a mano. Con esta tarjeta el máximo pasa a 758 y los cinco años
+ *    quedan alcanzables con el cálculo directo de handleScroll. No es
+ *    decorativa: si se quita, vuelve el bug.
+ * 2. Contenido. El hueco que hacía falta es espacio de marca en vez de vacío.
+ *
+ * Queda FUERA del índice: los puntos y las flechas siguen recorriendo los cinco
+ * años (GORDOS_NAVIDAD.length) y `GORDOS_NAVIDAD[active].year` nunca se sale de
+ * rango. Al llegar a 2023 esta tarjeta ya asoma casi entera al lado, así que se
+ * descubre arrastrando sin necesidad de un punto propio.
+ *
+ * El texto es deliberadamente de continuidad de la administración, no de suerte
+ * del jugador: "desde 2000 repartiendo premios" es el mismo dato factual que ya
+ * muestran las estadísticas de esta página. Conviene mantener ese registro —
+ * una promesa de premios futuros en una app de juego es terreno del
+ * RD 958/2020. La imagen es el mostrador, no ganadores celebrando, por lo
+ * mismo.
+ */
+function ClosingCard() {
+  return (
+    <div className="relative overflow-hidden rounded-2xl shadow-md" style={{ minHeight: '17rem' }}>
+      <img
+        src={mostradorImg}
+        alt="Administración de Loterías nº 3 de Manises"
+        className="absolute inset-0 w-full h-full object-cover select-none"
+        draggable={false}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'linear-gradient(180deg, rgba(10,71,146,0.35) 0%, rgba(10,71,146,0.55) 45%, rgba(5,42,90,0.92) 100%)',
+        }}
+      />
+      <div className="absolute inset-0 flex flex-col justify-between p-3.5">
+        <div>
+          <span className="inline-flex items-center gap-1 bg-manises-gold text-manises-blue text-[7px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md leading-none">
+            <Star className="w-2 h-2 fill-manises-blue text-manises-blue shrink-0" />
+            Próximo capítulo
+          </span>
+        </div>
+        <div
+          className="rounded-xl px-3 py-2.5 text-center"
+          style={{ background: 'rgba(255,255,255,0.13)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.28)' }}
+        >
+          <p className="text-white font-black uppercase leading-tight" style={{ fontSize: '11px', letterSpacing: '0.08em' }}>
+            La historia
+            <br />
+            continúa
+          </p>
+          <p className="text-white/60 text-[7px] font-bold uppercase tracking-widest mt-1.5">
+            Desde 2000 repartiendo
+            <br />
+            premios en Manises
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Carousel ──────────────────────────────────────────────────────────────────
 
 function GordosCarousel() {
@@ -171,29 +237,19 @@ function GordosCarousel() {
   const goTo = (index: number) => {
     const el = scrollRef.current;
     if (!el) return;
-    // El scroll satura en scrollWidth - clientWidth, que para el ultimo indice
-    // queda por debajo de index * SCROLL_STEP (ver handleScroll). Pedir el
-    // minimo evita apuntar a una posicion que el contenedor no puede alcanzar.
-    const max = el.scrollWidth - el.clientWidth;
-    el.scrollTo({ left: Math.min(index * SCROLL_STEP, max), behavior: 'smooth' });
+    el.scrollTo({ left: index * SCROLL_STEP, behavior: 'smooth' });
     setActive(index);
   };
 
-  // El indice NO se puede derivar solo de scrollLeft / SCROLL_STEP: como caben
-  // casi dos tarjetas a la vez, el scroll satura antes de que la ultima llegue
-  // al borde izquierdo. Con 5 tarjetas de 176 + 4 huecos de 12 sobre un
-  // contenedor de ~358, el maximo es 570 y round(570 / 188) = 3, asi que el
-  // indice 4 era aritmeticamente inalcanzable arrastrando: solo lo alcanzaban
-  // las flechas, que fijan el estado a mano. Estar al final del recorrido es
-  // por definicion estar en la ultima tarjeta.
+  // La tarjeta de cierre (ver más abajo) extiende el recorrido lo justo para
+  // que el anclaje del último gordo, 4 * 188 = 752, quede DENTRO del scroll
+  // posible: sin ella el máximo era 570 y round(570 / 188) = 3, con lo que el
+  // índice 4 era inalcanzable arrastrando y solo lo alcanzaban las flechas.
+  // Por eso este cálculo puede volver a ser directo. Si algún día se quita esa
+  // tarjeta, este bug vuelve.
   const handleScroll = () => {
     const el = scrollRef.current;
     if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    if (max > 0 && el.scrollLeft >= max - 2) {
-      setActive(GORDOS_NAVIDAD.length - 1);
-      return;
-    }
     const idx = Math.round(el.scrollLeft / SCROLL_STEP);
     setActive(Math.max(0, Math.min(idx, GORDOS_NAVIDAD.length - 1)));
   };
@@ -210,20 +266,13 @@ function GordosCarousel() {
         style={{ scrollbarWidth: 'none' }}
       >
         {GORDOS_NAVIDAD.map((gordo, i) => (
-          /* La ultima alinea por su borde final: su punto de anclaje "start"
-             cae fuera del recorrido posible (752 frente a un maximo de 570) y
-             el navegador no podia detenerse nunca en ella. Alineada al final,
-             su punto de anclaje coincide con el final del scroll. */
-          <div
-            key={gordo.year}
-            className={cn(
-              'w-44 shrink-0',
-              i === GORDOS_NAVIDAD.length - 1 ? 'snap-end' : 'snap-start',
-            )}
-          >
+          <div key={gordo.year} className="w-44 shrink-0 snap-start">
             <GordoCard gordo={gordo} active={i === active} />
           </div>
         ))}
+        <div className="w-44 shrink-0 snap-start">
+          <ClosingCard />
+        </div>
       </div>
       <div className="mt-4 flex items-center justify-between px-1">
         <button
