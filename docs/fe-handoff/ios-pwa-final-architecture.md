@@ -113,6 +113,48 @@ Para verlo: `npm run build` y servir `dist/`.
   la caché de metas de iOS. Un build nuevo tarda un arranque en tomar el control,
   por diseño.
 
+## Toasts y status bar (rama `fix/toast-status-bar-tint`)
+
+> Validado en iPhone físico: con los toasts sobre la superficie azul, los glifos
+> del status bar dejan de ponerse oscuros.
+
+El `Toaster` vive en `position="top-center"`, así que un toast aterriza pegado
+bajo el status bar de iOS. Con `richColors`, sonner pintaba fondos casi blancos
+por tipo —success `hsl(143,85%,96%)`, error, warning e info al 97%— y
+`color-scheme: light` fuerza justo esos. Esa superficie clara bajo el status bar
+era la que conmutaba los glifos del sistema a oscuro, y no los revertía al
+desaparecer el toast. Estaba también en `main`: no lo introdujo el trabajo de
+arranque.
+
+Ahora los toasts van sobre `#0A4792` y el tipo lo lleva el color del icono,
+mismo patrón que `ConnectionStatusBanner`. sonner mantiene un icono distinto por
+tipo, así que el estado nunca queda codificado solo en color.
+
+### Invariantes — dos selectores con especificidad deliberada
+
+Ambos están en `src/shared/styles/toasts.css` y ninguno es cosmético:
+
+- **`html [data-sonner-toaster][data-sonner-theme]`** — el `html` delante no
+  sobra. sonner inyecta en runtime `[data-sonner-toaster][data-sonner-theme="light"]`
+  con `--normal-bg:#fff`: son dos selectores de atributo, (0,2,0), insertados
+  después del bundle. Un `[data-sonner-toaster]` a secas es (0,1,0) y pierde —
+  se desplegó así una vez y el toast seguía saliendo blanco en el dispositivo.
+- **`html [data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-description]`**
+  — sonner inyecta esa descripción con un gris fijo `rgb(63,63,63)` a (0,3,0).
+  Con `richColors` quedaba anulado por su propia regla `color:inherit`, así que
+  al quitarlo el gris queda al descubierto: texto oscuro sobre azul oscuro.
+
+**Cómo verificar un cambio aquí:** con un `<Toaster>` real de sonner y la hoja
+de estilos ya construida, nunca contra un DOM montado a mano — las reglas que
+compiten se inyectan en runtime y en un DOM fabricado no existen, así que un
+selector demasiado débil parece funcionar.
+
+Valores de referencia sobre `#0A4792`: título blanco (contraste 9,02),
+descripción blanca al 78% (6,16), iconos success `#34D399`, error `#FB7185`,
+warning `#F5C518`, info `#93C5FD` (3,35–5,53). Botón de acción dorado
+`#F5C518` sobre texto `#0a4792`: el `#0a4792` anterior era invisible sobre el
+nuevo fondo.
+
 ### Pendientes conocidos
 
 - **No hay `apple-touch-startup-image`.** El negro que queda es la launch surface
