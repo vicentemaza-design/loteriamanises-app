@@ -681,8 +681,17 @@ export function DeliveredPrizesPage() {
             <p className="mt-2 text-sm font-semibold text-white/70">
               Compra tu décimo en Lotería Manises.
             </p>
+            {/* A Navidad, no a '/': en este router '/' es el Login (ver
+                AppRouter, `<Route index element={<LoginPage />} />`), así que
+                este botón expulsaba de la app al pulsarlo. El destino es
+                Navidad y no el catálogo porque es lo que la propia tarjeta
+                promete —"el próximo gordo", "tu décimo"— y porque toda esta
+                página va de los Gordos de Navidad; el catálogo ya está a un
+                toque en la barra inferior. `nextDraw` de Navidad apunta
+                siempre al próximo 22 de diciembre, así que nunca lleva a un
+                sorteo inexistente. */}
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/play/loteria-navidad')}
               className="mt-5 w-full rounded-xl py-3.5 text-sm font-black uppercase tracking-wider text-[#062d6b] shadow-lg transition-transform active:scale-95"
               style={{ background: '#F5C518' }}
             >
