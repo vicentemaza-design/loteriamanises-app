@@ -377,7 +377,13 @@ export function AboutUsPage() {
           Gracias por confiar en Lotería Manises.
         </p>
         <button
-          onClick={() => navigate('/')}
+          // Al catalogo, no a '/' (que es el Login, ver Header.tsx) ni a un
+          // juego concreto: a diferencia del CTA de Premios entregados, que
+          // promete "el proximo gordo" y "tu decimo" y por eso lleva a
+          // Navidad, la copia de aqui es generica sobre la administracion.
+          // Un boton que solo dice "Comprar loteria" se corresponde con el
+          // catalogo, no con un producto que nadie ha nombrado.
+          onClick={() => navigate('/games')}
           className="mt-5 w-full rounded-xl py-3.5 text-sm font-black uppercase tracking-wider text-[#062d6b] shadow-lg transition-transform active:scale-95"
           style={{ background: '#F5C518' }}
         >

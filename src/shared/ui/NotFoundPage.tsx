@@ -70,7 +70,8 @@ export function NotFoundPage() {
         <PremiumTouchInteraction scale={0.96} className="mt-8">
           <Button
             className="h-12 rounded-xl bg-white px-8 font-semibold text-manises-blue shadow-manises hover:bg-gray-50"
-            onClick={() => navigate('/')}
+            // '/home', no '/' — ver Header.tsx: '/' es el Login.
+            onClick={() => navigate('/home')}
           >
             Volver al inicio
           </Button>

@@ -36,7 +36,11 @@ export function Header() {
         <button
           type="button"
           className="flex min-w-0 items-center gap-3"
-          onClick={() => navigate('/')}
+          // '/home', no '/': en este router '/' es el Login (AppRouter usa
+          // LoginPage como ruta index), asi que el logo expulsaba al Login
+          // desde cualquier pantalla pese a su aria-label. '/home' esta fuera
+          // de RequireAuth, asi que funciona con sesion y sin ella.
+          onClick={() => navigate('/home')}
           aria-label="Ir al inicio"
         >
           <img
