@@ -119,13 +119,18 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <AppRouter />
+          {/* Sin `richColors`: sus fondos por tipo son casi blancos y, con el
+              toaster en top-center, esa superficie clara bajo el status bar de
+              iOS conmutaba los glifos del sistema a oscuro sin revertirlos.
+              El tipo se distingue por el icono (ver shared/styles/toasts.css),
+              no solo por color. El boton de accion pasa a dorado: sobre el
+              nuevo fondo azul, el #0a4792 anterior era invisible. */}
           <Toaster
             position="top-center"
-            richColors
             toastOptions={{
               actionButtonStyle: {
-                backgroundColor: '#0a4792',
-                color: '#ffffff',
+                backgroundColor: '#F5C518',
+                color: '#0a4792',
                 fontWeight: 700,
                 fontSize: '11px',
                 borderRadius: '8px',

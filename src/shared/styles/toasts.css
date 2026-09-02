@@ -1,0 +1,51 @@
+/* Toasts sobre superficie corporativa.
+ *
+ * POR QUE: el Toaster vive en position="top-center", asi que un toast
+ * aterriza pegado bajo el status bar de iOS. Con `richColors` de sonner los
+ * fondos por tipo son casi blancos en tema claro —success hsl(143,85%,96%),
+ * error hsl(359,100%,97%), warning y info al 97%— y `color-scheme: light`
+ * fuerza justo esos, no las variantes oscuras. Esa superficie clara bajo el
+ * status bar es la que hace que iOS conmute los glifos (hora, wifi, bateria)
+ * a oscuro, y no los revierte al desaparecer el toast. Reproducido en
+ * dispositivo, y presente tambien en main: no lo introdujo el trabajo de
+ * arranque.
+ *
+ * La informacion de tipo NO se pierde: sonner mantiene un icono distinto por
+ * tipo (los SVG usan currentColor, por eso basta con `color`), de modo que el
+ * estado no queda codificado solo en color. Mismo patron que ya usa
+ * ConnectionStatusBanner: fondo azul de marca, estado en el color del icono.
+ *
+ * Las variables --normal-* las declara sonner dentro de :where(), que tiene
+ * especificidad cero, asi que un selector de atributo plano las gana.
+ */
+
+[data-sonner-toaster] {
+  --normal-bg: #0A4792;
+  --normal-text: #FFFFFF;
+  --normal-border: rgba(255, 255, 255, 0.14);
+}
+
+/* La especificidad extra es necesaria, no cosmetica: sonner inyecta en
+ * runtime `[data-sonner-toast][data-styled="true"] [data-description]` con un
+ * gris fijo rgb(63,63,63) — (0,3,0), y ademas se inserta despues del bundle.
+ * Con `richColors` activo eso quedaba anulado por su propia regla
+ * `[data-rich-colors="true"] ... {color: inherit}`, asi que al quitar
+ * richColors el gris queda al descubierto: texto oscuro sobre azul oscuro,
+ * practicamente ilegible. Este selector es (0,4,0) y gana con independencia
+ * del orden de insercion. */
+[data-sonner-toaster] [data-sonner-toast][data-styled='true'] [data-description] {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+[data-sonner-toast][data-type='success'] [data-icon] {
+  color: #34D399;
+}
+[data-sonner-toast][data-type='error'] [data-icon] {
+  color: #FB7185;
+}
+[data-sonner-toast][data-type='warning'] [data-icon] {
+  color: #F5C518;
+}
+[data-sonner-toast][data-type='info'] [data-icon] {
+  color: #93C5FD;
+}
