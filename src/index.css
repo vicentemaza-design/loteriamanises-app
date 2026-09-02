@@ -401,11 +401,22 @@
     box-sizing: border-box;
   }
 
+  /* `!important` NO es cosmético: index.html inyecta un critical first paint
+     inline (<style id="auth-critical-first-paint">, ver
+     scripts/prepare-ios-startup.mjs) para que el primer frame componible ya
+     salga azul sin esperar a este bundle. Ese <style> queda SIN capa, y en la
+     cascada una declaración normal sin capa gana a cualquier declaración
+     normal dentro de @layer — que es donde Tailwind mete todo esto. Sin
+     `!important` el bootstrap inline no caducaría al cargar el bundle: se
+     quedaría pintando #0A4792 en TODAS las rutas y borraría el alfa de
+     html.has-bottom-nav. Con `!important` el bundle vuelve a ser la
+     autoridad en cuanto llega, que es justo el contrato que se quiere
+     (el inline es solo arranque). Mismo criterio que `body`, más abajo. */
   html {
     @apply font-sans;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    background: #3B6CA8;
+    background: #3B6CA8 !important;
     height: 100%;
     overflow: hidden;
   }
@@ -420,7 +431,7 @@
      PrivateLayout), para que esa franja inalcanzable se perciba como
      parte de la barra en vez de un hueco. */
   html.has-bottom-nav {
-    background: #0A4792CC;
+    background: #0A4792CC !important;
     -webkit-backdrop-filter: blur(64px);
     backdrop-filter: blur(64px);
   }
