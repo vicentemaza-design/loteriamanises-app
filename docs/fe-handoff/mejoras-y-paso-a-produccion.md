@@ -155,6 +155,16 @@ No está definido y condiciona el trabajo de integración:
    sustituye a `getFunctionalUserId()`.
 4. **Idempotencia y trazabilidad SELAE**: qué clave usa el backend y qué debe
    enviar el frontend en cada intento de compra.
+5. **Dónde vive la dirección de envío del usuario.** No existe hoy: `domain.ts`
+   solo la guarda DENTRO de un décimo ya comprado, como metadato de ese envío,
+   y no hay concepto de "dirección guardada" en perfil ni en los contratos.
+   Mientras tanto el frontend la conserva **en el dispositivo**
+   (`features/session/lib/shipping-address.ts`), porque si no el usuario
+   reescribe nombre, teléfono, email y dirección cada vez que abre la cesta.
+   Se borra al cerrar sesión y nunca se envía a ningún sitio por su cuenta:
+   solo viaja al confirmar una compra. **Es un puente, no el destino**: cuando
+   defináis el contrato de perfil, ese fichero se sustituye por lectura y
+   escritura de perfil y desaparece.
 
 Hasta que 1 y 2 estén decididos, el frontend no puede ir más allá de lo que ya
 está: adaptadores preparados y contratos declarados.

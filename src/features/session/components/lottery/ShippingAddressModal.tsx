@@ -3,17 +3,8 @@ import { motion } from 'motion/react';
 import { Xmark, MapPin, Phone, Mail, User, Trash, EditPencil, NavArrowRight } from 'iconoir-react/regular';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useDialogA11y } from '@/shared/hooks/useDialogA11y';
-
-export interface ShippingAddress {
-  name: string;
-  phone: string;
-  email: string;
-  street: string;
-  cp: string;
-  city: string;
-  province: string;
-  country: string;
-}
+// El tipo vive en la lib, no aquí: es dato de negocio, no de este diálogo.
+import type { ShippingAddress } from '@/features/session/lib/shipping-address';
 
 interface ShippingAddressModalProps {
   isOpen: boolean;

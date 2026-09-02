@@ -10,7 +10,8 @@ import { useWallet } from '@/features/wallet/hooks/useWallet';
 import { useSecurityGate } from '@/features/profile/hooks/useSecurityGate';
 import type { PlayDraft } from '../types/session.types';
 import { NationalTicketThumbnail } from '@/features/play/components/NationalTicketThumbnail';
-import { ShippingAddressModal, type ShippingAddress } from './lottery/ShippingAddressModal';
+import { ShippingAddressModal } from './lottery/ShippingAddressModal';
+import { getShippingAddress, saveShippingAddress, type ShippingAddress } from '../lib/shipping-address';
 import { AddSorteoModal } from './lottery/AddSorteoModal';
 import { getDeliveryMode, saveDeliveryMode, type LotteryDeliveryMode } from '../lib/delivery-preference';
 import { AbonarseModal } from './lottery/AbonarseModal';
@@ -316,7 +317,16 @@ export function LotteryCartPanel() {
     setDeliveryMode(mode);
     saveDeliveryMode(mode);
   };
-  const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(null);
+  // Igual que el modo de entrega: este panel se desmonta al cerrar la cesta,
+  // así que un valor inicial fijo obligaba a reescribir nombre, teléfono,
+  // email y dirección en cada apertura. Es un puente hasta que el backend
+  // defina dónde vive esto — ver lib/shipping-address.ts.
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(getShippingAddress);
+
+  const storeShippingAddress = (address: ShippingAddress | null) => {
+    setShippingAddress(address);
+    saveShippingAddress(address);
+  };
   const [showShipping, setShowShipping] = useState(false);
   const [showAddSorteo, setShowAddSorteo] = useState(false);
   const [showInsufficientBalance, setShowInsufficientBalance] = useState(false);
@@ -561,7 +571,7 @@ export function LotteryCartPanel() {
         deficitAmount={total - effectiveBalance}
       />
 
-      <ShippingAddressModal isOpen={showShipping} onClose={() => setShowShipping(false)} onSave={setShippingAddress} savedAddress={shippingAddress} />
+      <ShippingAddressModal isOpen={showShipping} onClose={() => setShowShipping(false)} onSave={storeShippingAddress} savedAddress={shippingAddress} />
       <AddSorteoModal isOpen={showAddSorteo} onClose={() => setShowAddSorteo(false)} deliveryMode={deliveryMode} />
       {gateModal}
     </>

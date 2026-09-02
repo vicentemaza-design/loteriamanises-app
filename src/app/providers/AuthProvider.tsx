@@ -7,6 +7,7 @@ import type { UserProfile } from '@/shared/types/domain';
 import type { AuthContextType } from '@/features/auth/types/auth.types';
 import { createApiClient } from '@/services/api/factory/createApiClient';
 import { RUNTIME_CONFIG } from '@/config/runtime';
+import { clearShippingAddress } from '@/features/session/lib/shipping-address';
 import {
   enableAuthPersistence,
   getFirebaseAuthMessage,
@@ -180,6 +181,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    // La dirección de envío son datos personales guardados en el dispositivo
+    // (ver features/session/lib/shipping-address.ts): se borran aquí para no
+    // dejárselos al siguiente que use este móvil. Antes de las dos ramas del
+    // logout, para que se limpie también en demo.
+    clearShippingAddress();
+
     if (isDemo) {
       sessionStorage.removeItem(DEMO_STORAGE_KEY);
       setProfile(null);
