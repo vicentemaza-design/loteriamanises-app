@@ -44,31 +44,50 @@ html = html.replace(continuityExisting, '');
 
 const continuityBlock = `${continuityStart}
     <style>
-      /* Keep the actual loader surface blue. A separate opaque black compositor
-         layer matches the native iOS launch and is released only after WebKit
-         has presented the document, avoiding a background-color animation that
-         may already be mid-flight before the first visible frame. */
+      /* Physical QA showed the absolute 100dvh overlay could settle in pieces
+         while iOS was still resolving the standalone viewport. During startup
+         this surface is now fixed to the visual viewport and never participates
+         in Auth document flow. Login scrolling is unaffected because the node
+         is removed at handoff. */
       html.auth-route #auth-first-paint {
-        background: #0A4792;
+        position: fixed !important;
+        inset: 0 !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: hidden;
+        background: #000000;
         transition: opacity 780ms cubic-bezier(.22,1,.36,1);
+        transform: translateZ(0);
+        backface-visibility: hidden;
       }
+
+      /* The blue loader is a single full-surface layer that fades ON over the
+         stable black web frame. We no longer fade black OFF to reveal another
+         layout layer underneath, which removes the partial/split transition
+         seen in the 09:21 physical recording. */
       html.auth-route #auth-first-paint::before {
         content: '';
         position: absolute;
         inset: 0;
-        z-index: 3;
-        background: #000000;
-        opacity: 1;
-        transition: opacity 680ms cubic-bezier(.22,1,.36,1);
+        z-index: 0;
+        background: #0A4792;
+        opacity: 0;
+        transition: opacity 560ms cubic-bezier(.22,1,.36,1);
         pointer-events: none;
         will-change: opacity;
+        transform: translateZ(0);
       }
       html.auth-route #auth-first-paint.is-webkit-painted::before {
-        opacity: 0;
+        opacity: 1;
       }
 
-      /* Do not reveal a partially transparent/grey mark during the black->blue
-         handoff. The first visible isotipo frame is fully white. */
+      /* The isotipo is not faded. Its first visible frame is fully white and
+         appears only after the blue surface has finished settling. */
       html.auth-route .auth-first-mark {
         width: 48px;
         height: 60px;
@@ -121,7 +140,8 @@ const continuityBlock = `${continuityStart}
 
       @media (prefers-reduced-motion: reduce) {
         html.auth-route #auth-first-paint::before {
-          display: none;
+          opacity: 1;
+          transition: none;
         }
         html.auth-route .auth-first-mark,
         html.auth-route .auth-first-brand-name {
@@ -152,14 +172,12 @@ const triggerBlock = `${triggerStart}
           firstPaint.classList.add('is-webkit-painted');
           window.setTimeout(function () {
             firstPaint.classList.add('is-loader-ready');
-          }, 700);
+          }, 650);
         }
 
-        // Two compositor frames plus a short hold ensure the first visible web
-        // state is genuinely black before we dissolve it over the blue loader.
         requestAnimationFrame(function () {
           requestAnimationFrame(function () {
-            window.setTimeout(beginWebHandoff, 90);
+            window.setTimeout(beginWebHandoff, 120);
           });
         });
       })();
@@ -169,4 +187,4 @@ ${triggerEnd}`;
 html = html.replace('    <div id="root"></div>', `${triggerBlock}\n    <div id="root"></div>`);
 writeFileSync(indexPath, html);
 
-console.log('Prepared WebKit-gated black-to-blue auth startup while preserving the approved loader-to-Login handoff.');
+console.log('Prepared viewport-stable black-to-blue startup while preserving the approved loader-to-Login handoff.');
