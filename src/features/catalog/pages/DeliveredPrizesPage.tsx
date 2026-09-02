@@ -171,13 +171,29 @@ function GordosCarousel() {
   const goTo = (index: number) => {
     const el = scrollRef.current;
     if (!el) return;
-    el.scrollTo({ left: index * SCROLL_STEP, behavior: 'smooth' });
+    // El scroll satura en scrollWidth - clientWidth, que para el ultimo indice
+    // queda por debajo de index * SCROLL_STEP (ver handleScroll). Pedir el
+    // minimo evita apuntar a una posicion que el contenedor no puede alcanzar.
+    const max = el.scrollWidth - el.clientWidth;
+    el.scrollTo({ left: Math.min(index * SCROLL_STEP, max), behavior: 'smooth' });
     setActive(index);
   };
 
+  // El indice NO se puede derivar solo de scrollLeft / SCROLL_STEP: como caben
+  // casi dos tarjetas a la vez, el scroll satura antes de que la ultima llegue
+  // al borde izquierdo. Con 5 tarjetas de 176 + 4 huecos de 12 sobre un
+  // contenedor de ~358, el maximo es 570 y round(570 / 188) = 3, asi que el
+  // indice 4 era aritmeticamente inalcanzable arrastrando: solo lo alcanzaban
+  // las flechas, que fijan el estado a mano. Estar al final del recorrido es
+  // por definicion estar en la ultima tarjeta.
   const handleScroll = () => {
     const el = scrollRef.current;
     if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    if (max > 0 && el.scrollLeft >= max - 2) {
+      setActive(GORDOS_NAVIDAD.length - 1);
+      return;
+    }
     const idx = Math.round(el.scrollLeft / SCROLL_STEP);
     setActive(Math.max(0, Math.min(idx, GORDOS_NAVIDAD.length - 1)));
   };
@@ -194,7 +210,17 @@ function GordosCarousel() {
         style={{ scrollbarWidth: 'none' }}
       >
         {GORDOS_NAVIDAD.map((gordo, i) => (
-          <div key={gordo.year} className="w-44 shrink-0 snap-start">
+          /* La ultima alinea por su borde final: su punto de anclaje "start"
+             cae fuera del recorrido posible (752 frente a un maximo de 570) y
+             el navegador no podia detenerse nunca en ella. Alineada al final,
+             su punto de anclaje coincide con el final del scroll. */
+          <div
+            key={gordo.year}
+            className={cn(
+              'w-44 shrink-0',
+              i === GORDOS_NAVIDAD.length - 1 ? 'snap-end' : 'snap-start',
+            )}
+          >
             <GordoCard gordo={gordo} active={i === active} />
           </div>
         ))}
