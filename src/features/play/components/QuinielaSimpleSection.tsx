@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Minus, Plus, Trash2, Shuffle } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import type { QuinielaResult } from '../lib/quiniela-data';
@@ -44,6 +44,23 @@ export function QuinielaSimpleSection({ fixtures, drawDate, onSummaryChange }: P
   const [columns, setColumns]   = useState<Column[]>([makeEmptyColumn()]);
   const [plenas, setPlenas]     = useState<PlenaCol[]>([makeEmptyPlena()]);
   const [activeIdx, setActiveIdx] = useState(0);
+
+  // Los puntos de columna viven ahora en un scroller horizontal (ver
+  // más abajo), así que con muchas columnas el punto activo puede
+  // quedar fuera de la ventana visible: al añadir una columna con "+"
+  // no se vería cuál acaba de activarse. Se centra siempre el activo.
+  const dotsScrollerRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const scroller = dotsScrollerRef.current;
+    const dot = scroller?.querySelector<HTMLElement>(`[data-column-dot="${activeIdx}"]`);
+    if (!scroller || !dot) return;
+    const dotBox = dot.getBoundingClientRect();
+    const scrollerBox = scroller.getBoundingClientRect();
+    const delta = (dotBox.left + dotBox.width / 2) - (scrollerBox.left + scrollerBox.width / 2);
+    // scrollTo satura solo en [0, scrollWidth - clientWidth], no hace
+    // falta acotar el destino a mano.
+    scroller.scrollTo({ left: scroller.scrollLeft + delta, behavior: 'smooth' });
+  }, [activeIdx, columns.length]);
 
   const regularFixtures = fixtures.filter(f => f.id !== 15);
   const plenaFixture    = fixtures.find(f => f.id === 15);
@@ -126,29 +143,47 @@ export function QuinielaSimpleSection({ fixtures, drawDate, onSummaryChange }: P
           <Minus className="h-3.5 w-3.5" />
         </button>
 
-        {/* Column dots */}
-        <div className="flex-1 text-center">
-          <p className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-400 leading-tight">
+        {/* Column dots — min-w-0 es imprescindible: sin él el mínimo
+            automático de este item flexible es el ancho de la fila de
+            puntos completa (8 columnas), que empuja los botones - y +
+            fuera de la tarjeta (y de la pantalla) en cuanto se añaden
+            varias columnas. Con min-w-0 esta zona central es la única
+            que cede espacio, y los puntos se desplazan dentro de su
+            propio scroll horizontal. */}
+        <div className="min-w-0 flex-1 text-center">
+          <p className="truncate text-[8px] font-black uppercase tracking-[0.14em] text-slate-400 leading-tight">
             Columnas
           </p>
-          <p className="text-[14px] font-black text-manises-blue leading-tight">
+          <p className="truncate text-[14px] font-black text-manises-blue leading-tight">
             {activeIdx + 1} de {columns.length}
           </p>
-          <div className="mt-1 flex gap-1 justify-center">
-            {columns.map((col, i) => {
-              const plena   = plenas[i];
-              const complete = col.every(r => r !== null) && plena?.home !== null && plena?.away !== null;
-              return (
-                <button key={i} type="button" onClick={() => setActiveIdx(i)}
-                  className="p-2 -m-2"
-                >
-                  <span className={cn('block h-2.5 rounded-full transition-all',
-                    i === activeIdx ? 'bg-manises-blue w-6' :
-                    complete ? 'bg-emerald-400 w-2.5' : 'bg-slate-200 w-2.5'
-                  )} />
-                </button>
-              );
-            })}
+          {/* Los márgenes negativos compensan el p-2 (área táctil) de cada
+              punto: el scroller mide 26px de alto pero debe ocupar los
+              mismos 14px que antes ocupaba la fila (mt-1 + 10px de punto),
+              de ahí -mt-1/-mb-2 en vez de mt-1. La compensación va aquí y
+              no en el botón porque un margen negativo dentro del scroller
+              quedaría recortado; por el mismo motivo el px-2 de la fila
+              interior absorbe el -mx-2 del primer y último punto. */}
+          <div ref={dotsScrollerRef} className="-mt-1 -mb-2 flex overflow-x-auto scrollbar-hide">
+            <div className="mx-auto flex w-max gap-1 px-2">
+              {columns.map((col, i) => {
+                const plena   = plenas[i];
+                const complete = col.every(r => r !== null) && plena?.home !== null && plena?.away !== null;
+                return (
+                  <button key={i} type="button" onClick={() => setActiveIdx(i)}
+                    className="shrink-0 -mx-2 p-2"
+                    data-column-dot={i}
+                    aria-label={`Columna ${i + 1}`}
+                    aria-current={i === activeIdx ? 'true' : undefined}
+                  >
+                    <span className={cn('block h-2.5 rounded-full transition-all',
+                      i === activeIdx ? 'bg-manises-blue w-6' :
+                      complete ? 'bg-emerald-400 w-2.5' : 'bg-slate-200 w-2.5'
+                    )} />
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -156,7 +191,7 @@ export function QuinielaSimpleSection({ fixtures, drawDate, onSummaryChange }: P
         <button
           type="button"
           onClick={clearColumn}
-          className="flex h-8 items-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-2.5 text-red-500 active:scale-95 transition-transform"
+          className="flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-2.5 text-red-500 active:scale-95 transition-transform"
         >
           <Trash2 className="h-3 w-3" />
           <span className="text-[9px] font-black uppercase tracking-wide">Borrar</span>
@@ -166,7 +201,7 @@ export function QuinielaSimpleSection({ fixtures, drawDate, onSummaryChange }: P
         <button
           type="button"
           onClick={randomizeColumn}
-          className="flex h-8 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-slate-500 active:scale-95 transition-transform"
+          className="flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-2.5 text-slate-500 active:scale-95 transition-transform"
         >
           <Shuffle className="h-3 w-3" />
           <span className="text-[9px] font-black uppercase tracking-wide">Aleatorio</span>
