@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShieldCheck, InfoCircle, NavArrowLeft, NavArrowRight } from 'iconoir-react/regular';
 import { cn, formatCurrency } from '@/shared/lib/utils';
+import { getReducedGuaranteeTable } from '../../lib/reduced-guarantees';
 import type { ReducedSystemUI } from '../contracts/reduced-play.contract';
 import type { LotteryGame } from '@/shared/types/domain';
 
@@ -13,44 +14,6 @@ interface ReducedSystemListProps {
   selectedStars: number[];
   onPlayWithSystem: (systemId: string) => void;
 }
-
-const DEMO_GUARANTEE_ROWS: Record<string, Array<{ label: string; min: number; max: number }>> = {
-  reducida_4: [
-    { label: 'Premio 1 (5+2 aciertos)', min: 1, max: 1 },
-    { label: 'Premio 2 (5+1 aciertos)', min: 0, max: 2 },
-    { label: 'Premio 3 (4+2 aciertos)', min: 0, max: 3 },
-    { label: 'Premio 4 (4+1 aciertos)', min: 0, max: 8 },
-    { label: 'Premio 5 (3+2 aciertos)', min: 0, max: 12 },
-  ],
-  reducida_3: [
-    { label: 'Premio 1 (5+2 aciertos)', min: 0, max: 1 },
-    { label: 'Premio 2 (5+1 aciertos)', min: 0, max: 1 },
-    { label: 'Premio 3 (4+2 aciertos)', min: 1, max: 2 },
-    { label: 'Premio 4 (4+1 aciertos)', min: 0, max: 4 },
-    { label: 'Premio 5 (3+2 aciertos)', min: 0, max: 6 },
-  ],
-  reducida_2: [
-    { label: 'Premio 1 (5+2 aciertos)', min: 0, max: 1 },
-    { label: 'Premio 2 (5+1 aciertos)', min: 0, max: 1 },
-    { label: 'Premio 3 (4+2 aciertos)', min: 0, max: 1 },
-    { label: 'Premio 4 (4+1 aciertos)', min: 1, max: 2 },
-    { label: 'Premio 5 (3+2 aciertos)', min: 0, max: 3 },
-  ],
-  reducida_1: [
-    { label: 'Premio 1 (5+2 aciertos)', min: 0, max: 1 },
-    { label: 'Premio 2 (5+1 aciertos)', min: 0, max: 1 },
-    { label: 'Premio 3 (4+2 aciertos)', min: 0, max: 1 },
-    { label: 'Premio 4 (4+1 aciertos)', min: 0, max: 1 },
-    { label: 'Premio 5 (3+2 aciertos)', min: 1, max: 1 },
-  ],
-};
-
-const DEFAULT_ROWS = [
-  { label: 'Premio principal', min: 0, max: 1 },
-  { label: 'Premio 2ª categoría', min: 0, max: 3 },
-  { label: 'Premio 3ª categoría', min: 1, max: 5 },
-  { label: 'Premio 4ª categoría', min: 0, max: 10 },
-];
 
 function generateDemoCombinations(numbers: number[], stars: number[], count: number) {
   const result: Array<{ numbers: number[]; stars: number[] }> = [];
@@ -89,8 +52,31 @@ export function ReducedSystemList({
   onPlayWithSystem,
 }: ReducedSystemListProps) {
   const [guaranteeSystem, setGuaranteeSystem] = useState<ReducedSystemUI | null>(null);
+
+  // La tabla de garantías tiene una columna por porcentaje, así que
+  // en móvil no cabe entera: se desplaza en horizontal. El aviso de
+  // "desliza" solo se enseña si realmente hay algo que deslizar.
+  const guaranteeTableRef = useRef<HTMLDivElement | null>(null);
+  const [isGuaranteeTableScrollable, setIsGuaranteeTableScrollable] = useState(false);
   const [developmentSystem, setDevelopmentSystem] = useState<ReducedSystemUI | null>(null);
   const [devPage, setDevPage] = useState(0);
+
+  const guaranteeTable = guaranteeSystem
+    ? getReducedGuaranteeTable(game.id, guaranteeSystem.id, selectedNumbers.length)
+    : null;
+
+  useEffect(() => {
+    const node = guaranteeTableRef.current;
+    if (!node) {
+      setIsGuaranteeTableScrollable(false);
+      return;
+    }
+    const update = () => setIsGuaranteeTableScrollable(node.scrollWidth > node.clientWidth + 1);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [guaranteeSystem, guaranteeTable]);
 
   const DEV_PAGE_SIZE = 25;
 
@@ -250,36 +236,125 @@ export function ReducedSystemList({
                 <div className="flex items-start gap-2.5 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
                   <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
                   <p className="text-[11px] font-medium leading-relaxed text-emerald-800">
-                    {guaranteeSystem.guaranteeCondition}
+                    {guaranteeTable?.highlight ?? guaranteeSystem.guaranteeCondition}
                   </p>
                 </div>
 
-                {/* Tabla de garantías */}
-                <div>
-                  <p className="mb-2 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
-                    Garantías de premios
-                  </p>
-                  <div className="overflow-hidden rounded-xl border border-slate-100">
-                    <div className="grid grid-cols-3 bg-slate-50 px-3 py-2">
-                      <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Categoría</span>
-                      <span className="text-center text-[9px] font-black uppercase tracking-wider text-slate-400">Mín. garantizado</span>
-                      <span className="text-center text-[9px] font-black uppercase tracking-wider text-slate-400">Máx. posible</span>
+                {/* Tabla de garantías — una columna por porcentaje. La
+                    primera columna queda fija al desplazar en horizontal
+                    para no perder de vista a qué categoría corresponde
+                    cada celda. */}
+                {guaranteeTable ? (
+                  <div>
+                    <p className="mb-2 text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+                      Porcentajes y garantías de premios
+                    </p>
+
+                    <div
+                      ref={guaranteeTableRef}
+                      className="scrollbar-hide overflow-x-auto rounded-xl border border-slate-100"
+                    >
+                      <table className="w-full min-w-max border-collapse">
+                        <thead>
+                          <tr>
+                            <th className="sticky left-0 z-10 border-r border-slate-100 bg-slate-50 px-3 py-2 text-left text-[9px] font-black uppercase tracking-wider text-slate-400">
+                              Categoría
+                            </th>
+                            {guaranteeTable.percentages.map((percentage) => (
+                              <th
+                                key={percentage}
+                                className="whitespace-nowrap bg-manises-gold/[0.14] px-3 py-2 text-center text-[10px] font-black text-manises-blue"
+                              >
+                                {percentage}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {guaranteeTable.rows.map((row) => (
+                            <tr key={row.category} className="border-t border-slate-50">
+                              <th
+                                scope="row"
+                                className="sticky left-0 z-10 border-r border-slate-100 bg-white px-3 py-2.5 text-left"
+                              >
+                                <span className="block whitespace-nowrap text-[10px] font-black text-manises-blue">
+                                  {row.category}
+                                </span>
+                                {row.prizeLabel && (
+                                  <span className="block whitespace-nowrap text-[9px] font-medium text-slate-400">
+                                    ({row.prizeLabel})
+                                  </span>
+                                )}
+                              </th>
+                              {row.cells.map((cell, i) => (
+                                <td key={i} className="whitespace-nowrap px-3 py-2.5 text-center">
+                                  {cell ? (
+                                    <>
+                                      <span className="block text-[9px] font-medium text-slate-400">
+                                        Mín.{' '}
+                                        <span className={cn(
+                                          'text-[11px] font-black',
+                                          cell.min > 0 ? 'text-emerald-600' : 'text-slate-400'
+                                        )}>
+                                          {cell.min}
+                                        </span>
+                                      </span>
+                                      <span className="block text-[9px] font-medium text-slate-400">
+                                        Máx.{' '}
+                                        <span className="text-[11px] font-black text-manises-blue">
+                                          {cell.max}
+                                        </span>
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span className="text-[11px] font-bold text-slate-300" aria-label="Sin garantía">
+                                      —
+                                    </span>
+                                  )}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                    {(DEMO_GUARANTEE_ROWS[guaranteeSystem.id] ?? DEFAULT_ROWS).map((row, i) => (
-                      <div key={i} className="grid grid-cols-3 border-t border-slate-50 px-3 py-2.5">
-                        <span className="text-[10px] font-medium text-slate-600">{row.label}</span>
-                        <span className={cn(
-                          'text-center text-[11px] font-black',
-                          row.min > 0 ? 'text-emerald-600' : 'text-slate-400'
-                        )}>{row.min}</span>
-                        <span className="text-center text-[10px] font-medium text-slate-500">{row.max}</span>
-                      </div>
-                    ))}
+
+                    {isGuaranteeTableScrollable && (
+                      <p className="mt-1.5 text-center text-[9px] font-medium text-slate-400">
+                        Desliza para ver todas las garantías
+                      </p>
+                    )}
+
+                    <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-manises-blue/10 bg-manises-blue/[0.04] p-3">
+                      <InfoCircle className="mt-0.5 h-4 w-4 shrink-0 text-manises-blue/50" />
+                      <ul className="space-y-1.5">
+                        {guaranteeTable.notes.map((note) => (
+                          <li key={note} className="text-[10px] font-medium leading-relaxed text-slate-500">
+                            {note}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                  <p className="mt-2 px-1 text-[9px] font-medium italic text-slate-400">
-                    * Datos demo para ilustrar la cobertura de la reducción seleccionada.
-                  </p>
-                </div>
+                ) : (
+                  /* Sin tabla cargada para esta combinación concreta de
+                     juego · reducción · nº de números. Se enseña la
+                     condición de garantía en texto y se dice que el
+                     detalle no está todavía: nunca cifras inventadas
+                     (ver reduced-guarantees.ts). */
+                  <div className="flex items-start gap-2.5 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                    <InfoCircle className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                    <div>
+                      <p className="text-[11px] font-black text-manises-blue">
+                        Detalle de garantías no disponible
+                      </p>
+                      <p className="mt-1 text-[10px] font-medium leading-relaxed text-slate-500">
+                        Todavía no tenemos el desglose por categorías para {guaranteeSystem.label.toLowerCase()} con {selectedNumbers.length} números.
+                        Se aplica la garantía indicada arriba.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <button
                   onClick={() => { onPlayWithSystem(guaranteeSystem.id); setGuaranteeSystem(null); }}
