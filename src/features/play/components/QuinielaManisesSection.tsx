@@ -45,40 +45,62 @@ function GuaranteeTable({ table, totalCols, plenaFixture }: {
   totalCols: number;
   plenaFixture?: { home: string; away: string };
 }) {
-  const parsedCols = table.development
+  const parsedCols = (table.development ?? [])
     .filter(s => s.trim() !== '—')
     .map(row => row.trim().split(/\s+/).filter(Boolean).slice(0, 14));
 
+  const hasRows = (table.rows?.length ?? 0) > 0;
   const hasPlena = !!(plenaFixture && table.plenaHome?.length && table.plenaAway?.length);
+
+  // Sin el desarrollo real de la reducción no hay garantías que
+  // calcular, así que se dice en vez de rellenar (ver quiniela-data.ts).
+  if (!hasRows && parsedCols.length === 0) {
+    return (
+      <div className="space-y-2">
+        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-manises-blue/70">{table.title}</p>
+        <div className="rounded-xl border border-manises-blue/10 bg-white px-3 py-2.5">
+          <p className="text-[10px] font-black text-manises-blue">
+            Detalle de garantías no disponible
+          </p>
+          <p className="mt-1 text-[9px] font-medium leading-relaxed text-slate-500">
+            Esta reducción juega {totalCols} columnas. El desglose por categorías y el
+            desarrollo saldrán del propio sistema de reducción.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
       <p className="text-[8px] font-black uppercase tracking-[0.14em] text-manises-blue/70">{table.title}</p>
-      <div className="rounded-xl overflow-hidden border border-manises-blue/10">
-        <div className="bg-manises-blue/5 px-2 pt-2 pb-1">
-          <div className="flex">
-            <div className="w-14 shrink-0" />
-            <p className="flex-1 text-center text-[7px] font-black uppercase tracking-[0.12em] text-slate-400">Aciertos garantizados</p>
+      {hasRows && (
+        <div className="rounded-xl overflow-hidden border border-manises-blue/10">
+          <div className="bg-manises-blue/5 px-2 pt-2 pb-1">
+            <div className="flex">
+              <div className="w-14 shrink-0" />
+              <p className="flex-1 text-center text-[7px] font-black uppercase tracking-[0.12em] text-slate-400">Aciertos garantizados</p>
+            </div>
+            <div className="flex mt-0.5">
+              <div className="w-14 shrink-0 text-[7px] font-bold text-slate-400 uppercase">Prob.</div>
+              {table.cols.map(col => (
+                <div key={col} className="flex-1 text-center text-[7px] font-black text-manises-blue uppercase">{col}</div>
+              ))}
+            </div>
           </div>
-          <div className="flex mt-0.5">
-            <div className="w-14 shrink-0 text-[7px] font-bold text-slate-400 uppercase">Prob.</div>
-            {table.cols.map(col => (
-              <div key={col} className="flex-1 text-center text-[7px] font-black text-manises-blue uppercase">{col}</div>
-            ))}
-          </div>
+          {table.rows?.map((row, i) => (
+            <div key={i} className={cn('flex items-center px-2 py-1.5', i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60')}>
+              <div className="w-14 shrink-0 text-[8px] font-bold text-slate-500">{row.prob}</div>
+              {row.values.map((v, j) => (
+                <div key={j} className="flex-1 text-center text-[8px] font-black text-slate-700">{v}</div>
+              ))}
+            </div>
+          ))}
         </div>
-        {table.rows.map((row, i) => (
-          <div key={i} className={cn('flex items-center px-2 py-1.5', i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60')}>
-            <div className="w-14 shrink-0 text-[8px] font-bold text-slate-500">{row.prob}</div>
-            {row.values.map((v, j) => (
-              <div key={j} className="flex-1 text-center text-[8px] font-black text-slate-700">{v}</div>
-            ))}
-          </div>
-        ))}
-      </div>
-      <div>
-        <p className="mb-1.5 text-[8px] font-black uppercase tracking-[0.12em] text-slate-400">Desarrollo (primeras columnas)</p>
-        {parsedCols.length > 0 ? (
+      )}
+      {parsedCols.length > 0 && (
+        <div>
+          <p className="mb-1.5 text-[8px] font-black uppercase tracking-[0.12em] text-slate-400">Desarrollo (primeras columnas)</p>
           <div className="overflow-x-auto rounded-xl border border-manises-blue/10" style={{ scrollbarWidth: 'none' }}>
             <div className="flex min-w-max bg-manises-blue/5 px-2 py-1.5">
               <span className="w-10 shrink-0" />
@@ -120,13 +142,11 @@ function GuaranteeTable({ table, totalCols, plenaFixture }: {
               </>
             )}
           </div>
-        ) : (
-          <p className="text-[9px] text-slate-400">—</p>
-        )}
-        <button type="button" className="mt-2 text-[9px] font-black text-manises-blue underline underline-offset-2">
-          Ver todas las columnas ({totalCols})
-        </button>
-      </div>
+          <button type="button" className="mt-2 text-[9px] font-black text-manises-blue underline underline-offset-2">
+            Ver todas las columnas ({totalCols})
+          </button>
+        </div>
+      )}
     </div>
   );
 }

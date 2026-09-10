@@ -10,7 +10,10 @@ import {
 } from '../lib/quiniela-data';
 import type { QuinielaFixture } from '../lib/quiniela-fixtures';
 
-const PRICE_PER_BET = 1.0;
+// 0,75 EUR es el precio oficial de la apuesta de Quiniela, y es lo que
+// dice games.ts y lo que usan QuinielaSimpleSection y
+// QuinielaManisesSection. Aquí había un 1.0 que solo estaba aquí.
+const PRICE_PER_BET = 0.75;
 const REGULAR_SIGNS = ['1', 'X', '2'] as const;
 const PLENA_SIGNS   = ['0', '1', '2', 'M'] as const;
 
@@ -35,53 +38,77 @@ function GuaranteeCard({ table, totalCols }: {
   table: typeof OFICIAL_REDUCTIONS[0]['table'];
   totalCols: number;
 }) {
+  const hasRows = (table.rows?.length ?? 0) > 0;
+  const hasDevelopment = (table.development?.length ?? 0) > 0;
+
+  // Ni las garantías ni el desarrollo se pueden calcular sin saber qué
+  // columnas juega la reducción, así que mientras no las devuelva el
+  // motor se dice, en vez de rellenar la tabla (ver quiniela-data.ts).
+  if (!hasRows && !hasDevelopment) {
+    return (
+      <div className="px-4 py-3">
+        <p className="text-[8px] font-black uppercase tracking-[0.14em] text-manises-blue/70">{table.title}</p>
+        <div className="mt-2 rounded-xl border border-manises-blue/10 bg-white px-3 py-2.5">
+          <p className="text-[10px] font-black text-manises-blue">
+            Detalle de garantías no disponible
+          </p>
+          <p className="mt-1 text-[9px] font-medium leading-relaxed text-slate-500">
+            Esta reducción juega {totalCols} columnas. El desglose por categorías y el
+            desarrollo saldrán del propio sistema de reducción.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3 px-4 py-3">
       <p className="text-[8px] font-black uppercase tracking-[0.14em] text-manises-blue/70">{table.title}</p>
-      <div className="rounded-xl overflow-hidden border border-manises-blue/10">
-        <div className="bg-manises-blue/5 px-2 pt-2 pb-1">
-          <div className="flex">
-            <div className="w-14 shrink-0" />
-            <p className="flex-1 text-center text-[7px] font-black uppercase tracking-[0.12em] text-slate-400">Aciertos garantizados</p>
+      {hasRows && (
+        <div className="rounded-xl overflow-hidden border border-manises-blue/10">
+          <div className="bg-manises-blue/5 px-2 pt-2 pb-1">
+            <div className="flex">
+              <div className="w-14 shrink-0" />
+              <p className="flex-1 text-center text-[7px] font-black uppercase tracking-[0.12em] text-slate-400">Aciertos garantizados</p>
+            </div>
+            <div className="flex mt-0.5">
+              <div className="w-14 shrink-0 text-[7px] font-bold text-slate-400 uppercase">Prob.</div>
+              {table.cols.map(col => (
+                <div key={col} className="flex-1 text-center text-[7px] font-black text-manises-blue uppercase">{col}</div>
+              ))}
+            </div>
           </div>
-          <div className="flex mt-0.5">
-            <div className="w-14 shrink-0 text-[7px] font-bold text-slate-400 uppercase">Prob.</div>
-            {table.cols.map(col => (
-              <div key={col} className="flex-1 text-center text-[7px] font-black text-manises-blue uppercase">{col}</div>
-            ))}
-          </div>
+          {table.rows?.map((row, i) => (
+            <div key={i} className={cn('flex items-center px-2 py-1.5', i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60')}>
+              <div className="w-14 shrink-0 text-[8px] font-bold text-slate-500">{row.prob}</div>
+              {row.values.map((v, j) => (
+                <div key={j} className="flex-1 text-center text-[8px] font-black text-slate-700">{v}</div>
+              ))}
+            </div>
+          ))}
         </div>
-        {table.rows.map((row, i) => (
-          <div key={i} className={cn('flex items-center px-2 py-1.5', i % 2 === 0 ? 'bg-white' : 'bg-slate-50/60')}>
-            <div className="w-14 shrink-0 text-[8px] font-bold text-slate-500">{row.prob}</div>
-            {row.values.map((v, j) => (
-              <div key={j} className="flex-1 text-center text-[8px] font-black text-slate-700">{v}</div>
-            ))}
-          </div>
-        ))}
-      </div>
-      <div>
-        <p className="mb-1.5 text-[8px] font-black uppercase tracking-[0.12em] text-slate-400">Desarrollo (primeras columnas)</p>
-        <div className="space-y-1">
-          {table.development.map((row, i) => {
-            const signs = row.trim().split(/\s+/).filter(Boolean);
-            return (
-              <div key={i} className="flex items-center gap-1 w-full">
-                <span className="w-10 shrink-0 text-[8px] font-bold text-slate-400">Col.&nbsp;{i + 1}</span>
-                <div className="flex flex-1 justify-between">
-                  {signs.map((s, j) => (
-                    <span key={j} className={cn('text-[9px] font-black text-center leading-none',
-                      s === '—' ? 'text-slate-300' : 'text-slate-600 font-mono')}>{s}</span>
-                  ))}
+      )}
+      {hasDevelopment && (
+        <div>
+          <p className="mb-1.5 text-[8px] font-black uppercase tracking-[0.12em] text-slate-400">Desarrollo (primeras columnas)</p>
+          <div className="space-y-1">
+            {table.development?.map((row, i) => {
+              const signs = row.trim().split(/\s+/).filter(Boolean);
+              return (
+                <div key={i} className="flex items-center gap-1 w-full">
+                  <span className="w-10 shrink-0 text-[8px] font-bold text-slate-400">Col.&nbsp;{i + 1}</span>
+                  <div className="flex flex-1 justify-between">
+                    {signs.map((sign, j) => (
+                      <span key={j} className={cn('text-[9px] font-black text-center leading-none',
+                        sign === '—' ? 'text-slate-300' : 'text-slate-600 font-mono')}>{sign}</span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-        <button type="button" className="mt-2 text-[9px] font-black text-manises-blue underline underline-offset-2">
-          Ver todas las columnas ({totalCols})
-        </button>
-      </div>
+      )}
     </div>
   );
 }

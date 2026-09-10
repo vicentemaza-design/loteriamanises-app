@@ -63,12 +63,50 @@ export function calcDirectBets(matches: QuinielaMatch[]): number {
 export interface GuaranteeTable {
   title: string;
   cols: string[];
-  rows: { prob: string; values: string[] }[];
-  development: string[];
+  /**
+   * Mín.-máx. garantizados por categoría, una fila por porcentaje.
+   * Opcional a propósito: hasta que el motor de reducciones no
+   * devuelva el desarrollo real, no hay forma de calcularlos, y la
+   * UI debe decir que no están en vez de enseñar cifras de relleno
+   * (ver el bloque "DATOS RETIRADOS" más abajo).
+   */
+  rows?: { prob: string; values: string[] }[];
+  /** Primeras columnas del desarrollo. Opcional por el mismo motivo. */
+  development?: string[];
   totalCols: number;
   plenaHome?: string[];
   plenaAway?: string[];
 }
+
+// ============================================================
+// DATOS RETIRADOS — GARANTÍAS Y DESARROLLOS DE QUINIELA
+// ============================================================
+// Las tablas de garantías y los desarrollos que había aquí no
+// salían de ninguna fuente: eran de relleno, y además imposibles.
+// Lo que se comprobó antes de quitarlos:
+//
+// · Los desarrollos contradecían su propio pronóstico. En "4
+//   Triples" solo 4 partidos pueden cambiar de signo entre
+//   columnas; el desarrollo variaba en los 15, con 11 partidos
+//   mostrando tres signos distintos. En "7 Dobles" (0 triples)
+//   ningún partido puede tener tres signos: había cuatro.
+// · Tres reducciones de tamaños distintos —"7 Dobles" (32 ap.),
+//   "6 Dobles + 2 Triples" (32 ap.) y "Reducción al 13" (96 ap.)—
+//   declaraban exactamente los mismos mínimos y máximos.
+// · Las nueve declaraban la misma probabilidad, 16,67 %, fuera cual
+//   fuera su tamaño, cuando debería ser apuestas/columnas al
+//   directo: 12,5 % para 7 dobles, 11,1 % para 4 triples.
+//
+// La garantía de una reducción depende de QUÉ columnas juega, no
+// solo de cuántas, así que esto no es un dato que falte por
+// transcribir: sale del motor de reducciones o no sale. Mientras
+// tanto `rows`/`development` van vacíos y la UI lo dice.
+//
+// Los recuentos de apuestas tampoco cuadran con las reducidas
+// oficiales de LAE, pero eso es decisión de producto (qué
+// reducciones se venden) y está pendiente de que lo confirme el
+// cliente — por eso NO se han tocado aquí.
+// ============================================================
 
 export type ManisesModalidad = 'directo' | 'al_13' | 'al_12' | 'al_11';
 
@@ -85,15 +123,8 @@ export const MANISES_REDUCTIONS: {
     table: {
       title: 'GARANTÍAS DE PREMIOS (REDUCCIÓN AL 13)',
       cols: ['de 10', 'de 11', 'de 12', 'de 13', 'de 14'],
-      rows: [
-        { prob: '16,67 %', values: ['0–3', '8–14', '1–4', '1–2', '1(*)'] },
-        { prob: '100 %',   values: ['4–10', '0–6', '3–6', '1–2', '—'] },
-      ],
-      development: [
-        '1  X  2  1  X  2  2  2  1  1  1  1  X  2  1',
-        '1  X  1  X  X  2  1  2  1  2  1  X  1  2  1',
-        'X  1  X  2  X  X  1  X  X  1  2  X  1  X  X',
-      ],
+            rows: [],
+            development: [],
       totalCols: 96,
       plenaHome: ['2', '1', 'M'],
       plenaAway: ['1', 'M', '0'],
@@ -106,15 +137,8 @@ export const MANISES_REDUCTIONS: {
     table: {
       title: 'GARANTÍAS DE PREMIOS (REDUCCIÓN AL 12)',
       cols: ['de 9', 'de 10', 'de 11', 'de 12', 'de 13'],
-      rows: [
-        { prob: '16,67 %', values: ['0–3', '5–12', '1–3', '1–2', '1(*)'] },
-        { prob: '100 %',   values: ['4–8', '0–4', '2–5', '1–2', '—'] },
-      ],
-      development: [
-        '1  X  2  1  X  2  2  1  1  X  1  1  X  2  1',
-        'X  1  X  2  X  1  X  2  X  1  2  X  1  X  X',
-        '1  2  X  X  2  X  X  1  2  1  X  2  1  X  1',
-      ],
+            rows: [],
+            development: [],
       totalCols: 48,
       plenaHome: ['1', 'M', '2'],
       plenaAway: ['M', '0', '1'],
@@ -127,15 +151,8 @@ export const MANISES_REDUCTIONS: {
     table: {
       title: 'GARANTÍAS DE PREMIOS (REDUCCIÓN AL 11)',
       cols: ['de 8', 'de 9', 'de 10', 'de 11', 'de 12'],
-      rows: [
-        { prob: '16,67 %', values: ['0–2', '3–9', '1–3', '1–2', '—'] },
-        { prob: '100 %',   values: ['3–7', '0–2', '1–3', '1–2', '—'] },
-      ],
-      development: [
-        'X  2  1  X  2  X  X  1  X  1  X  2  1  X  1',
-        '1  X  2  1  X  1  X  2  1  X  X  1  X  2  X',
-        '2  1  X  2  1  2  1  X  2  2  1  X  2  1  X',
-      ],
+            rows: [],
+            development: [],
       totalCols: 18,
       plenaHome: ['2', 'M', '1'],
       plenaAway: ['1', '0', '2'],
@@ -162,15 +179,8 @@ export const OFICIAL_REDUCTIONS: {
     table: {
       title: 'GARANTÍAS DE PREMIOS (4 TRIPLES AL 13)',
       cols: ['de 10', 'de 11', 'de 12', 'de 13', 'de 14'],
-      rows: [
-        { prob: '16,67 %', values: ['0–2', '5–12', '1–4', '1–2', '1(*)'] },
-        { prob: '100 %',   values: ['3–9', '0–4', '2–4', '1–2', '—'] },
-      ],
-      development: [
-        'X  2  1  2  X  1  X  2  1  X  1  X  2  X  1',
-        '1  X  2  X  1  2  X  1  2  1  X  2  1  X  2',
-        '2  1  X  1  2  X  2  X  1  2  X  1  X  2  X',
-      ],
+            rows: [],
+            development: [],
       totalCols: 16,
     },
   },
@@ -184,15 +194,8 @@ export const OFICIAL_REDUCTIONS: {
     table: {
       title: 'GARANTÍAS DE PREMIOS (7 DOBLES AL 13)',
       cols: ['de 10', 'de 11', 'de 12', 'de 13', 'de 14'],
-      rows: [
-        { prob: '16,67 %', values: ['0–3', '8–14', '1–4', '1–2', '1(*)'] },
-        { prob: '100 %',   values: ['4–10', '0–6', '3–6', '1–2', '—'] },
-      ],
-      development: [
-        '1  X  2  X  X  X  2  1  1  2  2  X  2  X  1',
-        '1  X  2  X  X  1  X  2  X  X  X  2  X  1  1',
-        '1  2  1  2  X  X  X  X  2  X  1  2  X  2  1',
-      ],
+            rows: [],
+            development: [],
       totalCols: 32,
     },
   },
@@ -206,11 +209,8 @@ export const OFICIAL_REDUCTIONS: {
     table: {
       title: 'GARANTÍAS DE PREMIOS (3D+3T AL 13)',
       cols: ['de 10', 'de 11', 'de 12', 'de 13', 'de 14'],
-      rows: [
-        { prob: '16,67 %', values: ['0–3', '7–13', '1–4', '1–2', '1(*)'] },
-        { prob: '100 %',   values: ['4–9', '0–5', '2–5', '1–2', '—'] },
-      ],
-      development: ['—', '—', '—'],
+            rows: [],
+            development: [],
       totalCols: 32,
     },
   },
@@ -224,11 +224,8 @@ export const OFICIAL_REDUCTIONS: {
     table: {
       title: 'GARANTÍAS DE PREMIOS (6D+2T AL 13)',
       cols: ['de 10', 'de 11', 'de 12', 'de 13', 'de 14'],
-      rows: [
-        { prob: '16,67 %', values: ['0–3', '8–14', '1–4', '1–2', '1(*)'] },
-        { prob: '100 %',   values: ['4–10', '0–6', '3–6', '1–2', '—'] },
-      ],
-      development: ['—', '—', '—'],
+            rows: [],
+            development: [],
       totalCols: 32,
     },
   },
@@ -242,11 +239,8 @@ export const OFICIAL_REDUCTIONS: {
     table: {
       title: 'GARANTÍAS DE PREMIOS (8 DOBLES AL 12)',
       cols: ['de 9', 'de 10', 'de 11', 'de 12', 'de 13'],
-      rows: [
-        { prob: '16,67 %', values: ['0–3', '6–13', '1–3', '1–2', '1(*)'] },
-        { prob: '100 %',   values: ['4–9', '0–5', '2–5', '1–2', '—'] },
-      ],
-      development: ['—', '—', '—'],
+            rows: [],
+            development: [],
       totalCols: 64,
     },
   },
@@ -260,11 +254,8 @@ export const OFICIAL_REDUCTIONS: {
     table: {
       title: 'GARANTÍAS DE PREMIOS (11 DOBLES AL 11)',
       cols: ['de 8', 'de 9', 'de 10', 'de 11', 'de 12'],
-      rows: [
-        { prob: '16,67 %', values: ['0–2', '4–10', '1–3', '1–2', '—'] },
-        { prob: '100 %',   values: ['3–8', '0–3', '1–4', '1–2', '—'] },
-      ],
-      development: ['—', '—', '—'],
+            rows: [],
+            development: [],
       totalCols: 128,
     },
   },
