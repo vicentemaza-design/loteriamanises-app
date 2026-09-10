@@ -322,8 +322,8 @@ Quedan dos cosas por confirmar, las dos de datos:
    idénticas en 92 de 93 filas. En la 93 —13 números, reducida al 3— Primitiva
    decía 7 apuestas y Bonoloto 4. La fuente —el blog del propio cliente— da 4 y
    dice que la tabla sirve para los dos juegos, así que era una errata de
-   transcripción: Primitiva pasa a 4. Las 93 filas ya coinciden. Cambia un
-   precio (7,00 € → 4,00 €), así que conviene que el cliente lo confirme.
+   transcripción: Primitiva pasa a 4 (de 7,00 € a 4,00 €). Las 93 filas ya
+   coinciden.
 
 ### 5.6 Reducidas de Quiniela: corregidas a las oficiales
 
@@ -341,14 +341,19 @@ dos.
 | 8 **Dobles** al 12 — 64 ap. | 8 **triples** al 12 — **81 ap.** |
 | 11 Dobles al **11** — 128 ap. | 11 dobles al **12** — **132 ap.** |
 
-**Corregidas, pero pendientes de que las confirme la administración.** Los
-valores anteriores no correspondían a ningún producto real y se contradecían con
-`QUINIELA_REDUCED_TABLES` en `bet-calculator.ts`, así que dejarlos no era una
-opción. Los nuevos salen de dos webs de administraciones de loterías que
-coinciden entre sí: son **fuentes secundarias**. Quien vende estos productos es
-el cliente, y es él quien cierra esta lista. Hasta entonces, propuesta y no dato
-cerrado. El flag `locked` es decisión de producto aparte: marca cuáles se
-ofrecen hoy, que son las dos primeras.
+**Corregidas.** No son elección nuestra ni del cliente: son producto del Estado,
+igual en todas las administraciones. Contrastadas con tres administraciones de
+loterías que coinciden exactamente, y con doble comprobación: los importes que
+publican cuadran con 0,75 € por apuesta (4 triples = 9 apuestas = 6,75 €; 7
+dobles = 16 = 12,00 €; 3D+3T = 24 = 18,00 €), que es lo que dice `games.ts` y
+confirma de paso la corrección del precio.
+
+Los valores anteriores no correspondían a ningún producto real, se contradecían
+con `QUINIELA_REDUCED_TABLES` en `bet-calculator.ts` y en dos casos tenían
+cambiado hasta el tipo de apuesta.
+
+Lo único que decide el cliente es el flag `locked`: cuáles de las seis se
+ofrecen hoy en la app, que son las dos primeras.
 
 `bet-calculator.ts` ya tenía tres de ellas correctas (`7D→16`, `4T→9`,
 `11D→132`), pero no es el fichero que alimenta esa pantalla. Ahora coinciden.
