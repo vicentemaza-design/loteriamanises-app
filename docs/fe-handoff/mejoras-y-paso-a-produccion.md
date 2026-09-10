@@ -320,9 +320,10 @@ Quedan dos cosas por confirmar, las dos de datos:
    no existen y entonces está bien.
 2. **Divergencia Primitiva/Bonoloto — corregida.** Las dos tablas eran
    idénticas en 92 de 93 filas. En la 93 —13 números, reducida al 3— Primitiva
-   decía 7 apuestas y Bonoloto 4. La fuente da 4 y dice que la tabla sirve para
-   los dos juegos, así que era una errata de transcripción: Primitiva pasa a 4
-   (de 7,00 € a 4,00 €). Las 93 filas ya coinciden.
+   decía 7 apuestas y Bonoloto 4. La fuente —el blog del propio cliente— da 4 y
+   dice que la tabla sirve para los dos juegos, así que era una errata de
+   transcripción: Primitiva pasa a 4. Las 93 filas ya coinciden. Cambia un
+   precio (7,00 € → 4,00 €), así que conviene que el cliente lo confirme.
 
 ### 5.6 Reducidas de Quiniela: corregidas a las oficiales
 
@@ -340,10 +341,14 @@ dos.
 | 8 **Dobles** al 12 — 64 ap. | 8 **triples** al 12 — **81 ap.** |
 | 11 Dobles al **11** — 128 ap. | 11 dobles al **12** — **132 ap.** |
 
-**Corregidas.** No es una elección de producto: son los productos oficiales del
-Estado, y los valores anteriores no correspondían a ninguno. Contrastado con dos
-fuentes independientes. Lo que sí sigue siendo decisión de producto es el flag
-`locked`, que marca cuáles se ofrecen hoy en la app: solo las dos primeras.
+**Corregidas, pero pendientes de que las confirme la administración.** Los
+valores anteriores no correspondían a ningún producto real y se contradecían con
+`QUINIELA_REDUCED_TABLES` en `bet-calculator.ts`, así que dejarlos no era una
+opción. Los nuevos salen de dos webs de administraciones de loterías que
+coinciden entre sí: son **fuentes secundarias**. Quien vende estos productos es
+el cliente, y es él quien cierra esta lista. Hasta entonces, propuesta y no dato
+cerrado. El flag `locked` es decisión de producto aparte: marca cuáles se
+ofrecen hoy, que son las dos primeras.
 
 `bet-calculator.ts` ya tenía tres de ellas correctas (`7D→16`, `4T→9`,
 `11D→132`), pero no es el fichero que alimenta esa pantalla. Ahora coinciden.

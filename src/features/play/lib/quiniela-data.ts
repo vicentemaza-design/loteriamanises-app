@@ -160,13 +160,24 @@ export const MANISES_REDUCTIONS: {
   },
 ];
 
-// Las seis reducciones oficiales de LAE. Los recuentos de apuestas no
-// son elección nuestra: son el producto tal y como lo vende el Estado
-// (4 triples al 13 = 9 apuestas, 7 dobles al 13 = 16, 3T+3D al 13 = 24,
-// 2T+6D al 13 = 64, 8 triples al 12 = 81, 11 dobles al 12 = 132).
-// Antes había aquí 16, 32, 32, 32, 64 y 128 —potencias de dos— y en dos
-// casos hasta el tipo de apuesta estaba cambiado. `locked` sí es
-// decisión de producto: marca cuáles se ofrecen hoy en la app.
+// Las seis reducciones oficiales de LAE, PENDIENTES DE CONFIRMAR POR LA
+// ADMINISTRACIÓN.
+//
+// Lo que había antes —16, 32, 32, 32, 64 y 128 apuestas, todo potencias
+// de dos— no correspondía a ningún producto real, se contradecía con
+// QUINIELA_REDUCED_TABLES en bet-calculator.ts, y en dos casos tenía
+// cambiado hasta el tipo de apuesta. Por eso se han sustituido en vez de
+// dejarlo como estaba.
+//
+// Los valores actuales (4 triples al 13 = 9 apuestas, 7 dobles al 13 =
+// 16, 3T+3D al 13 = 24, 2T+6D al 13 = 64, 8 triples al 12 = 81, 11
+// dobles al 12 = 132) salen de dos webs de administraciones de loterías
+// que coinciden entre sí. Son fuentes secundarias: quien vende estos
+// productos es el cliente, y es él quien tiene que dar el visto bueno a
+// esta lista. Hasta entonces, tratar estas cifras como propuesta, no
+// como dato cerrado.
+//
+// `locked` es decisión de producto aparte: marca cuáles se ofrecen hoy.
 export const OFICIAL_REDUCTIONS: {
   id: string;
   label: string;
