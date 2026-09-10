@@ -7,6 +7,13 @@ estado de la entrega) y a `ios-pwa-final-architecture.md` (invariantes de iOS).
 **Este documento cubre:** lo añadido después de esa fecha, y lo que hay que
 cambiar antes de conectar contra servicios reales.
 
+**Rondas de mejoras:**
+
+| Ronda | Fecha | `main` | Sección |
+|---|---|---|---|
+| 1 | 02/09/2026 | `a338208` → `b14628d` | §1 |
+| 2 | 10/09/2026 | `b14628d` → `8727d04` | §5 |
+
 ---
 
 ## 1. Mejoras incorporadas después de la entrega
@@ -181,3 +188,138 @@ está: adaptadores preparados y contratos declarados.
 - **Hay un service worker vivo** desde estas mejoras. Cualquier despliegue nuevo
   tarda un arranque en tomar el control. Si alguien reporta "no veo mi cambio",
   esa es la causa habitual, y se resuelve reinstalando la PWA.
+
+---
+
+## 5. Ronda 2 — Reducidas y garantías (10/09/2026)
+
+`main` de `b14628d` a `8727d04`. Cuatro commits. El grueso no es UI: es que las
+pantallas de garantías no tenían detrás datos reales, y eso condiciona al
+backend más que cualquier otra cosa de este documento.
+
+### 5.1 Qué cambió en el frontend
+
+| Cambio | Fichero |
+|---|---|
+| El selector de columnas de Quiniela ya no expulsa los botones `–` y `+` fuera de la tarjeta al añadir columnas | `features/play/components/QuinielaSimpleSection.tsx` |
+| Modelo de datos y UI de las tablas de garantías de los juegos numéricos | `features/play/lib/reduced-guarantees.ts` (nuevo), `features/play/reduced/components/ReducedSystemList.tsx` |
+| `rows` y `development` de Quiniela pasan a opcionales; las tarjetas declaran cuándo no hay datos | `features/play/lib/quiniela-data.ts`, `QuinielaOficialSection.tsx`, `QuinielaManisesSection.tsx` |
+| Precio por apuesta de la Quiniela oficial: `1.0` → `0.75` | `QuinielaOficialSection.tsx` |
+
+El fix de Quiniela se midió con Playwright sobre el componente real a 320, 360,
+375, 390, 393 y 430 px con 8 columnas. Antes, `+` salía del viewport desde
+393 px y por debajo de 375 px se salían los dos botones. La altura de la
+tarjeta no cambia.
+
+### 5.2 Por qué se retiraron datos en vez de corregirlos
+
+Las tablas que había eran de relleno, y en Quiniela se pudo demostrar que
+además eran imposibles:
+
+- Los desarrollos contradecían su propio pronóstico. En «4 Triples» solo 4
+  partidos pueden variar de signo entre columnas; el desarrollo variaba en los
+  15, con 11 partidos mostrando tres signos distintos. En «7 Dobles», con cero
+  triples, ningún partido puede tener tres signos: había cuatro.
+- Tres reducciones de tamaños distintos —«7 Dobles» (32 ap.), «6 Dobles + 2
+  Triples» (32 ap.) y «Reducción al 13» (96 ap.)— declaraban exactamente los
+  mismos mínimos y máximos.
+- Las nueve declaraban la misma probabilidad, 16,67 %, fuera cual fuera su
+  tamaño.
+
+En los juegos numéricos, `DEMO_GUARANTEE_ROWS` estaba indexado solo por el id
+del sistema: la misma tabla salía para Bonoloto, Primitiva y Euromillones, y
+era idéntica con 12 números que con 40 — cuando la garantía depende justamente
+de cuántos números se juegan. Las categorías estaban además en formato
+Euromillones («5+2 aciertos») y se mostraban también en los 6/49.
+
+**Criterio aplicado:** en una app que mueve dinero, un hueco declarado es
+preferible a una cifra de premio inventada. Donde no hay dato, la UI lo dice.
+
+### 5.3 El contrato de garantías
+
+`features/play/lib/reduced-guarantees.ts` define la forma y resuelve por
+`(juego, sistema, nº de números)`:
+
+```ts
+getReducedGuaranteeTable(gameId, systemId, numbersCount): ReducedGuaranteeTable | null
+```
+
+`null` no es un error: es el estado normal mientras la combinación no esté
+cargada, y la UI ya lo trata. Sustituir el objeto `GUARANTEES` por una llamada
+del tipo `GET /api/reducidas/garantias?game=&system=&numbers=` respetando
+`ReducedGuaranteeTable` es todo el trabajo de integración en el frontend.
+
+Hoy hay **3 de 164** combinaciones cargadas (93 de 6/49 + 71 de Euromillones,
+contadas sobre `reduced-tables.ts`; Primitiva y Bonoloto comparten tabla, solo
+cambia el precio por apuesta). Cada una lleva su `source` anotado.
+
+### 5.4 Qué son los porcentajes, y por qué esto es un problema de motor
+
+Cada porcentaje publicado es un entero exacto sobre `C(números, aciertos)`:
+
+| Combinación | Total | Columnas publicadas |
+|---|---|---|
+| 6/49, 10 núm. al 5 | `C(10,6)` = 210 | 18/210 = 8,57 % · 210/210 = 100 % |
+| 6/49, 12 núm. al 4 | `C(12,6)` = 924 | 10/924 = 1,08 % · 370/924 = 40,04 % |
+| Euro, 15 núm. al 2 | `C(15,5)` = 3003 | 3/3003 = 0,10 % · 153/3003 = 5,09 % · 1503/3003 = 50,05 % |
+
+La **primera** columna es siempre `apuestas / C(n,m)`, así que se puede calcular
+con lo que ya hay en `reduced-tables.ts`. Las demás dependen de **qué** columnas
+concretas juega la reducción, no de cuántas.
+
+Consecuencia para el backend: **la tabla de garantías y el motor de reducciones
+son el mismo problema**. Con el desarrollo real de la reducción, toda la tabla
+se calcula de forma exacta y no hace falta cargar 164 tablas a mano. Sin él, no
+hay fórmula que valga.
+
+Lo mismo aplica a «Ver desarrollo»: `generateDemoCombinations()` en
+`ReducedSystemList.tsx` **no ejecuta la reducción**. Recorre combinaciones por
+fuerza bruta y se queda con las primeras N. Las columnas que muestra no son las
+que se jugarían. Se deja en pie a propósito, marcado aquí, porque sustituirlo
+sin motor sería cambiar un relleno por otro.
+
+### 5.5 Calidad de los datos que ya están en producción
+
+`reduced-tables.ts` gobierna los precios que cobra la app hoy. Se contrastó con
+la fuente de la que salió —el propio blog del cliente, artículo «Combinaciones
+Bonoloto Reducidas»— y coincide en todas las filas que ese artículo publica
+(10-15 y 25-27). El resto de filas, hasta 49 números, no está publicado ahí.
+
+Quedan tres cosas por resolver con el cliente, todas de datos, ninguna de
+código:
+
+1. **Huecos internos.** Con 47 números no hay reducida al 4, pero sí con 46 y
+   48. Con 23 no hay reducida al 3, pero sí con 22 y 24. En Euromillones, con
+   26 no hay reducida al 3, pero sí con 25 y 27. No son límites de producto:
+   son filas que faltan.
+2. **Saltos no monótonos.** Con 11 números la reducida al 4 son 11 apuestas y
+   con 12 son 10. Con 20 números la reducida al 3 son 30 y con 21 son 26; entre
+   22 y 24 pasa de 77 a 74. Más números no debería salir más barato para la
+   misma garantía.
+3. **Divergencia Primitiva/Bonoloto.** Las dos tablas son idénticas en 92 de 93
+   filas. En la 93 —13 números, reducida al 3— Primitiva dice 7 apuestas y
+   Bonoloto 4. La fuente dice 4 y dice que la tabla sirve para ambos juegos.
+   **No se ha tocado**, porque cambia un precio.
+
+### 5.6 Reducidas de Quiniela: pendiente de producto
+
+Los recuentos de `OFICIAL_REDUCTIONS` (`quiniela-data.ts`) no coinciden con las
+seis reducidas oficiales de LAE, y en dos casos difiere hasta el tipo de
+apuesta:
+
+| En la app | Oficial |
+|---|---|
+| 4 Triples al 13 — 16 ap. | 4 triples al 13 — **9 ap.** |
+| 7 Dobles al 13 — 32 ap. | 7 dobles al 13 — **16 ap.** |
+| 3 Dobles + 3 Triples al 13 — 32 ap. | 3 triples y 3 dobles al 13 — **24 ap.** |
+| 6 Dobles + 2 Triples al 13 — 32 ap. | 2 triples y 6 dobles al 13 — **64 ap.** |
+| 8 **Dobles** al 12 — 64 ap. | 8 **triples** al 12 — **81 ap.** |
+| 11 Dobles al 11 — 128 ap. | 11 dobles, condicionada al 13 — **132 ap.** |
+
+Los valores de la app son 16, 32, 32, 32, 64 y 128: todo potencias de dos.
+`bet-calculator.ts` sí tiene los oficiales para tres de ellas (`7D→16`,
+`4T→9`, `11D→132`), pero no es el fichero que alimenta esa pantalla.
+
+**No se ha corregido** porque qué reducciones se venden es decisión de producto,
+no de código. Está pendiente de que lo confirme el cliente. Cuando llegue la
+lista, el cambio es de datos en `OFICIAL_REDUCTIONS`.
