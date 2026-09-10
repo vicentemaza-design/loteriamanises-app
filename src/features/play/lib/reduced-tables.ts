@@ -11,9 +11,9 @@ export interface ReducedSystemTable {
 // idénticas fila a fila; si alguna vez dejaran de serlo, será por un
 // error de transcripción antes que por un cambio de producto.
 //
-// La fila de 13 números al 3 daba 7 apuestas aquí y 4 en Bonoloto: se ha
-// igualado a 4, que es lo que publica esa fuente. Cambia un precio
-// (7,00 EUR → 4,00 EUR), así que conviene que lo confirme el cliente.
+// La fila de 13 números al 3 daba 7 apuestas aquí y 4 en Bonoloto: era
+// una errata de transcripción, y se ha igualado a 4, que es lo que
+// publica esa misma fuente para los dos juegos.
 export const PRIMITIVA_REDUCED_TABLE: ReducedSystemTable = {
   unitPrice: 1,
   rows: {
