@@ -175,8 +175,12 @@ export const MANISES_REDUCTIONS: {
 // cambiado hasta el tipo de apuesta ("8 dobles al 12" son en realidad 8
 // triples; "11 dobles al 11" es al 12).
 //
-// `locked` es lo único que sí decide el cliente: marca cuáles de las
-// seis se ofrecen hoy en la app.
+// `locked` marca cuáles se ofrecen. Las seis están abiertas porque la
+// web del propio cliente vende las seis: su plataforma lista "4 Triples,
+// 7 Dobles, 3 Dobles 3 Triples, 6 Dobles 2 Triples, 8 Triples y 11
+// Dobles". Antes había cuatro bloqueadas sin motivo aparente, y la que
+// aquí llamábamos "8 Dobles" aparece allí como "8 Triples", que confirma
+// la corrección de arriba.
 export const OFICIAL_REDUCTIONS: {
   id: string;
   label: string;
@@ -222,7 +226,7 @@ export const OFICIAL_REDUCTIONS: {
     reqDobles: 3,
     reqTriples: 3,
     bets: 24,
-    locked: true,
+    locked: false,
     table: {
       title: 'GARANTÍAS DE PREMIOS (3D+3T AL 13)',
       cols: ['de 10', 'de 11', 'de 12', 'de 13', 'de 14'],
@@ -237,7 +241,7 @@ export const OFICIAL_REDUCTIONS: {
     reqDobles: 6,
     reqTriples: 2,
     bets: 64,
-    locked: true,
+    locked: false,
     table: {
       title: 'GARANTÍAS DE PREMIOS (6D+2T AL 13)',
       cols: ['de 10', 'de 11', 'de 12', 'de 13', 'de 14'],
@@ -252,7 +256,7 @@ export const OFICIAL_REDUCTIONS: {
     reqDobles: 0,
     reqTriples: 8,
     bets: 81,
-    locked: true,
+    locked: false,
     table: {
       title: 'GARANTÍAS DE PREMIOS (8 TRIPLES AL 12)',
       cols: ['de 9', 'de 10', 'de 11', 'de 12', 'de 13'],
@@ -267,7 +271,7 @@ export const OFICIAL_REDUCTIONS: {
     reqDobles: 11,
     reqTriples: 0,
     bets: 132,
-    locked: true,
+    locked: false,
     table: {
       title: 'GARANTÍAS DE PREMIOS (11 DOBLES AL 12)',
       cols: ['de 8', 'de 9', 'de 10', 'de 11', 'de 12'],

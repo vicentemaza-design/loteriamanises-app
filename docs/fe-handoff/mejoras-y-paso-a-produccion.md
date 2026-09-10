@@ -352,8 +352,11 @@ Los valores anteriores no correspondían a ningún producto real, se contradecí
 con `QUINIELA_REDUCED_TABLES` en `bet-calculator.ts` y en dos casos tenían
 cambiado hasta el tipo de apuesta.
 
-Lo único que decide el cliente es el flag `locked`: cuáles de las seis se
-ofrecen hoy en la app, que son las dos primeras.
+**Las seis se ofrecen.** El flag `locked` tenía cuatro bloqueadas sin motivo
+aparente. La web del propio cliente vende las seis: su plataforma lista «4
+Triples, 7 Dobles, 3 Dobles 3 Triples, 6 Dobles 2 Triples, 8 Triples y 11
+Dobles». Esa misma lista confirma además la corrección de arriba, porque la
+quinta aparece como **8 Triples** y no como «8 Dobles».
 
 `bet-calculator.ts` ya tenía tres de ellas correctas (`7D→16`, `4T→9`,
 `11D→132`), pero no es el fichero que alimenta esa pantalla. Ahora coinciden.
