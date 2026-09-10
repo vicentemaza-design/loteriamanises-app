@@ -12,7 +12,9 @@ cambiar antes de conectar contra servicios reales.
 | Ronda | Fecha | `main` | Sección |
 |---|---|---|---|
 | 1 | 02/09/2026 | `a338208` → `b14628d` | §1 |
-| 2 | 10/09/2026 | `b14628d` → `8727d04` | §5 |
+| 2 | 10/09/2026 | `b14628d` → `6179c2c` | §5 |
+
+**Cómo llega este código a FE/BE: en ZIP, no por el repositorio.** Ver §6.
 
 ---
 
@@ -342,3 +344,50 @@ Los valores de la app son 16, 32, 32, 32, 64 y 128: todo potencias de dos.
 **No se ha corregido** porque qué reducciones se venden es decisión de producto,
 no de código. Está pendiente de que lo confirme el cliente. Cuando llegue la
 lista, el cambio es de datos en `OFICIAL_REDUCTIONS`.
+
+---
+
+## 6. Cómo se entrega este código
+
+**El equipo de FE/BE no trabaja sobre el repositorio de GitHub.** Trabaja sobre
+el ZIP que recibió el 30 de agosto de 2026 y sobre los paquetes de mejoras que
+se le han ido enviando encima. Esto condiciona cómo se prepara cada entrega y
+conviene no olvidarlo.
+
+### 6.1 Consecuencias prácticas
+
+- **Cada ronda es un parche acumulativo sobre la anterior**, no un volcado del
+  código completo. Hay que aplicarlas en orden.
+- **No se puede asumir que haya Git en esa copia.** Las instrucciones van
+  escritas para `patch -p1`, y `git apply` queda como alternativa.
+- **Las ramas de este repositorio no les llegan.** En particular
+  `fix/release-cleanup-demo-debug`: lo que necesitan para un build conectado es
+  el checklist de §2.3, que sí viaja dentro del parche porque va en este mismo
+  documento.
+- **Lo que se entrega es la línea de `main`**, que es la variante DEMO
+  (`demoEnabled: true`, `apiProvider` en `mock`). Es deliberado: según
+  `RELEASE_SOURCE_OF_TRUTH.md`, DEMO y PRODUCTION comparten el mismo código
+  funcional y solo cambian el modo de integración y la fuente de los datos.
+
+### 6.2 Rondas enviadas
+
+| Fecha | Base | Resultado | Fichero |
+|---|---|---|---|
+| 30/08/2026 | — | `a338208` | Código completo (entrega inicial) |
+| 02/09/2026 | `a338208` | `b14628d` | `mejoras-2026-09-02.patch` |
+| 10/09/2026 | `b14628d` | `6179c2c` | `mejoras-2026-09-10.patch` |
+
+### 6.3 Antes de enviar una ronda
+
+Comprobado así la última vez, y conviene repetirlo:
+
+1. Generar el parche con `git format-patch --stdout <base>..main`.
+2. Extraer una copia limpia de `<base>` **sin `.git`** y aplicar el parche con
+   `patch -p1 --forward`. No debe quedar ningún `.rej`.
+3. `diff -r` de esa copia contra una extracción de `main`: deben ser idénticas.
+4. `npx tsc --noEmit` y `npm run build` desde la copia parcheada.
+
+> **`patch --dry-run` da falsos errores con estos parches.** Al no crear los
+> ficheros nuevos, los cambios posteriores sobre ellos no los encuentran. Hay
+> que aplicarlo de verdad y comprobar que no queden `.rej`. Esto está avisado
+> también en el `APLICAR.md` que va en el ZIP.
