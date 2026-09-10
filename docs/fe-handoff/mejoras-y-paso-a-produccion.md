@@ -249,12 +249,17 @@ cargada, y la UI ya lo trata. Sustituir el objeto `GUARANTEES` por una llamada
 del tipo `GET /api/reducidas/garantias?game=&system=&numbers=` respetando
 `ReducedGuaranteeTable` es todo el trabajo de integración en el frontend.
 
-Hoy hay **3 tablas cargadas de las 164** que hacen falta (93 de 6/49 + 71 de
-Euromillones, contadas sobre `reduced-tables.ts`). Primitiva y Bonoloto
-comparten tabla —solo cambia el precio por apuesta—, así que
-`getLoadedGuaranteeCombinations()` devuelve 5 entradas para esas 3 tablas: es
-el número de pares `(juego, sistema, nº)` que resuelven, no el de tablas
-distintas. Cada tabla lleva su `source` anotado.
+**El cliente ha confirmado (10/09/2026) que el motor de reducidas es suyo y ya
+vive en su backend**, y que para cada combinación calcula el desarrollo y, a
+partir de él, los mínimos, máximos y garantías. Es decir: no hay 164 tablas que
+transcribir. Hay un servicio que ya existe y hay que exponerlo.
+
+Las 5 tablas cargadas hoy en `reduced-guarantees.ts` son **semillas de
+verificación**, no el destino: sirven para que la UI se pueda probar contra
+valores reales mientras se conecta el servicio. Cada una lleva su `source`.
+Primitiva y Bonoloto comparten tablas —solo cambia el precio por apuesta—, así
+que `getLoadedGuaranteeCombinations()` devuelve 9 pares `(juego, sistema, nº)`
+para esas 5 tablas.
 
 ### 5.4 Qué son los porcentajes, y por qué esto es un problema de motor
 
@@ -275,6 +280,10 @@ son el mismo problema**. Con el desarrollo real de la reducción, toda la tabla
 se calcula de forma exacta y no hace falta cargar 164 tablas a mano. Sin él, no
 hay fórmula que valga.
 
+Confirmado por el cliente el 10/09/2026, y por su propia calculadora, que lo
+dice con estas palabras: «la probabilidad de coger premio de 6 siempre coincide
+con el número de apuestas que juega la reducida».
+
 Lo mismo aplica a «Ver desarrollo»: `generateDemoCombinations()` en
 `ReducedSystemList.tsx` **no ejecuta la reducción**. Recorre combinaciones por
 fuerza bruta y se queda con las primeras N. Las columnas que muestra no son las
@@ -288,21 +297,25 @@ la fuente de la que salió —el propio blog del cliente, artículo «Combinacio
 Bonoloto Reducidas»— y coincide en todas las filas que ese artículo publica
 (10-15 y 25-27). El resto de filas, hasta 49 números, no está publicado ahí.
 
-Quedan tres cosas por resolver con el cliente, todas de datos, ninguna de
-código:
+El 10/09/2026 el cliente envió capturas de su propia calculadora, y cuatro
+filas más cuadran exactamente con las nuestras: 21 números al 5 (1.800
+apuestas), al 4 (196) y al 3 (26), y 44 números al 3 (355).
 
-1. **Huecos internos.** Con 47 números no hay reducida al 4, pero sí con 46 y
-   48. Con 23 no hay reducida al 3, pero sí con 22 y 24. En Euromillones, con
-   26 no hay reducida al 3, pero sí con 25 y 27. No son límites de producto:
-   son filas que faltan.
-2. **Saltos no monótonos.** Con 11 números la reducida al 4 son 11 apuestas y
-   con 12 son 10. Con 20 números la reducida al 3 son 30 y con 21 son 26; entre
-   22 y 24 pasa de 77 a 74. Más números no debería salir más barato para la
-   misma garantía.
-3. **Divergencia Primitiva/Bonoloto.** Las dos tablas son idénticas en 92 de 93
+Eso **descarta la sospecha de que los saltos no monótonos fueran erratas**: el
+21 al 3 son 26 apuestas después de que el 20 sean 30, y así lo da su sistema en
+producción. Son reducciones distintas, no una progresión, y no hay nada que
+corregir ahí.
+
+Quedan dos cosas por confirmar, las dos de datos:
+
+1. **Huecos internos.** Con 47 números no aparece reducida al 4, pero sí con 46
+   y 48. Con 23 no aparece reducida al 3, pero sí con 22 y 24. En Euromillones,
+   con 26 no aparece reducida al 3, pero sí con 25 y 27. Se comprueba en un
+   minuto en la calculadora del cliente: o existen y a nosotros nos faltan, o
+   no existen y entonces está bien.
+2. **Divergencia Primitiva/Bonoloto.** Las dos tablas son idénticas en 92 de 93
    filas. En la 93 —13 números, reducida al 3— Primitiva dice 7 apuestas y
-   Bonoloto 4. La fuente dice 4 y dice que la tabla sirve para ambos juegos.
-   **No se ha tocado**, porque cambia un precio.
+   Bonoloto 4. **No se ha tocado**, porque cambia un precio.
 
 ### 5.6 Reducidas de Quiniela: pendiente de producto
 

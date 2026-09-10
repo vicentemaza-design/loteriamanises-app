@@ -122,8 +122,45 @@ const LOTO_6_49_GUARANTEES: Record<string, Record<number, ReducedGuaranteeTable>
       ],
       source: 'Mejoras_septiembre_1.pptx (cliente, sept. 2025), lámina 1.',
     },
+    21: {
+      percentages: ['0,36 %', '32,87 %', '100 %'],
+      rows: [
+        { category: '6 aciertos', prizeLabel: 'Premio 1', cells: [{ min: 1, max: 1 }, null, null] },
+        { category: '5 aciertos', prizeLabel: 'Premio 2', cells: [null, { min: 1, max: 1 }, null] },
+        { category: '4 aciertos', prizeLabel: 'Premio 3', cells: [null, { min: 0, max: 10 }, { min: 1, max: 15 }] },
+        { category: '3 aciertos', prizeLabel: 'Premio 4', cells: [{ min: 32, max: 75 }, { min: 16, max: 57 }, { min: 13, max: 54 }] },
+      ],
+      highlight:
+        'Si los 6 aciertos están dentro de la selección general, se garantizan los premios indicados en la siguiente tabla.',
+      notes: [
+        'Probabilidad de 5+C: 2,17 % (acertando el complementario).',
+        'Las apuestas se reducen asegurando los premios mínimos indicados y manteniendo tantas opciones a premio de 6 como apuestas juegue la reducción elegida.',
+        'La probabilidad de conseguir premio de 6 siempre coincide con el número de apuestas que juega la reducida. Los premios mínimos se aseguran cuando entre los números jugados se aciertan los 6 ganadores: por eso, a más números jugados, más posibilidades de conseguir premios.',
+      ],
+      source: 'Calculadora de reducidas de loteriamanises.com (captura enviada por el cliente, 10/09/2026).',
+    },
+  },
+  reducida_3: {
+    44: {
+      percentages: ['0,01 %', '1,15 %', '47,46 %', '100 %'],
+      rows: [
+        { category: '6 aciertos', prizeLabel: 'Premio 1', cells: [{ min: 1, max: 1 }, null, null, null] },
+        { category: '5 aciertos', prizeLabel: 'Premio 2', cells: [null, { min: 1, max: 1 }, null, null] },
+        { category: '4 aciertos', prizeLabel: 'Premio 3', cells: [null, { min: 0, max: 10 }, { min: 1, max: 3 }, null] },
+        { category: '3 aciertos', prizeLabel: 'Premio 4', cells: [{ min: 32, max: 75 }, { min: 0, max: 10 }, { min: 0, max: 16 }, { min: 1, max: 20 }] },
+      ],
+      highlight:
+        'Si los 6 aciertos están dentro de la selección general, se garantizan los premios indicados en la siguiente tabla.',
+      notes: [
+        'Probabilidad de 5+C: 0,03 % (acertando el complementario).',
+        'Las apuestas se reducen asegurando los premios mínimos indicados y manteniendo tantas opciones a premio de 6 como apuestas juegue la reducción elegida.',
+        'La probabilidad de conseguir premio de 6 siempre coincide con el número de apuestas que juega la reducida. Los premios mínimos se aseguran cuando entre los números jugados se aciertan los 6 ganadores: por eso, a más números jugados, más posibilidades de conseguir premios.',
+      ],
+      source: 'Calculadora de reducidas de loteriamanises.com (captura enviada por el cliente, 10/09/2026).',
+    },
   },
 };
+
 
 const EUROMILLONES_GUARANTEES: Record<string, Record<number, ReducedGuaranteeTable>> = {
   reducida_2: {
