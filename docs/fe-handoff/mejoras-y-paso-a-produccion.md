@@ -249,9 +249,12 @@ cargada, y la UI ya lo trata. Sustituir el objeto `GUARANTEES` por una llamada
 del tipo `GET /api/reducidas/garantias?game=&system=&numbers=` respetando
 `ReducedGuaranteeTable` es todo el trabajo de integración en el frontend.
 
-Hoy hay **3 de 164** combinaciones cargadas (93 de 6/49 + 71 de Euromillones,
-contadas sobre `reduced-tables.ts`; Primitiva y Bonoloto comparten tabla, solo
-cambia el precio por apuesta). Cada una lleva su `source` anotado.
+Hoy hay **3 tablas cargadas de las 164** que hacen falta (93 de 6/49 + 71 de
+Euromillones, contadas sobre `reduced-tables.ts`). Primitiva y Bonoloto
+comparten tabla —solo cambia el precio por apuesta—, así que
+`getLoadedGuaranteeCombinations()` devuelve 5 entradas para esas 3 tablas: es
+el número de pares `(juego, sistema, nº)` que resuelven, no el de tablas
+distintas. Cada tabla lleva su `source` anotado.
 
 ### 5.4 Qué son los porcentajes, y por qué esto es un problema de motor
 
