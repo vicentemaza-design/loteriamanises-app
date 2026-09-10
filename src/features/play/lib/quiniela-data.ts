@@ -160,6 +160,13 @@ export const MANISES_REDUCTIONS: {
   },
 ];
 
+// Las seis reducciones oficiales de LAE. Los recuentos de apuestas no
+// son elección nuestra: son el producto tal y como lo vende el Estado
+// (4 triples al 13 = 9 apuestas, 7 dobles al 13 = 16, 3T+3D al 13 = 24,
+// 2T+6D al 13 = 64, 8 triples al 12 = 81, 11 dobles al 12 = 132).
+// Antes había aquí 16, 32, 32, 32, 64 y 128 —potencias de dos— y en dos
+// casos hasta el tipo de apuesta estaba cambiado. `locked` sí es
+// decisión de producto: marca cuáles se ofrecen hoy en la app.
 export const OFICIAL_REDUCTIONS: {
   id: string;
   label: string;
@@ -174,14 +181,14 @@ export const OFICIAL_REDUCTIONS: {
     label: '4 Triples (al 13)',
     reqDobles: 0,
     reqTriples: 4,
-    bets: 16,
+    bets: 9,
     locked: false,
     table: {
       title: 'GARANTÍAS DE PREMIOS (4 TRIPLES AL 13)',
       cols: ['de 10', 'de 11', 'de 12', 'de 13', 'de 14'],
             rows: [],
             development: [],
-      totalCols: 16,
+      totalCols: 9,
     },
   },
   {
@@ -189,14 +196,14 @@ export const OFICIAL_REDUCTIONS: {
     label: '7 Dobles (al 13)',
     reqDobles: 7,
     reqTriples: 0,
-    bets: 32,
+    bets: 16,
     locked: false,
     table: {
       title: 'GARANTÍAS DE PREMIOS (7 DOBLES AL 13)',
       cols: ['de 10', 'de 11', 'de 12', 'de 13', 'de 14'],
             rows: [],
             development: [],
-      totalCols: 32,
+      totalCols: 16,
     },
   },
   {
@@ -204,14 +211,14 @@ export const OFICIAL_REDUCTIONS: {
     label: '3 Dobles + 3 Triples (al 13)',
     reqDobles: 3,
     reqTriples: 3,
-    bets: 32,
+    bets: 24,
     locked: true,
     table: {
       title: 'GARANTÍAS DE PREMIOS (3D+3T AL 13)',
       cols: ['de 10', 'de 11', 'de 12', 'de 13', 'de 14'],
             rows: [],
             development: [],
-      totalCols: 32,
+      totalCols: 24,
     },
   },
   {
@@ -219,44 +226,44 @@ export const OFICIAL_REDUCTIONS: {
     label: '6 Dobles + 2 Triples (al 13)',
     reqDobles: 6,
     reqTriples: 2,
-    bets: 32,
+    bets: 64,
     locked: true,
     table: {
       title: 'GARANTÍAS DE PREMIOS (6D+2T AL 13)',
       cols: ['de 10', 'de 11', 'de 12', 'de 13', 'de 14'],
             rows: [],
             development: [],
-      totalCols: 32,
-    },
-  },
-  {
-    id: '8D_12',
-    label: '8 Dobles (al 12)',
-    reqDobles: 8,
-    reqTriples: 0,
-    bets: 64,
-    locked: true,
-    table: {
-      title: 'GARANTÍAS DE PREMIOS (8 DOBLES AL 12)',
-      cols: ['de 9', 'de 10', 'de 11', 'de 12', 'de 13'],
-            rows: [],
-            development: [],
       totalCols: 64,
     },
   },
   {
-    id: '11D_11',
-    label: '11 Dobles (al 11)',
-    reqDobles: 11,
-    reqTriples: 0,
-    bets: 128,
+    id: '8D_12',
+    label: '8 Triples (al 12)',
+    reqDobles: 0,
+    reqTriples: 8,
+    bets: 81,
     locked: true,
     table: {
-      title: 'GARANTÍAS DE PREMIOS (11 DOBLES AL 11)',
+      title: 'GARANTÍAS DE PREMIOS (8 TRIPLES AL 12)',
+      cols: ['de 9', 'de 10', 'de 11', 'de 12', 'de 13'],
+            rows: [],
+            development: [],
+      totalCols: 81,
+    },
+  },
+  {
+    id: '11D_11',
+    label: '11 Dobles (al 12)',
+    reqDobles: 11,
+    reqTriples: 0,
+    bets: 132,
+    locked: true,
+    table: {
+      title: 'GARANTÍAS DE PREMIOS (11 DOBLES AL 12)',
       cols: ['de 8', 'de 9', 'de 10', 'de 11', 'de 12'],
             rows: [],
             development: [],
-      totalCols: 128,
+      totalCols: 132,
     },
   },
 ];

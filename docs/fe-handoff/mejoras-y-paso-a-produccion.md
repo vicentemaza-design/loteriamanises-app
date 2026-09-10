@@ -318,32 +318,49 @@ Quedan dos cosas por confirmar, las dos de datos:
    con 26 no aparece reducida al 3, pero sí con 25 y 27. Se comprueba en un
    minuto en la calculadora del cliente: o existen y a nosotros nos faltan, o
    no existen y entonces está bien.
-2. **Divergencia Primitiva/Bonoloto.** Las dos tablas son idénticas en 92 de 93
-   filas. En la 93 —13 números, reducida al 3— Primitiva dice 7 apuestas y
-   Bonoloto 4. **No se ha tocado**, porque cambia un precio.
+2. **Divergencia Primitiva/Bonoloto — corregida.** Las dos tablas eran
+   idénticas en 92 de 93 filas. En la 93 —13 números, reducida al 3— Primitiva
+   decía 7 apuestas y Bonoloto 4. La fuente da 4 y dice que la tabla sirve para
+   los dos juegos, así que era una errata de transcripción: Primitiva pasa a 4
+   (de 7,00 € a 4,00 €). Las 93 filas ya coinciden.
 
-### 5.6 Reducidas de Quiniela: pendiente de producto
+### 5.6 Reducidas de Quiniela: corregidas a las oficiales
 
-Los recuentos de `OFICIAL_REDUCTIONS` (`quiniela-data.ts`) no coinciden con las
-seis reducidas oficiales de LAE, y en dos casos difiere hasta el tipo de
-apuesta:
+Los recuentos de `OFICIAL_REDUCTIONS` (`quiniela-data.ts`) no coincidían con las
+seis reducidas oficiales de LAE, y en dos casos difería hasta el tipo de
+apuesta. Los valores que había —16, 32, 32, 32, 64 y 128— son todo potencias de
+dos.
 
-| En la app | Oficial |
+| Antes | Ahora (oficial de LAE) |
 |---|---|
 | 4 Triples al 13 — 16 ap. | 4 triples al 13 — **9 ap.** |
 | 7 Dobles al 13 — 32 ap. | 7 dobles al 13 — **16 ap.** |
 | 3 Dobles + 3 Triples al 13 — 32 ap. | 3 triples y 3 dobles al 13 — **24 ap.** |
 | 6 Dobles + 2 Triples al 13 — 32 ap. | 2 triples y 6 dobles al 13 — **64 ap.** |
 | 8 **Dobles** al 12 — 64 ap. | 8 **triples** al 12 — **81 ap.** |
-| 11 Dobles al 11 — 128 ap. | 11 dobles, condicionada al 13 — **132 ap.** |
+| 11 Dobles al **11** — 128 ap. | 11 dobles al **12** — **132 ap.** |
 
-Los valores de la app son 16, 32, 32, 32, 64 y 128: todo potencias de dos.
-`bet-calculator.ts` sí tiene los oficiales para tres de ellas (`7D→16`,
-`4T→9`, `11D→132`), pero no es el fichero que alimenta esa pantalla.
+**Corregidas.** No es una elección de producto: son los productos oficiales del
+Estado, y los valores anteriores no correspondían a ninguno. Contrastado con dos
+fuentes independientes. Lo que sí sigue siendo decisión de producto es el flag
+`locked`, que marca cuáles se ofrecen hoy en la app: solo las dos primeras.
 
-**No se ha corregido** porque qué reducciones se venden es decisión de producto,
-no de código. Está pendiente de que lo confirme el cliente. Cuando llegue la
-lista, el cambio es de datos en `OFICIAL_REDUCTIONS`.
+`bet-calculator.ts` ya tenía tres de ellas correctas (`7D→16`, `4T→9`,
+`11D→132`), pero no es el fichero que alimenta esa pantalla. Ahora coinciden.
+
+### 5.7 Notas de QA para cuando se conecte el servicio
+
+Dos cosas que conviene comprobar contra el motor real, no bloqueantes:
+
+- **Una celda repetida en el origen.** En las dos capturas que envió el cliente
+  —21 números al 4 con 196 apuestas, y 44 al 3 con 355— la fila «De 3» de la
+  primera columna de porcentaje da exactamente `mín. 32 / máx. 75` en ambas.
+  Son reducciones que no se parecen en nada. Puede ser casualidad, pero merece
+  una comprobación antes de dar por buena esa columna.
+- **Filas que no existen en nuestra tabla.** 23 números al 3, 47 al 4 y, en
+  Euromillones, 26 al 3. La UI ya degrada bien: esa cantidad simplemente no se
+  ofrece para esa reducción. Si el servicio las devuelve, se añaden y ya está.
+
 
 ---
 

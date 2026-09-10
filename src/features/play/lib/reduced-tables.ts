@@ -5,13 +5,18 @@ export interface ReducedSystemTable {
   rows: Record<number, Record<ReducedSystemId, number | null>>;
 }
 
+// Primitiva y Bonoloto comparten el mismo 6/49 y la misma tabla de
+// apuestas: solo cambia el precio (1 EUR frente a 0,50 EUR). La fuente
+// —el blog del cliente— lo dice explícitamente. Las dos tablas son
+// idénticas fila a fila; si alguna vez dejaran de serlo, será por un
+// error de transcripción antes que por un cambio de producto.
 export const PRIMITIVA_REDUCED_TABLE: ReducedSystemTable = {
   unitPrice: 1,
   rows: {
     10: { reducida_5: 18, reducida_4: 5, reducida_3: null },
     11: { reducida_5: 34, reducida_4: 11, reducida_3: null },
     12: { reducida_5: 68, reducida_4: 10, reducida_3: 4 },
-    13: { reducida_5: 116, reducida_4: 23, reducida_3: 7 },
+    13: { reducida_5: 116, reducida_4: 23, reducida_3: 4 },
     14: { reducida_5: 203, reducida_4: 23, reducida_3: 7 },
     15: { reducida_5: 315, reducida_4: 31, reducida_3: null },
     16: { reducida_5: 504, reducida_4: 53, reducida_3: 9 },
