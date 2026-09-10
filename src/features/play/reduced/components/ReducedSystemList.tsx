@@ -15,33 +15,14 @@ interface ReducedSystemListProps {
   onPlayWithSystem: (systemId: string) => void;
 }
 
-function generateDemoCombinations(numbers: number[], stars: number[], count: number) {
-  const result: Array<{ numbers: number[]; stars: number[] }> = [];
-  const n = numbers.length;
-  const needNums = 5;
-  const needStars = stars.length >= 2 ? 2 : stars.length;
-
-  let idx = 0;
-  for (let i = 0; i < n - needNums + 1 && result.length < count; i++) {
-    for (let j = i + 1; j < n - needNums + 2 && result.length < count; j++) {
-      for (let k = j + 1; k < n - needNums + 3 && result.length < count; k++) {
-        for (let l = k + 1; l < n - needNums + 4 && result.length < count; l++) {
-          for (let m = l + 1; m < n && result.length < count; m++) {
-            const combo = {
-              numbers: [numbers[i], numbers[j], numbers[k], numbers[l], numbers[m]],
-              stars: stars.slice(0, needStars),
-            };
-            if ((idx % Math.ceil(n * n / count)) === 0 || result.length < Math.min(count, 25)) {
-              result.push(combo);
-            }
-            idx++;
-          }
-        }
-      }
-    }
-  }
-  return result.slice(0, count);
-}
+// El desarrollo de una reducción —qué apuestas concretas se juegan— lo
+// produce el sistema de reducción del backend. Aquí había un
+// generateDemoCombinations() que NO lo ejecutaba: recorría combinaciones
+// por fuerza bruta y se quedaba con las primeras N, así que las columnas
+// que enseñaba esta pantalla no eran las que se jugarían. Se ha retirado
+// por el mismo motivo que las tablas de garantías inventadas (ver
+// lib/reduced-guarantees.ts): mientras no haya desarrollo real, la
+// pantalla lo dice en vez de rellenarlo.
 
 export function ReducedSystemList({
   systems,
@@ -59,7 +40,6 @@ export function ReducedSystemList({
   const guaranteeTableRef = useRef<HTMLDivElement | null>(null);
   const [isGuaranteeTableScrollable, setIsGuaranteeTableScrollable] = useState(false);
   const [developmentSystem, setDevelopmentSystem] = useState<ReducedSystemUI | null>(null);
-  const [devPage, setDevPage] = useState(0);
 
   const guaranteeTable = guaranteeSystem
     ? getReducedGuaranteeTable(game.id, guaranteeSystem.id, selectedNumbers.length)
@@ -78,8 +58,6 @@ export function ReducedSystemList({
     return () => observer.disconnect();
   }, [guaranteeSystem, guaranteeTable]);
 
-  const DEV_PAGE_SIZE = 25;
-
   if (systems.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
@@ -95,14 +73,6 @@ export function ReducedSystemList({
   }
 
   const recommendedId = systems.find((s) => s.id.includes('reducida_4'))?.id ?? systems[0]?.id;
-
-  const demoCombos = developmentSystem
-    ? generateDemoCombinations(selectedNumbers, selectedStars, developmentSystem.betsCount)
-    : [];
-  const totalDevPages = developmentSystem ? Math.ceil(developmentSystem.betsCount / DEV_PAGE_SIZE) : 0;
-  const pageStart = devPage * DEV_PAGE_SIZE;
-  const pageEnd = Math.min(pageStart + DEV_PAGE_SIZE, demoCombos.length);
-  const pageCombos = demoCombos.slice(pageStart, pageEnd);
 
   return (
     <>
@@ -168,7 +138,7 @@ export function ReducedSystemList({
                   Ver garantías
                 </button>
                 <button
-                  onClick={() => { setDevelopmentSystem(system); setDevPage(0); }}
+                  onClick={() => setDevelopmentSystem(system)}
                   className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-[9px] font-bold text-slate-400 transition-colors hover:bg-slate-50 hover:text-manises-blue"
                 >
                   <NavArrowRight className="h-3 w-3" />
@@ -395,7 +365,7 @@ export function ReducedSystemList({
                   Desarrollo – {developmentSystem.label}
                 </h2>
                 <p className="text-[10px] font-medium text-slate-400">
-                  {developmentSystem.betsCount} apuestas generadas
+                  {developmentSystem.betsCount} apuestas
                 </p>
               </div>
               <button
@@ -407,102 +377,82 @@ export function ReducedSystemList({
               </button>
             </div>
 
-            {/* Info */}
-            <div className="px-4 py-2.5">
-              <div className="rounded-xl border border-slate-100 bg-white px-3 py-2.5">
-                <p className="text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">
-                  {developmentSystem.betsCount} apuestas generadas
+            {/* Sin desarrollo real que enseñar: se dice, y se deja a la
+                vista lo que sí se sabe con certeza —cuántas apuestas
+                juega la reducción, con qué números y a qué precio—. */}
+            <div className="flex-1 overflow-y-auto px-4 py-2.5">
+              <div className="rounded-[1.3rem] border border-slate-100 bg-white px-4 py-4">
+                <p className="text-[12px] font-black text-manises-blue">
+                  Desarrollo no disponible
                 </p>
-                <p className="mt-0.5 text-[10px] font-medium text-slate-400">
-                  Estas son todas las columnas generadas por la reducción. Cada fila representa una apuesta distinta.
+                <p className="mt-1.5 text-[11px] font-medium leading-relaxed text-slate-500">
+                  Las apuestas concretas de esta reducción las genera el sistema de
+                  reducción. Hasta que esté conectado no podemos mostrarlas, y preferimos
+                  no enseñar columnas que no serían las que se juegan.
                 </p>
-              </div>
-            </div>
 
-            {/* Lista de combinaciones */}
-            <div className="flex-1 overflow-y-auto px-4 pb-4">
-              {demoCombos.length > 0 ? (
-                <div className="space-y-1.5">
-                  {pageCombos.map((combo, idx) => {
-                    const globalIdx = pageStart + idx;
-                    return (
-                      <div
-                        key={globalIdx}
-                        className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white px-3 py-2.5 shadow-sm"
-                      >
-                        <span className="w-20 shrink-0 whitespace-nowrap text-[9px] font-black uppercase tracking-wider text-slate-400">
-                          Columna {globalIdx + 1}
+                <div className="mt-4 space-y-2 border-t border-slate-100 pt-3">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+                      Apuestas
+                    </span>
+                    <span className="text-[12px] font-black text-manises-blue">
+                      {developmentSystem.betsCount}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+                      Números jugados
+                    </span>
+                    <span className="text-[12px] font-black text-manises-blue">
+                      {selectedNumbers.length}
+                      {selectedStars.length > 0 && ` · ${selectedStars.length} estrellas`}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+                      Importe
+                    </span>
+                    <span className="text-[12px] font-black text-manises-blue">
+                      {formatCurrency(developmentSystem.totalPrice * (drawsCount || 1))}
+                      {drawsCount > 1 && (
+                        <span className="ml-1 text-[10px] font-medium text-slate-400">
+                          {drawsCount} sorteos
                         </span>
-                        <div className="flex flex-1 flex-wrap items-center gap-1">
-                          {combo.numbers.map((n) => (
-                            <span
-                              key={n}
-                              className="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-black text-white"
-                              style={{ backgroundColor: game.color }}
-                            >
-                              {n}
-                            </span>
-                          ))}
-                          {combo.stars.length > 0 && (
-                            <>
-                              <span className="mx-0.5 text-[8px] text-slate-300">·</span>
-                              {combo.stars.map((s) => (
-                                <span
-                                  key={s}
-                                  className="flex h-7 w-7 items-center justify-center rounded-full bg-manises-gold text-[11px] font-black text-white"
-                                >
-                                  {s}
-                                </span>
-                              ))}
-                            </>
-                          )}
-                        </div>
-                        <NavArrowRight className="h-3 w-3 shrink-0 text-slate-300" />
-                      </div>
-                    );
-                  })}
+                      )}
+                    </span>
+                  </div>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center">
-                  <InfoCircle className="h-8 w-8 text-slate-300" />
-                  <p className="mt-2 text-[12px] font-black uppercase tracking-widest text-slate-400">
-                    Selecciona números primero
+              </div>
+
+              {selectedNumbers.length > 0 && (
+                <div className="mt-3 rounded-[1.3rem] border border-slate-100 bg-white px-4 py-3.5">
+                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">
+                    Tu selección
                   </p>
-                  <p className="mt-1 text-[11px] font-medium text-slate-400">
-                    Elige tus números en el boleto para ver el desarrollo de esta reducción.
-                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    {selectedNumbers.map((n) => (
+                      <span
+                        key={n}
+                        className="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-black text-white"
+                        style={{ backgroundColor: game.color }}
+                      >
+                        {n}
+                      </span>
+                    ))}
+                    {selectedStars.map((star) => (
+                      <span
+                        key={`s${star}`}
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-manises-gold text-[11px] font-black text-white"
+                      >
+                        {star}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Paginación */}
-            {totalDevPages > 1 && (
-              <div className="flex items-center justify-between border-t border-slate-100 bg-white px-4 py-3">
-                <button
-                  onClick={() => setDevPage((p) => Math.max(0, p - 1))}
-                  disabled={devPage === 0}
-                  className={cn(
-                    'flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[10px] font-bold transition-all active:scale-95',
-                    devPage === 0 ? 'border-slate-100 text-slate-300' : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                  )}
-                >
-                  <NavArrowLeft className="h-3 w-3" /> Anterior
-                </button>
-                <span className="text-[10px] font-medium text-slate-400">
-                  {pageStart + 1}–{pageEnd} de {developmentSystem.betsCount}
-                </span>
-                <button
-                  onClick={() => setDevPage((p) => Math.min(totalDevPages - 1, p + 1))}
-                  disabled={devPage >= totalDevPages - 1}
-                  className={cn(
-                    'flex items-center gap-1.5 rounded-xl border px-3 py-2 text-[10px] font-bold transition-all active:scale-95',
-                    devPage >= totalDevPages - 1 ? 'border-slate-100 text-slate-300' : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                  )}
-                >
-                  Siguiente <NavArrowRight className="h-3 w-3" />
-                </button>
-              </div>
-            )}
           </motion.div>
         )}
       </AnimatePresence>

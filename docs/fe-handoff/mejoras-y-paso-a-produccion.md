@@ -284,11 +284,14 @@ Confirmado por el cliente el 10/09/2026, y por su propia calculadora, que lo
 dice con estas palabras: «la probabilidad de coger premio de 6 siempre coincide
 con el número de apuestas que juega la reducida».
 
-Lo mismo aplica a «Ver desarrollo»: `generateDemoCombinations()` en
-`ReducedSystemList.tsx` **no ejecuta la reducción**. Recorre combinaciones por
-fuerza bruta y se queda con las primeras N. Las columnas que muestra no son las
-que se jugarían. Se deja en pie a propósito, marcado aquí, porque sustituirlo
-sin motor sería cambiar un relleno por otro.
+Lo mismo aplicaba a «Ver desarrollo»: `generateDemoCombinations()` en
+`ReducedSystemList.tsx` **no ejecutaba la reducción**. Recorría combinaciones
+por fuerza bruta y se quedaba con las primeras N, así que las columnas que
+mostraba no eran las que se jugarían. **Retirado**, con el mismo criterio que
+las tablas: la pantalla declara que el desarrollo no está disponible y enseña
+solo lo que sí se sabe con certeza (cuántas apuestas juega la reducción, con
+qué números y a qué importe). Cuando el servicio devuelva las columnas, se
+pintan ahí.
 
 ### 5.5 Calidad de los datos que ya están en producción
 
