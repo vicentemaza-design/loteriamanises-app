@@ -138,6 +138,19 @@ tabla de referencia rápida.
 
 ## 3. Reglas críticas de HTML email
 
+### ⚠️ El dominio de las imágenes está en 535 sitios
+
+Las plantillas cargan las imágenes por URL absoluta desde
+`https://cdn.loteriamanises.com/emails/` — 535 referencias repartidas por las 34
+plantillas y las 3 compartidas. **No se cambia a mano**: hay un script,
+`emails/scripts/cambiar-cdn.sh`, que reescribe la URL base de golpe.
+
+Antes de cambiarla, conviene pensarlo dos veces: un correo enviado se archiva y
+se reenvía durante años, y sus imágenes se siguen pidiendo mucho después. Un
+subdominio propio apuntado por DNS al proveedor de turno permite cambiar de
+proveedor sin romper los correos ya enviados. Una URL que apunte directamente al
+proveedor, no.
+
 ### ⚠️ El `bgcolor` de respaldo no es decorativo
 
 Outlook de escritorio usa el motor de Word, que **no soporta `rgba()`**. Cuando
