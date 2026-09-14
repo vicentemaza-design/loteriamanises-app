@@ -138,6 +138,56 @@ tabla de referencia rápida.
 
 ## 3. Reglas críticas de HTML email
 
+### ⚠️ El `bgcolor` de respaldo no es decorativo
+
+Outlook de escritorio usa el motor de Word, que **no soporta `rgba()`**. Cuando
+una celda lleva las dos cosas:
+
+```html
+<td bgcolor="#B91C1C" style="background-color:rgba(255,255,255,0.15);">
+```
+
+los clientes modernos aplican el `rgba` y Outlook aplica el `bgcolor`. Si los
+dos no representan **el mismo color final**, el elemento cambia de color según
+el cliente. Eso es justo lo que pasaba en las insignias del hero: se veían de un
+color suave en Gmail y de un rojo o azul intensos en Outlook.
+
+El `bgcolor` correcto se calcula componiendo el velo sobre el fondo que hay
+detrás, que en el hero es su propio `bgcolor` (Outlook tampoco pinta el
+degradado):
+
+```
+respaldo = 0,15 × 255 + 0,85 × componente_del_hero   (por canal)
+```
+
+Con los cuatro fondos de hero en uso:
+
+| Hero | Insignia al 15 % |
+|---|---|
+| `#0B2145` azul | `#304261` |
+| `#0B3320` verde | `#305241` |
+| `#7A1620` rojo | `#8E3941` |
+| `#78350F` ámbar | `#8C5333` |
+
+### ⚠️ Las insignias `icon-hero-*-square.png` ya son la insignia entera
+
+Esos PNG de 216×216 no son solo el glifo: llevan el cuadrado redondeado, el velo
+blanco al 15 % en alfa y las esquinas transparentes. **No se meten dentro de una
+celda con color y `border-radius`**, porque entonces la insignia se pinta dos
+veces y, en Outlook, el cuadrado de color asoma por detrás de las esquinas
+redondeadas del PNG.
+
+Van en una celda limpia:
+
+```html
+<td width="90" height="90" style="width:90px;height:90px;line-height:0;font-size:0;text-align:center;">
+  <img src=".../icon-hero-user-square.png" width="90" height="90" alt=""
+       style="display:block;width:90px;height:90px;border:0;margin:0 auto;" />
+</td>
+```
+
+Así se ven idénticas en todos los clientes, Outlook incluido, sin VML.
+
 ### ⚠️ La regla más importante: `border-collapse` vs `border-radius`
 
 El CSS global del template incluye:
@@ -163,6 +213,7 @@ aunque ese selector use `!important`. Sin esto, los iconos quedan achatados
 |---|---|
 | Todo CSS en **inline style** (atributos `style="..."`) | Outlook 2013–2021 ignora `<style>` en el body |
 | Usar siempre `bgcolor=""` además de `style="background-color:"` | Outlook no interpreta background-color sin bgcolor |
+| Si el `background-color` lleva `rgba()`, el `bgcolor` debe ser **ese mismo color ya compuesto** sobre el fondo de detrás | Outlook no soporta `rgba()`: descarta esa línea y pinta el `bgcolor`. Si ahí hay un color distinto, el elemento cambia de color por completo |
 | Imágenes: siempre `width=""` + `style="width:Xpx"` | Evita escalado inesperado en Outlook |
 | `border-radius` en `<table>`, nunca en `<td>` | Outlook ignora border-radius en celdas |
 | Botones principales con VML condicional para Outlook | Sin VML, el botón aparece como link plano en Outlook |
