@@ -127,31 +127,15 @@
                 <td style="padding:32px 24px 28px;text-align:center;">
 
             <!-- 4a. Icono principal 72x72 -->
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-              arcsize="22%" stroke="f" fillcolor="#305241"
-              style="width:90px;height:90px;v-text-anchor:middle;">
-              <center>
-                <img src="https://cdn.loteriamanises.com/emails/icon-check-white.png" width="46" height="46" alt=""
-                         style="width:46px;height:46px;border:0;" />
-              </center>
-            </v:roundrect>
-            <![endif]-->
-            <!--[if !mso]><!-->
             <table role="presentation" border="0" cellpadding="0" cellspacing="0"
                    style="margin:0 auto 22px;border-collapse:separate !important;">
               <tr>
-                <td width="90" height="90" bgcolor="#305241"
-                    style="background-color:rgba(255,255,255,0.15);border-radius:20px;width:90px;height:90px;
-                           text-align:center;vertical-align:middle;line-height:90px;
-                           mso-line-height-rule:exactly;">
-                  <img src="https://cdn.loteriamanises.com/emails/icon-check-white.png"
-                       width="46" height="46" alt=""
-                       style="display:block;width:46px;height:46px;border:0;margin:22px auto;" />
+                <td width="90" height="90" style="width:90px;height:90px;line-height:0;font-size:0;text-align:center;">
+                  <img src="https://cdn.loteriamanises.com/emails/icon-hero-check-square.png" width="90" height="90" alt=""
+                       style="display:block;width:90px;height:90px;border:0;margin:0 auto;" />
                 </td>
               </tr>
             </table>
-            <!--<![endif]-->
 
             <!-- 4b. Heading directo -->
             <h1 style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:26px;font-weight:700;
@@ -203,10 +187,22 @@
                 <td width="50%" valign="top" class="grid-cell"
                     style="padding:14px 16px;border-bottom:1px solid #F3F4F6;
                            border-right:1px solid #F3F4F6;vertical-align:top;">
-                  <p style="margin:0 0 3px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                            font-size:11px;color:#9CA3AF;line-height:1.4;">
-                    Juego
-                  </p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 3px 0;">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-ticket-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="middle" style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#9CA3AF;line-height:1.4;vertical-align:middle;">
+                        Juego
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
                             font-size:14px;font-weight:700;color:#1E3A5F;line-height:1.4;">
                     {{JUEGO}}
@@ -215,10 +211,22 @@
                 <!-- B: Número de apuestas -->
                 <td width="50%" valign="top" class="grid-cell"
                     style="padding:14px 16px;border-bottom:1px solid #F3F4F6;vertical-align:top;">
-                  <p style="margin:0 0 3px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                            font-size:11px;color:#9CA3AF;line-height:1.4;">
-                    N&uacute;mero de apuestas
-                  </p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 3px 0;">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-package-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="middle" style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#9CA3AF;line-height:1.4;vertical-align:middle;">
+                        N&uacute;mero de apuestas
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
                             font-size:14px;font-weight:700;color:#1E3A5F;line-height:1.4;">
                     {{NUM_APUESTAS}} apuestas
@@ -232,10 +240,22 @@
                 <td width="50%" valign="top" class="grid-cell"
                     style="padding:14px 16px;border-bottom:1px solid #F3F4F6;
                            border-right:1px solid #F3F4F6;vertical-align:top;">
-                  <p style="margin:0 0 3px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                            font-size:11px;color:#9CA3AF;line-height:1.4;">
-                    Fecha de alta
-                  </p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 3px 0;">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-clock-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="middle" style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#9CA3AF;line-height:1.4;vertical-align:middle;">
+                        Fecha de alta
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
                             font-size:14px;font-weight:700;color:#1E3A5F;line-height:1.4;">
                     {{FECHA_ALTA}} &middot; {{HORA_ALTA}}
@@ -244,10 +264,22 @@
                 <!-- D: Importe por renovación -->
                 <td width="50%" valign="top" class="grid-cell"
                     style="padding:14px 16px;border-bottom:1px solid #F3F4F6;vertical-align:top;">
-                  <p style="margin:0 0 3px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                            font-size:11px;color:#9CA3AF;line-height:1.4;">
-                    Importe por renovaci&oacute;n
-                  </p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 3px 0;">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-importe-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="middle" style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#9CA3AF;line-height:1.4;vertical-align:middle;">
+                        Importe por renovaci&oacute;n
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0 0 2px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
                             font-size:14px;font-weight:700;color:#1E3A5F;line-height:1.4;">
                     {{IMPORTE}}&nbsp;&euro; por semana
@@ -264,10 +296,22 @@
                 <!-- E: Sorteos incluidos -->
                 <td width="50%" valign="top" class="grid-cell"
                     style="padding:14px 16px;border-right:1px solid #F3F4F6;vertical-align:top;">
-                  <p style="margin:0 0 3px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                            font-size:11px;color:#9CA3AF;line-height:1.4;">
-                    Sorteos incluidos
-                  </p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 3px 0;">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-ticket-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="middle" style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#9CA3AF;line-height:1.4;vertical-align:middle;">
+                        Sorteos incluidos
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
                             font-size:14px;font-weight:700;color:#1E3A5F;line-height:1.4;">
                     {{DIAS_SELECCIONADOS}}
@@ -276,10 +320,22 @@
                 <!-- F: Primer sorteo incluido -->
                 <td width="50%" valign="top" class="grid-cell"
                     style="padding:14px 16px;vertical-align:top;">
-                  <p style="margin:0 0 3px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                            font-size:11px;color:#9CA3AF;line-height:1.4;">
-                    Primer sorteo incluido
-                  </p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 3px 0;">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-calendar-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="middle" style="font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#9CA3AF;line-height:1.4;vertical-align:middle;">
+                        Primer sorteo incluido
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
                             font-size:14px;font-weight:700;color:#16A34A;line-height:1.4;">
                     {{FECHA_PRIMER_SORTEO}}
@@ -323,22 +379,13 @@
 
               <!-- BE renderiza aquí las filas de apuestas mediante {{BLOQUE_APUESTAS}} -->
               <!-- Ejemplo de estructura para Euromillones (5 números + 2 estrellas):
+                   sin círculo índice ni punto separador — "Apuesta N" es texto plano
+                   y el hueco entre números y estrellas es solo un espaciador ancho:
               <tr style="border-bottom:1px solid #F3F4F6;">
-                <td width="32" valign="middle" style="padding:12px 0 12px 12px;vertical-align:middle;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24"
-                         style="border-collapse:separate !important;">
-                    <tr>
-                      <td width="24" height="24" bgcolor="#1565C0"
-                          style="background-color:#1565C0;border-radius:50%;width:24px;height:24px;
-                                 text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
-                        <span style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:700;
-                                     color:#FFFFFF;line-height:24px;mso-line-height-rule:exactly;">1</span>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-                <td valign="middle" style="padding:12px 6px;vertical-align:middle;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                <td valign="middle" style="padding:16px 16px;vertical-align:middle;">
+                  <p style="margin:0 0 2px 0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;color:#1E3A5F;">Apuesta 1</p>
+                  <p style="margin:0 0 8px 0;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;font-weight:600;color:#596175;">Euromillones &middot; Viernes 14/08/2026</p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate !important;">
                     <tr>
                       <td style="padding:0 2px;">
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28"
@@ -374,19 +421,6 @@
                                 style="background-color:#16A34A;border-radius:50%;width:28px;height:28px;
                                        text-align:center;vertical-align:middle;line-height:28px;mso-line-height-rule:exactly;">
                               <span style="font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;
-                                           color:#FFFFFF;line-height:28px;mso-line-height-rule:exactly;">18</span>
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td style="padding:0 2px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="28" height="28" bgcolor="#16A34A"
-                                style="background-color:#16A34A;border-radius:50%;width:28px;height:28px;
-                                       text-align:center;vertical-align:middle;line-height:28px;mso-line-height-rule:exactly;">
-                              <span style="font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;
                                            color:#FFFFFF;line-height:28px;mso-line-height-rule:exactly;">23</span>
                             </td>
                           </tr>
@@ -400,12 +434,25 @@
                                 style="background-color:#16A34A;border-radius:50%;width:28px;height:28px;
                                        text-align:center;vertical-align:middle;line-height:28px;mso-line-height-rule:exactly;">
                               <span style="font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;
-                                           color:#FFFFFF;line-height:28px;mso-line-height-rule:exactly;">37</span>
+                                           color:#FFFFFF;line-height:28px;mso-line-height-rule:exactly;">31</span>
                             </td>
                           </tr>
                         </table>
                       </td>
-                      <td style="padding:0 6px;color:#D1D5DB;font-size:16px;vertical-align:middle;">&#9679;</td>
+                      <td style="padding:0 2px;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28"
+                               style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="28" height="28" bgcolor="#16A34A"
+                                style="background-color:#16A34A;border-radius:50%;width:28px;height:28px;
+                                       text-align:center;vertical-align:middle;line-height:28px;mso-line-height-rule:exactly;">
+                              <span style="font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;
+                                           color:#FFFFFF;line-height:28px;mso-line-height-rule:exactly;">40</span>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td width="12" style="width:12px;font-size:0;line-height:0;">&nbsp;</td>
                       <td style="padding:0 2px;">
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28"
                                style="border-collapse:separate !important;">
@@ -439,45 +486,6 @@
               -->
 
               {{BLOQUE_APUESTAS}}
-
-              <!-- Leyenda: Números / Estrellas -->
-              <tr>
-                <td bgcolor="#F8FAFC"
-                    style="background-color:#F8FAFC;padding:8px 16px;border-top:1px solid #F3F4F6;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td style="padding-right:16px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="14"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="14" height="14" bgcolor="#16A34A"
-                                style="background-color:#16A34A;border-radius:50%;width:14px;height:14px;">
-                            </td>
-                            <td style="padding-left:6px;font-family:'Inter',Arial,Helvetica,sans-serif;
-                                       font-size:11px;color:#64748B;">
-                              N&uacute;meros
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td>
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="14"
-                               style="border-collapse:separate !important;">
-                          <tr>
-                            <td width="14" height="14" bgcolor="#F59E0B"
-                                style="background-color:#F59E0B;border-radius:50%;width:14px;height:14px;">
-                            </td>
-                            <td style="padding-left:6px;font-family:'Inter',Arial,Helvetica,sans-serif;
-                                       font-size:11px;color:#64748B;">
-                              Estrellas
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
 
             </table>
           </td>

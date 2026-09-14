@@ -123,31 +123,15 @@
                 <td style="padding:24px 24px 40px;text-align:center;">
 
             <!-- 4a. Icono principal 90x90 -->
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-              arcsize="22%" stroke="f" fillcolor="#305241"
-              style="width:90px;height:90px;v-text-anchor:middle;">
-              <center>
-                <img src="https://cdn.loteriamanises.com/emails/icon-check-white.png" width="46" height="46" alt=""
-                         style="width:46px;height:46px;border:0;" />
-              </center>
-            </v:roundrect>
-            <![endif]-->
-            <!--[if !mso]><!-->
             <table role="presentation" border="0" cellpadding="0" cellspacing="0"
                    style="margin:0 auto 22px;border-collapse:separate !important;">
               <tr>
-                <td width="90" height="90" bgcolor="#305241"
-                    style="background-color:rgba(255,255,255,0.15);border-radius:20px;width:90px;height:90px;
-                           text-align:center;vertical-align:middle;line-height:90px;
-                           mso-line-height-rule:exactly;">
-                  <img src="https://cdn.loteriamanises.com/emails/icon-check-white.png"
-                       width="46" height="46" alt=""
-                       style="display:block;width:46px;height:46px;border:0;margin:22px auto;" />
+                <td width="90" height="90" style="width:90px;height:90px;line-height:0;font-size:0;text-align:center;">
+                  <img src="https://cdn.loteriamanises.com/emails/icon-hero-check-square.png" width="90" height="90" alt=""
+                       style="display:block;width:90px;height:90px;border:0;margin:0 auto;" />
                 </td>
               </tr>
             </table>
-            <!--<![endif]-->
 
             <!-- 4b. T&iacute;tulo de &eacute;xito -->
             <h1 style="font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -211,35 +195,31 @@
                          style="margin-top:12px;background-color:#F8FAFC;border:1px solid #E5E7EB;
                                 border-radius:10px;">
                     <tr>
-                      <td style="padding:14px 16px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
-                               width="100%">
+                      <td align="center" style="padding:16px 16px;text-align:center;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28" style="margin:0 auto 8px auto;border-collapse:separate !important;">
                           <tr>
-                            <!-- Col icono -->
-                            <td width="40" valign="middle"
-                                style="vertical-align:middle;width:40px;padding-right:10px;">
-                              </td>
-                                  <td valign="middle" style="vertical-align:middle;">
-                              <p style="margin:0 0 2px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                                        font-size:11px;color:#9CA3AF;
-                                        text-transform:uppercase;letter-spacing:0.08em;">
-                                {{TIPO_DATO}}
-                              </p>
-                              <p style="margin:0 0 1px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                                        font-size:11px;color:#9CA3AF;">
-                                Nuevo:
-                              </p>
-                              <p style="margin:2px 0 0 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                                        font-size:16px;font-weight:700;color:#1565C0;">
-                                {{NUEVO_VALOR}}
-                              </p>
-                              <p style="margin:4px 0 0 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                                        font-size:11px;color:#9CA3AF;">
-                                {{FECHA_CAMBIO}} &middot; {{HORA_CAMBIO}}
-                              </p>
+                            <td width="28" height="28" bgcolor="#16A34A" style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:28px;height:28px;min-width:28px;max-width:28px;min-height:28px;max-height:28px;text-align:center;vertical-align:middle;line-height:28px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-phone-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
                             </td>
                           </tr>
                         </table>
+                        <p style="margin:0 0 2px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                  font-size:11px;font-weight:600;color:#9CA3AF;
+                                  text-transform:uppercase;letter-spacing:0.06em;text-align:center;">
+                          {{TIPO_DATO}}
+                        </p>
+                        <p style="margin:0 0 1px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                  font-size:11px;color:#9CA3AF;text-align:center;">
+                          Nuevo:
+                        </p>
+                        <p style="margin:2px 0 0 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                  font-size:16px;font-weight:700;color:#1565C0;text-align:center;">
+                          {{NUEVO_VALOR}}
+                        </p>
+                        <p style="margin:4px 0 0 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                  font-size:11px;color:#9CA3AF;text-align:center;">
+                          {{FECHA_CAMBIO}} &middot; {{HORA_CAMBIO}}
+                        </p>
                       </td>
                     </tr>
                   </table>
@@ -278,13 +258,27 @@
 
             <!-- White card -->
             <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                   style="background-color:#FFFFFF;border:1px solid #E5E7EB;
-                          border-radius:12px;overflow:hidden;">
+                   style="background-color:#FFFFFF;border:1px solid #C7D7F9;
+                          border-left:4px solid #1565C0;border-radius:0 10px 10px 0;overflow:hidden;">
               <tr>
-                <td style="padding:18px;">
+                <td valign="middle" style="padding:14px 12px 14px 16px;vertical-align:middle;width:52px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="36"
+                         style="border-collapse:separate !important;">
+                    <tr>
+                      <td width="36" height="36" bgcolor="#16A34A"
+                          style="background-color:#16A34A;border-radius:50%;box-sizing:border-box;width:36px;height:36px;min-width:36px;max-width:36px;min-height:36px;max-height:36px;
+                                 text-align:center;vertical-align:middle;line-height:36px;
+                                 mso-line-height-rule:exactly;">
+                        <img src="https://cdn.loteriamanises.com/emails/icon-circlehelp-white.png"
+                             width="16" height="16" alt=""
+                             style="display:block;width:16px;height:16px;border:0;margin:10px auto;" />
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td style="padding:14px 18px 14px 0;">
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
-                      <!-- Col icono candado circular -->
                       <td valign="top" style="vertical-align:top;">
                         <p style="margin:0 0 8px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
                                   font-size:13px;font-weight:700;color:#1E3A5F;">

@@ -129,29 +129,15 @@
                 <td style="padding:32px 24px 28px;text-align:center;">
 
             <!-- 4a. Icono principal 72x72 -->
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-              arcsize="22%" stroke="f" fillcolor="#8E3941"
-              style="width:90px;height:90px;v-text-anchor:middle;">
-              <center>
-                <img src="https://cdn.loteriamanises.com/emails/icon-x-white.png" width="40" height="40" alt=""
-                         style="width:40px;height:40px;border:0;" />
-              </center>
-            </v:roundrect>
-            <![endif]-->
-            <!--[if !mso]><!-->
             <table role="presentation" border="0" cellpadding="0" cellspacing="0"
                    style="margin:0 auto 22px;border-collapse:separate !important;">
               <tr>
-                <td width="90" height="90" bgcolor="#8E3941"
-                    style="background-color:rgba(255,255,255,0.15);border-radius:20px;width:90px;height:90px;
-                           text-align:center;vertical-align:middle;line-height:90px;
-                           mso-line-height-rule:exactly;">
-                  <img src="https://cdn.loteriamanises.com/emails/icon-x-white.png" width="40" height="40" style="display:block;margin:16px auto;border:0;" alt="">
+                <td width="90" height="90" style="width:90px;height:90px;line-height:0;font-size:0;text-align:center;">
+                  <img src="https://cdn.loteriamanises.com/emails/icon-hero-x-square.png" width="90" height="90" alt=""
+                       style="display:block;width:90px;height:90px;border:0;margin:0 auto;" />
                 </td>
               </tr>
             </table>
-            <!--<![endif]-->
 
             <!-- 4b. Heading -->
             <h1 style="margin:0 0 16px 0;
@@ -226,10 +212,22 @@
                 <td width="50%" valign="top"
                     style="padding:16px 20px;border-right:1px solid #F3F4F6;
                            border-bottom:1px solid #F3F4F6;vertical-align:top;">
-                  <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:11px;color:#9CA3AF;">
-                    <span style="font-size:10px;color:#374151;font-weight:700;margin-right:2px;">#</span>N&ordm; de solicitud
-                  </p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;margin:0 0 4px 0;">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#DC2626" style="background-color:#DC2626;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-solicitud-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="middle" style="vertical-align:middle;word-wrap:break-word;overflow-wrap:break-word;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#9CA3AF;">
+                        <span style="font-size:10px;color:#374151;font-weight:700;margin-right:2px;">#</span>N&ordm; de solicitud
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
                              font-size:14px;font-weight:700;color:#1565C0;">
                     {{NUMERO_SOLICITUD}}
@@ -238,10 +236,22 @@
                 <!-- Celda B: Fecha de cancelación -->
                 <td width="50%" valign="top"
                     style="padding:16px 20px;border-bottom:1px solid #F3F4F6;vertical-align:top;">
-                  <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:11px;color:#9CA3AF;">
-                    Fecha de cancelaci&oacute;n
-                  </p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;margin:0 0 4px 0;">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#DC2626" style="background-color:#DC2626;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-clock-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="middle" style="vertical-align:middle;word-wrap:break-word;overflow-wrap:break-word;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#9CA3AF;">
+                        Fecha de cancelaci&oacute;n
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
                              font-size:14px;font-weight:700;color:#1E3A5F;">
                     {{FECHA_CANCELACION}} &middot; {{HORA_CANCELACION}}
@@ -254,10 +264,22 @@
                 <!-- Celda C: Fecha de alta del abono -->
                 <td width="50%" valign="top"
                     style="padding:16px 20px;border-right:1px solid #F3F4F6;vertical-align:top;">
-                  <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:11px;color:#9CA3AF;">
-                    Fecha de alta del abono
-                  </p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;margin:0 0 4px 0;">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#DC2626" style="background-color:#DC2626;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-clock-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="middle" style="vertical-align:middle;word-wrap:break-word;overflow-wrap:break-word;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#9CA3AF;">
+                        Fecha de alta del abono
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
                              font-size:14px;font-weight:700;color:#1E3A5F;">
                     {{FECHA_ALTA}} &middot; {{HORA_ALTA}}
@@ -266,10 +288,22 @@
                 <!-- Celda D: Número abonado -->
                 <td width="50%" valign="top"
                     style="padding:16px 20px;vertical-align:top;">
-                  <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:11px;color:#9CA3AF;">
-                    N&uacute;mero abonado
-                  </p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout:fixed;margin:0 0 4px 0;">
+                    <tr>
+                      <td width="34" valign="middle" style="width:34px;padding-right:10px;vertical-align:middle;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="24" height="24" bgcolor="#DC2626" style="background-color:#DC2626;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                              <img src="https://cdn.loteriamanises.com/emails/icon-ticket-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="middle" style="vertical-align:middle;word-wrap:break-word;overflow-wrap:break-word;font-family:'Inter',Arial,Helvetica,sans-serif;font-size:11px;color:#9CA3AF;">
+                        N&uacute;mero abonado
+                      </td>
+                    </tr>
+                  </table>
                   <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
                              font-size:18px;font-weight:700;color:#DC2626;
                              letter-spacing:0.06em;">
@@ -327,35 +361,51 @@
 
         <!-- ======================================================= BLOCK 7: MOTIVO DE LA CANCELACIÓN -->
         <tr>
-          <td bgcolor="#FFFFFF"
-              style="background-color:#FFFFFF;padding:16px 24px 0;">
-
-            <!-- Eyebrow -->
-            <p style="margin:0 0 10px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                      font-size:14px;font-weight:700;color:#DC2626;">
-              Motivo de la cancelaci&oacute;n
-            </p>
-
-            <!-- Card roja -->
-            <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                   style="background-color:#FFFFFF;border:1px solid #FECACA;
-                          border-radius:10px;overflow:hidden;">
+          <td bgcolor="#FFFFFF" style="background-color:#FFFFFF;padding:16px 24px 0;">
+            <table bgcolor="#F8FAFC" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
+                   style="background-color:#F8FAFC;border:1px solid #E2E8F0;
+                          border-left:4px solid #64748B;border-radius:0 10px 10px 0;">
               <tr>
                 <td style="padding:14px 18px;">
-                  <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                             font-size:13px;color:#991B1B;line-height:1.6;font-style:italic;">
-                    {{MOTIVO_CANCELACION}}
-                  </p>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <!-- Red circle with ! -->
+                      <td width="42" valign="top"
+                          style="vertical-align:top;padding-right:14px;padding-top:2px;width:42px;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0"
+                               width="28" style="border-collapse:separate !important;">
+                          <tr>
+                            <td width="28" height="28" bgcolor="#DC2626"
+                                style="background-color:#DC2626;border-radius:50%;box-sizing:border-box;
+                                       width:28px;height:28px;min-width:28px;max-width:28px;min-height:28px;max-height:28px;text-align:center;
+                                       vertical-align:middle;line-height:28px;
+                                       mso-line-height-rule:exactly;">
+                              <span style="font-family:Arial,Helvetica,sans-serif;font-size:16px;
+                                           font-weight:700;color:#FFFFFF;line-height:28px;
+                                           mso-line-height-rule:exactly;">!</span>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="top" style="vertical-align:top;">
+                        <p style="margin:0 0 4px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:13px;font-weight:700;color:#7C2D12;">
+                          Motivo de la cancelaci&oacute;n
+                        </p>
+                        <p style="margin:0 0 8px 0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:12px;color:#334155;line-height:1.6;font-style:italic;">
+                          {{MOTIVO_CANCELACION}}
+                        </p>
+                        <p style="margin:0;font-family:'Inter',Arial,Helvetica,sans-serif;
+                                   font-size:12px;color:#4B5563;line-height:1.6;">
+                          Si quieres volver a activarlo, puedes solicitar un nuevo abono desde tu cuenta cuando lo desees.
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
-
-            <!-- Texto de cierre -->
-            <p style="margin:12px 0 0 0;font-family:'Inter',Arial,Helvetica,sans-serif;
-                      font-size:13px;color:#4B5563;line-height:1.6;">
-              Si quieres volver a activarlo, puedes solicitar un nuevo abono desde tu cuenta cuando lo desees.
-            </p>
-
           </td>
         </tr>
 

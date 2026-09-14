@@ -19,10 +19,17 @@
                {{URL_CONTACTO}} {{URL_VERSION_WEB}} {{URL_APP_STORE}} {{URL_GOOGLE_PLAY}}
                https://www.facebook.com/LoteriaManises/ https://www.instagram.com/loteriamanises/ https://x.com/loteriamanises
     ================================================================
-    TIPO_ESTADO controla el hero (icono + fondo del c&iacute;rculo):
-      informacion  &rarr; bgcolor="#DBEAFE"  color="#1565C0"  icono &#128172; (por defecto)
-      atencion     &rarr; bgcolor="#FEF3C7"  color="#B45309"  icono &#9888;
-      incidencia   &rarr; bgcolor="#FEE2E2"  color="#B91C1C"  icono &#9888;
+    TIPO_ESTADO controla el degradado del hero y, si el Bloque 7 (acci&oacute;n
+    requerida) est&aacute; presente, tanto su tarjeta como la insignia y el
+    t&iacute;tulo &mdash; reutilizando los mismos degradados/colores ya usados
+    en el resto de plantillas para estados de &eacute;xito/aviso/incidencia
+    (ver auth-nuevo-acceso.html, juegos-abono-renovacion-fallida.html,
+    abono-rechazo.html):
+      informacion  &rarr; azul en hero y Bloque 7 (por defecto, sin clase CSS)
+      atencion     &rarr; &aacute;mbar en hero y Bloque 7
+                          (tarjeta #FFFBEB/#FDE68A, insignia #F59E0B, t&iacute;tulo #92400E)
+      incidencia   &rarr; rojo en hero y Bloque 7
+                          (tarjeta #FEE2E2/#FCA5A5, insignia y t&iacute;tulo #B91C1C)
     ================================================================
   -->
   <title>Informaci&oacute;n sobre tu pedido &middot; Loter&iacute;a Manises</title>
@@ -51,9 +58,27 @@
       .footer-address { text-align:center !important; }
       .data-col { display:block !important; width:100% !important; border-right:none !important; border-bottom:1px solid #F3F4F6 !important; }
     }
+    /* Variantes de {{TIPO_ESTADO}} — "informacion" es el valor por defecto y
+       no tiene regla propia: hereda el estilo inline existente sin cambios.
+       Los degradados reutilizan los mismos valores ya usados en otras
+       plantillas para aviso/incidencia (ver comentario de cabecera). */
+    .estado-atencion .js-hero-bg {
+      background-image:linear-gradient(135deg,rgba(120,53,15,0.88) 0%,rgba(180,83,9,0.88) 55%,rgba(245,158,11,0.88) 100%),
+                        url(https://cdn.loteriamanises.com/emails/hero-bg.jpg) !important;
+    }
+    .estado-incidencia .js-hero-bg {
+      background-image:linear-gradient(135deg,rgba(122,22,32,0.88) 0%,rgba(168,31,31,0.88) 55%,rgba(220,38,38,0.88) 100%),
+                        url(https://cdn.loteriamanises.com/emails/hero-bg.jpg) !important;
+    }
+    .estado-atencion .js-action-card { background-color:#FFFBEB !important; border-color:#FDE68A !important; }
+    .estado-atencion .js-action-badge { background-color:#F59E0B !important; }
+    .estado-atencion .js-action-title { color:#92400E !important; }
+    .estado-incidencia .js-action-card { background-color:#FEE2E2 !important; border-color:#FCA5A5 !important; }
+    .estado-incidencia .js-action-badge { background-color:#B91C1C !important; }
+    .estado-incidencia .js-action-title { color:#B91C1C !important; }
   </style>
 </head>
-<body id="body" style="margin:0;padding:0;background-color:#FFFFFF;">
+<body id="body" class="estado-{{TIPO_ESTADO}}" style="margin:0;padding:0;background-color:#FFFFFF;">
 
 <!-- ============================================================ OUTER WRAPPER -->
 <table bgcolor="#FFFFFF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
@@ -100,7 +125,7 @@
         <!-- {{TIPO_ESTADO}} puede usarse para variar el gradiente entre los 3 colores de marca:    -->
         <!--   informacion &rarr; azul (por defecto) | atencion / incidencia &rarr; rojo            -->
         <tr>
-          <td bgcolor="#0B2145"
+          <td bgcolor="#0B2145" class="js-hero-bg"
               style="background-color:#0B2145;
                      background-image:linear-gradient(135deg,rgba(11,33,69,0.88) 0%,rgba(18,59,122,0.88) 55%,rgba(21,101,192,0.88) 100%),
                                       url(https://cdn.loteriamanises.com/emails/hero-bg.jpg);
@@ -133,31 +158,19 @@
                 <td style="padding:24px 24px 40px;text-align:center;">
 
             <!-- 4a. Icono principal 90x90 -->
-            <!--[if mso]>
-            <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
-              arcsize="22%" stroke="f" fillcolor="#304261"
-              style="width:90px;height:90px;v-text-anchor:middle;">
-              <center>
-                <img src="https://cdn.loteriamanises.com/emails/icon-check-white.png" width="46" height="46" alt=""
-                         style="width:46px;height:46px;border:0;" />
-              </center>
-            </v:roundrect>
-            <![endif]-->
-            <!--[if !mso]><!-->
             <table role="presentation" border="0" cellpadding="0" cellspacing="0"
                    style="margin:0 auto;border-collapse:separate !important;">
               <tr>
-                <td width="90" height="90" bgcolor="#304261"
+                <td width="90" height="90" bgcolor="#123B7A"
                     style="background-color:rgba(255,255,255,0.15);border-radius:20px;width:90px;height:90px;
                            text-align:center;vertical-align:middle;line-height:90px;
                            mso-line-height-rule:exactly;">
-                  <img src="https://cdn.loteriamanises.com/emails/icon-check-white.png"
+                  <img src="https://cdn.loteriamanises.com/emails/icon-info-white.png"
                        width="46" height="46" alt=""
                        style="display:block;width:46px;height:46px;border:0;margin:22px auto;" />
                 </td>
               </tr>
             </table>
-            <!--<![endif]-->
 
             <!-- 4b. T&iacute;tulo din&aacute;mico -->
             <h1 style="font-family:'Inter',Arial,Helvetica,sans-serif;
@@ -237,6 +250,13 @@
                 <td width="33%" class="data-col"
                     style="width:33.33%;padding:16px 12px;text-align:center;
                            border-right:1px solid #F3F4F6;vertical-align:top;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="margin:0 auto 6px auto;border-collapse:separate !important;">
+                    <tr>
+                      <td width="24" height="24" bgcolor="#1565C0" style="background-color:#1565C0;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                        <img src="https://cdn.loteriamanises.com/emails/icon-calendar-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                      </td>
+                    </tr>
+                  </table>
                   <span style="display:block;font-family:'Inter',Arial,Helvetica,sans-serif;
                                font-size:10px;font-weight:700;color:#9CA3AF;
                                text-transform:uppercase;letter-spacing:0.06em;
@@ -253,6 +273,13 @@
                 <td width="33%" class="data-col"
                     style="width:33.33%;padding:16px 12px;text-align:center;
                            border-right:1px solid #F3F4F6;vertical-align:top;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="margin:0 auto 6px auto;border-collapse:separate !important;">
+                    <tr>
+                      <td width="24" height="24" bgcolor="#1565C0" style="background-color:#1565C0;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                        <img src="https://cdn.loteriamanises.com/emails/icon-solicitud-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                      </td>
+                    </tr>
+                  </table>
                   <span style="display:block;font-family:'Inter',Arial,Helvetica,sans-serif;
                                font-size:10px;font-weight:700;color:#9CA3AF;
                                text-transform:uppercase;letter-spacing:0.06em;
@@ -269,6 +296,13 @@
                 <td width="34%" class="data-col"
                     style="width:33.34%;padding:16px 12px;text-align:center;
                            vertical-align:top;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="24" style="margin:0 auto 6px auto;border-collapse:separate !important;">
+                    <tr>
+                      <td width="24" height="24" bgcolor="#1565C0" style="background-color:#1565C0;border-radius:50%;box-sizing:border-box;width:24px;height:24px;min-width:24px;max-width:24px;min-height:24px;max-height:24px;text-align:center;vertical-align:middle;line-height:24px;mso-line-height-rule:exactly;">
+                        <img src="https://cdn.loteriamanises.com/emails/icon-ticket-white.png" width="14" height="14" alt="" style="display:block;width:14px;height:14px;margin:auto;border:0;" />
+                      </td>
+                    </tr>
+                  </table>
                   <span style="display:block;font-family:'Inter',Arial,Helvetica,sans-serif;
                                font-size:10px;font-weight:700;color:#9CA3AF;
                                text-transform:uppercase;letter-spacing:0.06em;
@@ -286,14 +320,15 @@
           </td>
         </tr>
 
+        <!-- BE: INCLUIR completo solo si hay acción requerida real (TITULO_ACCION/TEXTO_ACCION/CTA_TEXTO con contenido). ELIMINAR el <tr> completo si la comunicación es puramente informativa. -->
         <!-- ======================================================= BLOCK 7: ¿QUÉ TIENES QUE HACER? (card ámbar + CTA) -->
         <tr>
           <td bgcolor="#FFFFFF"
               style="background-color:#FFFFFF;padding:12px 24px 0;">
 
-            <!-- &Aacute;mbar card -->
-            <table bgcolor="#FFFBEB" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%"
-                   style="background-color:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;overflow:hidden;">
+            <!-- Tarjeta de acci&oacute;n — color por defecto (informacion) es azul; .estado-atencion/.estado-incidencia la sobreescriben -->
+            <table bgcolor="#EEF4FF" role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" class="js-action-card"
+                   style="background-color:#EEF4FF;border:1px solid #C7D7F9;border-radius:12px;overflow:hidden;">
 
               <!-- Card content: header + body text -->
               <tr>
@@ -308,9 +343,9 @@
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28"
                                style="border-collapse:separate !important;">
                           <tr>
-                            <td width="28" height="28" bgcolor="#1565C0"
-                                style="background-color:#1565C0;border-radius:50%;
-                                       width:28px;height:28px;text-align:center;
+                            <td width="28" height="28" bgcolor="#1565C0" class="js-action-badge"
+                                style="background-color:#1565C0;border-radius:50%;box-sizing:border-box;
+                                       width:28px;height:28px;min-width:28px;max-width:28px;min-height:28px;max-height:28px;text-align:center;
                                        vertical-align:middle;line-height:28px;
                                        mso-line-height-rule:exactly;">
                               <span style="font-family:Arial,Helvetica,sans-serif;
@@ -322,7 +357,7 @@
                       </td>
                       <!-- T&iacute;tulo din&aacute;mico de acci&oacute;n -->
                       <td valign="middle" style="vertical-align:middle;">
-                        <span style="font-family:'Inter',Arial,Helvetica,sans-serif;
+                        <span class="js-action-title" style="font-family:'Inter',Arial,Helvetica,sans-serif;
                                      font-size:14px;font-weight:700;color:#1565C0;">
                           {{TITULO_ACCION}}
                         </span>
