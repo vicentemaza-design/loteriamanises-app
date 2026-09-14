@@ -188,6 +188,34 @@ Van en una celda limpia:
 
 Así se ven idénticas en todos los clientes, Outlook incluido, sin VML.
 
+### ⚠️ Las insignias llevan VML para que Outlook las redondee
+
+El motor de Word no soporta `border-radius`, así que en Outlook de escritorio la
+insignia saldría cuadrada. Se resuelve con el mismo patrón que ya usan los
+botones principales: un `v:roundrect` para Outlook y la tabla de siempre para
+todos los demás.
+
+```html
+<!--[if mso]>
+<v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word"
+  arcsize="22%" stroke="f" fillcolor="EL_MISMO_COLOR_QUE_EL_BGCOLOR"
+  style="width:90px;height:90px;v-text-anchor:middle;">
+  <center><img src="..." width="46" height="46" alt="" style="width:46px;height:46px;border:0;" /></center>
+</v:roundrect>
+<![endif]-->
+<!--[if !mso]><!-->
+  ... la tabla de la insignia, sin tocar ...
+<!--<![endif]-->
+```
+
+Dos cosas que no se pueden descuidar:
+
+- **`arcsize` es el radio dividido por el alto**, no un porcentaje del ancho.
+  Una insignia de 90px con `border-radius:20px` es `arcsize="22%"`.
+- **`fillcolor` tiene que ser exactamente el mismo valor que el `bgcolor`** de
+  la celda, que a su vez es el velo ya compuesto (ver la regla anterior). Si se
+  cambia uno, hay que cambiar el otro.
+
 ### ⚠️ La regla más importante: `border-collapse` vs `border-radius`
 
 El CSS global del template incluye:
