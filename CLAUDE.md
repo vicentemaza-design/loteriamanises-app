@@ -48,6 +48,17 @@ pedirlo en cada tarea.
   precio se cobra, qué copy legal— se pregunta al cliente y **no se toca**
   mientras tanto, aunque parezca evidente.
 
+### Correos transaccionales
+
+- **`emails/ESTADO.md` es el punto de entrada.** Antes de tocar una plantilla,
+  leerlo: explica los tres problemas encadenados que se encontraron en
+  septiembre y por qué las insignias son una imagen y no una celda con CSS.
+- **Después de cualquier cambio en `emails/`, correr
+  `node emails/scripts/verificar.cjs`.** Comprueba las seis reglas que costó
+  encontrar y sale con código 1 si algo falla.
+- Si cambian las plantillas, regenerar las previsualizaciones con
+  `node emails/scripts/build-previews.cjs --no-be`.
+
 ### Entregar
 
 - **`main` es la variante DEMO** (`demoEnabled: true`, `apiProvider` en `mock`).

@@ -1,5 +1,9 @@
 # Sistema de Comunicados por Email — Lotería Manises
 
+> **Antes de tocar nada, lee `ESTADO.md`.** Resume qué se corrigió en septiembre
+> y por qué, qué está pendiente y de quién, y cómo comprobar que no se rompe
+> nada (`node emails/scripts/verificar.cjs`).
+
 Emails HTML transaccionales y de marketing compatibles con Microsoft Outlook, Gmail, Apple Mail y clientes web.
 
 ---

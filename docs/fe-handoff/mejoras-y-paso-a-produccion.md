@@ -399,6 +399,13 @@ conviene no olvidarlo.
   `RELEASE_SOURCE_OF_TRUTH.md`, DEMO y PRODUCTION comparten el mismo código
   funcional y solo cambian el modo de integración y la fuente de los datos.
 
+### 6.1.b Los correos van por su cuenta
+
+Las plantillas de `emails/` **no viajan en estos parches**: se entregan como
+paquete propio, porque su destinatario es quien monta el CDN y no quien aplica
+el código. El estado, lo pendiente y cómo verificarlas están en
+`emails/ESTADO.md`.
+
 ### 6.2 Rondas enviadas
 
 | Fecha | Base | Resultado | Fichero |

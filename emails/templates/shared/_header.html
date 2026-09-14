@@ -55,15 +55,21 @@
       </tr>
     </table>
 
-    <!-- Insignia de icono 90×90 — translúcida, solo visible sobre fondo de color -->
+    <!-- Insignia de icono 90x90.
+         Va como UNA SOLA imagen autocontenida: el PNG ya lleva el cuadrado
+         redondeado, el velo blanco al 15 % y el icono, con las esquinas en el
+         canal alfa. NO se monta con una celda de color + border-radius: Outlook
+         de escritorio ignora border-radius y no soporta rgba(), así que la
+         insignia saldría cuadrada y de otro color.
+         Las disponibles están en assets/ como icon-hero-*-square.png. Si hace
+         falta una nueva, se compone el glifo sobre la misma placa de velo
+         (ver EMAIL-DESIGN-GUIDE.md). -->
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin:0 auto 22px;border-collapse:separate !important;">
       <tr>
-        <td width="90" height="90" bgcolor="MID"
-            style="background-color:rgba(255,255,255,0.15);border-radius:20px;width:90px;height:90px;
-                   text-align:center;vertical-align:middle;line-height:90px;mso-line-height-rule:exactly;">
-          <img src="https://cdn.loteriamanises.com/emails/ICONO_DEL_MENSAJE.png"
-               width="46" height="46" alt=""
-               style="display:block;width:46px;height:46px;border:0;margin:22px auto;" />
+        <td width="90" height="90" style="width:90px;height:90px;line-height:0;font-size:0;text-align:center;">
+          <img src="https://cdn.loteriamanises.com/emails/INSIGNIA_DEL_MENSAJE.png"
+               width="90" height="90" alt=""
+               style="display:block;width:90px;height:90px;border:0;margin:0 auto;" />
         </td>
       </tr>
     </table>
