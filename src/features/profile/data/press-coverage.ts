@@ -2,6 +2,7 @@ import rafaImg from '@/assets/images/quienes-somos/rafa-2023.jpg';
 import manisesAfortunadoImg from '@/assets/images/quienes-somos/manises-afortunado.jpg';
 import gordo2023Img from '@/assets/images/quienes-somos/gordo2023-celebracion.webp';
 import mostradorImg from '@/assets/images/quienes-somos/mostrador.webp';
+import fachadaImg from '@/assets/images/administracion_manises.webp';
 
 /**
  * "En los medios" — cobertura de prensa y televisión.
@@ -102,6 +103,29 @@ export const PRESS_COVERAGE: PressArticle[] = [
     image: manisesAfortunadoImg,
     imageAlt: 'Manises, el pueblo con más suerte de España',
     sourceUrl: 'https://www.telecinco.es/noticias/loterias/loteria-de-navidad/20251208/pueblo-con-mas-suerte-espana-siete-veces-el-gordo-loteria-navidad_18_017650656.html',
+  },
+  {
+    id: 'valencia-plaza-2025',
+    outlet: 'Valencia Plaza',
+    date: '2025-12-14',
+    headline: 'La «Doña Manolita valenciana»: la administración que más veces ha repartido el Gordo está en Manises',
+    standfirst: 'La fama de esta administración creció tras una racha insólita de premios que ha consolidado al municipio de l\'Horta Sud como referente del Sorteo de Navidad a escala nacional.',
+    summary: [
+      'Valencia Plaza sitúa a Lotería Manises como la administración que más veces ha repartido el Gordo de Navidad, con siete ocasiones desde 1971.',
+      'El reportaje recoge el crecimiento de las ventas y la afluencia de visitantes que llegan cada diciembre buscando un número de Manises, y compara el fenómeno con el de Doña Manolita en Madrid.',
+    ],
+    quote: {
+      text: 'Hay administraciones que venden muchísimo más que nosotros y no han repartido tantas veces El Gordo. Yo creo en la magia de Manises',
+      source: 'Rafa, lotero de Manises',
+    },
+    highlights: [
+      'Siete Gordos de Navidad repartidos desde 1971.',
+      'Un fenómeno de peregrinación comparable al de Doña Manolita.',
+      'Manises, consolidado como referente del Sorteo de Navidad a escala nacional.',
+    ],
+    image: fachadaImg,
+    imageAlt: 'Fachada de la administración de Lotería Manises',
+    sourceUrl: 'https://valenciaplaza.com/valenciaplaza/comarca-y-empresa/la-dona-manolita-valenciana-loteria-manises-la-administracion-que-mas-veces-ha-repartido-el-gordo',
   },
   {
     id: 'abc-2021',
