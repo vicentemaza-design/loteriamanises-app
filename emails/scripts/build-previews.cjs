@@ -75,6 +75,10 @@ const GENERIC = [
   [/^MOTIVO/, 'Baja solicitada por el usuario'],
   [/^CANTIDAD/, '2'], // discrete count (e.g. décimos), not a monetary amount — must stay ahead of the IMPORTE/money rule below
   [/^(?:IMPORTE|GASTOS|PREMIO_POR|SALDO|TOTAL_PEDIDO)/, '50,00'],
+  [/^NUMERO_JUGADA$/, 'JG-2026-001847'], // dato nuevo de agosto: independiente del nº de pedido, lo informa backend
+  [/^CADUCIDAD_ENLACE$/, '24 horas'],
+  [/^SOPORTE_TELEFONO$/, '96 154 03 17'],
+  [/^SOPORTE_EMAIL$/, 'info@loteriamanises.com'],
   [/^NUMERO_PEDIDO|NUM_PEDIDO$/, 'J-20260809-001'],
   [/^NUMERO_SOLICITUD|NUM_SOLICITUD$/, 'AB-2026-0042'],
   [/^NUMERO_OPERACION$/, 'OP-2026-78432'],
