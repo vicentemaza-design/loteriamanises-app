@@ -51,6 +51,8 @@ const CompaniesPage = lazy(() => import('@/features/profile/pages/CompaniesPage'
 const BiometricsPage = lazy(() => import('@/features/profile/pages/BiometricsPage').then(m => ({ default: m.BiometricsPage })));
 const SecurityPage = lazy(() => import('@/features/profile/pages/SecurityPage').then(m => ({ default: m.SecurityPage })));
 const AboutUsPage = lazy(() => import('@/features/profile/pages/AboutUsPage').then(m => ({ default: m.AboutUsPage })));
+const PressCoveragePage = lazy(() => import('@/features/profile/pages/PressCoveragePage').then(m => ({ default: m.PressCoveragePage })));
+const PressArticlePage = lazy(() => import('@/features/profile/pages/PressArticlePage').then(m => ({ default: m.PressArticlePage })));
 const PrizeTaxPage = lazy(() => import('@/features/profile/pages/PrizeTaxPage').then(m => ({ default: m.PrizeTaxPage })));
 const TechnicalMatrixPage = lazy(() => import('@/features/admin/pages/TechnicalMatrixPage').then(m => ({ default: m.TechnicalMatrixPage })));
 const DeliveredPrizesPage = lazy(() => import('@/features/catalog/pages/DeliveredPrizesPage').then(m => ({ default: m.DeliveredPrizesPage })));
@@ -147,6 +149,8 @@ export function AppRouter() {
             <Route path="/profile/biometrics" element={<BiometricsPage />} />
             <Route path="/profile/security" element={<SecurityPage />} />
             <Route path="/profile/about" element={<AboutUsPage />} />
+            <Route path="/profile/press" element={<PressCoveragePage />} />
+            <Route path="/profile/press/:articleId" element={<PressArticlePage />} />
             <Route path="/profile/delivered-prizes" element={<DeliveredPrizesPage />} />
             <Route path="/profile/settings" element={<SettingsPage />} />
             <Route path="/profile/matrix" element={<TechnicalMatrixPage />} />

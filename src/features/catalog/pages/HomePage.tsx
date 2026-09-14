@@ -15,6 +15,7 @@ import {
 } from 'iconoir-react/regular';
 import { ResponsibleGamingFooter } from '@/shared/components/ResponsibleGamingFooter';
 import { getDeliveredPrizesTotalAmount } from '../data/delivered-prizes.mock';
+import { getActivePremiumServices } from '../data/premium-services';
 import { formatJackpot, formatDrawTime, formatCurrency, getCountdown } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/Button';
 import { GameIcon } from '@/shared/ui/GameIcon';
@@ -24,7 +25,7 @@ import { useLotteryGames } from '@/shared/hooks/useLotteryGames';
 import { getGameIdentity } from '@/shared/lib/game-identity';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { useMemo, useRef, useState } from 'react';
+import { Fragment, useMemo, useRef, useState } from 'react';
 
 // Assets
 import headerWinner from '@/assets/images/header_winner.jpg';
@@ -374,6 +375,7 @@ export function HomePage() {
   const { canInstall, isInstalled, shouldShowIosHint, promptInstall } = useInstallPrompt();
   const containerRef = useRef<HTMLDivElement>(null);
   const deliveredPrizesTotalAmount = useMemo(() => getDeliveredPrizesTotalAmount(), []);
+  const premiumServices = useMemo(() => getActivePremiumServices(), []);
 
   // Los juegos destacados en el bento (priorizamos los nacionales e inmediatos)
   const bentoGames = useMemo(() => {
@@ -547,45 +549,42 @@ export function HomePage() {
       )}
 
       {/* ── Editorial Premium ─────────────────────────────────── */}
-      <section className="space-y-4 px-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="bg-manises-blue/5 p-1.5 rounded-lg">
-              <Sparkles className="w-4 h-4 text-manises-blue" />
+      {/* Las tarjetas salen de data/premium-services.ts para poder quitar y
+          poner una sin tocar esta pantalla. Si no hay ninguna activa, la
+          sección no se pinta. */}
+      {premiumServices.length > 0 && (
+        <section className="space-y-4 px-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="bg-manises-blue/5 p-1.5 rounded-lg">
+                <Sparkles className="w-4 h-4 text-manises-blue" />
+              </div>
+              <h2 className="text-xs font-extrabold text-manises-blue uppercase tracking-[0.16em]">Servicios Premium</h2>
             </div>
-            <h2 className="text-xs font-extrabold text-manises-blue uppercase tracking-[0.16em]">Servicios Premium</h2>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
-          <PremiumEditorialCard
-            badge="PARA EMPRESAS"
-            title="Lotería de Navidad para empresas"
-            description="Gestiona participaciones y reparto interno con una experiencia pensada para equipos."
-            cta="Módulo empresas"
-            image={adminFacade}
-            imageAlt="Servicio premium para empresas"
-            icon={BriefcaseBusiness}
-            accent="blue"
-            stats={['Digital', 'Soporte']}
-            onClick={() => navigate('/profile/companies')}
-          />
-          <PremiumEditorialCard
-            badge="Número Fiel"
-            title="Abónate a tu número"
-            description="Convierte tu número favorito en un abono estable y olvídate de renovar cada semana."
-            cta="Suscribirme"
-            image={loteriaNacionalHero}
-            imageAlt="Abonos a número de lotería"
-            icon={Landmark}
-            accent="gold"
-            stats={['Persistente', 'Semanal']}
-            onClick={() => navigate('/profile/subscriptions/setup')}
-          />
-        </div>
-      </section>
+          <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2">
+            {premiumServices.map(service => (
+              <Fragment key={service.id}>
+                <PremiumEditorialCard
+                  badge={service.badge}
+                  title={service.title}
+                  description={service.description}
+                  cta={service.cta}
+                  image={service.image}
+                  imageAlt={service.imageAlt}
+                  icon={service.icon}
+                  accent={service.accent}
+                  stats={service.stats}
+                  onClick={() => navigate(service.route)}
+                />
+              </Fragment>
+            ))}
+          </div>
+        </section>
+      )}
 
-{/* ── Responsible Gaming Footer ─────────────────────────── */}
+      {/* ── Responsible Gaming Footer ─────────────────────────── */}
       <ResponsibleGamingFooter />
     </div>
   );

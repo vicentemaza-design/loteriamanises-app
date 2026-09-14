@@ -17,6 +17,7 @@ import {
   Lock,
   Repeat,
   InfoCircle,
+  Megaphone,
   Trophy,
   Page,
 } from 'iconoir-react/regular';
@@ -125,6 +126,7 @@ export function ProfilePage() {
       title: 'Sobre nosotros',
       items: [
         { icon: InfoCircle,  label: 'Quiénes somos',     detail: null, color: 'text-indigo-600',  bg: 'bg-indigo-50', onClick: () => navigate('/profile/about') },
+        { icon: Megaphone,   label: 'En los medios',     detail: null, color: 'text-sky-600',     bg: 'bg-sky-50', onClick: () => navigate('/profile/press') },
         { icon: Trophy,      label: 'Premios entregados',detail: null, color: 'text-amber-600',   bg: 'bg-amber-50', onClick: () => navigate('/profile/delivered-prizes') },
       ],
     },
