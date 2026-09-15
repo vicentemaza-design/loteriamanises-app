@@ -413,6 +413,10 @@ el código. El estado, lo pendiente y cómo verificarlas están en
 | 30/08/2026 | — | `a338208` | Código completo (entrega inicial) |
 | 02/09/2026 | `a338208` | `b14628d` | `mejoras-2026-09-02.patch` |
 | 10/09/2026 | `b14628d` | `6179c2c` | `mejoras-2026-09-10.patch` |
+| 15/09/2026 | `6179c2c` | `feat/en-los-medios` | `loteriamanises-medios-2026-09-15.zip` |
+
+> La ronda del 15/09 es la primera que lleva **imágenes**, y eso cambia la
+> forma del paquete: ver §6.4.
 
 ### 6.3 Antes de enviar una ronda
 
@@ -428,3 +432,38 @@ Comprobado así la última vez, y conviene repetirlo:
 > ficheros nuevos, los cambios posteriores sobre ellos no los encuentran. Hay
 > que aplicarlo de verdad y comprobar que no queden `.rej`. Esto está avisado
 > también en el `APLICAR.md` que va en el ZIP.
+
+### 6.4 Cuando la ronda lleva imágenes
+
+**Un `.patch` de texto no transporta binarios.** `git diff --binary` sí los
+mete, pero solo `git apply` sabe leerlos, y no podemos contar con que haya Git
+en esa copia. Así que el paquete se parte en dos:
+
+```
+loteriamanises-medios-2026-09-15/
+├── APLICAR.md            los pasos, con la comprobación de base
+├── CAMBIOS.md            qué cambia y por qué
+├── codigo.patch          solo texto → patch -p1 --forward
+└── archivos-nuevos/      los binarios, ya en su ruta del proyecto
+    └── src/assets/images/medios/…
+```
+
+`archivos-nuevos/` es un espejo del árbol del proyecto, así que se instala con
+un `cp -R archivos-nuevos/. .` y no hay que ir colocando fichero por fichero.
+Se copia **antes** de aplicar el parche: si el parche modifica algo que
+depende de esas rutas, ya están.
+
+Al generar el parche hay que excluir a la vez los binarios y `emails/`:
+
+```bash
+git diff <base> HEAD -- . ':(exclude)emails/' \
+  ':(exclude)src/assets/images/medios/*.png' \
+  ':(exclude)src/assets/images/medios/*.jpg' \
+  ':(exclude)src/assets/images/medios/*.webp' > codigo.patch
+```
+
+Y una cosa más que se nos escapó y conviene fijar: **`APLICAR.md` tiene que
+decir desde dónde se ejecuta cada comando.** La primera versión daba
+`patch -p1 < codigo.patch` sin más, que solo funciona si el ZIP está
+descomprimido dentro de la raíz del proyecto. Ahora empieza fijando la carpeta
+del proyecto y una variable `$PAQUETE` con la ruta del ZIP.
