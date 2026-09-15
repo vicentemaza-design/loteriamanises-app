@@ -18,3 +18,7 @@ emails/delivery/
 # Configuración local de herramientas
 .agents/
 .mcp.json
+
+# Herramientas y salidas locales: nunca deben viajar en una entrega.
+.vercel/
+artifacts/
