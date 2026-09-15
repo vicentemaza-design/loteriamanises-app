@@ -2,6 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { CheckCircle, ExternalLink, Quote, Ticket } from 'lucide-react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
+import { OutletMark } from '../components/OutletMark';
 import { getPressArticle, formatPressDate } from '../data/press-coverage';
 
 /**
@@ -45,9 +46,7 @@ export function PressArticlePage() {
       <div className="px-5 pt-5 space-y-5">
         {/* ── Medio y fecha ──────────────────────────────────────── */}
         <div className="flex items-baseline justify-between gap-3">
-          <p className="text-[13px] font-black uppercase tracking-[0.12em] text-manises-blue">
-            {article.outlet}
-          </p>
+          <OutletMark outlet={article.outlet} logo={article.outletLogo} height={24} />
           <p className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-slate-400">
             {formatPressDate(article.date)}
           </p>

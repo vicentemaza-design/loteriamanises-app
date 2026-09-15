@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Newspaper } from 'lucide-react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
+import { OutletMark } from '../components/OutletMark';
 import { getPressCoverage, formatPressDate } from '../data/press-coverage';
 
 /**
@@ -57,8 +58,8 @@ export function PressCoveragePage() {
                   loading="eager"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-                <span className="absolute left-4 top-4 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-manises-blue">
-                  {featured.outlet}
+                <span className="absolute left-4 top-4 inline-flex items-center rounded-xl bg-white/95 px-3 py-1.5 shadow-sm">
+                  <OutletMark outlet={featured.outlet} logo={featured.outletLogo} height={18} />
                 </span>
               </div>
 
@@ -90,22 +91,14 @@ export function PressCoveragePage() {
                 onClick={() => navigate(`/profile/press/${article.id}`)}
                 className="flex w-full items-center gap-3 overflow-hidden rounded-2xl border border-slate-100 bg-white p-2.5 text-left shadow-sm transition-all"
               >
-                <img
-                  src={article.image}
-                  alt={article.imageAlt}
-                  className="h-16 w-16 shrink-0 rounded-xl object-cover"
-                  loading="lazy"
-                />
+                <div className="flex h-14 w-20 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-slate-50/70 px-2">
+                  <OutletMark outlet={article.outlet} logo={article.outletLogo} height={20} />
+                </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <p className="truncate text-[11px] font-black uppercase tracking-[0.1em] text-manises-blue">
-                      {article.outlet}
-                    </p>
-                    <p className="shrink-0 text-[9px] font-bold uppercase tracking-wide text-slate-400">
-                      {formatPressDate(article.date)}
-                    </p>
-                  </div>
-                  <h3 className="mt-1 line-clamp-2 text-[12.5px] font-black leading-snug text-manises-blue">
+                  <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400">
+                    {formatPressDate(article.date)}
+                  </p>
+                  <h3 className="mt-0.5 line-clamp-2 text-[12.5px] font-black leading-snug text-manises-blue">
                     {article.headline}
                   </h3>
                 </div>

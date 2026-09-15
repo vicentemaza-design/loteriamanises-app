@@ -1,7 +1,14 @@
-import rafaImg from '@/assets/images/quienes-somos/rafa-2023.jpg';
-import manisesAfortunadoImg from '@/assets/images/quienes-somos/manises-afortunado.jpg';
-import gordo2023Img from '@/assets/images/quienes-somos/gordo2023-celebracion.webp';
-import mostradorImg from '@/assets/images/quienes-somos/mostrador.webp';
+// Fotografías propias. Se eligen a propósito distintas de las que usa
+// "Quiénes somos", para que los dos apartados no se repitan.
+//
+// OJO: no usar src/assets/images/gordos/gordo-navidad-{2012,2013,2018,2023}.jpg
+// — pese a la extensión son documentos HTML, descargas fallidas. La única
+// válida de esa carpeta es gordo-navidad-2022.jpg, y esa ya la usa
+// "Quiénes somos".
+import ganadorImg from '@/assets/images/header_winner.jpg';
+import celebracionImg from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
+import decimoImg from '@/assets/images/decimo.jpg';
+import arteImg from '@/assets/images/quienes-somos/manises-el-arte.jpg';
 import fachadaImg from '@/assets/images/administracion_manises.webp';
 
 /**
@@ -77,8 +84,8 @@ export const PRESS_COVERAGE: PressArticle[] = [
       '766.000 euros repartidos en total.',
       'Cinco Gordos repartidos a lo largo de la trayectoria de la administración.',
     ],
-    image: rafaImg,
-    imageAlt: 'Rafa, lotero de Lotería Manises',
+    image: ganadorImg,
+    imageAlt: 'Celebración de un premio en Lotería Manises',
     sourceUrl: 'https://www.elespanol.com/valencia/20251222/rafa-lotero-vuelve-repartir-suerte-manises-tercero-cuarto-quintos-premios-no-parar-trt/1003744065728_0.html',
   },
   {
@@ -100,8 +107,8 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Más de 350 millones de euros repartidos en premios.',
       'El volumen de ventas y la repercusión en los medios atraen compradores de toda España.',
     ],
-    image: manisesAfortunadoImg,
-    imageAlt: 'Manises, el pueblo con más suerte de España',
+    image: celebracionImg,
+    imageAlt: 'Celebración del Gordo de Navidad en Manises',
     sourceUrl: 'https://www.telecinco.es/noticias/loterias/loteria-de-navidad/20251208/pueblo-con-mas-suerte-espana-siete-veces-el-gordo-loteria-navidad_18_017650656.html',
   },
   {
@@ -141,8 +148,8 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Cinco de los principales premios del sorteo, repartidos en una sola administración.',
       'Manises, entre las administraciones de referencia del Sorteo de Navidad.',
     ],
-    image: gordo2023Img,
-    imageAlt: 'Celebración de un premio en Lotería Manises',
+    image: decimoImg,
+    imageAlt: 'Reparto de premios en la administración de Manises',
     sourceUrl: 'https://www.abc.es/espana/comunidad-valenciana/abci-lotero-manises-codea-dona-manolita-sorteo-navidad-202112221141_noticia.html',
   },
   {
@@ -160,8 +167,8 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Gordos de Navidad en 2012, 2013 y 2018.',
       'Segundo premio del Sorteo de Navidad en 2011.',
     ],
-    image: mostradorImg,
-    imageAlt: 'Mostrador de Lotería Manises',
+    image: arteImg,
+    imageAlt: 'Celebración de un Gordo de Navidad en Manises',
     sourceUrl: 'https://cadenaser.com/emisora/2019/12/19/radio_valencia/1576746325_277770.html',
   },
 ];
