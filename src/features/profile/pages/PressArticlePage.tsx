@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { CheckCircle, ExternalLink, Quote, Ticket } from 'lucide-react';
+import { ArrowRight, CheckCircle, ExternalLink, Ticket, Trophy } from 'lucide-react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { OutletMark } from '../components/OutletMark';
@@ -98,21 +98,33 @@ export function PressArticlePage() {
         </div>
 
         {/* ── Cifras ─────────────────────────────────────────────── */}
+        {/* Son premios, así que llevan el tratamiento con el que la app
+            presenta los premios: cifra en oro sobre azul de marca, igual
+            que las tarjetas de Gordo de "Quiénes somos". */}
         {article.figures && article.figures.length > 0 && (
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-              Premios repartidos
-            </p>
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {article.figures.map(figure => (
+          <div
+            className="overflow-hidden rounded-[1.4rem] shadow-[0_14px_32px_-14px_rgba(10,71,146,0.45)]"
+            style={{ background: 'linear-gradient(135deg, #062d6b 0%, #0a4792 100%)' }}
+          >
+            <div className="flex items-center gap-2 px-4 pt-3.5">
+              <Trophy className="h-3.5 w-3.5" style={{ color: '#F5C518' }} />
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/55">
+                Premios repartidos
+              </p>
+            </div>
+            <div className="flex px-2 pb-4 pt-2">
+              {article.figures.map((figure, i) => (
                 <div
                   key={figure.label}
-                  className="flex flex-col items-center rounded-2xl border border-slate-100 bg-white px-1 py-3 text-center shadow-sm"
+                  className={`flex-1 px-1 text-center ${i > 0 ? 'border-l border-white/10' : ''}`}
                 >
-                  <p className="text-[1.6rem] font-black leading-none text-manises-gold-dark">
+                  <p
+                    className="font-black leading-none"
+                    style={{ color: '#F5C518', fontSize: '1.9rem' }}
+                  >
                     {figure.value}
                   </p>
-                  <p className="mt-1 whitespace-pre-line text-[9px] font-bold leading-tight text-slate-500">
+                  <p className="mt-1.5 text-[9px] font-bold uppercase leading-tight tracking-[0.1em] text-white/55">
                     {figure.label}
                   </p>
                 </div>
@@ -122,16 +134,42 @@ export function PressArticlePage() {
         )}
 
         {/* ── Cita ───────────────────────────────────────────────── */}
+        {/* La manuscrita en oro es el gesto que la app reserva para las
+            frases con voz propia. Una cita del lotero es justo eso, así
+            que aquí sí toca, sobre fondo oscuro para que el oro se lea. */}
         {article.quote && (
-          <blockquote className="rounded-[1.4rem] border border-manises-blue/10 bg-manises-blue/[0.04] p-4">
-            <Quote className="h-4 w-4 text-manises-blue/40" />
-            <p className="mt-2 text-[14px] font-bold italic leading-relaxed text-manises-blue">
-              «{article.quote.text}»
-            </p>
-            <footer className="mt-2 text-[11px] font-bold text-slate-500">
-              {article.quote.source}
-            </footer>
-          </blockquote>
+          <figure
+            className="relative overflow-hidden rounded-[1.4rem] px-5 py-6 shadow-[0_14px_32px_-14px_rgba(10,71,146,0.45)]"
+            style={{ background: 'linear-gradient(135deg, #062d6b 0%, #0d56b0 100%)' }}
+          >
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -right-2 -top-6 select-none font-manuscript leading-none"
+              style={{ fontSize: '9rem', color: 'rgba(245,197,24,0.10)' }}
+            >
+              &rdquo;
+            </span>
+
+            <blockquote
+              className="relative font-manuscript"
+              style={{
+                fontWeight: 700,
+                fontSize: 'clamp(1.1rem, 4.6vw, 1.35rem)',
+                lineHeight: 1.35,
+                color: '#F5C518',
+                textShadow: '0 1px 10px rgba(245,197,24,0.18)',
+              }}
+            >
+              {article.quote.text}
+            </blockquote>
+
+            <figcaption className="relative mt-3.5 flex items-center gap-2">
+              <span className="h-px w-6" style={{ backgroundColor: 'rgba(245,197,24,0.55)' }} />
+              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-white/65">
+                {article.quote.source}
+              </span>
+            </figcaption>
+          </figure>
         )}
 
         {/* ── Puntos clave ───────────────────────────────────────── */}
@@ -149,21 +187,37 @@ export function PressArticlePage() {
           </div>
         )}
 
-        {/* ── Volver a la compra ─────────────────────────────────── */}
+        {/* ── Llamada a la compra ────────────────────────────────── */}
+        {/* Lleva a Lotería de Navidad, que es el juego del que hablan
+            todas estas noticias, no al catálogo general. */}
         <PremiumTouchInteraction scale={0.98}>
           <button
             type="button"
-            onClick={() => navigate('/games')}
-            className="flex w-full items-center gap-3 rounded-[1.4rem] border border-manises-gold/25 bg-manises-gold-soft/50 p-4 text-left transition-all"
+            onClick={() => navigate('/play/loteria-navidad')}
+            className="group relative w-full overflow-hidden rounded-[1.4rem] text-left shadow-[0_14px_32px_-14px_rgba(212,160,23,0.5)]"
+            style={{ background: 'linear-gradient(135deg, #F5C518 0%, #D4A017 100%)' }}
           >
-            <div className="rounded-xl bg-white/70 p-2">
-              <Ticket className="h-5 w-5 text-manises-gold-dark" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-black text-manises-blue">¿Buscas tu número?</p>
-              <p className="text-[11.5px] font-medium text-slate-500">
-                La ilusión también empieza aquí.
-              </p>
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{ background: 'radial-gradient(circle at 88% 15%, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 52%)' }}
+            />
+            <div className="relative flex items-center gap-3.5 px-4 py-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/35 shadow-inner backdrop-blur-sm">
+                <Ticket className="h-5 w-5 text-manises-blue" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-manises-blue/55">
+                  Lotería de Navidad
+                </p>
+                <p className="mt-0.5 text-[15px] font-black leading-tight text-manises-blue">
+                  Busca tu número de Manises
+                </p>
+                <p className="mt-0.5 text-[11px] font-semibold leading-snug text-manises-blue/65">
+                  La ilusión también empieza aquí.
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 shrink-0 text-manises-blue transition-transform group-hover:translate-x-0.5" />
             </div>
           </button>
         </PremiumTouchInteraction>
