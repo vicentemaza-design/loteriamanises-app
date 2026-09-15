@@ -61,6 +61,14 @@ export function PressArticlePage() {
         </span>
       </div>
 
+      {/* Crédito de la foto. Va pegado a la imagen, que es donde se espera,
+          y solo aparece si la noticia lo trae. */}
+      {article.imageCredit && (
+        <p className="-mt-2 px-5 text-right text-[9.5px] font-medium text-slate-400">
+          Foto: {article.imageCredit}
+        </p>
+      )}
+
       <div className="px-5 pt-4 space-y-5">
         {/* ── Titular ────────────────────────────────────────────── */}
         <header className="space-y-2">

@@ -47,6 +47,13 @@ imágenes de banco o fotos de producto de un décimo, y se nota.
 | Antena 3 · Espejo Público | `loteria_de_empresas.jpg` | Banco | El equipo de televisión grabando en la administración |
 | Cadena SER · 2019 | `manises-el-arte.jpg` | Azulejos del pueblo | Rafa en la radio, o la administración en 2019 |
 
+**Con cada foto hace falta saber de quién es.** El modelo tiene un campo
+`imageCredit` que se pinta como pie bajo la imagen en la pantalla de detalle.
+Si la foto es nuestra, `'Lotería Manises'`. Si viene de un medio o de una
+agencia, hay que poner a quién pertenece — y eso solo se puede hacer con su
+permiso. Ojo con coger las fotos de los propios artículos: esas son del medio o
+de la agencia, no nuestras, aunque salga la administración.
+
 **Cómo deben ser:** JPG, **1200 px de ancho mínimo**, apaisadas. Se recortan a
 lo ancho, así que lo importante conviene que esté centrado y no pegado a los
 bordes.

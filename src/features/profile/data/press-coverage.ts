@@ -62,6 +62,16 @@ export interface PressArticle {
   figures?: { value: string; label: string }[];
   image: string;
   imageAlt: string;
+  /**
+   * Crédito de la fotografía. Es distinto del medio que publica la
+   * noticia: una cosa es quién la escribió y otra quién hizo la foto.
+   *
+   * Si la foto es nuestra, 'Lotería Manises'. Si viene de un medio o de
+   * una agencia, hay que poner a quién pertenece, y eso solo se puede
+   * hacer con permiso. Si se deja vacío no se pinta nada, así que no
+   * conviene olvidarlo con material ajeno.
+   */
+  imageCredit?: string;
   /** Enlace al artículo original. Obligatorio: siempre se atribuye. */
   sourceUrl: string;
 }
@@ -177,6 +187,7 @@ export const PRESS_COVERAGE: PressArticle[] = [
     ],
     image: fachadaImg,
     imageAlt: 'Fachada de la administración de Lotería Manises',
+    imageCredit: 'Lotería Manises',
     sourceUrl: 'https://valenciaplaza.com/valenciaplaza/comarca-y-empresa/la-dona-manolita-valenciana-loteria-manises-la-administracion-que-mas-veces-ha-repartido-el-gordo',
   },
   {
