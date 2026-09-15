@@ -1,19 +1,22 @@
-// Fotografías propias. Se eligen a propósito distintas de las que usa
-// "Quiénes somos", para que los dos apartados no se repitan.
-//
-// OJO: no usar src/assets/images/gordos/gordo-navidad-{2012,2013,2018,2023}.jpg
-// — pese a la extensión son documentos HTML, descargas fallidas. La única
-// válida de esa carpeta es gordo-navidad-2022.jpg, y esa ya la usa
-// "Quiénes somos".
-import ganadorImg from '@/assets/images/header_winner.jpg';
-import rtveImg from '@/assets/images/img2.rtve.jpg';
-import navidadHeroImg from '@/assets/images/loteria_navidad_hero.jpg';
-import sorteoImg from '@/assets/images/loteria_jueves_luck.jpg';
-import empresasImg from '@/assets/images/loteria_de_empresas.jpg';
-import celebracionImg from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
-import decimoImg from '@/assets/images/decimo.jpg';
-import arteImg from '@/assets/images/quienes-somos/manises-el-arte.jpg';
+// Fotografías propias de la administración, una por noticia.
+import elEspanolFoto from '@/assets/images/medios/el-espanol-portada.png';
+import rtveFoto from '@/assets/images/medios/rtve-nino.png';
+import antena3ComprarFoto from '@/assets/images/medios/antena3-comprar.png';
+import telecincoFoto from '@/assets/images/medios/telecinco-pueblo.png';
+import antena3GordoFoto from '@/assets/images/medios/antena3-gordo.png';
+import abcFoto from '@/assets/images/medios/abc-navidad.png';
+import antena3EspejoFoto from '@/assets/images/medios/antena3-espejo.png';
+import cadenaSerFoto from '@/assets/images/medios/cadenaser-radio.png';
 import fachadaImg from '@/assets/images/administracion_manises.webp';
+
+// Logotipos de los medios.
+import rtveLogo from '@/assets/images/medios/rtve.png';
+import telecincoLogo from '@/assets/images/medios/telecinco.png';
+import antena3Logo from '@/assets/images/medios/antena3.png';
+import elEspanolLogo from '@/assets/images/medios/el-espanol.png';
+import valenciaPlazaLogo from '@/assets/images/medios/valencia-plaza.png';
+import abcLogo from '@/assets/images/medios/abc.png';
+import cadenaSerLogo from '@/assets/images/medios/cadena-ser.png';
 
 /**
  * "En los medios" — cobertura de prensa y televisión.
@@ -80,6 +83,7 @@ export const PRESS_COVERAGE: PressArticle[] = [
   {
     id: 'el-espanol-2025',
     outlet: 'El Español',
+    outletLogo: elEspanolLogo,
     date: '2025-12-22',
     headline: 'Rafa, el lotero que vuelve a repartir suerte en Manises con el tercero, un cuarto y dos quintos premios',
     standfirst: '«Un no parar»',
@@ -98,13 +102,15 @@ export const PRESS_COVERAGE: PressArticle[] = [
       '766.000 euros repartidos en total.',
       'Cinco Gordos repartidos a lo largo de la trayectoria de la administración.',
     ],
-    image: ganadorImg,
-    imageAlt: 'Celebración de un premio en Lotería Manises',
+    image: elEspanolFoto,
+    imageAlt: 'El equipo de Lotería Manises con los números premiados de 2025',
+    imageCredit: 'Lotería Manises',
     sourceUrl: 'https://www.elespanol.com/valencia/20251222/rafa-lotero-vuelve-repartir-suerte-manises-tercero-cuarto-quintos-premios-no-parar-trt/1003744065728_0.html',
   },
   {
     id: 'telecinco-2025',
     outlet: 'Telecinco',
+    outletLogo: telecincoLogo,
     date: '2025-12-08',
     headline: 'El pueblo con más suerte de España: siete veces ha caído «El Gordo» de la Lotería de Navidad',
     standfirst: 'Manises ha repartido el primer premio del Sorteo de Navidad en siete ocasiones desde 1971.',
@@ -121,13 +127,15 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Más de 350 millones de euros repartidos en premios.',
       'El volumen de ventas y la repercusión en los medios atraen compradores de toda España.',
     ],
-    image: celebracionImg,
-    imageAlt: 'Celebración del Gordo de Navidad en Manises',
+    image: telecincoFoto,
+    imageAlt: 'Celebración de un primer premio en Lotería Manises',
+    imageCredit: 'Lotería Manises',
     sourceUrl: 'https://www.telecinco.es/noticias/loterias/loteria-de-navidad/20251208/pueblo-con-mas-suerte-espana-siete-veces-el-gordo-loteria-navidad_18_017650656.html',
   },
   {
     id: 'rtve-2025',
     outlet: 'RTVE',
+    outletLogo: rtveLogo,
     date: '2025-12-17',
     headline: 'Más allá de Doña Manolita y La Bruixa d\'Or: ¿qué hay detrás del éxito de las administraciones revelación?',
     standfirst: 'RTVE analiza qué explica el éxito de las administraciones que se han convertido en referencia del Sorteo de Navidad.',
@@ -144,13 +152,15 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Desde 2010 repartiendo premios de forma ininterrumpida.',
       'Los cinco Gordos más recientes de Manises salieron de esta administración.',
     ],
-    image: rtveImg,
-    imageAlt: 'Lotería Manises en un reportaje de RTVE',
+    image: rtveFoto,
+    imageAlt: 'Celebración de un premio en Lotería Manises',
+    imageCredit: 'Lotería Manises',
     sourceUrl: 'https://www.rtve.es/rtve/20251217/dona-manolita-bruixa-dor-exito-administraciones-revelacion/16856942.shtml',
   },
   {
     id: 'antena3-comprar-2025',
     outlet: 'Antena 3',
+    outletLogo: antena3Logo,
     date: '2025-12-15',
     headline: 'Cómo comprar Lotería de Navidad 2025 online en la administración de Manises: horarios y cómo pedir cita',
     standfirst: 'Se trata de una de las administraciones más conocidas, que ha llegado a repartir El Gordo de Navidad hasta en 7 ocasiones.',
@@ -162,13 +172,15 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Los siete Gordos: 1971, 1986, 2012, 2013, 2018, 2022 y 2023.',
       'Dos formas de comprar: en la administración o por internet con envío a domicilio.',
     ],
-    image: navidadHeroImg,
-    imageAlt: 'Décimos de la Lotería de Navidad',
+    image: antena3ComprarFoto,
+    imageAlt: 'Interior de la administración de Lotería Manises',
+    imageCredit: 'Lotería Manises',
     sourceUrl: 'https://www.antena3.com/noticias/loterias/loteria-navidad/como-comprar-loteria-navidad-2025-online-administracion-manises-horarios-como-pedir-cita_20251215693fea3eea66eb735312a872.html',
   },
   {
     id: 'valencia-plaza-2025',
     outlet: 'Valencia Plaza',
+    outletLogo: valenciaPlazaLogo,
     date: '2025-12-14',
     headline: 'La «Doña Manolita valenciana»: la administración que más veces ha repartido el Gordo está en Manises',
     standfirst: 'La fama de esta administración creció tras una racha insólita de premios que ha consolidado al municipio de l\'Horta Sud como referente del Sorteo de Navidad a escala nacional.',
@@ -193,6 +205,7 @@ export const PRESS_COVERAGE: PressArticle[] = [
   {
     id: 'antena3-gordo-2025',
     outlet: 'Antena 3',
+    outletLogo: antena3Logo,
     date: '2025-12-08',
     headline: 'Manises, la localidad que más veces ha repartido el Gordo de la Lotería de Navidad',
     standfirst: 'Cada español se gastará de media 76 euros en décimos, y Castilla y León vuelve a ser la comunidad donde más se juega a la Lotería de Navidad.',
@@ -200,13 +213,15 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Antena 3 Noticias sitúa a Manises como la localidad que más veces ha repartido el Gordo de la Lotería de Navidad.',
       'El reportaje encuadra el dato dentro del panorama nacional del sorteo: cuánto se gasta de media cada español y dónde más se juega.',
     ],
-    image: sorteoImg,
-    imageAlt: 'Sorteo de la Lotería de Navidad',
+    image: antena3GordoFoto,
+    imageAlt: 'Décimo de Lotería Manises',
+    imageCredit: 'Lotería Manises',
     sourceUrl: 'https://www.antena3.com/noticias/loterias/manises-localidad-que-mas-veces-repartido-gordo-loteria-navidad_20251208693703b555584d48fb6ec332.html',
   },
   {
     id: 'abc-2021',
     outlet: 'ABC',
+    outletLogo: abcLogo,
     date: '2021-12-22',
     headline: 'El lotero de Manises que se codea con Doña Manolita dando premios en el Sorteo de Navidad',
     standfirst: 'La administración número 3 de la localidad valenciana ha repartido cinco de los principales premios de este año.',
@@ -218,13 +233,15 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Cinco de los principales premios del sorteo, repartidos en una sola administración.',
       'Manises, entre las administraciones de referencia del Sorteo de Navidad.',
     ],
-    image: decimoImg,
-    imageAlt: 'Reparto de premios en la administración de Manises',
+    image: abcFoto,
+    imageAlt: 'Un quinto premio anunciado en la administración de Manises',
+    imageCredit: 'Lotería Manises',
     sourceUrl: 'https://www.abc.es/espana/comunidad-valenciana/abci-lotero-manises-codea-dona-manolita-sorteo-navidad-202112221141_noticia.html',
   },
   {
     id: 'antena3-espejo-2021',
     outlet: 'Antena 3',
+    outletLogo: antena3Logo,
     date: '2021-12-22',
     headline: 'La administración de la suerte de Manises (Valencia): vende 4 premios de la Lotería de Navidad',
     standfirst: 'Espejo Público se acerca a la administración valenciana que repartió cuatro premios en el Sorteo de Navidad de 2021.',
@@ -232,13 +249,15 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'El programa Espejo Público, de Antena 3, visitó la administración de Manises tras repartir cuatro premios en el Sorteo de Navidad de 2021.',
       'El reportaje recoge el ambiente en la localidad y la trayectoria de una administración que ya entonces era conocida como «la administración de la suerte».',
     ],
-    image: empresasImg,
-    imageAlt: 'La administración de Lotería Manises',
+    image: antena3EspejoFoto,
+    imageAlt: 'Un equipo de televisión en la administración de Lotería Manises',
+    imageCredit: 'Lotería Manises',
     sourceUrl: 'https://www.antena3.com/programas/espejo-publico/noticias/administracion-suerte-manises-valencia-vende-4-premios-loteria-navidad_2021122261c32519192fe40001d33f91.html',
   },
   {
     id: 'cadena-ser-2019',
     outlet: 'Cadena SER',
+    outletLogo: cadenaSerLogo,
     date: '2019-12-19',
     headline: 'Lotería Manises es la administración de lotería más afortunada de España',
     standfirst: 'Ha repartido más de 300 millones de euros en premios, entre ellos tres Gordos de Navidad y un segundo premio.',
@@ -251,8 +270,9 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Gordos de Navidad en 2012, 2013 y 2018.',
       'Segundo premio del Sorteo de Navidad en 2011.',
     ],
-    image: arteImg,
-    imageAlt: 'Celebración de un Gordo de Navidad en Manises',
+    image: cadenaSerFoto,
+    imageAlt: 'Entrevista de radio en Lotería Manises',
+    imageCredit: 'Lotería Manises',
     sourceUrl: 'https://cadenaser.com/emisora/2019/12/19/radio_valencia/1576746325_277770.html',
   },
 ];

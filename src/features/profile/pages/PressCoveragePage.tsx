@@ -78,8 +78,8 @@ export function PressCoveragePage() {
               <div className="relative flex min-h-[230px] flex-col justify-between p-4 xs:p-4.5 md:p-6 text-white">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="inline-flex items-center rounded-xl bg-white/95 px-3 py-1.5 shadow-inner">
-                      <OutletMark outlet={featured.outlet} logo={featured.outletLogo} height={18} />
+                    <span className="inline-flex h-9 w-[5.5rem] items-center justify-center rounded-xl bg-white/95 px-2.5 py-1.5 shadow-inner">
+                      <OutletMark outlet={featured.outlet} logo={featured.outletLogo} fallbackSize={11} />
                     </span>
                     <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/55">
                       {formatPressDate(featured.date)}
@@ -146,8 +146,8 @@ export function PressCoveragePage() {
                   i > 0 ? 'border-t border-slate-50' : ''
                 }`}
               >
-                <div className="flex h-12 w-[4.5rem] shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-[#f8fafc] px-2">
-                  <OutletMark outlet={article.outlet} logo={article.outletLogo} height={18} />
+                <div className="flex h-11 w-[4.75rem] shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-white p-1.5">
+                  <OutletMark outlet={article.outlet} logo={article.outletLogo} fallbackSize={10} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">

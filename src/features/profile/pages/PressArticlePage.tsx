@@ -56,20 +56,20 @@ export function PressArticlePage() {
           className="absolute inset-0"
           style={{ background: 'linear-gradient(to bottom, transparent 48%, rgba(245,247,250,0.96) 100%)' }}
         />
-        <span className="absolute left-5 top-4 inline-flex items-center rounded-xl bg-white/95 px-3 py-1.5 shadow-sm backdrop-blur-sm">
-          <OutletMark outlet={article.outlet} logo={article.outletLogo} height={18} />
+        <span className="absolute left-5 top-4 inline-flex h-10 w-[6rem] items-center justify-center rounded-xl bg-white/95 px-3 py-2 shadow-sm backdrop-blur-sm">
+          <OutletMark outlet={article.outlet} logo={article.outletLogo} fallbackSize={12} />
         </span>
       </div>
 
       {/* Crédito de la foto. Va pegado a la imagen, que es donde se espera,
           y solo aparece si la noticia lo trae. */}
       {article.imageCredit && (
-        <p className="-mt-2 px-5 text-right text-[9.5px] font-medium text-slate-400">
+        <p className="px-5 pt-2 text-right text-[9.5px] font-medium text-slate-400">
           Foto: {article.imageCredit}
         </p>
       )}
 
-      <div className="px-5 pt-4 space-y-5">
+      <div className="px-5 pt-3 space-y-5">
         {/* ── Titular ────────────────────────────────────────────── */}
         <header className="space-y-2">
           <p className="text-[9px] font-black uppercase tracking-[0.28em] text-manises-blue/40">
