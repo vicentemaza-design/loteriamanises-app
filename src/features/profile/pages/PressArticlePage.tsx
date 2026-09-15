@@ -20,7 +20,7 @@ export function PressArticlePage() {
 
   if (!article) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="flex min-h-full flex-col bg-[#f5f7fa]">
         <ProfileSubHeader title="En los medios" backTo="/profile/press" />
         <div className="px-5 pt-10 text-center">
           <p className="text-[13px] font-bold text-manises-blue">No encontramos esa noticia</p>
@@ -40,39 +40,50 @@ export function PressArticlePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-28">
+    <div className="flex min-h-full flex-col bg-[#f5f7fa] pb-20">
       <ProfileSubHeader title="En los medios" backTo="/profile/press" />
 
-      <div className="px-5 pt-5 space-y-5">
-        {/* ── Medio y fecha ──────────────────────────────────────── */}
-        <div className="flex items-baseline justify-between gap-3">
-          <OutletMark outlet={article.outlet} logo={article.outletLogo} height={24} />
-          <p className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-slate-400">
-            {formatPressDate(article.date)}
-          </p>
-        </div>
+      {/* ── HERO ───────────────────────────────────────────────── */}
+      <div className="relative h-56 w-full overflow-hidden">
+        <img
+          src={article.image}
+          alt={article.imageAlt}
+          className="h-full w-full object-cover"
+          style={{ objectPosition: 'center 40%' }}
+          loading="eager"
+        />
+        <div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(to bottom, transparent 48%, rgba(245,247,250,0.96) 100%)' }}
+        />
+        <span className="absolute left-5 top-4 inline-flex items-center rounded-xl bg-white/95 px-3 py-1.5 shadow-sm backdrop-blur-sm">
+          <OutletMark outlet={article.outlet} logo={article.outletLogo} height={18} />
+        </span>
+      </div>
 
+      <div className="px-5 pt-4 space-y-5">
         {/* ── Titular ────────────────────────────────────────────── */}
         <header className="space-y-2">
-          <h1 className="text-[21px] font-black leading-tight text-manises-blue">
+          <p className="text-[9px] font-black uppercase tracking-[0.28em] text-manises-blue/40">
+            {formatPressDate(article.date)}
+          </p>
+          <h1 className="text-[1.5rem] font-black leading-[1.12] tracking-tight text-manises-blue">
             {article.headline}
           </h1>
-          <p className="text-[13px] font-medium leading-relaxed text-muted-foreground">
+          <p className="text-[13px] font-medium leading-relaxed text-slate-500">
             {article.standfirst}
           </p>
         </header>
 
-        <img
-          src={article.image}
-          alt={article.imageAlt}
-          className="h-52 w-full rounded-[1.4rem] object-cover"
-          loading="eager"
-        />
-
         {/* ── Resumen ────────────────────────────────────────────── */}
         <div className="space-y-3">
-          {article.summary.map(parrafo => (
-            <p key={parrafo} className="text-[13px] font-medium leading-relaxed text-slate-600">
+          {article.summary.map((parrafo, i) => (
+            <p
+              key={parrafo}
+              className={`text-[13.5px] leading-relaxed text-slate-600 ${
+                i === 0 ? 'font-semibold text-slate-700' : 'font-medium'
+              }`}
+            >
               {parrafo}
             </p>
           ))}
@@ -80,17 +91,20 @@ export function PressArticlePage() {
 
         {/* ── Cifras ─────────────────────────────────────────────── */}
         {article.figures && article.figures.length > 0 && (
-          <div className="rounded-[1.4rem] border border-slate-100 bg-white p-4 shadow-sm">
-            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
               Premios repartidos
             </p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="mt-2 grid grid-cols-3 gap-2">
               {article.figures.map(figure => (
-                <div key={figure.label} className="rounded-xl bg-manises-blue/[0.04] px-2 py-3 text-center">
-                  <p className="text-[26px] font-black leading-none text-manises-gold-dark">
+                <div
+                  key={figure.label}
+                  className="flex flex-col items-center rounded-2xl border border-slate-100 bg-white px-1 py-3 text-center shadow-sm"
+                >
+                  <p className="text-[1.6rem] font-black leading-none text-manises-gold-dark">
                     {figure.value}
                   </p>
-                  <p className="mt-1.5 text-[9.5px] font-bold leading-tight text-slate-500">
+                  <p className="mt-1 whitespace-pre-line text-[9px] font-bold leading-tight text-slate-500">
                     {figure.label}
                   </p>
                 </div>

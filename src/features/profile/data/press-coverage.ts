@@ -8,7 +8,7 @@
 import ganadorImg from '@/assets/images/header_winner.jpg';
 import rtveImg from '@/assets/images/img2.rtve.jpg';
 import navidadHeroImg from '@/assets/images/loteria_navidad_hero.jpg';
-import sorteoImg from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
+import sorteoImg from '@/assets/images/loteria_jueves_luck.jpg';
 import empresasImg from '@/assets/images/loteria_de_empresas.jpg';
 import celebracionImg from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
 import decimoImg from '@/assets/images/decimo.jpg';
@@ -244,6 +244,24 @@ export const PRESS_COVERAGE: PressArticle[] = [
     imageAlt: 'Celebración de un Gordo de Navidad en Manises',
     sourceUrl: 'https://cadenaser.com/emisora/2019/12/19/radio_valencia/1576746325_277770.html',
   },
+];
+
+/**
+ * Tira de cifras del listado. Se declaran aquí, no en la pantalla, para que
+ * sean fáciles de ajustar cuando cambie la cobertura. `icon` es una clave,
+ * no un componente, para no meter dependencias de React en este fichero.
+ */
+export interface PressStat {
+  icon: 'press' | 'tv' | 'radio';
+  value: string;
+  label: string;
+  color: string;
+}
+
+export const PRESS_STATS: PressStat[] = [
+  { icon: 'press', value: '7',    label: 'Medios\nnacionales', color: '#0a4792' },
+  { icon: 'tv',    value: '9',    label: 'Noticias\npublicadas', color: '#F5C518' },
+  { icon: 'radio', value: '2019', label: 'Desde\nentonces', color: '#15803d' },
 ];
 
 export function getPressArticle(id: string): PressArticle | undefined {
