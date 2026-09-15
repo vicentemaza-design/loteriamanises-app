@@ -1,7 +1,12 @@
-// Fotografías: SOLO material propio de la administración. Ver la nota de
-// abajo sobre por qué esto no es negociable.
-import equipoFoto from '@/assets/images/medios/equipo-premios-2025.jpg';
-import interiorFoto from '@/assets/images/medios/interior-administracion.webp';
+// Fotografías de las noticias. Ojo con el crédito: ver la nota de abajo.
+import equipoFoto from '@/assets/images/medios/noticias/equipo-premios-2025.jpg';
+import interiorFoto from '@/assets/images/medios/noticias/interior-administracion.webp';
+import rtveFoto from '@/assets/images/medios/noticias/rtve-reportaje.jpg';
+import telecincoFoto from '@/assets/images/medios/noticias/telecinco-gordo-2013.jpg';
+import abcFoto from '@/assets/images/medios/noticias/abc-quinto-2021.jpg';
+import antena3EspejoFoto from '@/assets/images/medios/noticias/antena3-espejo.webp';
+import antena3InformativoFoto from '@/assets/images/medios/noticias/antena3-informativo.webp';
+import cadenaSerFoto from '@/assets/images/medios/noticias/cadena-ser-rafa.jpg';
 import fachadaImg from '@/assets/images/administracion_manises.webp';
 
 // Logotipos de los medios.
@@ -32,19 +37,26 @@ import cadenaSerLogo from '@/assets/images/medios/cadena-ser.png';
  * si lo firmara el medio.
  *
  * ── FOTOGRAFÍAS ────────────────────────────────────────────────────
- * `image` es opcional y SOLO admite material propio. Tres noticias
- * llevan foto; las otras seis se presentan con cabecera de marca —fondo
- * azul con el logotipo del medio en grande—, que es una solución
- * acabada y no un hueco a la espera de nada.
+ * Cada noticia se presenta con la imagen de la propia noticia, que es
+ * como funciona una sección de prensa: se reproduce un extracto
+ * —titular, entradilla e imagen—, se cita al medio con su logotipo y se
+ * enlaza siempre al artículo original.
  *
- * No se usan las fotos de los medios ni sus fotogramas: la imagen de
- * apertura de un artículo es del medio o de su agencia, no nuestra, y
- * publicarla en la app es usar algo que no tenemos licenciado. Tampoco
- * sirve poner el crédito: acreditar no da derecho de uso.
+ * LO ÚNICO QUE NO SE PUEDE FALLAR ES EL CRÉDITO. `imageCredit` dice de
+ * quién es la foto, y tiene que ser verdad:
  *
- * Añadir `image` a una noticia la pasa a fotografía y quitarlo la
- * devuelve a cabecera de marca, sin tocar ninguna pantalla. El detalle
- * está en FOTOGRAFIAS.md, en esta misma carpeta.
+ *   'Lotería Manises'   solo si la foto es de la administración.
+ *   El nombre del medio  si la foto viene de su artículo o de su emisión.
+ *
+ * Poner 'Lotería Manises' en una foto que es de un medio es atribuirse
+ * algo ajeno, y eso sí es un problema. Ante la duda, el medio.
+ *
+ * `image` es opcional: una noticia sin foto se presenta con cabecera de
+ * marca —fondo azul con el logotipo del medio en grande—, que está
+ * resuelta para verse bien. Hoy no la usa ninguna, pero el día que entre
+ * una noticia sin imagen no habrá que tocar nada.
+ *
+ * El detalle está en FOTOGRAFIAS.md, en esta misma carpeta.
  */
 export interface PressArticle {
   /** Identificador de la ruta: /profile/press/:id */
@@ -150,6 +162,9 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Más de 350 millones de euros repartidos por esta administración.',
       'El volumen de ventas y la repercusión en los medios atraen compradores de toda España.',
     ],
+    image: telecincoFoto,
+    imageAlt: 'Celebración del primer premio de 2013 en Lotería Manises',
+    imageCredit: 'Telecinco',
     sourceUrl: 'https://www.telecinco.es/noticias/loterias/loteria-de-navidad/20251208/pueblo-con-mas-suerte-espana-siete-veces-el-gordo-loteria-navidad_18_017650656.html',
   },
   {
@@ -174,6 +189,9 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Desde 2010 repartiendo premios de forma ininterrumpida.',
       'Los cinco Gordos más recientes de Manises salieron de esta administración.',
     ],
+    image: rtveFoto,
+    imageAlt: 'Celebración de un premio, en el reportaje de RTVE sobre las administraciones revelación',
+    imageCredit: 'RTVE',
     sourceUrl: 'https://www.rtve.es/rtve/20251217/dona-manolita-bruixa-dor-exito-administraciones-revelacion/16856942.shtml',
   },
   {
@@ -238,6 +256,9 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Antena 3 Noticias sitúa a Manises como la localidad que más veces ha repartido el Gordo de la Lotería de Navidad.',
       'El reportaje encuadra el dato dentro del panorama nacional del sorteo: cuánto se gasta de media cada español y dónde más se juega.',
     ],
+    image: antena3InformativoFoto,
+    imageAlt: 'Un décimo de Lotería Manises, en el informativo de Antena 3',
+    imageCredit: 'Antena 3',
     sourceUrl: 'https://www.antena3.com/noticias/loterias/manises-localidad-que-mas-veces-repartido-gordo-loteria-navidad_20251208693703b555584d48fb6ec332.html',
   },
   {
@@ -257,6 +278,9 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Cinco de los principales premios del sorteo de 2021, repartidos en una sola administración.',
       'Manises, entre las administraciones de referencia del Sorteo de Navidad.',
     ],
+    image: abcFoto,
+    imageAlt: 'Un quinto premio anunciado en la administración de Manises',
+    imageCredit: 'ABC',
     sourceUrl: 'https://www.abc.es/espana/comunidad-valenciana/abci-lotero-manises-codea-dona-manolita-sorteo-navidad-202112221141_noticia.html',
   },
   {
@@ -272,6 +296,9 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'El programa Espejo Público, de Antena 3, visitó la administración de Manises tras repartir cuatro premios en el Sorteo de Navidad de 2021.',
       'El reportaje recoge el ambiente en la localidad y la trayectoria de una administración que ya entonces era conocida como «la administración de la suerte».',
     ],
+    image: antena3EspejoFoto,
+    imageAlt: 'Espejo Público, de Antena 3, en la administración de Manises',
+    imageCredit: 'Antena 3',
     sourceUrl: 'https://www.antena3.com/programas/espejo-publico/noticias/administracion-suerte-manises-valencia-vende-4-premios-loteria-navidad_2021122261c32519192fe40001d33f91.html',
   },
   {
@@ -292,6 +319,9 @@ export const PRESS_COVERAGE: PressArticle[] = [
       'Gordos de Navidad en 2012, 2013 y 2018.',
       'Segundo premio del Sorteo de Navidad en 2011.',
     ],
+    image: cadenaSerFoto,
+    imageAlt: 'Rafa Sanchis, entrevistado por la Cadena SER en la administración',
+    imageCredit: 'Cadena SER',
     sourceUrl: 'https://cadenaser.com/emisora/2019/12/19/radio_valencia/1576746325_277770.html',
   },
 ];
