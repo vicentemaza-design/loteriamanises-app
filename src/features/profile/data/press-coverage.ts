@@ -32,18 +32,19 @@ import cadenaSerLogo from '@/assets/images/medios/cadena-ser.png';
  * si lo firmara el medio.
  *
  * ── FOTOGRAFÍAS ────────────────────────────────────────────────────
- * `image` es opcional y SOLO admite material propio. Si una noticia no
- * tiene foto propia, se deja sin `image` y la ficha se presenta con
- * cabecera de marca; se ve igual de bien y no dependemos de material
- * ajeno.
+ * `image` es opcional y SOLO admite material propio. Tres noticias
+ * llevan foto; las otras seis se presentan con cabecera de marca —fondo
+ * azul con el logotipo del medio en grande—, que es una solución
+ * acabada y no un hueco a la espera de nada.
  *
  * No se usan las fotos de los medios ni sus fotogramas: la imagen de
  * apertura de un artículo es del medio o de su agencia, no nuestra, y
  * publicarla en la app es usar algo que no tenemos licenciado. Tampoco
  * sirve poner el crédito: acreditar no da derecho de uso.
  *
- * Si Rafa manda fotos nuevas, se añaden aquí con `imageCredit:
- * 'Lotería Manises'` y la ficha pasa de cabecera de marca a foto sola.
+ * Añadir `image` a una noticia la pasa a fotografía y quitarlo la
+ * devuelve a cabecera de marca, sin tocar ninguna pantalla. El detalle
+ * está en FOTOGRAFIAS.md, en esta misma carpeta.
  */
 export interface PressArticle {
   /** Identificador de la ruta: /profile/press/:id */
