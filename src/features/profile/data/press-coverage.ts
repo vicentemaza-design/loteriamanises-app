@@ -6,6 +6,10 @@
 // válida de esa carpeta es gordo-navidad-2022.jpg, y esa ya la usa
 // "Quiénes somos".
 import ganadorImg from '@/assets/images/header_winner.jpg';
+import rtveImg from '@/assets/images/img2.rtve.jpg';
+import navidadHeroImg from '@/assets/images/loteria_navidad_hero.jpg';
+import sorteoImg from '@/assets/images/loteria_sorteos_2016554_dec_1_21.jpg';
+import empresasImg from '@/assets/images/loteria_de_empresas.jpg';
 import celebracionImg from '@/assets/images/group-people-celebrating-financial-success-with-joyful-faces-dreamy-background-clear-h.jpg';
 import decimoImg from '@/assets/images/decimo.jpg';
 import arteImg from '@/assets/images/quienes-somos/manises-el-arte.jpg';
@@ -112,6 +116,47 @@ export const PRESS_COVERAGE: PressArticle[] = [
     sourceUrl: 'https://www.telecinco.es/noticias/loterias/loteria-de-navidad/20251208/pueblo-con-mas-suerte-espana-siete-veces-el-gordo-loteria-navidad_18_017650656.html',
   },
   {
+    id: 'rtve-2025',
+    outlet: 'RTVE',
+    date: '2025-12-17',
+    headline: 'Más allá de Doña Manolita y La Bruixa d\'Or: ¿qué hay detrás del éxito de las administraciones revelación?',
+    standfirst: 'RTVE analiza qué explica el éxito de las administraciones que se han convertido en referencia del Sorteo de Navidad.',
+    summary: [
+      'RTVE sitúa a Lotería Manises entre las administraciones revelación del Sorteo de Navidad, y señala que su éxito ha convertido a esta población valenciana de 30.000 habitantes en el municipio más afortunado de los últimos años.',
+      'Según los datos que maneja el reportaje, Lotería Manises es la tercera administración en ventas de España desde 2018, y ha repartido los cinco Gordos más recientes de la localidad.',
+    ],
+    quote: {
+      text: 'Entre ellas está Lotería Manises, cuyo éxito ha situado a esta población valenciana de 30.000 habitantes como el municipio más afortunado en los últimos años',
+      source: 'RTVE',
+    },
+    highlights: [
+      'Tercera administración en ventas de España desde 2018.',
+      'Desde 2010 repartiendo premios de forma ininterrumpida.',
+      'Los cinco Gordos más recientes de Manises salieron de esta administración.',
+    ],
+    image: rtveImg,
+    imageAlt: 'Lotería Manises en un reportaje de RTVE',
+    sourceUrl: 'https://www.rtve.es/rtve/20251217/dona-manolita-bruixa-dor-exito-administraciones-revelacion/16856942.shtml',
+  },
+  {
+    id: 'antena3-comprar-2025',
+    outlet: 'Antena 3',
+    date: '2025-12-15',
+    headline: 'Cómo comprar Lotería de Navidad 2025 online en la administración de Manises: horarios y cómo pedir cita',
+    standfirst: 'Se trata de una de las administraciones más conocidas, que ha llegado a repartir El Gordo de Navidad hasta en 7 ocasiones.',
+    summary: [
+      'Antena 3 dedica un artículo a explicar cómo comprar en la administración de Manises, con los horarios y las dos formas de hacerlo: en el propio local o por internet.',
+      'El texto recuerda que la administración ha repartido El Gordo de Navidad en siete ocasiones y la sitúa como una de las más conocidas de España.',
+    ],
+    highlights: [
+      'Los siete Gordos: 1971, 1986, 2012, 2013, 2018, 2022 y 2023.',
+      'Dos formas de comprar: en la administración o por internet con envío a domicilio.',
+    ],
+    image: navidadHeroImg,
+    imageAlt: 'Décimos de la Lotería de Navidad',
+    sourceUrl: 'https://www.antena3.com/noticias/loterias/loteria-navidad/como-comprar-loteria-navidad-2025-online-administracion-manises-horarios-como-pedir-cita_20251215693fea3eea66eb735312a872.html',
+  },
+  {
     id: 'valencia-plaza-2025',
     outlet: 'Valencia Plaza',
     date: '2025-12-14',
@@ -135,6 +180,20 @@ export const PRESS_COVERAGE: PressArticle[] = [
     sourceUrl: 'https://valenciaplaza.com/valenciaplaza/comarca-y-empresa/la-dona-manolita-valenciana-loteria-manises-la-administracion-que-mas-veces-ha-repartido-el-gordo',
   },
   {
+    id: 'antena3-gordo-2025',
+    outlet: 'Antena 3',
+    date: '2025-12-08',
+    headline: 'Manises, la localidad que más veces ha repartido el Gordo de la Lotería de Navidad',
+    standfirst: 'Cada español se gastará de media 76 euros en décimos, y Castilla y León vuelve a ser la comunidad donde más se juega a la Lotería de Navidad.',
+    summary: [
+      'Antena 3 Noticias sitúa a Manises como la localidad que más veces ha repartido el Gordo de la Lotería de Navidad.',
+      'El reportaje encuadra el dato dentro del panorama nacional del sorteo: cuánto se gasta de media cada español y dónde más se juega.',
+    ],
+    image: sorteoImg,
+    imageAlt: 'Sorteo de la Lotería de Navidad',
+    sourceUrl: 'https://www.antena3.com/noticias/loterias/manises-localidad-que-mas-veces-repartido-gordo-loteria-navidad_20251208693703b555584d48fb6ec332.html',
+  },
+  {
     id: 'abc-2021',
     outlet: 'ABC',
     date: '2021-12-22',
@@ -151,6 +210,20 @@ export const PRESS_COVERAGE: PressArticle[] = [
     image: decimoImg,
     imageAlt: 'Reparto de premios en la administración de Manises',
     sourceUrl: 'https://www.abc.es/espana/comunidad-valenciana/abci-lotero-manises-codea-dona-manolita-sorteo-navidad-202112221141_noticia.html',
+  },
+  {
+    id: 'antena3-espejo-2021',
+    outlet: 'Antena 3',
+    date: '2021-12-22',
+    headline: 'La administración de la suerte de Manises (Valencia): vende 4 premios de la Lotería de Navidad',
+    standfirst: 'Espejo Público se acerca a la administración valenciana que repartió cuatro premios en el Sorteo de Navidad de 2021.',
+    summary: [
+      'El programa Espejo Público, de Antena 3, visitó la administración de Manises tras repartir cuatro premios en el Sorteo de Navidad de 2021.',
+      'El reportaje recoge el ambiente en la localidad y la trayectoria de una administración que ya entonces era conocida como «la administración de la suerte».',
+    ],
+    image: empresasImg,
+    imageAlt: 'La administración de Lotería Manises',
+    sourceUrl: 'https://www.antena3.com/programas/espejo-publico/noticias/administracion-suerte-manises-valencia-vende-4-premios-loteria-navidad_2021122261c32519192fe40001d33f91.html',
   },
   {
     id: 'cadena-ser-2019',
