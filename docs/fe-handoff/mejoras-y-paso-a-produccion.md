@@ -413,7 +413,7 @@ el código. El estado, lo pendiente y cómo verificarlas están en
 | 30/08/2026 | — | `a338208` | Código completo (entrega inicial) |
 | 02/09/2026 | `a338208` | `b14628d` | `mejoras-2026-09-02.patch` |
 | 10/09/2026 | `b14628d` | `6179c2c` | `mejoras-2026-09-10.patch` |
-| 15/09/2026 | `6179c2c` | `feat/en-los-medios` | `loteriamanises-medios-2026-09-15.zip` |
+| 15/09/2026 | `6179c2c` | `f0245b3` | `loteriamanises-medios-2026-09-15.zip` |
 
 > La ronda del 15/09 es la primera que lleva **imágenes**, y eso cambia la
 > forma del paquete: ver §6.4.
