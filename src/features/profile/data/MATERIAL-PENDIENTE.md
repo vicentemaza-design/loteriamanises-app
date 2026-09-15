@@ -1,75 +1,88 @@
 # Material pendiente para "En los medios"
 
-Lo que falta para que el apartado deje de tirar de fotos de banco. Todo se
-conecta editando `press-coverage.ts`: una línea por noticia.
+Estado a 15 de septiembre de 2026. Todo se conecta editando
+`press-coverage.ts`: una línea por noticia.
 
 ---
 
-## 1. Logotipos de los medios — faltan los 7
+## 1. Logotipos — completos ✓
 
-Ninguna noticia tiene logotipo todavía. Mientras tanto se pinta el nombre del
-medio como rótulo tipográfico, que funciona pero no es lo mismo.
+Los siete medios tienen logotipo en `src/assets/images/medios/`. Queda un
+detalle: **`valencia-plaza.jpg` no tiene fondo transparente**, así que en
+el listado se ve como un rectángulo azul en vez de recortado como los
+demás. Si aparece una versión PNG con transparencia, se sustituye el
+fichero y ya está: el nombre del import no cambia.
 
-| Fichero esperado | Medio | Noticias |
+---
+
+## 2. Fotografías — faltan 6 de 9
+
+**La regla:** la foto de una noticia es material **propio**. El medio
+entra por su logotipo, su titular y el enlace al original.
+
+No valen las fotos de los propios artículos. La imagen de apertura de una
+noticia es del medio o de su agencia (EFE, Europa Press…), o es un
+fotograma de su emisión. Publicarla en la app es usar material no
+licenciado, y **poner el crédito no da derecho de uso**: acreditar y tener
+licencia son cosas distintas.
+
+Mientras no haya foto propia, la noticia se presenta con **cabecera de
+marca** —fondo azul con el logotipo del medio en grande—. Está pensado
+para verse bien así, no como un hueco: el apartado se puede publicar tal
+cual y cada foto que llegue lo mejora, una a una.
+
+### Las que ya tienen foto propia
+
+| Noticia | Fichero | |
 |---|---|---|
-| `rtve.png` | RTVE | 1 |
-| `telecinco.png` | Telecinco | 1 |
-| `antena3.png` | Antena 3 | 3 |
-| `el-espanol.png` | El Español | 1 |
-| `valencia-plaza.png` | Valencia Plaza | 1 |
-| `abc.png` | ABC | 1 |
-| `cadena-ser.png` | Cadena SER | 1 |
+| El Español · 2025 | `equipo-premios-2025.jpg` | Equipo con los cuatro premios de 2025 |
+| Antena 3 · comprar online | `interior-administracion.webp` | Interior del local |
+| Valencia Plaza · 2025 | `administracion_manises.webp` | Fachada |
 
-**Cómo deben ser:** PNG con fondo transparente, versión de color, **66 px de
-alto mínimo** (se muestran a 22), recortados al logotipo sin márgenes.
+> Conviene que Rafa confirme que las dos primeras son suyas y puede
+> cederlas. Salen en los artículos porque se las pasó él a los medios,
+> que es lo habitual, pero mejor confirmarlo que suponerlo.
 
-**Dónde van:** `src/assets/images/medios/`. Instrucciones completas en el
-README de esa carpeta.
+### Las que van con cabecera de marca
 
-> El diseñador que hizo la maqueta ya los tiene: en su propuesta aparecen.
+| Noticia | Qué foto le pega |
+|---|---|
+| Telecinco · 2025 | El equipo con los décimos, o un plano del pueblo |
+| RTVE · 2025 | La cola en la puerta, o el local en campaña |
+| Antena 3 · el Gordo | Celebración de uno de los Gordos |
+| ABC · 2021 | La celebración de 2021, con los cinco premios |
+| Antena 3 · Espejo Público | El equipo de televisión grabando en el local |
+| Cadena SER · 2019 | Rafa en la radio, o la administración en 2019 |
 
----
+**Cómo deben ser:** JPG, **1200 px de ancho mínimo**, apaisadas. Se
+recortan a lo ancho, así que lo importante conviene que esté centrado y no
+pegado a los bordes.
 
-## 2. Fotografías — 8 de 9 son de relleno
+**Cómo se conectan:** en la entrada de la noticia, dos líneas.
 
-Solo una noticia lleva una foto real de la administración. El resto son
-imágenes de banco o fotos de producto de un décimo, y se nota.
+```ts
+import telecincoFoto from '@/assets/images/medios/telecinco-equipo.jpg';
 
-| Noticia | Foto actual | Qué es | Qué le pega |
-|---|---|---|---|
-| El Español · 2025 | `header_winner.jpg` | Banco | Rafa con el cartel del premio, o el equipo celebrando el tercero de 2025 |
-| RTVE · 2025 | `img2.rtve.jpg` | Décimo suelto | La administración por fuera, o la cola en la puerta |
-| Antena 3 · comprar online | `loteria_navidad_hero.jpg` | Banco | El mostrador atendiendo, o el local en campaña |
-| **Valencia Plaza · 2025** | `administracion_manises.webp` | **Real** ✓ | — |
-| Telecinco · 2025 | `group-people-celebrating…jpg` | Banco | Un plano del pueblo, o el equipo con los décimos |
-| Antena 3 · el Gordo | `loteria_jueves_luck.jpg` | Banco | Celebración de uno de los Gordos |
-| ABC · 2021 | `decimo.jpg` | Décimo suelto | La celebración de 2021, con los cinco premios |
-| Antena 3 · Espejo Público | `loteria_de_empresas.jpg` | Banco | El equipo de televisión grabando en la administración |
-| Cadena SER · 2019 | `manises-el-arte.jpg` | Azulejos del pueblo | Rafa en la radio, o la administración en 2019 |
-
-**Con cada foto hace falta saber de quién es.** El modelo tiene un campo
-`imageCredit` que se pinta como pie bajo la imagen en la pantalla de detalle.
-Si la foto es nuestra, `'Lotería Manises'`. Si viene de un medio o de una
-agencia, hay que poner a quién pertenece — y eso solo se puede hacer con su
-permiso. Ojo con coger las fotos de los propios artículos: esas son del medio o
-de la agencia, no nuestras, aunque salga la administración.
-
-**Cómo deben ser:** JPG, **1200 px de ancho mínimo**, apaisadas. Se recortan a
-lo ancho, así que lo importante conviene que esté centrado y no pegado a los
-bordes.
-
-**Prioridad**, si no se pueden conseguir todas: las cuatro de arriba. Son las
-que salen primero al abrir el apartado, y la de El Español además es la
-portada.
+{
+  id: 'telecinco-2025',
+  // …
+  image: telecincoFoto,
+  imageAlt: 'El equipo de Lotería Manises con los décimos premiados',
+  imageCredit: 'Lotería Manises',
+}
+```
 
 ---
 
-## 3. Y de paso
+## 3. Y de paso, dos cosas de fuera de este apartado
 
-`src/assets/images/gordos/gordo-navidad-{2012,2013,2018,2023}.jpg` **no son
-imágenes**: son documentos HTML de 4.817 bytes, descargas que fallaron. La
-única válida de esa carpeta es la de 2022.
+**`src/assets/images/gordos/gordo-navidad-{2012,2013,2018,2023}.jpg` no
+son imágenes**: son documentos HTML de 4.817 bytes, descargas que
+fallaron. La única válida de esa carpeta es la de 2022. No rompen nada
+porque no las usa ninguna pantalla, pero si existen las fotos de esos
+cuatro Gordos merecen reponerse: son material propio.
 
-No rompen nada porque no las usa ninguna pantalla, pero si existen las fotos de
-esos cuatro Gordos merecen reponerse: son material propio y encajarían en
-varias de las noticias de arriba.
+**`quienes-somos/manises-el-arte.jpg` lleva la marca de agua de
+"Check-in"**, un sitio de viajes. La usa `DeliveredPrizesPage.tsx`, que no
+es parte de este apartado, pero conviene cambiarla por una foto propia de
+los azulejos de Manises.

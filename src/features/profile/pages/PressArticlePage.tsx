@@ -5,13 +5,25 @@ import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { OutletMark } from '../components/OutletMark';
 import { getPressArticle, formatPressDate } from '../data/press-coverage';
 
+/** Cómo se nombra el soporte cuando la ficha va sin foto. */
+const MEDIUM_LABEL: Record<string, string> = {
+  prensa: 'Prensa escrita',
+  television: 'Televisión',
+  radio: 'Radio',
+};
+
 /**
  * Detalle de una noticia.
  *
  * Todo el contenido sale de data/press-coverage.ts. Los bloques opcionales
- * —cita, cifras, puntos clave— solo se pintan si la noticia los trae, así
- * que una entrada mínima (titular, entradilla, resumen e imagen) también
- * se ve bien.
+ * —foto, cita, cifras, puntos clave— solo se pintan si la noticia los
+ * trae, así que una entrada mínima (titular, entradilla y resumen)
+ * también se ve bien.
+ *
+ * El orden es el de una nota de prensa, no el de una landing: primero lo
+ * que publicó el medio, después el enlace al original, y solo al final la
+ * llamada a comprar. Vender antes de acreditar la fuente deja la noticia
+ * en excusa comercial.
  */
 export function PressArticlePage() {
   const navigate = useNavigate();
@@ -44,26 +56,55 @@ export function PressArticlePage() {
       <ProfileSubHeader title="En los medios" backTo="/profile/press" />
 
       {/* ── HERO ───────────────────────────────────────────────── */}
+      {/* Con foto propia manda la foto. Sin ella, cabecera de marca con
+          el logotipo grande: no se rellena con material del medio. */}
       <div className="relative h-56 w-full overflow-hidden">
-        <img
-          src={article.image}
-          alt={article.imageAlt}
-          className="h-full w-full object-cover"
-          style={{ objectPosition: 'center 40%' }}
-          loading="eager"
-        />
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(to bottom, transparent 48%, rgba(245,247,250,0.96) 100%)' }}
-        />
-        <span className="absolute left-5 top-4 inline-flex h-10 w-[6rem] items-center justify-center rounded-xl bg-white/95 px-3 py-2 shadow-sm backdrop-blur-sm">
-          <OutletMark outlet={article.outlet} logo={article.outletLogo} fallbackSize={12} />
-        </span>
+        {article.image ? (
+          <>
+            <img
+              src={article.image}
+              alt={article.imageAlt ?? ''}
+              className="h-full w-full object-cover"
+              style={{ objectPosition: 'center 40%' }}
+              loading="eager"
+            />
+            <div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(to bottom, transparent 48%, rgba(245,247,250,0.96) 100%)' }}
+            />
+            <span className="absolute left-5 top-4 inline-flex h-10 w-[6rem] items-center justify-center rounded-xl bg-white/95 px-3 py-2 shadow-sm backdrop-blur-sm">
+              <OutletMark outlet={article.outlet} logo={article.outletLogo} fallbackSize={12} />
+            </span>
+          </>
+        ) : (
+          <>
+            <div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(135deg, #062d6b 0%, #0a4792 52%, #0d56b0 100%)' }}
+            />
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{ background: 'radial-gradient(circle at 78% 22%, rgba(245,197,24,0.16) 0%, rgba(255,255,255,0) 50%)' }}
+            />
+            <div className="relative flex h-full flex-col items-center justify-center gap-3 px-8 pb-6">
+              <span className="inline-flex h-16 w-40 items-center justify-center rounded-2xl bg-white px-5 py-3 shadow-lg">
+                <OutletMark outlet={article.outlet} logo={article.outletLogo} fallbackSize={18} />
+              </span>
+              <p className="text-[9px] font-black uppercase tracking-[0.24em] text-white/50">
+                {MEDIUM_LABEL[article.medium]}
+              </p>
+            </div>
+            <div
+              className="absolute inset-x-0 bottom-0 h-16"
+              style={{ background: 'linear-gradient(to bottom, rgba(245,247,250,0) 0%, rgba(245,247,250,0.96) 100%)' }}
+            />
+          </>
+        )}
       </div>
 
-      {/* Crédito de la foto. Va pegado a la imagen, que es donde se espera,
-          y solo aparece si la noticia lo trae. */}
-      {article.imageCredit && (
+      {/* Crédito de la foto. Va pegado a la imagen, que es donde se espera. */}
+      {article.image && article.imageCredit && (
         <p className="px-5 pt-2 text-right text-[9.5px] font-medium text-slate-400">
           Foto: {article.imageCredit}
         </p>
@@ -84,7 +125,12 @@ export function PressArticlePage() {
         </header>
 
         {/* ── Resumen ────────────────────────────────────────────── */}
+        {/* Lo que sigue lo escribimos nosotros. Sin este rótulo, bajo el
+            logotipo del medio, se lee como si lo firmara el medio. */}
         <div className="space-y-3">
+          <p className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
+            Nuestro resumen de lo publicado por {article.outlet}
+          </p>
           {article.summary.map((parrafo, i) => (
             <p
               key={parrafo}
@@ -134,43 +180,61 @@ export function PressArticlePage() {
         )}
 
         {/* ── Cita ───────────────────────────────────────────────── */}
-        {/* La manuscrita en oro es el gesto que la app reserva para las
-            frases con voz propia. Una cita del lotero es justo eso, así
-            que aquí sí toca, sobre fondo oscuro para que el oro se lea. */}
-        {article.quote && (
-          <figure
-            className="relative overflow-hidden rounded-[1.4rem] px-5 py-6 shadow-[0_14px_32px_-14px_rgba(10,71,146,0.45)]"
-            style={{ background: 'linear-gradient(135deg, #062d6b 0%, #0d56b0 100%)' }}
-          >
-            <span
-              aria-hidden
-              className="pointer-events-none absolute -right-2 -top-6 select-none font-manuscript leading-none"
-              style={{ fontSize: '9rem', color: 'rgba(245,197,24,0.10)' }}
+        {/* Dos registros distintos, y conviene que se noten. Si quien
+            habla es una persona, va en manuscrita dorada: es el gesto que
+            la app reserva para la voz propia. Si lo que se cita es prosa
+            del propio medio, va en redonda y firmado con su logotipo,
+            porque poner al medio a hablar con nuestra letra de firma
+            parece que nos avala con nuestras propias palabras. */}
+        {article.quote && (() => {
+          const esDelMedio = article.quote.source === article.outlet;
+          return (
+            <figure
+              className="relative overflow-hidden rounded-[1.4rem] px-5 py-6 shadow-[0_14px_32px_-14px_rgba(10,71,146,0.45)]"
+              style={{ background: 'linear-gradient(135deg, #062d6b 0%, #0d56b0 100%)' }}
             >
-              &rdquo;
-            </span>
-
-            <blockquote
-              className="relative font-manuscript"
-              style={{
-                fontWeight: 700,
-                fontSize: 'clamp(1.1rem, 4.6vw, 1.35rem)',
-                lineHeight: 1.35,
-                color: '#F5C518',
-                textShadow: '0 1px 10px rgba(245,197,24,0.18)',
-              }}
-            >
-              {article.quote.text}
-            </blockquote>
-
-            <figcaption className="relative mt-3.5 flex items-center gap-2">
-              <span className="h-px w-6" style={{ backgroundColor: 'rgba(245,197,24,0.55)' }} />
-              <span className="text-[10px] font-black uppercase tracking-[0.16em] text-white/65">
-                {article.quote.source}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -right-2 -top-6 select-none font-manuscript leading-none"
+                style={{ fontSize: '9rem', color: 'rgba(245,197,24,0.10)' }}
+              >
+                &rdquo;
               </span>
-            </figcaption>
-          </figure>
-        )}
+
+              {esDelMedio ? (
+                <blockquote className="relative text-[14px] font-semibold leading-relaxed text-white/90">
+                  {article.quote.text}
+                </blockquote>
+              ) : (
+                <blockquote
+                  className="relative font-manuscript"
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 'clamp(1.1rem, 4.6vw, 1.35rem)',
+                    lineHeight: 1.35,
+                    color: '#F5C518',
+                    textShadow: '0 1px 10px rgba(245,197,24,0.18)',
+                  }}
+                >
+                  {article.quote.text}
+                </blockquote>
+              )}
+
+              <figcaption className="relative mt-3.5 flex items-center gap-2.5">
+                <span className="h-px w-6" style={{ backgroundColor: 'rgba(245,197,24,0.55)' }} />
+                {esDelMedio ? (
+                  <span className="inline-flex h-7 w-[4.25rem] items-center justify-center rounded-lg bg-white/95 px-2 py-1">
+                    <OutletMark outlet={article.outlet} logo={article.outletLogo} fallbackSize={9} />
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-black uppercase tracking-[0.16em] text-white/65">
+                    {article.quote.source}
+                  </span>
+                )}
+              </figcaption>
+            </figure>
+          );
+        })()}
 
         {/* ── Puntos clave ───────────────────────────────────────── */}
         {article.highlights && article.highlights.length > 0 && (
@@ -186,6 +250,30 @@ export function PressArticlePage() {
             ))}
           </div>
         )}
+
+        {/* ── Atribución ─────────────────────────────────────────── */}
+        {/* Va ANTES de la llamada a comprar: primero se acredita a quien
+            publicó la noticia y se ofrece leerla entera, y después ya se
+            propone jugar. Al revés, la noticia parece el envoltorio. */}
+        <a
+          href={article.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 rounded-[1.4rem] border border-slate-100 bg-white px-3.5 py-3 shadow-sm transition-colors hover:bg-slate-50/70"
+        >
+          <span className="flex h-11 w-[4.75rem] shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-white p-1.5">
+            <OutletMark outlet={article.outlet} logo={article.outletLogo} fallbackSize={10} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
+              Publicado por {article.outlet}
+            </span>
+            <span className="mt-0.5 block text-[12.5px] font-black leading-snug text-manises-blue">
+              Leer la noticia completa
+            </span>
+          </span>
+          <ExternalLink className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+        </a>
 
         {/* ── Llamada a la compra ────────────────────────────────── */}
         {/* Lleva a Lotería de Navidad, que es el juego del que hablan
@@ -222,21 +310,6 @@ export function PressArticlePage() {
           </button>
         </PremiumTouchInteraction>
 
-        {/* ── Atribución ─────────────────────────────────────────── */}
-        <a
-          href={article.sourceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3"
-        >
-          <span className="text-[11px] font-medium text-slate-500">
-            Fuente: {article.outlet}
-          </span>
-          <span className="flex shrink-0 items-center gap-1.5 text-[11px] font-black text-manises-blue">
-            Ver publicación original
-            <ExternalLink className="h-3 w-3" />
-          </span>
-        </a>
       </div>
     </div>
   );

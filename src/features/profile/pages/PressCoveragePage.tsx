@@ -3,7 +3,7 @@ import { ArrowRight, ChevronRight, Newspaper, Radio, Tv } from 'lucide-react';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { OutletMark } from '../components/OutletMark';
-import { getPressCoverage, formatPressDate, PRESS_STATS } from '../data/press-coverage';
+import { getPressCoverage, formatPressDate, getPressStats } from '../data/press-coverage';
 
 /**
  * Listado de "En los medios".
@@ -20,6 +20,7 @@ export function PressCoveragePage() {
   const navigate = useNavigate();
   const articles = getPressCoverage();
   const [featured, ...rest] = articles;
+  const stats = getPressStats();
 
   return (
     <div className="flex min-h-full flex-col bg-[#f5f7fa] pb-20">
@@ -46,9 +47,9 @@ export function PressCoveragePage() {
           la suerte de Manises
         </p>
         <p className="mt-3 text-[13px] font-medium leading-relaxed text-slate-500">
-          Grandes medios nacionales llevan años contando nuestros premios y la historia de una
+          Televisión, radio y prensa llevan años contando nuestros premios y la historia de una
           administración que se ha convertido en una de las referencias de la Lotería de Navidad
-          en España.
+          en España. Aquí está recogido, con enlace a cada publicación original.
         </p>
       </div>
 
@@ -61,13 +62,21 @@ export function PressCoveragePage() {
               onClick={() => navigate(`/profile/press/${featured.id}`)}
               className="group relative w-full overflow-hidden rounded-[2rem] border border-indigo-400/20 text-left shadow-[0_18px_40px_-12px_rgba(0,0,0,0.32)] transition-all duration-500"
             >
-              <div className="absolute inset-0">
-                <img
-                  src={featured.image}
-                  alt={featured.imageAlt}
-                  className="h-full w-full object-cover transition-transform duration-[2000ms] group-hover:scale-105"
+              <div className="absolute inset-0 bg-manises-blue">
+                {featured.image && (
+                  <img
+                    src={featured.image}
+                    alt={featured.imageAlt ?? ''}
+                    className="h-full w-full object-cover transition-transform duration-[2000ms] group-hover:scale-105"
+                  />
+                )}
+                <div
+                  className={
+                    featured.image
+                      ? 'absolute inset-0 bg-[linear-gradient(135deg,rgba(10,71,146,0.97)_0%,rgba(8,63,132,0.88)_42%,rgba(10,71,146,0.42)_100%)]'
+                      : 'absolute inset-0 bg-[linear-gradient(135deg,#062d6b_0%,#0a4792_52%,#0d56b0_100%)]'
+                  }
                 />
-                <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(10,71,146,0.97)_0%,rgba(8,63,132,0.88)_42%,rgba(10,71,146,0.42)_100%)]" />
                 <div
                   className="absolute inset-0"
                   style={{ background: 'radial-gradient(circle at 82% 18%, rgba(99,102,241,0.14) 0%, rgba(255,255,255,0) 45%)' }}
@@ -110,7 +119,7 @@ export function PressCoveragePage() {
 
       {/* ── CIFRAS ─────────────────────────────────────────────── */}
       <div className="mx-4 mt-4 grid grid-cols-3 gap-2">
-        {PRESS_STATS.map(stat => {
+        {stats.map(stat => {
           const Icon = stat.icon === 'tv' ? Tv : stat.icon === 'radio' ? Radio : Newspaper;
           return (
             <div

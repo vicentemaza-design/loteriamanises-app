@@ -9,7 +9,7 @@ Un fichero por medio, con estos nombres:
 | Fichero | Medio |
 |---|---|
 | `el-espanol.png` | El Español |
-| `valencia-plaza.png` | Valencia Plaza |
+| `valencia-plaza.jpg` | Valencia Plaza |
 | `telecinco.png` | Telecinco |
 | `abc.png` | ABC |
 | `cadena-ser.png` | Cadena SER |
@@ -41,6 +41,22 @@ import elEspanolLogo from '@/assets/images/medios/el-espanol.png';
 Mientras un medio no tenga logotipo, la tarjeta pinta su nombre como
 rótulo tipográfico y ocupa el mismo espacio, así que se pueden ir
 añadiendo de uno en uno sin que nada se descoloque.
+
+## Las fotos de las noticias NO van aquí como material del medio
+
+En esta carpeta conviven dos cosas distintas:
+
+- **Logotipos** de los medios: `rtve.png`, `abc.png`, `telecinco.png`…
+- **Fotografías propias** de la administración que ilustran una noticia:
+  `equipo-premios-2025.jpg`, `interior-administracion.webp`.
+
+Lo que **no** puede entrar aquí es la foto de apertura de un artículo
+descargada del medio, ni un fotograma de su emisión: eso es material del
+medio o de su agencia y no lo tenemos licenciado. Poner el crédito no
+arregla nada — acreditar y tener licencia son cosas distintas.
+
+Si una noticia no tiene foto propia, se deja sin `image` y se presenta con
+cabecera de marca. Está previsto y se ve bien.
 
 ## Sobre los derechos
 
