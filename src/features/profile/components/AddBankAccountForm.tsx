@@ -4,6 +4,8 @@ import { AlertCircle, ShieldAlert } from 'lucide-react';
 import { Button } from '@/shared/ui/Button';
 import type { BankAccount } from '@/features/profile/types/profile.types';
 import type { AddBankAccountFormInput } from '@/features/profile/hooks/useBankAccounts';
+import { isDemoEnvironment } from '@/features/profile/lib/security';
+import { DEMO_VERIFICATION_ALIASES } from '@/features/profile/data/bankVerificationDemo';
 import {
   formatIbanForDisplay,
   normalizeIban,
@@ -142,6 +144,42 @@ export function AddBankAccountForm({ onAdd, onSuccess, onCancel, onRegisterActiv
             />
           </div>
         </div>
+
+        {/* Atajos de demo. En demo no hay banco detrás, así que la
+            verificación siempre sale bien y el camino del fallo —que es el
+            que hay que poder enseñar— quedaba fuera de alcance salvo que se
+            supiera la palabra reservada. Estos botones rellenan el alias por
+            ti. Solo aparecen con el modo demo activo; en un build conectado
+            el alias es un alias y el desenlace lo decide el banco. */}
+        {isDemoEnvironment() && (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-3 py-2.5">
+            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+              Solo demo · probar la verificación
+            </p>
+            <p className="mt-1 text-[10.5px] font-medium leading-relaxed text-slate-500">
+              Por defecto la cuenta se verifica correctamente. Para ver qué
+              pasa cuando falla, elige un caso y guarda la cuenta:
+            </p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {DEMO_VERIFICATION_ALIASES.map(({ alias: value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  disabled={isSaving}
+                  onClick={() => setAlias(value)}
+                  aria-pressed={alias.trim().toLowerCase() === value}
+                  className={`h-7 rounded-lg border px-2.5 text-[10px] font-bold transition-colors disabled:opacity-50 ${
+                    alias.trim().toLowerCase() === value
+                      ? 'border-manises-blue bg-manises-blue text-white'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-manises-blue/40'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {status === 'error' && error && (
           <div id="new-bank-iban-error" role="alert" aria-live="polite" className="flex items-center gap-1 px-0.5">

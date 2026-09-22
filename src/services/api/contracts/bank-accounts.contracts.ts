@@ -12,6 +12,14 @@
  *    verificationStatus to 'verified'. 'mismatch' / 'unavailable' / 'error'
  *    never touch verificationStatus; the account simply stays 'unverified'.
  *
+ *  - `lastFailedVerification` RECUERDA el último intento fallido. Sigue sin
+ *    ser un estado de la cuenta —verificationStatus solo tiene dos valores—
+ *    pero sin esto el usuario que falló ayer abre hoy la app y solo ve un
+ *    "Pendiente de verificar" que no explica nada: ni que se intentó, ni por
+ *    qué falló, ni qué hacer. El aviso del intento vivía únicamente en el
+ *    panel transitorio de la pantalla de retirada y desaparecía al salir.
+ *    Se limpia en cuanto un intento sale 'verified'.
+ *
  * This phase does not implement real ownership verification: no bank
  * provider is integrated, no titularity comparison happens in FE, no real
  * withdrawal/balance operation is triggered by any of this.
@@ -31,6 +39,20 @@ export interface BankAccountDto {
   verificationStatus: BankAccountVerificationStatus;
   /** ISO date. Only meaningful once verificationStatus === 'verified'. */
   verifiedAt?: string;
+  /**
+   * Último intento de verificación que NO salió bien. Presente solo
+   * mientras verificationStatus sea 'unverified'; un intento 'verified'
+   * lo borra. BE debe devolverlo con la cuenta para que la UI pueda
+   * explicar por qué sigue sin verificar.
+   */
+  lastFailedVerification?: FailedVerificationAttempt;
+}
+
+/** Un intento fallido, con su motivo y cuándo fue. */
+export interface FailedVerificationAttempt {
+  outcome: Exclude<BankAccountVerificationOutcome, 'verified'>;
+  /** ISO date-time del intento. */
+  at: string;
 }
 
 export interface AddBankAccountInput {

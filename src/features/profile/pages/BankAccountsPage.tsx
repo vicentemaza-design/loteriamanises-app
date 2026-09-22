@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Landmark, Plus, Star, Trash2, AlertCircle } from 'lucide-react';
+import { Landmark, Plus, Star, Trash2, AlertCircle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { AnimatePresence, motion } from 'motion/react';
 import { ProfileSubHeader } from '../components/ProfileSubHeader';
 import { AddBankAccountForm } from '../components/AddBankAccountForm';
 import { BankAccountStatusBadge } from '../components/BankAccountStatusBadge';
+import { BankAccountVerificationNotice } from '../components/BankAccountVerificationNotice';
 import { Button } from '@/shared/ui/Button';
 import { PremiumTouchInteraction } from '@/shared/components/PremiumTouchInteraction';
 import { useBankAccounts } from '../hooks/useBankAccounts';
@@ -41,6 +42,11 @@ const BankAccountManageRow: React.FC<BankAccountManageRowProps> = ({
 
   return (
     <div className="overflow-hidden rounded-2xl border-2 border-slate-100 bg-white">
+      {account.lastFailedVerification && (
+        <div className="px-3 pt-3">
+          <BankAccountVerificationNotice attempt={account.lastFailedVerification} />
+        </div>
+      )}
       <div className="flex items-center justify-between gap-3 p-3">
         <div className="flex items-center gap-3 min-w-0">
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${account.isDefault ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
@@ -184,6 +190,21 @@ export function BankAccountsPage() {
           </div>
         ) : (
           <>
+            {/* Sin esto, una cuenta "Pendiente de verificar" no se explica:
+                el usuario no sabe si le falta hacer algo o si el sistema
+                está esperando a algo. La verificación no es un paso aparte,
+                ocurre la primera vez que se retira a esa cuenta. */}
+            {accounts.some((acc: BankAccount) => acc.verificationStatus === 'unverified') && (
+              <div className="flex items-start gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
+                <p className="text-[11px] font-medium leading-relaxed text-slate-500">
+                  Las cuentas se verifican la primera vez que retiras saldo a
+                  ellas: comprobamos que la cuenta está a tu nombre. Hasta
+                  entonces aparecen como <span className="font-bold">pendientes de verificar</span>.
+                </p>
+              </div>
+            )}
+
             {accounts.map((acc: BankAccount) => (
               <BankAccountManageRow
                 key={acc.id}

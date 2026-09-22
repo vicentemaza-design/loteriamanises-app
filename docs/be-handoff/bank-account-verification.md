@@ -25,6 +25,21 @@ implementado** — ver la sección "Pendiente fase retirada" al final.
   el que hace avanzar el estado persistente de arriba; `mismatch` /
   `unavailable` / `error` nunca se escriben en la cuenta, que simplemente
   sigue `unverified`.
+- `lastFailedVerification?: { outcome, at }` **recuerda el último intento
+  fallido**. Sigue sin ser un estado —`verificationStatus` mantiene sus dos
+  valores— pero la cuenta guarda por qué y cuándo falló el último intento,
+  y BE debe devolverlo junto con la cuenta.
+
+  **Por qué se añadió (21/09/2026).** Los tres outcomes de fallo solo se
+  pintaban en el panel transitorio del flujo de retirada y desaparecían al
+  salir de la pantalla. Quien lo intentaba y fallaba volvía al día siguiente
+  y encontraba únicamente una etiqueta "Pendiente de verificar" idéntica a
+  la de una cuenta recién añadida: sin saber que se había intentado, ni por
+  qué no había salido, ni qué hacer. Ahora la cuenta lo explica.
+
+  **Reglas:** se escribe en cada intento que no sea `verified`; se borra en
+  cuanto un intento sale `verified`; solo tiene sentido mientras
+  `verificationStatus === 'unverified'`.
 - El FE **no decide la titularidad**. No compara `holderName` con el nombre
   del perfil en React, no implementa ningún algoritmo de matching. Solo
   representa visualmente el `outcome` que devuelva el provider.
@@ -61,8 +76,18 @@ el estado persistente (`verificationStatus`) se espera que viaje dentro de
 | `unavailable` | El proveedor no puede resolver ahora (no es un fallo del cliente) | "No podemos verificar ahora" / "Inténtalo de nuevo más tarde." |
 | `error` | Fallo técnico genérico (red, timeout, servicio caído) | Mensaje genérico + reintentar |
 
+Los tres de fallo se muestran además **de forma permanente en la cuenta**,
+vía `lastFailedVerification`, en `BankAccountVerificationNotice`: motivo,
+qué puede hacer el usuario y fecha del último intento. El panel transitorio
+(`BankAccountVerificationPanel`) sigue existiendo para el momento del
+intento; son dos piezas distintas y complementarias.
+
 ## Qué debe implementar BE
 
+- **Persistir y devolver `lastFailedVerification`** en cada cuenta: se
+  escribe con el `outcome` y la marca de tiempo en todo intento que no sea
+  `verified`, y se borra al verificar. Sin esto la UI no puede explicar por
+  qué una cuenta sigue pendiente.
 - Validar formato + dígito de control del IBAN server-side (no confiar en
   la validación de cliente, que es solo UX).
 - Asociar la cuenta al usuario autenticado (autorización server-side, nunca

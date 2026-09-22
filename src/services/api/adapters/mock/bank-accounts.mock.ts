@@ -1,3 +1,4 @@
+import { DEMO_ALIAS_OUTCOMES } from '@/features/profile/data/bankVerificationDemo';
 import type {
   AddBankAccountInput,
   AddBankAccountResult,
@@ -41,6 +42,14 @@ function normalizeIban(value: string): string {
   return value.replace(/\s+/g, '').toUpperCase();
 }
 
+/** Valida la forma del intento fallido al leer de localStorage, que puede traer cualquier cosa. */
+function isFailedAttempt(value: unknown): value is NonNullable<BankAccountDto['lastFailedVerification']> {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  return (v.outcome === 'mismatch' || v.outcome === 'unavailable' || v.outcome === 'error')
+    && typeof v.at === 'string';
+}
+
 function maskIban(value: string): string {
   const clean = normalizeIban(value);
   return `${clean.slice(0, 4)} **** **** **** ${clean.slice(-4)}`;
@@ -70,6 +79,7 @@ function migrateStoredAccount(raw: unknown): BankAccountDto | null {
     isDefault: Boolean(r.isDefault),
     verificationStatus: isPreExistingNewShape ? (r.verificationStatus as BankAccountDto['verificationStatus']) : 'unverified',
     verifiedAt: isPreExistingNewShape && r.verificationStatus === 'verified' && typeof r.verifiedAt === 'string' ? r.verifiedAt : undefined,
+    lastFailedVerification: isFailedAttempt(r.lastFailedVerification) ? r.lastFailedVerification : undefined,
   };
 }
 
@@ -122,19 +132,12 @@ export async function addBankAccountMock(input: AddBankAccountInput): Promise<Ad
 }
 
 /**
- * Demo-only outcome switch, isolated to this file. Controlled by the
- * account's `alias` (case-insensitive) so a demo presenter can reproduce
- * any of the 4 outcomes on demand by naming the account accordingly when
- * adding it. This is NOT a titularity-matching algorithm — it never
- * compares against any holder name, it is only a fixed lookup of reserved
- * demo values, same pattern as the email-verification phase's demo tokens.
+ * El interruptor de desenlaces de demo vive en
+ * features/profile/data/bankVerificationDemo.ts, que es de donde también
+ * los lee el formulario de alta para ofrecerlos como atajo. Aquí solo se
+ * interpretan. No es un algoritmo de titularidad: nunca compara ningún
+ * nombre, es una búsqueda fija de valores reservados.
  */
-const DEMO_ALIAS_OUTCOMES: Record<string, BankAccountVerificationOutcome> = {
-  'demo mismatch': 'mismatch',
-  'demo unavailable': 'unavailable',
-  'demo error': 'error',
-};
-
 export async function verifyBankAccountOwnershipMock(input: VerifyBankAccountInput): Promise<VerifyBankAccountResult> {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -147,14 +150,17 @@ export async function verifyBankAccountOwnershipMock(input: VerifyBankAccountInp
 
       const key = (account.alias ?? '').trim().toLowerCase();
       const outcome = DEMO_ALIAS_OUTCOMES[key] ?? 'verified';
+      const now = new Date().toISOString();
 
+      // Se persisten LOS DOS desenlaces, no solo el bueno. Un intento
+      // fallido deja constancia en la cuenta (lastFailedVerification) para
+      // que la UI pueda explicar después por qué sigue sin verificar; un
+      // intento correcto la verifica y borra ese recuerdo.
       const updatedAccount: BankAccountDto = outcome === 'verified'
-        ? { ...account, verificationStatus: 'verified', verifiedAt: new Date().toISOString() }
-        : account;
+        ? { ...account, verificationStatus: 'verified', verifiedAt: now, lastFailedVerification: undefined }
+        : { ...account, lastFailedVerification: { outcome, at: now } };
 
-      if (outcome === 'verified') {
-        writeStoredAccounts(accounts.map((a) => (a.id === updatedAccount.id ? updatedAccount : a)));
-      }
+      writeStoredAccounts(accounts.map((a) => (a.id === updatedAccount.id ? updatedAccount : a)));
 
       resolve({ outcome, bankAccount: updatedAccount });
     }, 1100);

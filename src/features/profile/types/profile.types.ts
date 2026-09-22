@@ -76,6 +76,19 @@ export interface PaymentCard {
  */
 export type BankAccountVerificationStatus = 'unverified' | 'verified';
 
+/**
+ * Motivo por el que el último intento de verificación no salió bien. No es
+ * un estado de la cuenta —la cuenta sigue 'unverified'—, es el recuerdo del
+ * intento, para poder explicárselo al usuario cuando vuelva.
+ */
+export type FailedVerificationOutcome = 'mismatch' | 'unavailable' | 'error';
+
+export interface FailedVerificationAttempt {
+  outcome: FailedVerificationOutcome;
+  /** ISO date-time del intento. */
+  at: string;
+}
+
 export interface BankAccount {
   id: string;
   /** Always masked, e.g. "ES12 **** **** **** 7890" — the full IBAN never lives in this type. */
@@ -86,6 +99,8 @@ export interface BankAccount {
   verificationStatus: BankAccountVerificationStatus;
   /** ISO date. Only meaningful once verificationStatus === 'verified'. */
   verifiedAt?: string;
+  /** Presente solo mientras siga sin verificar. Un intento correcto lo borra. */
+  lastFailedVerification?: FailedVerificationAttempt;
 }
 
 /**
