@@ -22,3 +22,7 @@ emails/delivery/
 # Herramientas y salidas locales: nunca deben viajar en una entrega.
 .vercel/
 artifacts/
+
+# Lo genera scripts/prepare-ios-startup.mjs en cada build, desde
+# src/assets/brand/manises-isotipo.png, que sí está versionado.
+public/startup/
