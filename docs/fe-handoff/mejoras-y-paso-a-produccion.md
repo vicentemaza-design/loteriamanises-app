@@ -414,9 +414,15 @@ el código. El estado, lo pendiente y cómo verificarlas están en
 | 02/09/2026 | `a338208` | `b14628d` | `mejoras-2026-09-02.patch` |
 | 10/09/2026 | `b14628d` | `6179c2c` | `mejoras-2026-09-10.patch` |
 | 15/09/2026 | `6179c2c` | `f0245b3` | `loteriamanises-medios-2026-09-15.zip` |
+| 22/09/2026 | `710250e` | `54a3141` | `loteriamanises-verificacion-2026-09-22.zip` |
 
 > La ronda del 15/09 es la primera que lleva **imágenes**, y eso cambia la
 > forma del paquete: ver §6.4.
+>
+> La del 22/09 **cambia el contrato** `BankAccountDto`: añade
+> `lastFailedVerification`. No basta con aplicar el parche — BE tiene que
+> persistir y devolver ese campo o el aviso no aparece en un build
+> conectado. Detalle en `docs/be-handoff/bank-account-verification.md`.
 
 ### 6.3 Antes de enviar una ronda
 
